@@ -1,0 +1,4 @@
+minimal_gencode.v25.pc_translations.fa => This is the minimal fasta file that produces the same output
+mentioned in the following Testprocedures:
+ftp://ftp.sanger.ac.uk/pub/teams/17/software/PoGo/PoGo_Testprocedures.zip
+when using the "-in Testfile_small.txt" argument.
