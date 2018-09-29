@@ -47,7 +47,7 @@ public class PepGenomeTool {
                 .addOption(Option.builder(ARG_SOURCE).hasArg(true).desc("Please give a source name which will be used in the second column in the output gtf file (default: PoGo)").build())
                 .addOption(Option.builder(ARG_MM).hasArg(true).desc("Allowed mismatches (0, 1 or 2; default: 0)").build())
                 .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismaches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
-                .addOption(Option.builder(ARG_SPECIES).hasArg(true).desc("Please give species using common or scientific name (default human). For a full list of supported species please go to https://github.com/cschlaffner/PoGo").build())
+                .addOption(Option.builder(ARG_SPECIES).hasArg(true).desc("Please give species using common or scientific name (default human). For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome").build())
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
                 .addOption(Option.builder(ARG_HELP).hasArg(false).desc("Print this help & exit").build());
 
@@ -167,7 +167,7 @@ public class PepGenomeTool {
                 GenomeMapper.ID.EXON_ID = GenomeMapper.TAX.get(speciesParam).getExonId();
                 GenomeMapper.ID.LENGTH = GenomeMapper.TAX.get(speciesParam).getLength();
             } else {
-                System.err.println("ERROR: Species/Taxonomy: " + speciesParam + "is not supported. For a full list of supported species please go to https://github.com/cschlaffner/PoGo");
+                System.err.println("ERROR: Species/Taxonomy: " + speciesParam + "is not supported. For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome");
                 System.exit(GENOME_MAPPER_EXIT_HELP);
             }
         }
