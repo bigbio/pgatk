@@ -24,8 +24,6 @@
             <id>Chakradhar Bandla</id>
             <name>Chakradhar Bandla</name>
         </developer>
-
-
     </developers>
 
     <properties>
@@ -55,7 +53,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>org.org.bigbio.pgatk.pepgenome.PepGenomeTool</mainClass>
+                            <mainClass>org.bigbio.pgatk.pepgenome.PepGenomeTool</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
