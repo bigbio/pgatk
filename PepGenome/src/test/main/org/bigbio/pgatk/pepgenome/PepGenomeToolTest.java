@@ -7,7 +7,6 @@ import org.junit.Test;
 
 import java.io.*;
 import java.util.*;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -67,14 +66,27 @@ public class PepGenomeToolTest {
 
 
         List<List<String>> cPogoLines = getBedLines(cPogoBed);
-
         Assert.assertTrue(bedLines.size() == cPogoLines.size());
 
+        for(int i = 0; i < bedLines.size(); i++){
+            boolean found = false;
+            List<String> bedLine = bedLines.get(i);
+            for(int j = 0; j < cPogoLines.size(); j ++){
+                List<String> cbedLine = cPogoLines.get(j);
+                if(bedLine.get(3).equalsIgnoreCase(cbedLine.get(3))){
+                    found = compareBedLines( bedLine, cbedLine);
+                    System.out.println(bedLine.get(3) + " -- " + found);
+                    if(found)
+                        break;
+                }
+            }
+            Assert.assertTrue(found);
+        }
 
+    }
 
-
-
-
+    private boolean compareBedLines(List<String> bedLine, List<String> cbedLine) {
+        return  bedLine.stream().allMatch(num -> cbedLine.contains(num));
     }
 
     public static File unGzip(File infile) throws IOException {
