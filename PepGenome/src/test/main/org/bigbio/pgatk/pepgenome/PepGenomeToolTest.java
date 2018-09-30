@@ -1,14 +1,13 @@
 package org.bigbio.pgatk.pepgenome;
 
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 /**
@@ -28,6 +27,8 @@ public class PepGenomeToolTest {
     String fileIn = null;
     String fileFasta = null;
     String fileGTF = null;
+    String fileCPogo = null;
+
 
     @Before
     public void setUp() throws Exception {
@@ -38,10 +39,12 @@ public class PepGenomeToolTest {
 
         fileGTF = unGzip(inputGZfile).getAbsolutePath();
 
+        fileCPogo = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/cpogo/Testfile_small.bed")).toURI()).getAbsolutePath();
+
     }
 
     @Test
-    public void main() {
+    public void main() throws IOException {
         System.out.println("main");
         List<String> argList = new ArrayList<>();
 
@@ -55,6 +58,22 @@ public class PepGenomeToolTest {
         String[] args = new String[argList.size()];
         argList.toArray(args);
         PepGenomeTool.main(args);
+
+        File outputBed = new File(fileIn.replace(".txt", ".bed"));
+        File cPogoBed = new File(fileCPogo);
+
+        List<List<String>> bedLines = getBedLines(outputBed);
+        Assert.assertTrue(bedLines.size() == 29);
+
+
+        List<List<String>> cPogoLines = getBedLines(cPogoBed);
+
+        Assert.assertTrue(bedLines.size() == cPogoLines.size());
+
+
+
+
+
 
     }
 
@@ -80,5 +99,16 @@ public class PepGenomeToolTest {
                 fos.close();
             }
         }
+    }
+
+    private List<List<String>> getBedLines(File inFile) throws IOException {
+        BufferedReader buf = new BufferedReader(new FileReader(inFile));
+        List<List<String>> bedLines = new ArrayList<>();
+        String line = null;
+        while((line = buf.readLine()) != null){
+            String[] lines = line.split("\t");
+            bedLines.add(Arrays.asList(lines));
+        }
+        return bedLines;
     }
 }
