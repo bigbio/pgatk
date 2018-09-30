@@ -7,21 +7,17 @@ SMALL example for database and peptides to map
 
 - GeneCode Annotations in GTF: gencode.v25.annotation.gtf => GTF Annotations.
 
-ftp://ftp.sanger.ac.uk/pub/teams/17/software/PoGo/PoGo_Testprocedures.zip
-(Note: when using the "-in Testfile_small.txt" argument)
-
--------------------------------------
 Steps to generate minimal fasta files:
 --------------------------------------
 1. From the expected "_out.gtf" file, extract the required "gene_ids" and combine them using pipe("|") as delimiter using the following command (replace 'xyz_out.gtf' with original file)
 
-awk '{ print $10 }' xyz_out.gtf | sort | uniq | sed s/'[";]'//g | paste -d\| -s -
+`awk '{ print $10 }' xyz_out.gtf | sort | uniq | sed s/'[";]'//g | paste -d\| -s -`
 
-Sample result of the above cmd: ENSG00000142798|ENSG00000011009|ENSG00000163209
+Sample output of the above cmd: `ENSG00000142798|ENSG00000011009|ENSG00000163209`
 
 2. Now use the above generated pattern to grep only the required lines from the input fasta file
 Example:
-egrep -A5 -w 'ENSG00000142798|ENSG00000011009|ENSG00000163209' original.fa > minimal.fa
+`egrep -A5 -w 'ENSG00000142798|ENSG00000011009|ENSG00000163209' original.fa > minimal.fa`
 
 (note: If you are sure that the sequence is in only one line, then '-A1' is actually enough)
 
