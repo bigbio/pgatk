@@ -12,7 +12,7 @@ import java.util.List;
 public class Utils {
 
     public static void printHelpAndExitProgram(final Options options, boolean shouldExit, int exitCode) {
-        new HelpFormatter().printHelp("PoGo/PoGo.exe -fasta TRANSL -gtf ANNO -in *.tsv[,*.tsv] [-format OUTF] [-merge TRUE/FALSE] [-source SRC] [-mm NUM] [-mmmode TRUE/FALSE] [-species SPECIES] [-chr 0/1]", options);
+        new HelpFormatter().printHelp("Arguments: -fasta TRANSL -gtf ANNO -in *.tsv[,*.tsv] [-format OUTF] [-merge TRUE/FALSE] [-source SRC] [-mm NUM] [-mmmode TRUE/FALSE] [-species SPECIES] [-chr 0/1]", options);
         if (shouldExit) {
             System.exit(exitCode);
         }
