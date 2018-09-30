@@ -1,16 +1,26 @@
-# jPoGo
-This is the Java port for  https://github.com/cschlaffner/PoGo
+PepGenome
+=========================
 
 ## Overview
-In proteogenomic analyses it is essential to know the loci giving rise to peptides in order to improve genomic annotation and the functional characterization of protein products in their biological context. With next-generation sequencing of DNA and RNA for each sample studied by proteomic mass spectrometry integration and visualisation in a common coordinate system, i.e. the genome, is vital for systems biology. Advances in technology in mass spectrometry now allow almost complete quantification of the sample proteome. With research moving to protein quantitative trait loci (pQTL) to identify genomic alterations with functional effects on the proteome and the high complexity of combinations thereof integration and visualisation of protein and peptide quantification on genomic loci is paramount for this type of analysis. Furthermore, moving towards more personal multi-omics studies comparative visualisation of proteomic data on a genome has been lacking. Not only genomic variation affecting proteins have come into focus of functional integration studies but also post-translational modifications (PTM), the effect of single nucleotide variants and other alterations on PTMs and alternative modification loci, and the effects of alternative PTMs on protein abundance have become more a centre of attention for researchers. To facilitate this type of integration not only the genomic locations of modified peptides but specifically the genomic loci of associated with these modifications is required. Here, we provide a mapping tool, PoGo, to quickly and efficiently identify genomic loci of peptides and post-translational modifications and couple these mappings with associated quantitative values over multiple samples. Using reference gene annotation and an associated transcript translations our tool identifies the genomic loci of peptides given as input and generates output in different formats borrowed from genomics and transcriptomics which can be loaded in various genome browsers such as UCSC Genome Browser, Ensembl Genome Browser, BioDalliance, and the Integrative Genomics Viewer.
+
+In proteogenomic analyses it is essential to know the loci giving rise to peptides in order to improve genomic annotation and the functional characterization of protein products in their biological context. With next-generation sequencing of DNA and RNA for each sample studied by proteomic mass spectrometry integration and visualisation in a common coordinate system, i.e. the genome, is vital for systems biology. Advances in technology in mass spectrometry now allow almost complete quantification of the sample proteome. With research moving to protein quantitative trait loci (pQTL) to identify genomic alterations with functional effects on the proteome and the high complexity of combinations thereof integration and visualisation of protein and peptide quantification on genomic loci is paramount for this type of analysis. Furthermore, moving towards more personal multi-omics studies comparative visualisation of proteomic data on a genome has been lacking. Not only genomic variation affecting proteins have come into focus of functional integration studies but also post-translational modifications (PTM), the effect of single nucleotide variants and other alterations on PTMs and alternative modification loci, and the effects of alternative PTMs on protein abundance have become more a centre of attention for researchers. To facilitate this type of integration not only the genomic locations of modified peptides but specifically the genomic loci of associated with these modifications is required.
+
+Here, we provide a mapping tool, _PepGenome_, to quickly and efficiently identify genomic loci of peptides and post-translational modifications and couple these mappings with associated quantitative values over multiple samples. Using reference gene annotation and an associated transcript translations our tool identifies the genomic loci of peptides given as input and generates output in different formats borrowed from genomics and transcriptomics which can be loaded in various genome browsers such as UCSC Genome Browser, Ensembl Genome Browser, BioDalliance, and the Integrative Genomics Viewer.
+
+This tool and algorithms are based in an original c++ implementation:  https://github.com/cschlaffner/PoGo
+
 
 ## Learn and Support
-PoGo uses transcript translations and reference gene annotations to identify the genomic loci of peptides and post-translational modifications. Multiple occurrences of peptides in the input data resulting in the same genomic loci will be collapsed as a single occurrence in the output.
+PepGenome uses transcript translations and reference gene annotations to identify the genomic loci of peptides and post-translational modifications. Multiple occurrences of peptides in the input data resulting in the same genomic loci will be collapsed as a single occurrence in the output.
 
 ### Input format
 The input format required by PoGo is a tab delimited file with four columns.
 
 <table border="0" width="100%"><thead><tr><th scope="col">Column</th><th scope="col">Column header</th><th scope="col">Description</th></tr></thead><tbody><tr><td>1</td><td>Sample</td><td>Name of sample or experiment</td></tr><tr><td>2</td><td>Peptide</td><td>Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine</td></tr><tr><td>3</td><td>PSMs</td><td>Number of peptide-spectrum matches (PSMs) for the given peptide</td></tr><tr><td>4</td><td>Quant</td><td>Quantitative value for the given peptide in the given sample</td></tr></tbody></table>
+
+### Additional Input Files:
+
+In addition the tool support mzTab File format input.
 
 ### Output formats
 

@@ -1,8 +1,10 @@
 package org.bigbio.pgatk.pepgenome;
 
-//a kmer Entry holds information on a kmer.
-//it has pointers to the proteinsequence and associated protein to which it belongs, 
-//and knows its position therein
+/**
+ * A kmer Entry holds information on a kmer. It has pointers to the proteinsequence and associated
+ * protein to which it belongs, and knows its position therein.
+ */
+
 public class KmerEntry {
     //the pointer to the first letter of the key in the protein sequence
     public String m_p_key;

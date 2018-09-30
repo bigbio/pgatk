@@ -373,7 +373,12 @@ public class Utils {
     }
 
     /**
-     * Equivalent of str.substr(from,len)
+     * We use the folowing function to retrieve the specific sub-string in a protein sequence.
+     * It is equivalent to use {@link String} str.substr(from,len)
+     * @param str String
+     * @param from starting point in the String
+     * @param len number of chars to retrieve.
+     * @return SubString
      */
     public static String getCppStyleSubString(String str, int from, int len) {
         int end = ((from + len) > str.length()) ? str.length() : ((from + len));
