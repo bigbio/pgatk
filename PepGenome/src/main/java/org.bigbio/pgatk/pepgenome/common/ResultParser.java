@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome.common;
 
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
+import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 import org.bigbio.pgatk.pepgenome.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.PeptideEntry;
@@ -18,7 +19,7 @@ public class ResultParser {
 
     //read function. this reads the peptides input and sets the wheels in motion.
     //this function will set the wheels in motion to find the peptides in the proteins.
-    public static void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, KmerMap k) throws Exception {
+    public static void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
 
         FileInputStream ifs = new FileInputStream(file);
         BufferedReader reader = new BufferedReader(new InputStreamReader(ifs));

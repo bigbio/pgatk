@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.ExistingPeptides;
+import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 
 import java.util.ArrayList;
@@ -52,7 +53,7 @@ public class CoordinateWrapper {
     }
 
     //adds all previously added proteins to the given KmerMap.
-    public final void add_all_proteins_to_kmer_map(KmerMap kmerMap) {
+    public final void add_all_proteins_to_kmer_map(IKmerMap kmerMap) {
         for (ProteinEntry entry : m_map.values()) {
             kmerMap.add_protein(entry);
         }

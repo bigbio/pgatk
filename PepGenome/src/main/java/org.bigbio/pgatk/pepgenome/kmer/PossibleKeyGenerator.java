@@ -16,7 +16,7 @@ public class PossibleKeyGenerator {
 
     // kmermap, to check if a certain key exists in there,
     //otherwise the key will not be added to the generated keys.
-    private KmerMap m_kmers;
+    private IKmerMap m_kmers;
 
     //current set of generated keys.
     private List<String> m_keys = new ArrayList<>();
@@ -24,7 +24,7 @@ public class PossibleKeyGenerator {
     //iterator pointing to the current element in m_keys.
     private int m_curr_index;
 
-    public PossibleKeyGenerator(KmerMap k) {
+    public PossibleKeyGenerator(IKmerMap k) {
         this.m_kmers = k;
     }
 

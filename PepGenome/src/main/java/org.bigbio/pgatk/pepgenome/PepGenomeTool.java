@@ -2,6 +2,7 @@ package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
+import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 import org.ehcache.sizeof.SizeOf;
 
@@ -205,7 +206,7 @@ public class PepGenomeTool {
 
             System.out.println("Fasta done: " + coordinate_wrapper.size() + " proteins read.");
             System.out.println("building KmerMap...");
-            KmerMap kmer_map = new KmerMap();
+            IKmerMap kmer_map = new KmerMap();
             coordinate_wrapper.add_all_proteins_to_kmer_map(kmer_map);
 
             SizeOf sizeOf = SizeOf.newInstance();
