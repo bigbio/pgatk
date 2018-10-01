@@ -1,5 +1,6 @@
 package org.bigbio.pgatk.pepgenome;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.PositionMismatchT;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
@@ -14,7 +15,7 @@ public class KmerMap {
     //kmerMap
     //in the gencode fasta file, data analysis showed that the average size of the list is 18 elements (for approx. 93 000 proteins)
     //and the map size is at approx 1.8m elements.
-    private Map<String, ArrayList<KmerEntry>> m_kmers = new TreeMap<>();
+    private Map<String, KmerEntry[]> m_kmers = new TreeMap<>();
 
     //gene_id map
     private Map<String, TranscriptsT> m_gene_id_map = new TreeMap<>();
@@ -42,16 +43,16 @@ public class KmerMap {
             //<= n!
             int n = protein_sequence.length() - GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH;
             String key;
-            ArrayList<KmerEntry> kmerEntries;
+            KmerEntry[] kmerEntries;
             KmerEntry curr_kmer;
 
             for (int i = 0; i <= n; i++) {
                 key = Utils.getCppStyleSubString(protein_sequence, i, GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH);
                 //if the kmer doesnt exist yet, create kmerEntries
-                kmerEntries = m_kmers.computeIfAbsent(key, k -> new ArrayList<>());
+                kmerEntries = m_kmers.computeIfAbsent(key, k -> new KmerEntry[0]);
                 curr_kmer = new KmerEntry(Utils.getCppStyleSubStringByShift(protein_sequence, i), protein, i);
                 //add the current KmerEntry
-                kmerEntries.add(curr_kmer);
+                m_kmers.put(key, ArrayUtils.add(kmerEntries, curr_kmer));
             }
         }
     }
@@ -76,7 +77,7 @@ public class KmerMap {
 
         if (set_key_returned >= 0) {
             while ((curr_key = m_key_gen.get_next_key()) != null) {
-                ArrayList<KmerEntry> kmerEntries = m_kmers.get(curr_key);
+                KmerEntry[] kmerEntries = m_kmers.get(curr_key);
                 if (kmerEntries != null) {
                     for (KmerEntry entry : kmerEntries) {
                         if (set_key_returned == 0) {

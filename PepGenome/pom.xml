@@ -92,6 +92,13 @@
             <version>4.12</version>
         </dependency>
 
+        <!-- Performance libraries -->
+        <dependency>
+            <groupId>org.ehcache</groupId>
+            <artifactId>sizeof</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+
     </dependencies>
 
 </project>

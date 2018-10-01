@@ -2,6 +2,7 @@ package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
+import org.ehcache.sizeof.SizeOf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -205,6 +206,9 @@ public class PepGenomeTool {
             System.out.println("building KmerMap...");
             KmerMap kmer_map = new KmerMap();
             coordinate_wrapper.add_all_proteins_to_kmer_map(kmer_map);
+
+            SizeOf sizeOf = SizeOf.newInstance();
+            System.out.println((int) (sizeOf.deepSizeOf(kmer_map)/1000000) + " MB");
 
             System.out.println("KmerMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
             System.out.println("reading GTF: " + gtfFilePath);
