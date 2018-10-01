@@ -68,15 +68,14 @@ public class PepGenomeToolTest {
         List<List<String>> cPogoLines = getBedLines(cPogoBed);
         Assert.assertTrue(bedLines.size() == cPogoLines.size());
 
-        for(int i = 0; i < bedLines.size(); i++){
+        for (List<String> bedLine1 : bedLines) {
             boolean found = false;
-            List<String> bedLine = bedLines.get(i);
-            for(int j = 0; j < cPogoLines.size(); j ++){
-                List<String> cbedLine = cPogoLines.get(j);
-                if(bedLine.get(3).equalsIgnoreCase(cbedLine.get(3))){
-                    found = compareBedLines( bedLine, cbedLine);
+            List<String> bedLine = bedLine1;
+            for (List<String> cbedLine : cPogoLines) {
+                if (bedLine.get(3).equalsIgnoreCase(cbedLine.get(3))) {
+                    found = compareBedLines(bedLine, cbedLine);
                     System.out.println(bedLine.get(3) + " -- " + found);
-                    if(found)
+                    if (found)
                         break;
                 }
             }
@@ -86,15 +85,12 @@ public class PepGenomeToolTest {
     }
 
     private boolean compareBedLines(List<String> bedLine, List<String> cbedLine) {
-        return  bedLine.stream().allMatch(num -> cbedLine.contains(num));
+        return  bedLine.stream().allMatch(cbedLine::contains);
     }
 
     public static File unGzip(File infile) throws IOException {
-        GZIPInputStream gin = new GZIPInputStream(new FileInputStream(infile));
-        FileOutputStream fos = null;
-        try {
-            File outFile = new File(infile.getParent(), infile.getName().replaceAll("\\.gz$", ""));
-            fos = new FileOutputStream(outFile);
+        File outFile = new File(infile.getParent(), infile.getName().replaceAll("\\.gz$", ""));
+        try (GZIPInputStream gin = new GZIPInputStream(new FileInputStream(infile)); FileOutputStream fos = new FileOutputStream(outFile)) {
             byte[] buf = new byte[100000];
             int len;
             while ((len = gin.read(buf)) > 0) {
@@ -103,13 +99,6 @@ public class PepGenomeToolTest {
 
             fos.close();
             return outFile;
-        } finally {
-            if (gin != null) {
-                gin.close();
-            }
-            if (fos != null) {
-                fos.close();
-            }
         }
     }
 

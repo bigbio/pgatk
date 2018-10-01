@@ -1,15 +1,19 @@
 package org.bigbio.pgatk.pepgenome;
 
+import lombok.Data;
+
 /**
  * A kmer Entry holds information on a kmer. It has pointers to the proteinsequence and associated
  * protein to which it belongs, and knows its position therein.
  */
-
+@Data
 public class KmerEntry {
 
-    public ProteinEntry m_p_protein;
+    // Full Protein entry
+    ProteinEntry m_p_protein;
+
     //the (0 based) index of the first letter of the kmer in the protein string.
-    public int m_pos_in_protein;
+    int m_pos_in_protein;
 
     public KmerEntry(String key, ProteinEntry protein, int pos_in_protein) {
         this.m_p_protein = protein;
