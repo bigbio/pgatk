@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.ExistingPeptides;
+import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 
 import java.util.ArrayList;
 import java.util.Map;

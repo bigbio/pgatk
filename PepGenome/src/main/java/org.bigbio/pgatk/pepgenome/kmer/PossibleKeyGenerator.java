@@ -1,7 +1,7 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.kmer;
 
-import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
 import javafx.util.Pair;
+import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 
 import java.util.ArrayList;

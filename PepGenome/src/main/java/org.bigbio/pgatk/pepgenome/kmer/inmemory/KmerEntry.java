@@ -1,13 +1,15 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.kmer.inmemory;
 
 import lombok.Data;
+import org.bigbio.pgatk.pepgenome.ProteinEntry;
+import org.bigbio.pgatk.pepgenome.kmer.IKmerEntry;
 
 /**
  * A kmer Entry holds information on a kmer. It has pointers to the proteinsequence and associated
  * protein to which it belongs, and knows its position therein.
  */
-@Data
-public class KmerEntry {
+
+public class KmerEntry implements IKmerEntry {
 
     // Full Protein entry
     ProteinEntry m_p_protein;
@@ -23,6 +25,16 @@ public class KmerEntry {
     public KmerEntry() {
         this.m_p_protein = null;
         this.m_pos_in_protein = 0;
+    }
+
+    @Override
+    public ProteinEntry m_p_protein() {
+        return null;
+    }
+
+    @Override
+    public int m_pos_in_protein() {
+        return 0;
     }
 }
 ///#endif

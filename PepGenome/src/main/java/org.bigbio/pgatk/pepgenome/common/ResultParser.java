@@ -1,7 +1,7 @@
 package org.bigbio.pgatk.pepgenome.common;
 
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
-import org.bigbio.pgatk.pepgenome.KmerMap;
+import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 import org.bigbio.pgatk.pepgenome.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.PeptideEntry;
 

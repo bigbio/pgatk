@@ -2,6 +2,7 @@ package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
+import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 import org.ehcache.sizeof.SizeOf;
 
 import java.util.ArrayList;

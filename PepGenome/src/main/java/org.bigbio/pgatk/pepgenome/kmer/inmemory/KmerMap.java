@@ -1,16 +1,19 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.kmer.inmemory;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.bigbio.pgatk.pepgenome.PossibleKeyGenerator;
+import org.bigbio.pgatk.pepgenome.ProteinEntry;
 import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.PositionMismatchT;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
 import org.bigbio.pgatk.pepgenome.common.Utils;
+import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class KmerMap {
+public class KmerMap implements IKmerMap {
 
     //kmerMap
     //in the gencode fasta file, data analysis showed that the average size of the list is 18 elements (for approx. 93 000 proteins)
@@ -102,12 +105,12 @@ public class KmerMap {
     }
 
     //inserts a found peptide into the current gene id map.
-    private void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches) {
+    public void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches) {
         insert_into_gene_id_map(entry, mismatches, 0);
     }
 
     //inserts a found peptide into the current gene id map.
-    private void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches, int offset) {
+    public void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches, int offset) {
         //inserts a found position into the gene id map
         int pos_in_protein = entry.m_pos_in_protein - offset;
         String gene_id = entry.m_p_protein.get_gene_id();
