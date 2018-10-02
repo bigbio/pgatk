@@ -1,7 +1,7 @@
 Welcome to ProteoGenomics Analysis ToolKit
 =================================================
 
-Welcome to the **P**roteo**G**enomics **A**nalysis **T**oolKit (pgatk), a framework for proteogenomics analysis. It provides a set of tools and bioinformatics pipelines to perform proteogenomics analysis using proteomics and RNA-Seq data.
+Welcome to the ProteoGenomics Analysis ToolKit (PGATK), a framework for proteogenomics analysis. It provides a set of tools and bioinformatics pipelines to perform proteogenomics analysis using proteomics and RNA-Seq data.
 
 Contents
 --------
