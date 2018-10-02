@@ -1,5 +1,5 @@
 PepGenome
-=========
+=====================
 
 # PepGenome tool
 This is the Java port for  https://github.com/cschlaffner/PoGo
