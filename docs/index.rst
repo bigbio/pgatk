@@ -13,6 +13,11 @@ Contents
    .. toctree::
    :maxdepth: 2
 
+   tools
+   .. toctree::
+   :maxdepth: 2
+
+
 
 
 Appendix, Indices and tables
