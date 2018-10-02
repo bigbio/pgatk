@@ -14,3 +14,4 @@ docs/_static/
 docs/_templates/
 *.hprof
 *.DS_Store
+*.log
