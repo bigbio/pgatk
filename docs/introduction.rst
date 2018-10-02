@@ -2,7 +2,7 @@ Introduction
 ============
 
 .. sidebar:: Individual Tools Documentation
-:subtitle: **It can make your life easier** if you want to explore individual tools:
+   :subtitle: **It can make your life easier** if you want to explore individual tools:
 
    - :doc:`pepgenome`
    - :doc:`pepbed`:
