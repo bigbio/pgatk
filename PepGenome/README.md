@@ -1,6 +1,8 @@
 PepGenome
 =====================
 
+[![Build Status](https://travis-ci.org/bigbio/pgatk.svg?branch=master)](https://travis-ci.org/bigbio/pgatk)[![codecov](https://codecov.io/gh/bigbio/pgatk/branch/master/graph/badge.svg)](https://codecov.io/gh/bigbio/pgatk)
+
 # PepGenome tool
 This is the Java port for  https://github.com/cschlaffner/PoGo
 
