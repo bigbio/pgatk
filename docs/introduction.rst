@@ -4,8 +4,8 @@ Introduction
 .. sidebar:: Individual Tools Documentation
    :subtitle: **It can make your life easier** if you want to explore individual tools:
 
-   - :doc:`pepgenome` : Mapping Peptidoforms to Genome Coordinates
-   - :doc:`pepbed`: R package to analyze peptide features in Bed Files
+   - :doc:`pepgenome`
+   - :doc:`pepbed`:
 
 
 
