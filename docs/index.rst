@@ -7,15 +7,12 @@ Contents
 --------
 
 .. toctree::
-:maxdepth: 1
+   :maxdepth: 1
 
-       introduction
-       .. toctree::
-:maxdepth: 2
+   introduction
+   .. toctree::
+   :maxdepth: 2
 
-       hyperlinks
-
-.. include:: README.rst
 
 
 Appendix, Indices and tables
