@@ -2,7 +2,7 @@ Introduction
 ============
 
 .. sidebar:: API Browser Quick Guide
-:subtitle: **It can make your life easier** if you want to explore by yourself our api:
+   :subtitle: **It can make your life easier** if you want to explore by yourself our api:
 
    * Please visit our `Swagger docs <https://www.ebi.ac.uk/pride/ws/archive/>`_
 
