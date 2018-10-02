@@ -1,14 +1,19 @@
 package org.bigbio.pgatk.pepgenome;
 
 import org.bigbio.pgatk.pepgenome.common.ExistingPeptides;
+import org.bigbio.pgatk.pepgenome.common.FastaEntry;
+import org.bigbio.pgatk.pepgenome.common.PeptideEntry;
+import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
+import org.bigbio.pgatk.pepgenome.io.FastaParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
-import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class CoordinateWrapper {
+public class CoordinateWrapper implements Serializable {
+    private static final long serialVersionUID = -5604555402952311335L;
     //holds fasta headers and the associated ProteinEntry objects.
     private Map<String, ProteinEntry> m_map;
 
@@ -52,7 +57,7 @@ public class CoordinateWrapper {
         fastaParserSingleton.close();
     }
 
-    //adds all previously added proteins to the given KmerMap.
+    //adds all previously added proteins to the given KmerTreeMap.
     public final void add_all_proteins_to_kmer_map(IKmerMap kmerMap) {
         for (ProteinEntry entry : m_map.values()) {
             kmerMap.add_protein(entry);

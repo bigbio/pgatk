@@ -1,14 +1,18 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.io;
 
+import org.bigbio.pgatk.pepgenome.common.FastaEntry;
 import org.bigbio.pgatk.pepgenome.common.Utils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Serializable;
 
 //this fastaparser reads fasta files.
 //it will convert input sequences into iso-sequences [I, L] will be converted to J
-public class FastaParser {
+public class FastaParser implements Serializable {
+
+    private static final long serialVersionUID = -4871649120608342251L;
 
     //inputstream.
     private BufferedReader br = null;

@@ -1,11 +1,12 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common;
 
-import org.bigbio.pgatk.pepgenome.common.*;
+import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 import javafx.util.Pair;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 //a peptide entry contains information about a single peptide:
@@ -13,8 +14,9 @@ import java.util.*;
 //the associated gene, if it is unique to transcript or gene, 
 //the tissues it appears in, 
 //as well as the first and last appearance in the genome.
-public class PeptideEntry implements Comparable<PeptideEntry> {
+public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
 
+    private static final long serialVersionUID = -3518477125981077637L;
     //holds the peptide sequence.
     private String m_sequence;
     //number of found transcripts.

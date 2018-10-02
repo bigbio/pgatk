@@ -1,10 +1,11 @@
-package org.bigbio.pgatk.pepgenome.common;
+package org.bigbio.pgatk.pepgenome.io;
 
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
+import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
+import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
-import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
-import org.bigbio.pgatk.pepgenome.MappedPeptides;
-import org.bigbio.pgatk.pepgenome.PeptideEntry;
+import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
+import org.bigbio.pgatk.pepgenome.common.PeptideEntry;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;

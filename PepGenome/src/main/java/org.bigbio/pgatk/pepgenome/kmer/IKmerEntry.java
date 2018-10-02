@@ -1,6 +1,8 @@
 package org.bigbio.pgatk.pepgenome.kmer;
 
-import org.bigbio.pgatk.pepgenome.ProteinEntry;
+import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
+
+import java.io.Serializable;
 
 /**
  * This code is licensed under the Apache License, Version 2.0 (the
@@ -13,7 +15,7 @@ import org.bigbio.pgatk.pepgenome.ProteinEntry;
  *
  * @author ypriverol on 01/10/2018.
  */
-public interface IKmerEntry {
+public interface IKmerEntry extends Serializable {
 
     /**
      * Retrieve the Protein entry.

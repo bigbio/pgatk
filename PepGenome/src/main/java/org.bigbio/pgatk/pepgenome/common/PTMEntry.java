@@ -1,17 +1,16 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common;
 
-import org.bigbio.pgatk.pepgenome.common.GenomeCoordinates;
-import org.bigbio.pgatk.pepgenome.common.PeptideCoordinates;
-import org.bigbio.pgatk.pepgenome.common.PeptidecoordsPairPcompare;
 import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
 //the PTMEntry contains information about post translational modifications like methlation.
 //and at which position they appear.
-public class PTMEntry {
+public class PTMEntry implements Serializable {
+    private static final long serialVersionUID = -7103530404088146538L;
     //holds the name of the modification
     private String m_ptm_psi_name;
     //holds the lowest start coord

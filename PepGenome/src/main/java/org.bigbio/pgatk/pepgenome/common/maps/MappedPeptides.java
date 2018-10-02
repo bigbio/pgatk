@@ -1,16 +1,20 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common.maps;
 
+import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 import org.bigbio.pgatk.pepgenome.common.*;
 import javafx.util.Pair;
+import org.bigbio.pgatk.pepgenome.common.comparators.MapentryPCompare;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 //the mapped peptides class connects the different classes
 //and offers functions to wite all found peptides.
-public class MappedPeptides {
+public class MappedPeptides implements Serializable {
 
+    private static final long serialVersionUID = -2379620873628957732L;
     //maps the peptide sequence (without PTM) to the corresponding MapEntry (chromosomes).
     private Map<String, MapEntry> m_mapping = new TreeMap<>();
     //maps the peptide sequence (without PTM) to the corresponding MapEntry (patches, haplotypes, scaffolds).

@@ -1,12 +1,7 @@
 package org.bigbio.pgatk.pepgenome.kmer;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.bigbio.pgatk.pepgenome.ProteinEntry;
-import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
-import org.bigbio.pgatk.pepgenome.common.PositionMismatchT;
+import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
-import org.bigbio.pgatk.pepgenome.common.Utils;
-import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerEntry;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -43,7 +38,7 @@ public interface IKmerMap {
      * @param entry Entry
      * @param mismatches Number of missmatches
      */
-    void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches);
+    void insert_into_gene_id_map(IKmerEntry entry, ArrayList<Integer> mismatches);
 
     /**
      * Inserts a found peptide into the current gene id map.
@@ -51,7 +46,7 @@ public interface IKmerMap {
      * @param mismatches Number of mismatches accepted
      * @param offset offset
      */
-    void insert_into_gene_id_map(KmerEntry entry, ArrayList<Integer> mismatches, int offset);
+    void insert_into_gene_id_map(IKmerEntry entry, ArrayList<Integer> mismatches, int offset);
 
     /**
      * Returns true if a kmer (key) is in the digested proteins

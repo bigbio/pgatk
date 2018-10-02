@@ -1,16 +1,18 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common;
 
-import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
-import org.bigbio.pgatk.pepgenome.common.Utils;
+import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
+import org.bigbio.pgatk.pepgenome.common.comparators.PeptideentryPcompare;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.*;
 
 //a map entry is used to connect a peptide string to all its variations
 //it maps a peptide to a gene, and the transcripts.
-public class MapEntry implements Comparable<MapEntry> {
+public class MapEntry implements Comparable<MapEntry>, Serializable {
 
+    private static final long serialVersionUID = 6404015419072151797L;
     //pointer to the associated GeneEntry
     private GeneEntry m_p_gene_entry;
     //peptideentries, maps sequence without ptms to the corresponding PeptideEntry

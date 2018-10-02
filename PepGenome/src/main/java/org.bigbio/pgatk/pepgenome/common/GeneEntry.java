@@ -1,17 +1,14 @@
-package org.bigbio.pgatk.pepgenome;
-
-import org.bigbio.pgatk.pepgenome.common.Chromosome;
-import org.bigbio.pgatk.pepgenome.common.GenomeCoordinates;
-import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
-import org.bigbio.pgatk.pepgenome.common.Utils;
+package org.bigbio.pgatk.pepgenome.common;
 
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class GeneEntry implements Comparable<GeneEntry> {
+public class GeneEntry implements Comparable<GeneEntry>, Serializable {
 
+    private static final long serialVersionUID = 1099018767895133035L;
     //the genomic coordinates for a gene are stored here.
     private GenomeCoordinates m_coord = new GenomeCoordinates();
     //gene id as extracted by extract_gene_id();

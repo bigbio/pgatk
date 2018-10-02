@@ -7,7 +7,11 @@ import static org.bigbio.pgatk.pepgenome.common.Chromosome.*;
 import static org.bigbio.pgatk.pepgenome.common.Strand.*;
 
 public class EnumStringMapper {
-    private static Map<String, String> ptmToColours = new HashMap<String, String>() {{
+    private static Map<String, String> ptmToColours = new HashMap<String, String>() {
+
+        private static final long serialVersionUID = 7898239362684593527L;
+
+        {
         put("phospho", "255,51,51");
         put("acetyl", "204,102,0");
         put("amidated", "255,153,51");

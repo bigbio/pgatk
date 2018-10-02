@@ -1,19 +1,23 @@
-package org.bigbio.pgatk.pepgenome.common;
+package org.bigbio.pgatk.pepgenome.io;
 
-import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
-import org.bigbio.pgatk.pepgenome.GeneEntry;
-import org.bigbio.pgatk.pepgenome.MappedPeptides;
-import org.bigbio.pgatk.pepgenome.ProteinEntry;
+import org.bigbio.pgatk.pepgenome.*;
 import javafx.util.Pair;
+import org.bigbio.pgatk.pepgenome.common.*;
+import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class GTFParser {
+
+    private static Logger log = LoggerFactory.getLogger(GTFParser.class);
 
     //inputstream
     private BufferedReader m_reader;
@@ -41,7 +45,15 @@ public class GTFParser {
             m_ifs = new FileInputStream(file);
             m_reader = new BufferedReader(new InputStreamReader(m_ifs));
         }
-        return m_reader.ready();
+        boolean status = true;
+        try{
+            status = m_reader.ready();
+        }catch (IOException ex){
+            log.debug("The gtf file stream is closed -- " + file);
+            m_ifs = new FileInputStream(file);
+            m_reader = new BufferedReader(new InputStreamReader(m_ifs));
+        }
+        return status;
     }
 
     //closes the filestream
@@ -78,9 +90,9 @@ public class GTFParser {
         }
 
         ProteinEntry p_protein_entry = null;
-        ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinates_map = new ArrayList<>();
+        ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinatesMap = new ArrayList<>();
 //        Coordinates protein_coordinates = new Coordinates();
-        Coordinates prev_proteint_coordinates = new Coordinates();
+        Coordinates prevProteinCoordinates = new Coordinates();
         Assembly assem = Assembly.none;
         ArrayList<String> tokens;
         while ((m_line = m_reader.readLine()) != null) {
@@ -101,110 +113,110 @@ public class GTFParser {
             if (is_next_transcript(tokens)) {
                 mapping.add_transcript_id_to_gene(m_line);
                 if (p_protein_entry != null) {
-                    p_protein_entry.set_coordinate_map(coordinates_map);
+                    p_protein_entry.set_coordinate_map(coordinatesMap);
                 }
                 p_protein_entry = coordwrapper.lookup_entry(transcriptId);
                 if (p_protein_entry == null) {
-                    System.out.println("ERROR: No entry for with transcript ID: " + transcriptId);
+                    log.info("ERROR: No entry for with transcript ID: " + transcriptId);
                     continue;
                 }
 //                protein_coordinates = new Coordinates();
-                prev_proteint_coordinates = new Coordinates();
-                prev_proteint_coordinates.Cterm = Offset.off3;
-                prev_proteint_coordinates.Nterm = Offset.off3;
-                prev_proteint_coordinates.start = 0;
-                prev_proteint_coordinates.end = 0;
-                coordinates_map = new ArrayList<>();
+                prevProteinCoordinates = new Coordinates();
+                prevProteinCoordinates.setCterm(Offset.off3);
+                prevProteinCoordinates.setNterm(Offset.off3);
+                prevProteinCoordinates.setStart(0);
+                prevProteinCoordinates.setEnd(0);
+                coordinatesMap = new ArrayList<>();
             } else if (is_cds(tokens)) {
                 GenomeCoordinates genCoord = Utils.extract_coordinates_from_gtf_line(tokens);
                 genCoord.setTranscriptid(transcriptId);
                 genCoord.setExonid(GeneEntry.extract_exon_id(m_line));
-                Coordinates protein_coordinates = new Coordinates();
+                Coordinates proteinCoordinates = new Coordinates();
                 // get nterm from prev exon
                 if (genCoord.getFrame() != Frame.unknown) {
-                    protein_coordinates.Nterm = Offset.forValue(genCoord.getFrame().getValue());
+                    proteinCoordinates.setNterm(Offset.forValue(genCoord.getFrame().getValue()));
                 } else {
-                    if (prev_proteint_coordinates.Cterm != Offset.off3) {
-                        protein_coordinates.Nterm = Offset.forValue(3 - prev_proteint_coordinates.Cterm.getValue());
+                    if (prevProteinCoordinates.getCterm() != Offset.off3) {
+                        proteinCoordinates.setNterm(Offset.forValue(3 - prevProteinCoordinates.getCterm().getValue()));
                     } else {
-                        protein_coordinates.Nterm = Offset.off3;
+                        proteinCoordinates.setNterm(Offset.off3);
                     }
                 }
 
                 int length = 0;
 
                 if (is_first_strand(tokens)) {
-                    length = genCoord.end - genCoord.start + 1;
+                    length = genCoord.getEnd() - genCoord.getStart() + 1;
                 } else if (!is_first_strand(tokens)) {
-                    length = genCoord.start - genCoord.end + 1;
+                    length = genCoord.getStart() - genCoord.getEnd() + 1;
                 }
 
                 // calc cterm
                 if (length % 3 == 0) {
-                    if (protein_coordinates.Nterm != Offset.off3) {
-                        protein_coordinates.Cterm = Offset.forValue(3 - protein_coordinates.Nterm.getValue());
+                    if (proteinCoordinates.getNterm() != Offset.off3) {
+                        proteinCoordinates.setCterm(Offset.forValue(3 - proteinCoordinates.getNterm().getValue()));
                     } else {
-                        protein_coordinates.Cterm = Offset.off3;
+                        proteinCoordinates.setCterm(Offset.off3);
                     }
                 } else if (length % 3 == 2) {
-                    if (protein_coordinates.Nterm == Offset.off3) {
-                        protein_coordinates.Cterm = Offset.off2;
-                    } else if (protein_coordinates.Nterm == Offset.off2) {
-                        protein_coordinates.Cterm = Offset.off3;
-                    } else if (protein_coordinates.Nterm == Offset.off1) {
-                        protein_coordinates.Cterm = Offset.off1;
+                    if (proteinCoordinates.getNterm() == Offset.off3) {
+                        proteinCoordinates.setCterm(Offset.off2);
+                    } else if (proteinCoordinates.getNterm() == Offset.off2) {
+                        proteinCoordinates.setCterm(Offset.off3);
+                    } else if (proteinCoordinates.getNterm() == Offset.off1) {
+                        proteinCoordinates.setCterm(Offset.off1);
                     }
                 } else if (length % 3 == 1) {
-                    if (protein_coordinates.Nterm == Offset.off3) {
-                        protein_coordinates.Cterm = Offset.off1;
-                    } else if (protein_coordinates.Nterm == Offset.off1) {
-                        protein_coordinates.Cterm = Offset.off3;
-                    } else if (protein_coordinates.Nterm == Offset.off2) {
-                        protein_coordinates.Cterm = Offset.off2;
+                    if (proteinCoordinates.getNterm() == Offset.off3) {
+                        proteinCoordinates.setCterm(Offset.off1);
+                    } else if (proteinCoordinates.getNterm() == Offset.off1) {
+                        proteinCoordinates.setCterm(Offset.off3);
+                    } else if (proteinCoordinates.getNterm() == Offset.off2) {
+                        proteinCoordinates.setCterm(Offset.off2);
                     }
                 }
 
                 // calc protein coordinates
-                if (protein_coordinates.Nterm != Offset.off3) {
-                    protein_coordinates.start = prev_proteint_coordinates.end;
+                if (proteinCoordinates.getNterm() != Offset.off3) {
+                    proteinCoordinates.setStart(prevProteinCoordinates.getEnd());
                 } else {
-                    if (prev_proteint_coordinates.end == 0 && coordinates_map.isEmpty()) {
-                        protein_coordinates.start = 0;
+                    if (prevProteinCoordinates.getEnd() == 0 && coordinatesMap.isEmpty()) {
+                        proteinCoordinates.setStart(0);
                     } else {
-                        protein_coordinates.start = prev_proteint_coordinates.end + 1;
+                        proteinCoordinates.setStart(prevProteinCoordinates.getEnd() + 1);
                     }
                 }
 
                 int offsets = 0;
-                if (protein_coordinates.Nterm != Offset.off3) {
-                    offsets = offsets + protein_coordinates.Nterm.getValue();
+                if (proteinCoordinates.getNterm() != Offset.off3) {
+                    offsets = offsets + proteinCoordinates.getNterm().getValue();
                 }
 
                 if (is_first_strand(tokens)) {
-                    length = genCoord.end - genCoord.start + 1 - offsets;
+                    length = genCoord.getEnd() - genCoord.getStart() + 1 - offsets;
                 } else if (!is_first_strand(tokens)) {
-                    length = genCoord.start - genCoord.end + 1 - offsets;
+                    length = genCoord.getStart() - genCoord.getEnd() + 1 - offsets;
                 }
 
                 int peplength = length / 3;
 
-                int pepend = protein_coordinates.start + peplength - 1;
-                if (protein_coordinates.Cterm != Offset.off3) {
+                int pepend = proteinCoordinates.getStart() + peplength - 1;
+                if (proteinCoordinates.getCterm() != Offset.off3) {
                     pepend = pepend + 1;
                 }
-                if (protein_coordinates.Nterm != Offset.off3) {
+                if (proteinCoordinates.getNterm() != Offset.off3) {
                     pepend = pepend + 1;
                 }
 
-                protein_coordinates.end = pepend;
+                proteinCoordinates.setEnd(pepend);
 
-                prev_proteint_coordinates = protein_coordinates;
+                prevProteinCoordinates = proteinCoordinates;
 
-                coordinates_map.add(new Pair<>(protein_coordinates, genCoord));
+                coordinatesMap.add(new Pair<>(proteinCoordinates, genCoord));
             }
         }
         if (p_protein_entry != null) {
-            p_protein_entry.set_coordinate_map(coordinates_map);
+            p_protein_entry.set_coordinate_map(coordinatesMap);
         }
         close();
         return assem;

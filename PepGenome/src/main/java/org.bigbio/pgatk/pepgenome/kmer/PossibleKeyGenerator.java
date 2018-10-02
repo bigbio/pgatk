@@ -2,12 +2,13 @@ package org.bigbio.pgatk.pepgenome.kmer;
 
 import javafx.util.Pair;
 import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
-import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PossibleKeyGenerator {
+public class PossibleKeyGenerator implements Serializable {
+    private static final long serialVersionUID = -2716341052843016476L;
     //string used to generate keys.
     private String m_key = "";
 

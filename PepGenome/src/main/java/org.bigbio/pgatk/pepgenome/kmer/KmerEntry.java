@@ -1,16 +1,17 @@
-package org.bigbio.pgatk.pepgenome.kmer.inmemory;
+package org.bigbio.pgatk.pepgenome.kmer;
 
-import lombok.Data;
-import org.bigbio.pgatk.pepgenome.ProteinEntry;
-import org.bigbio.pgatk.pepgenome.kmer.IKmerEntry;
+import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
+
+import java.io.Serializable;
 
 /**
  * A kmer Entry holds information on a kmer. It has pointers to the proteinsequence and associated
  * protein to which it belongs, and knows its position therein.
  */
 
-public class KmerEntry implements IKmerEntry {
+public class KmerEntry implements IKmerEntry, Serializable {
 
+    private static final long serialVersionUID = 8166647990080627753L;
     // Full Protein entry
     ProteinEntry m_p_protein;
 
@@ -29,12 +30,12 @@ public class KmerEntry implements IKmerEntry {
 
     @Override
     public ProteinEntry m_p_protein() {
-        return null;
+        return m_p_protein;
     }
 
     @Override
     public int m_pos_in_protein() {
-        return 0;
+        return m_pos_in_protein;
     }
 }
 ///#endif

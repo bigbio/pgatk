@@ -1,11 +1,13 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common;
 
 import org.bigbio.pgatk.pepgenome.common.*;
 import javafx.util.Pair;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
-public class ProteinEntry {
+public class ProteinEntry implements Serializable {
+    private static final long serialVersionUID = -1732196455282495216L;
     //whole fasta header
     private String m_fasta_header;
     //transcript number

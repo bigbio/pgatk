@@ -1,8 +1,11 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-//extension of coordinates, holds genomic coordinates.
-public class GenomeCoordinates extends Coordinates<GenomeCoordinates> {
+import java.io.Serializable;
 
+//extension of coordinates, holds genomic coordinates.
+public class GenomeCoordinates extends Coordinates<GenomeCoordinates> implements Serializable {
+
+    private static final long serialVersionUID = -857165864692238920L;
     private String transcriptid;
     private String exonid;
 

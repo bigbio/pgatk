@@ -15,7 +15,7 @@ public class GenomeMapper {
     public static class PEPTIDE_MAPPER {
 
         /**
-         * KMER_LENGTH holds the size of the kmers in the KmerMap.
+         * KMER_LENGTH holds the size of the kmers in the KmerTreeMap.
          * The default value is 5. tests showed that any other kmersize slows down.
          * Significantly if the number of mappings is high.
          */

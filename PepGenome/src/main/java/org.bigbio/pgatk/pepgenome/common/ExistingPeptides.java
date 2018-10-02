@@ -1,7 +1,5 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import org.bigbio.pgatk.pepgenome.PeptideEntry;
-
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;

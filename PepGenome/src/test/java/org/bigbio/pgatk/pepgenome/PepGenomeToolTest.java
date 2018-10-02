@@ -1,9 +1,10 @@
 package org.bigbio.pgatk.pepgenome;
 
 
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.apache.log4j.Logger;
+import org.junit.*;
+import org.junit.runners.MethodSorters;
+
 
 import java.io.*;
 import java.util.*;
@@ -20,8 +21,11 @@ import java.util.zip.GZIPInputStream;
  *
  * @author ypriverol on 28/09/2018.
  */
-
+@FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PepGenomeToolTest {
+
+
+    private static final Logger log = Logger.getLogger(PepGenomeToolTest.class);
 
     String fileIn = null;
     String fileFasta = null;
@@ -43,8 +47,8 @@ public class PepGenomeToolTest {
     }
 
     @Test
-    public void main() throws IOException {
-        System.out.println("main");
+    public void mainInMemory() throws IOException {
+        log.info("InMemoryTest");
         List<String> argList = new ArrayList<>();
 
         argList.add("-in");
@@ -62,19 +66,18 @@ public class PepGenomeToolTest {
         File cPogoBed = new File(fileCPogo);
 
         List<List<String>> bedLines = getBedLines(outputBed);
-        Assert.assertTrue(bedLines.size() == 29);
+        Assert.assertEquals(29, bedLines.size());
 
 
         List<List<String>> cPogoLines = getBedLines(cPogoBed);
-        Assert.assertTrue(bedLines.size() == cPogoLines.size());
+        Assert.assertEquals(bedLines.size(), cPogoLines.size());
 
         for (List<String> bedLine1 : bedLines) {
             boolean found = false;
-            List<String> bedLine = bedLine1;
             for (List<String> cbedLine : cPogoLines) {
-                if (bedLine.get(3).equalsIgnoreCase(cbedLine.get(3))) {
-                    found = compareBedLines(bedLine, cbedLine);
-                    System.out.println(bedLine.get(3) + " -- " + found);
+                if (bedLine1.get(3).equalsIgnoreCase(cbedLine.get(3))) {
+                    found = compareBedLines(bedLine1, cbedLine);
+                    log.info(bedLine1.get(3) + " -- " + found);
                     if (found)
                         break;
                 }
@@ -82,8 +85,60 @@ public class PepGenomeToolTest {
             Assert.assertTrue(found);
         }
 
+        deleteOnExits();
+
     }
 
+    private void deleteOnExits() {
+        String fileBed = fileIn.replaceAll(".txt", ".bed");
+        File fileInput = new File(fileBed);
+        fileInput.deleteOnExit();
+    }
+
+    @Test
+    public void mainInDB() throws IOException {
+        log.info("InDBTest");
+        List<String> argList = new ArrayList<>();
+
+        argList.add("-in");
+        argList.add(fileIn);
+        argList.add("-fasta");
+        argList.add(fileFasta);
+        argList.add("-gtf");
+        argList.add(fileGTF);
+        argList.add("-inm");
+        argList.add("1");
+
+        String[] args = new String[argList.size()];
+        argList.toArray(args);
+        PepGenomeTool.main(args);
+
+        File outputBed = new File(fileIn.replace(".txt", ".bed"));
+        File cPogoBed = new File(fileCPogo);
+
+        List<List<String>> bedLines = getBedLines(outputBed);
+        Assert.assertEquals(29, bedLines.size());
+
+
+        List<List<String>> cPogoLines = getBedLines(cPogoBed);
+        Assert.assertEquals(bedLines.size(), cPogoLines.size());
+
+        for (List<String> bedLine1 : bedLines) {
+            boolean found = false;
+            for (List<String> cbedLine : cPogoLines) {
+                if (bedLine1.get(3).equalsIgnoreCase(cbedLine.get(3))) {
+                    found = compareBedLines(bedLine1, cbedLine);
+                    log.info(bedLine1.get(3) + " -- " + found);
+                    if (found)
+                        break;
+                }
+            }
+            Assert.assertTrue(found);
+        }
+
+        deleteOnExits();
+
+    }
     private boolean compareBedLines(List<String> bedLine, List<String> cbedLine) {
         return  bedLine.stream().allMatch(cbedLine::contains);
     }
@@ -105,7 +160,7 @@ public class PepGenomeToolTest {
     private List<List<String>> getBedLines(File inFile) throws IOException {
         BufferedReader buf = new BufferedReader(new FileReader(inFile));
         List<List<String>> bedLines = new ArrayList<>();
-        String line = null;
+        String line;
         while((line = buf.readLine()) != null){
             String[] lines = line.split("\t");
             bedLines.add(Arrays.asList(lines));

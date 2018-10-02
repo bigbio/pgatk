@@ -1,7 +1,14 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import lombok.Data;
+
+import java.io.Serializable;
+
 //holds coordinates.
-public class Coordinates<T> implements Comparable<T> {
+@Data
+public class Coordinates<T> implements Comparable<T>, Serializable {
+
+    private static final long serialVersionUID = -2348800999526373164L;
     //the start position
     protected int start;
     //the end position

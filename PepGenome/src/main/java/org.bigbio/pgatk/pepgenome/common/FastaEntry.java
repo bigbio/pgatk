@@ -1,6 +1,10 @@
-package org.bigbio.pgatk.pepgenome;
+package org.bigbio.pgatk.pepgenome.common;
 
-public class FastaEntry {
+import java.io.Serializable;
+
+public class FastaEntry implements Serializable {
+
+    private static final long serialVersionUID = 2153797062207182214L;
     //holds the fasta header
     private String m_header;
     //holds the fasta entry sequence.

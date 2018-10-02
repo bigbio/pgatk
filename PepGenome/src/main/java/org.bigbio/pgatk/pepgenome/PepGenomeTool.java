@@ -1,17 +1,28 @@
 package org.bigbio.pgatk.pepgenome;
 
+
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
+import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
+import org.bigbio.pgatk.pepgenome.io.GTFParser;
+import org.bigbio.pgatk.pepgenome.io.ResultParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
-import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerMap;
+import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
+import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
 import org.ehcache.sizeof.SizeOf;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+
 public class PepGenomeTool {
+
+    private static Logger log = LoggerFactory.getLogger(PepGenomeTool.class);
+
     //exit codes --------------------------------
     private static final int GENOME_MAPPER_EXIT_HELP = 1;
     private static final int GENOME_MAPPER_EXIT_TOO_FEW_ARGS = 2;
@@ -29,6 +40,7 @@ public class PepGenomeTool {
     private static final String ARG_SPECIES = "species";
     private static final String ARG_CHR = "chr";
     private static final String ARG_HELP = "h";
+    private static final String ARG_INMEMORY = "inm";
 
     //DEFAULT values
     private static boolean mergeFlag = false;
@@ -38,6 +50,7 @@ public class PepGenomeTool {
     private static boolean ptmbedOutFlag = true;
     private static String source = "PoGo";
     private static boolean chrincluded = false;
+    private static boolean inMemory = true;
 
 
     public static void main(String[] args) {
@@ -52,6 +65,7 @@ public class PepGenomeTool {
                 .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismaches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
                 .addOption(Option.builder(ARG_SPECIES).hasArg(true).desc("Please give species using common or scientific name (default human). For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome").build())
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
+                .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
                 .addOption(Option.builder(ARG_HELP).hasArg(false).desc("Print this help & exit").build());
 
         CommandLineParser parser = new DefaultParser();
@@ -62,13 +76,17 @@ public class PepGenomeTool {
                 Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_HELP);
             }
         } catch (ParseException e) {
-            System.out.println(" *** Error in parsing the input arguments. Please check the arguments ***");
+            log.info(" *** Error in parsing the input arguments. Please check the arguments ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
         }
 
         if (!cmd.hasOption(ARG_FASTA) || !cmd.hasOption(ARG_GTF) || !cmd.hasOption(ARG_IN)) {
-            System.out.println("*** Missing mandatory parameters: -fasta, -gtf and -in ***");
+            log.info("*** Missing mandatory parameters: -fasta, -gtf and -in ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
+        }
+
+        if (cmd.hasOption(ARG_INMEMORY) && cmd.getOptionValue(ARG_INMEMORY).equalsIgnoreCase("1")) {
+            inMemory = false;
         }
 
         String fastaFilePath = cmd.getOptionValue(ARG_FASTA);
@@ -76,17 +94,17 @@ public class PepGenomeTool {
         String peptideInputFilePathsParam = cmd.getOptionValue(ARG_IN);
 
         if (fastaFilePath == null || !(fastaFilePath.endsWith(".fasta") || fastaFilePath.endsWith(".fa"))) {
-            System.out.println(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
+            log.info(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
         if (gtfFilePath == null || !gtfFilePath.endsWith(".gtf")) {
-            System.out.println(" *** Please provide valid input for -gtf. The input filename has to end with .gtf  ***");
+            log.info(" *** Please provide valid input for -gtf. The input filename has to end with .gtf  ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
         if (peptideInputFilePathsParam == null) {
-            System.out.println(" *** Please provide valid input for -in. Allowed file extensions are .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt)  ***");
+            log.info(" *** Please provide valid input for -in. Allowed file extensions are .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt)  ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
@@ -96,7 +114,7 @@ public class PepGenomeTool {
                 .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith))
                 .collect(Collectors.toList())
                 .size() != peptideInputFilePaths.length) {
-            System.out.println(" *** Please provide valid input for -in. Allowed file extensions are .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
+            log.info(" *** Please provide valid input for -in. Allowed file extensions are .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
@@ -197,27 +215,37 @@ public class PepGenomeTool {
         }
 
         String pluralString = (GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES == 1) ? " mismatch" : " mismatches";
-        System.out.println("Start: allowing " + GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES + pluralString);
-        System.out.println("reading FASTA: " + fastaFilePath);
+        log.info("Start: allowing " + GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES + pluralString);
+        log.info("reading FASTA: " + fastaFilePath);
 
         try {
             CoordinateWrapper coordinate_wrapper = new CoordinateWrapper();
             coordinate_wrapper.read_fasta_file(fastaFilePath);
 
-            System.out.println("Fasta done: " + coordinate_wrapper.size() + " proteins read.");
-            System.out.println("building KmerMap...");
-            IKmerMap kmer_map = new KmerMap();
+            log.info("Fasta done: " + coordinate_wrapper.size() + " proteins read.");
+            log.info("building KmerTreeMap...");
+
+
+            IKmerMap kmer_map;
+            if(inMemory)
+                kmer_map = new KmerTreeMap();
+            else
+                kmer_map = new KmerSortedMap();
+
             coordinate_wrapper.add_all_proteins_to_kmer_map(kmer_map);
 
-            SizeOf sizeOf = SizeOf.newInstance();
-            System.out.println((int) (sizeOf.deepSizeOf(kmer_map)/1000000) + " MB");
+            if(!inMemory)
+                ((KmerSortedMap)kmer_map).sortKmer();
 
-            System.out.println("KmerMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
-            System.out.println("reading GTF: " + gtfFilePath);
+            SizeOf sizeOf = SizeOf.newInstance();
+            log.info((int) (sizeOf.deepSizeOf(kmer_map)/1000000) + " MB");
+
+            log.info("KmerTreeMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
+            log.info("reading GTF: " + gtfFilePath);
 
             MappedPeptides mapped_peptides = new MappedPeptides();
             Assembly assem = GTFParser.get_instance().read(gtfFilePath, coordinate_wrapper, mapped_peptides);
-            System.out.println("GTF done!\nComputing genomic coordinates for: ");
+            log.info("GTF done!\nComputing genomic coordinates for: ");
 
             // Creating a post-fix for file name specifying mode of mapping using mismatches
             String filename_mm_postfix = "";
@@ -233,7 +261,7 @@ public class PepGenomeTool {
             }
 
             for (String peptideInputFilePath : peptideInputFilePaths) {
-                System.out.println(peptideInputFilePath);
+                log.info(peptideInputFilePath);
 
                 String final_peptide_path_results = peptideInputFilePath;
                 if (peptideInputFilePath.endsWith(".txt")) {
@@ -247,8 +275,8 @@ public class PepGenomeTool {
                 String path6 = final_peptide_path_results + "_unmapped.txt";
 
                 ResultParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
-                System.out.println("Results done! (" + peptideInputFilePath + ")");
-                System.out.println("writing output files");
+                log.info("Results done! (" + peptideInputFilePath + ")");
+                log.info("writing output files");
 
                 if (!mergeFlag) {
                     //the gtf overwrites the input gtf if they are in the same folder
@@ -342,6 +370,6 @@ public class PepGenomeTool {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-        System.out.println("DONE..");
+        log.info("DONE..");
     }
 }
