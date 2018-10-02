@@ -13,12 +13,15 @@ import java.util.*;
 public class MapEntry implements Comparable<MapEntry>, Serializable {
 
     private static final long serialVersionUID = 6404015419072151797L;
+
     //pointer to the associated GeneEntry
-    private GeneEntry m_p_gene_entry;
+    private GeneEntry geneEntry;
+
     //peptideentries, maps sequence without ptms to the corresponding PeptideEntry
-    private Map<String, PeptideEntry> m_peptide_entries = new TreeMap<>();
+    private Map<String, PeptideEntry> peptideEntries = new TreeMap<>();
+
     //holds all transcripts for this MapEntry
-    private Set<String> m_transcripts = new TreeSet<>();
+    private Set<String> transcripts = new TreeSet<>();
 
     @Override
     public int compareTo(MapEntry otherInstance) {
@@ -31,40 +34,40 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
     }
 
     public MapEntry(GeneEntry geneentry_p) {
-        this.m_p_gene_entry = geneentry_p;
-//        this.m_peptide_entries = new TreeMap<>();
-//        this.m_transcripts = new TreeSet<>();
+        this.geneEntry = geneentry_p;
+//        this.peptideEntries = new TreeMap<>();
+//        this.transcripts = new TreeSet<>();
     }
 
     //adds a transcript id to the mapping.
-    public final void add_transcript_id(String transcriptID) {
-        m_transcripts.add(transcriptID);
+    public final void addTranscriptId(String transcriptID) {
+        transcripts.add(transcriptID);
     }
 
     //compares two MapEntry objects. returns true if the lhs 'GeneEntry is lesser than rhs'
     public boolean lessThan(MapEntry rhs) {
-        return m_p_gene_entry.lessThan(rhs.m_p_gene_entry);
+        return geneEntry.isLessThan(rhs.geneEntry);
     }
 
-    //calls the PeptideEntry::to_gtf metod for every peptide.
-    public final OutputStream to_gtf(String source, OutputStream os) throws Exception {
-        return to_gtf(source, os, true);
+    //calls the PeptideEntry::toGtf metod for every peptide.
+    public final OutputStream toGtf(String source, OutputStream os) throws Exception {
+        return toGtf(source, os, true);
     }
 
-    public final OutputStream to_gtf(String source) throws Exception {
-        return to_gtf(source, System.out, true);
+    public final OutputStream toGtf(String source) throws Exception {
+        return toGtf(source, System.out, true);
     }
 
-    public final OutputStream to_gtf(String source, boolean chrincluded) throws Exception {
-        return to_gtf(source, System.out, chrincluded);
+    public final OutputStream toGtf(String source, boolean chrincluded) throws Exception {
+        return toGtf(source, System.out, chrincluded);
     }
 
-    public final OutputStream to_gtf(String source, OutputStream os, boolean chrincluded) throws Exception {
-        if (m_peptide_entries.size() > 0) {
-            m_p_gene_entry.to_gtf(source, os).write("\n".getBytes());
+    public final OutputStream toGtf(String source, OutputStream os, boolean chrincluded) throws Exception {
+        if (peptideEntries.size() > 0) {
+            geneEntry.to_gtf(source, os).write("\n".getBytes());
 
             TreeSet<PeptideEntry> peptide_entries_set = new TreeSet<>(new PeptideentryPcompare());
-            for (Map.Entry<String, PeptideEntry> it : m_peptide_entries.entrySet()) {
+            for (Map.Entry<String, PeptideEntry> it : peptideEntries.entrySet()) {
                 peptide_entries_set.add(it.getValue());
             }
 
@@ -75,19 +78,19 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
         return os;
     }
 
-    //calls the PeptideEntr::to_bed metod for every peptide.
-    public final OutputStream to_bed(OutputStream os) throws Exception {
-        return to_bed(os, true);
+    //calls the PeptideEntr::toBed metod for every peptide.
+    public final OutputStream toBed(OutputStream os) throws Exception {
+        return toBed(os, true);
     }
 
-    public final OutputStream to_bed() throws Exception {
-        return to_bed(System.out, true);
+    public final OutputStream toBed() throws Exception {
+        return toBed(System.out, true);
     }
 
-    public final OutputStream to_bed(OutputStream os, boolean chrincluded) throws Exception {
-        if (m_peptide_entries.size() > 0) {
+    public final OutputStream toBed(OutputStream os, boolean chrincluded) throws Exception {
+        if (peptideEntries.size() > 0) {
             TreeSet<PeptideEntry> peptide_entries_set = new TreeSet<>(new PeptideentryPcompare());
-            for (Map.Entry<String, PeptideEntry> it : m_peptide_entries.entrySet()) {
+            for (Map.Entry<String, PeptideEntry> it : peptideEntries.entrySet()) {
                 peptide_entries_set.add(it.getValue());
             }
 
@@ -98,46 +101,46 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
         return os;
     }
 
-    //calls the PeptideEntry::to_gct metod for every peptide.
-    public final OutputStream to_gct(ArrayList<String> tissuelist, OutputStream os) throws Exception {
-        return to_gct(tissuelist, os, true);
+    //calls the PeptideEntry::toGct metod for every peptide.
+    public final OutputStream toGct(ArrayList<String> tissuelist, OutputStream os) throws Exception {
+        return toGct(tissuelist, os, true);
     }
 
-    public final OutputStream to_gct(ArrayList<String> tissuelist) throws Exception {
-        return to_gct(tissuelist, System.out, true);
+    public final OutputStream toGct(ArrayList<String> tissuelist) throws Exception {
+        return toGct(tissuelist, System.out, true);
     }
 
-    public final OutputStream to_gct(ArrayList<String> tissuelist, OutputStream os, boolean chrincluded) throws Exception {
-        if (m_peptide_entries.size() > 0) {
+    public final OutputStream toGct(ArrayList<String> tissuelist, OutputStream os, boolean chrincluded) throws Exception {
+        if (peptideEntries.size() > 0) {
             TreeSet<PeptideEntry> peptide_entries_set = new TreeSet<>(new PeptideentryPcompare());
-            for (Map.Entry<String, PeptideEntry> it : m_peptide_entries.entrySet()) {
+            for (Map.Entry<String, PeptideEntry> it : peptideEntries.entrySet()) {
                 peptide_entries_set.add(it.getValue());
             }
 
             for (PeptideEntry pit : peptide_entries_set) {
-                pit.to_gct(m_p_gene_entry.get_id(), tissuelist, os);
+                pit.to_gct(geneEntry.get_id(), tissuelist, os);
             }
         }
         return os;
     }
 
-    //calls the PeptideEntry::to_ptmbed metod for every peptide.
-    public final OutputStream to_ptmbed(OutputStream os, OutputStream os2) throws Exception {
-        return to_ptmbed(os, os2, true);
+    //calls the PeptideEntry::toPtmbed metod for every peptide.
+    public final OutputStream toPtmbed(OutputStream os, OutputStream os2) throws Exception {
+        return toPtmbed(os, os2, true);
     }
 
-    public final OutputStream to_ptmbed(OutputStream os) throws Exception {
-        return to_ptmbed(os, System.out, true);
+    public final OutputStream toPtmbed(OutputStream os) throws Exception {
+        return toPtmbed(os, System.out, true);
     }
 
-    public final OutputStream to_ptmbed() throws Exception {
-        return to_ptmbed(System.out, System.out, true);
+    public final OutputStream toPtmbed() throws Exception {
+        return toPtmbed(System.out, System.out, true);
     }
 
-    public final OutputStream to_ptmbed(OutputStream os, OutputStream os2, boolean chrincluded) throws Exception {
-        if (m_peptide_entries.size() > 0) {
+    public final OutputStream toPtmbed(OutputStream os, OutputStream os2, boolean chrincluded) throws Exception {
+        if (peptideEntries.size() > 0) {
             TreeSet<PeptideEntry> peptide_entries_set = new TreeSet<>(new PeptideentryPcompare());
-            for (Map.Entry<String, PeptideEntry> it : m_peptide_entries.entrySet()) {
+            for (Map.Entry<String, PeptideEntry> it : peptideEntries.entrySet()) {
                 peptide_entries_set.add(it.getValue());
             }
 
@@ -152,26 +155,26 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
     }
 
     //removes all peptides that are associated with a specific sequence.
-    public final void remove_peptides() {
-        m_peptide_entries.clear();
+    public final void removePeptides() {
+        peptideEntries.clear();
     }
 
     //delegates to peptide_entry after checking if that peptide already
     //exists and creating it if it doesn't
-    public final int add_peptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry) {
-        int newly_added = 0;
-        String sequence_wo_ptm = Utils.remove_ptms(sequence);
+    public final int addPeptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry) {
+        int added = 0;
+        String sequenceWoPtm = Utils.remove_ptms(sequence);
 
         if (transcriptsEntry.getValue().getM_entries().size() > 0) {
-            if (!m_peptide_entries.containsKey(sequence_wo_ptm)) {
-                PeptideEntry new_peptide = new PeptideEntry(m_p_gene_entry);
-                m_peptide_entries.put(sequence_wo_ptm, new_peptide);
-                coordwrapper.add_to_existing_peptides(sequence_wo_ptm, new_peptide);
-                newly_added = 1;
+            if (!peptideEntries.containsKey(sequenceWoPtm)) {
+                PeptideEntry newPeptide = new PeptideEntry(geneEntry);
+                peptideEntries.put(sequenceWoPtm, newPeptide);
+                coordwrapper.add_to_existing_peptides(sequenceWoPtm, newPeptide);
+                added = 1;
             }
-            m_peptide_entries.get(sequence_wo_ptm).add_peptide(coordwrapper, sequence_wo_ptm, sequence, tag, sigPSMs, transcriptsEntry.getValue(), genes, ofstream, quant);
+            peptideEntries.get(sequenceWoPtm).add_peptide(coordwrapper, sequenceWoPtm, sequence, tag, sigPSMs, transcriptsEntry.getValue(), genes, ofstream, quant);
         }
-        return newly_added;
+        return added;
     }
 
 }

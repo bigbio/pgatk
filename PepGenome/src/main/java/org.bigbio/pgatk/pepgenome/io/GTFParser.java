@@ -20,47 +20,50 @@ public class GTFParser {
     private static Logger log = LoggerFactory.getLogger(GTFParser.class);
 
     //inputstream
-    private BufferedReader m_reader;
-    private FileInputStream m_ifs;
+    private BufferedReader reader;
+    
+    private FileInputStream ifs;
+    
     //current line
-    private String m_line;
+    private String line;
+    
     //meyers singleton instance.
-    private static GTFParser m_instance;
+    private static GTFParser instance;
 
     private GTFParser() {
     }
 
     //singleton get_instance method.
     public static GTFParser get_instance() {
-        if (m_instance == null) {
-            m_instance = new GTFParser();
+        if (instance == null) {
+            instance = new GTFParser();
         }
-        return m_instance;
+        return instance;
     }
 
     //opens filestream, returns true if sucessful
     private boolean open(String file) throws Exception {
-        if (m_reader == null) {
-            m_line = "";
-            m_ifs = new FileInputStream(file);
-            m_reader = new BufferedReader(new InputStreamReader(m_ifs));
+        if (reader == null) {
+            line = "";
+            ifs = new FileInputStream(file);
+            reader = new BufferedReader(new InputStreamReader(ifs));
         }
         boolean status = true;
         try{
-            status = m_reader.ready();
+            status = reader.ready();
         }catch (IOException ex){
             log.debug("The gtf file stream is closed -- " + file);
-            m_ifs = new FileInputStream(file);
-            m_reader = new BufferedReader(new InputStreamReader(m_ifs));
+            ifs = new FileInputStream(file);
+            reader = new BufferedReader(new InputStreamReader(ifs));
         }
         return status;
     }
 
     //closes the filestream
     private void close() throws Exception {
-        m_line = "";
-        m_reader.close();
-        m_ifs.close();
+        line = "";
+        reader.close();
+        ifs.close();
     }
 
     //returns true if in the GTF at position 6 there is a + (plus strand)
@@ -89,34 +92,34 @@ public class GTFParser {
             throw new IllegalStateException("Problem in reading GTF file");
         }
 
-        ProteinEntry p_protein_entry = null;
+        ProteinEntry proteinEntry = null;
         ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinatesMap = new ArrayList<>();
 //        Coordinates protein_coordinates = new Coordinates();
         Coordinates prevProteinCoordinates = new Coordinates();
         Assembly assem = Assembly.none;
         ArrayList<String> tokens;
-        while ((m_line = m_reader.readLine()) != null) {
-            if ((m_line.startsWith("#"))) {
+        while ((line = reader.readLine()) != null) {
+            if ((line.startsWith("#"))) {
                 continue;
             }
-            tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(m_line, "\t")));
+            tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(line, "\t")));
 
             if (is_next_gene(tokens)) {
-                Assembly assemtemp = mapping.add_gene_from_gtf(m_line);
+                Assembly assemtemp = mapping.add_gene_from_gtf(line);
                 if (assem == Assembly.none) {
                     if (assemtemp == Assembly.patchhaploscaff) {
                         assem = assemtemp;
                     }
                 }
             }
-            String transcriptId = GeneEntry.extract_transcript_id(m_line);
+            String transcriptId = GeneEntry.extract_transcript_id(line);
             if (is_next_transcript(tokens)) {
-                mapping.add_transcript_id_to_gene(m_line);
-                if (p_protein_entry != null) {
-                    p_protein_entry.set_coordinate_map(coordinatesMap);
+                mapping.add_transcript_id_to_gene(line);
+                if (proteinEntry != null) {
+                    proteinEntry.set_coordinate_map(coordinatesMap);
                 }
-                p_protein_entry = coordwrapper.lookup_entry(transcriptId);
-                if (p_protein_entry == null) {
+                proteinEntry = coordwrapper.lookup_entry(transcriptId);
+                if (proteinEntry == null) {
                     log.info("ERROR: No entry for with transcript ID: " + transcriptId);
                     continue;
                 }
@@ -130,7 +133,7 @@ public class GTFParser {
             } else if (is_cds(tokens)) {
                 GenomeCoordinates genCoord = Utils.extract_coordinates_from_gtf_line(tokens);
                 genCoord.setTranscriptid(transcriptId);
-                genCoord.setExonid(GeneEntry.extract_exon_id(m_line));
+                genCoord.setExonid(GeneEntry.extract_exon_id(line));
                 Coordinates proteinCoordinates = new Coordinates();
                 // get nterm from prev exon
                 if (genCoord.getFrame() != Frame.unknown) {
@@ -215,8 +218,8 @@ public class GTFParser {
                 coordinatesMap.add(new Pair<>(proteinCoordinates, genCoord));
             }
         }
-        if (p_protein_entry != null) {
-            p_protein_entry.set_coordinate_map(coordinatesMap);
+        if (proteinEntry != null) {
+            proteinEntry.set_coordinate_map(coordinatesMap);
         }
         close();
         return assem;

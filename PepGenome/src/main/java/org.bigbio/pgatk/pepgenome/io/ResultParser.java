@@ -53,7 +53,7 @@ public class ResultParser {
                 //the matching will only use the amino acids.
                 iso_seq_without_ptms = Utils.make_iso_sequence(Utils.remove_ptms(peptide_string));
 
-                if (!coordwrapper.peptide_already_exists(iso_seq_without_ptms)) {
+                if (!coordwrapper.isPeptidePresent(iso_seq_without_ptms)) {
                     //the gene_id_map.find_peptide function will match the peptide.
                     gene_id_map = k.find_peptide(iso_seq_without_ptms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {

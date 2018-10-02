@@ -538,17 +538,17 @@ public class EnumStringMapper {
                 return scaffold;
             }
         }
-        int chrom_num = Integer.parseInt(substr);
-        if (chrom_num == 1) {
-            chrom_num = 1;
-        } else if (chrom_num == 2) {
-            chrom_num = 4;
-        } else if (chrom_num == 3 || chrom_num == 4) {
-            chrom_num = chrom_num + 6;
+        int chromNum = Integer.parseInt(substr);
+        if (chromNum == 1) {
+            chromNum = 1;
+        } else if (chromNum == 2) {
+            chromNum = 4;
+        } else if (chromNum == 3 || chromNum == 4) {
+            chromNum = chromNum + 6;
         } else {
-            chrom_num = chrom_num + 7;
+            chromNum = chromNum + 7;
         }
-        return Chromosome.forValue(chrom_num);
+        return Chromosome.forValue(chromNum);
     }
 
     public static String ptmToColour(String ptmPSIname) {

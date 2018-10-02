@@ -54,12 +54,12 @@ public class MappedPeptides implements Serializable {
         String transcript_id = GeneEntry.extract_transcript_id(gtftranscriptline);
         String gene_id = GeneEntry.extract_gene_id(gtftranscriptline);
         if (m_mapping.containsKey(gene_id) && m_mapping_phs.containsKey(gene_id)) {
-            m_mapping.get(gene_id).add_transcript_id(transcript_id);
-            m_mapping_phs.get(gene_id).add_transcript_id(transcript_id);
+            m_mapping.get(gene_id).addTranscriptId(transcript_id);
+            m_mapping_phs.get(gene_id).addTranscriptId(transcript_id);
         } else if (m_mapping.containsKey(gene_id) && !(m_mapping_phs.containsKey(gene_id))) {
-            m_mapping.get(gene_id).add_transcript_id(transcript_id);
+            m_mapping.get(gene_id).addTranscriptId(transcript_id);
         } else if (!(m_mapping.containsKey(gene_id)) && m_mapping_phs.containsKey(gene_id)) {
-            m_mapping_phs.get(gene_id).add_transcript_id(transcript_id);
+            m_mapping_phs.get(gene_id).addTranscriptId(transcript_id);
         }
     }
 
@@ -100,7 +100,7 @@ public class MappedPeptides implements Serializable {
             }
         }
         for (MapEntry sit : mapping_set) {
-            sit.to_gtf(source, os, chrincluded);
+            sit.toGtf(source, os, chrincluded);
         }
     }
 
@@ -140,7 +140,7 @@ public class MappedPeptides implements Serializable {
             }
         }
         for (MapEntry sit : mapping_set) {
-            sit.to_bed(os, chrincluded);
+            sit.toBed(os, chrincluded);
         }
     }
 
@@ -200,7 +200,7 @@ public class MappedPeptides implements Serializable {
         }
 
         for (MapEntry sit : mapping_set) {
-            sit.to_gct(tokens, os, chrincluded);
+            sit.toGct(tokens, os, chrincluded);
         }
     }
 
@@ -247,17 +247,17 @@ public class MappedPeptides implements Serializable {
         }
 
         for (MapEntry sit : mapping_set) {
-            sit.to_ptmbed(os, os2, chrincluded);
+            sit.toPtmbed(os, os2, chrincluded);
         }
     }
 
     //removes all peptides from the MappedPeptides.
     public final void remove_all_peptides() {
         for (Map.Entry<String, MapEntry> it : m_mapping.entrySet()) {
-            it.getValue().remove_peptides();
+            it.getValue().removePeptides();
         }
         for (Map.Entry<String, MapEntry> it : m_mapping_phs.entrySet()) {
-            it.getValue().remove_peptides();
+            it.getValue().removePeptides();
         }
         m_tissuemap.clear();
         m_count_peptides = 0;
@@ -294,12 +294,12 @@ public class MappedPeptides implements Serializable {
             }
             ofstream.write((geneID + "\t" + sequence + "\t" + ss.toString() + "\t" + genes + "\t" + tag + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
         } else if (m_mapping.containsKey(geneID) && !(m_mapping_phs.containsKey(geneID))) {
-            m_count_peptides += (m_mapping.get(geneID).add_peptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
+            m_count_peptides += (m_mapping.get(geneID).addPeptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
         } else if (!(m_mapping.containsKey(geneID)) && m_mapping_phs.containsKey(geneID)) {
-            m_count_peptides_phs += (m_mapping_phs.get(geneID).add_peptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
+            m_count_peptides_phs += (m_mapping_phs.get(geneID).addPeptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
         } else {
-            m_count_peptides += (m_mapping.get(geneID).add_peptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
-            m_count_peptides_phs += (m_mapping_phs.get(geneID).add_peptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
+            m_count_peptides += (m_mapping.get(geneID).addPeptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
+            m_count_peptides_phs += (m_mapping_phs.get(geneID).addPeptide(coordwrapper, sequence, tag, sigPSMs, genes, ofstream, quant, transcriptsEntry) != 0) ? 0 : 1;
         }
     }
 

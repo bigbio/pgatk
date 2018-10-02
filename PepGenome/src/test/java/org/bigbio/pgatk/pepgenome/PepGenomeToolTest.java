@@ -140,7 +140,7 @@ public class PepGenomeToolTest {
 
     }
     private boolean compareBedLines(List<String> bedLine, List<String> cbedLine) {
-        return  bedLine.stream().allMatch(cbedLine::contains);
+        return cbedLine.containsAll(bedLine);
     }
 
     public static File unGzip(File infile) throws IOException {

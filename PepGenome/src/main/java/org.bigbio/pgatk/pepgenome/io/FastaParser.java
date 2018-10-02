@@ -8,42 +8,49 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Serializable;
 
-//this fastaparser reads fasta files.
-//it will convert input sequences into iso-sequences [I, L] will be converted to J
+/**
+ * This fastaparser reads fasta files. it will convert input sequences into
+ * iso-sequences [I, L] will be converted to J
+ *
+ * @author ypriverol
+ *
+ */
 public class FastaParser implements Serializable {
 
     private static final long serialVersionUID = -4871649120608342251L;
 
     //inputstream.
     private BufferedReader br = null;
+
     //current line.
-    private String m_line = "";
+    private String mLine = "";
+
     //meyers singleton instance.
-    private static FastaParser m_instance = null;
+    private static FastaParser instance = null;
 
     private FastaParser() {
     }
 
     //singleton get_instance method.
     public static FastaParser get_instance() {
-        if (m_instance == null) {
-            m_instance = new FastaParser();
+        if (instance == null) {
+            instance = new FastaParser();
         }
-        return m_instance;
+        return instance;
     }
 
     //opens the file
     public boolean open(String file) throws Exception {
         if (br == null) {
             br = new BufferedReader(new FileReader(file));
-            m_line = "";
+            mLine = "";
         }
         return br.ready();
     }
 
     //closes the filestream
     public final void close() {
-        m_line = "";
+        mLine = "";
         try {
             br.close();
         } catch (IOException e) {
@@ -53,20 +60,20 @@ public class FastaParser implements Serializable {
     }
 
     //parses and returns the next FASTA entry.
-    public final FastaEntry next_entry() throws IOException {
-        if (m_line.isEmpty()) {
-            m_line = br.readLine();
+    public final FastaEntry nextEntry() throws IOException {
+        if (mLine.isEmpty()) {
+            mLine = br.readLine();
         }
-        if (m_line == null) {
+        if (mLine == null) {
             return new FastaEntry("", "");
         }
-        String header = m_line;
+        String header = mLine;
         StringBuilder sequenceBuilder = new StringBuilder();
-        while ((m_line = br.readLine()) != null && !m_line.startsWith(">")) {
-            sequenceBuilder.append(Utils.make_iso_sequence(m_line));
+        while ((mLine = br.readLine()) != null && !mLine.startsWith(">")) {
+            sequenceBuilder.append(Utils.make_iso_sequence(mLine));
         }
-        if (m_line == null || !m_line.startsWith(">")) {
-            m_line = "";
+        if (mLine == null || !mLine.startsWith(">")) {
+            mLine = "";
         }
         return new FastaEntry(header, sequenceBuilder.toString());
     }

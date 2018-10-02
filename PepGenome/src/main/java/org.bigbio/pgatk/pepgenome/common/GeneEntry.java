@@ -24,9 +24,9 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
 
     @Override
     public int compareTo(GeneEntry otherInstance) {
-        if (lessThan(otherInstance)) {
+        if (isLessThan(otherInstance)) {
             return -1;
-        } else if (otherInstance.lessThan(this)) {
+        } else if (otherInstance.isLessThan(this)) {
             return 1;
         }
         return 0;
@@ -59,12 +59,15 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
         return m_gene_name;
     }
 
-    //comapres two genes.
-    //returns true if the chromosome number is smaller than rhs' chromosome number
-    //otherwise returns true if the startposition in the chromosome is smaller
-    //otherwise returns true if the endposition in the chromosome is smaller
-    //otherwise returns false.
-    public boolean lessThan(GeneEntry rhs) {
+    /**
+     * Comapares two genes and returns true if the chromosome number is smaller than rhs' chromosome number
+     * otherwise returns true if the startposition in the chromosome is smaller otherwise returns
+     * true if the endposition in the chromosome is smaller otherwise returns false.
+     *
+     * @param {org.bigbio.pgatk.pepgenome.common.GeneEntry }
+     * @return true is lessThan
+     */
+    public boolean isLessThan(GeneEntry rhs) {
         if (String.valueOf(m_coord.getChr().getValue()).compareTo(String.valueOf(rhs.m_coord.getChr().getValue())) < 0) {
             return true;
         }
@@ -93,8 +96,8 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
         os.write(("\"; transcript_type \"" + m_type + "\"; transcript_status \"" + m_status + "\"; transcript_name \""
                 + m_gene_name + "\";").getBytes());
 
-        for (String m_tag : m_tags) {
-            os.write((" tag \"" + m_tag + "\";").getBytes());
+        for (String mTag : m_tags) {
+            os.write((" tag \"" + mTag + "\";").getBytes());
         }
         return os;
     }
@@ -213,7 +216,7 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
     //tag takes the name of the tag to extract, tagList contains all tags separated by \.
     //possible values for tag could be gene_name, gene_type,...
     private static List<String> extract_by_tag(String tag, String tagList) {
-        List<String> return_values = new ArrayList<>();
+        List<String> rValues = new ArrayList<>();
         String[] values = Utils.tokenize(tagList, ";", true);
         for (String value : values) {
             int start = 0;
@@ -223,10 +226,10 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
             if (Utils.getCppStyleSubString(value, start, tag.length()).equals(tag)) {
                 String[] v = Utils.tokenize(value, "\"");
                 if (v.length >= 2) {
-                    return_values.add(v[1]);
+                    rValues.add(v[1]);
                 }
             }
         }
-        return return_values;
+        return rValues;
     }
 }

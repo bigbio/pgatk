@@ -49,9 +49,9 @@ public class CoordinateWrapper implements Serializable {
             throw new IllegalStateException("Problem while reading Fasta file");
         }
 
-        FastaEntry fasta_entry;
-        while (!(fasta_entry = fastaParserSingleton.next_entry()).is_empty()) {
-            add(new ProteinEntry(fasta_entry));
+        FastaEntry fastaEntry;
+        while (!(fastaEntry = fastaParserSingleton.nextEntry()).is_empty()) {
+            add(new ProteinEntry(fastaEntry));
         }
 
         fastaParserSingleton.close();
@@ -77,7 +77,7 @@ public class CoordinateWrapper implements Serializable {
     }
 
     //returns true if the peptide was found before.
-    public final boolean peptide_already_exists(String peptideSequence) {
+    public final boolean isPeptidePresent(String peptideSequence) {
         return m_existing_peptides.contains(peptideSequence);
     }
 }
