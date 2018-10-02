@@ -1,10 +1,11 @@
 Introduction
 ============
 
-.. sidebar:: API Browser Quick Guide
-   :subtitle: **It can make your life easier** if you want to explore by yourself our api:
+.. sidebar:: Individual Tools Documentation
+   :subtitle: **It can make your life easier** if you want to explore individual tools:
 
-   * Please visit our `Swagger docs <https://www.ebi.ac.uk/pride/ws/archive/>`_
+   * PepGenome: Mapping Peptidoforms to Genome Coordinates
+   * PepBed: R package to analyze peptide features in Bed Files
 
 
 The PRIDE Archive API provides a Restful entry point to retrieve all data from PRIDE Archive database. The API provides hyperlinks the clients can follow to navigate and search
