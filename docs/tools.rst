@@ -2,7 +2,7 @@ PGATK Tools
 ===============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
 
    PepGenome <pepgenome>
    PepBed <pepbed>
