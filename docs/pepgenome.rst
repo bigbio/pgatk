@@ -119,12 +119,7 @@ Usage
 - **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format. (e.g. ``` -gtf gencode.v25.annotation.gtf```)
 - **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``` -in file.tsv```)
 
-How to easily run the tool (example Human):
-
-.. code-block:: python
-   :linenos:
-
-   java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
+How to easily run the tool (**e.g. Human**):
 
 .. note::  java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
 
