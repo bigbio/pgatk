@@ -15,7 +15,7 @@ Input format
 
 The input format required by PepGenome is a tab delimited file with four columns.
 
-<table border="0" width="100%"><thead><tr><th scope="col">Column</th><th scope="col">Column header</th><th scope="col">Description</th></tr></thead><tbody><tr><td>1</td><td>Sample</td><td>Name of sample or experiment</td></tr><tr><td>2</td><td>Peptide</td><td>Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine</td></tr><tr><td>3</td><td>PSMs</td><td>Number of peptide-spectrum matches (PSMs) for the given peptide</td></tr><tr><td>4</td><td>Quant</td><td>Quantitative value for the given peptide in the given sample</td></tr></tbody></table>
+<table border="0" width="100%"><thead><tr><th scope="col">Column</th><th scope="col">Column header</th><th scope="col">Description</th></tr></thead><tbody><tr><td>1</td><td>Sample</td><td>Name of sample or experiment|<tr><td>2</td><td>Peptide</td><td>Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine</td></tr><tr><td>3</td><td>PSMs</td><td>Number of peptide-spectrum matches (PSMs) for the given peptide</td></tr><tr><td>4</td><td>Quant</td><td>Quantitative value for the given peptide in the given sample</td></tr></tbody></table>
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
 
@@ -144,6 +144,7 @@ Usage
 </td><td>Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format)</td></tr></tbody></table>
 
 **Optional arguments**:
+
 <table border="0" width="100%"><tbody><tr><td width="20%">
 <pre>-format OUTF</pre>
 </td><td width="80%">Set output format GTF, GCT, BED, PTMBED or ALL. Comma separated combination possible. Default = ALL</td></tr><tr><td>
@@ -157,33 +158,61 @@ Usage
 <tr><td><pre>-chr NUM</pre></td><td>Export chr prefix Allowed 0, 1.  (DEFAULT = 0)</td></tr>
 </tbody></table>
 
-**Table of supported species**
-<table border="0" width="100%"><thead>
-<tr><th>Common name</th><th>Scientific name</th><th>Taxon ID</th></tr></thead><tbody>
-<tr><td>C.intestinalis</td><td>Ciona intestinalis</td><td>7719</td></tr>
-<tr><td>Cat</td><td>Felis catus</td><td>9685</td></tr>
-<tr><td>Chicken</td><td>Gallus gallus</td><td>9031</td></tr>
-<tr><td>Chimpanzee</td><td>Pan troglodytes</td><td>9598</td></tr>
-<tr><td>Cow</td><td>Bos taurus</td><td>9913</td></tr>
-<tr><td>Dog</td><td>Canis lupus familiaris</td><td>9615</td></tr>
-<tr><td>Gorilla</td><td>Gorilla gorilla gorilla</td><td>9595</td></tr>
-<tr><td>Horse</td><td>Equus caballus</td><td>9796</td></tr>
-<tr><td>Human</td><td>Homo sapiens</td><td>9606</td></tr>
-<tr><td>Macaque</td><td>Macaca mulatta</td><td>9544</td></tr>
-<tr><td>Marmoset</td><td>Callithrix jacchus</td><td>9483</td></tr>
-<tr><td>Medaka</td><td>Oryzias latipes</td><td>8090</td></tr>
-<tr><td>Mouse</td><td>Mus musculus</td><td>10090</td></tr>
-<tr><td>Olive baboon</td><td>Papio anubis</td><td>9555</td></tr>
-<tr><td>Opossum</td><td>Monodelphis domestica</td><td>13616</td></tr>
-<tr><td>Orangutan</td><td>Pongo abelii</td><td>9601</td></tr>
-<tr><td>Pig</td><td>Sus scrofa</td><td>9823</td></tr>
-<tr><td>Platypus</td><td>Ornithorhynchus anatinus</td><td>9258</td></tr>
-<tr><td>Rabbit</td><td>Oryctolagus cuniculus</td><td>9986</td></tr>
-<tr><td>Rat</td><td>Rattus norvegicus</td><td>10116</td></tr>
-<tr><td>Sheep</td><td>Ovis aries</td><td>9940</td></tr>
-<tr><td>Tetraodon</td><td>Tetraodon nigroviridis</td><td>99883</td></tr>
-<tr><td>Turkey</td><td>Meleagris gallopavo</td><td>9103</td></tr>
-<tr><td>Vervet-AGM</td><td>Chlorocebus sabaeus</td><td>60711</td></tr>
-<tr><td>Zebra Finch</td><td>Taeniopygia guttata</td><td>59729</td></tr></tbody>
-</table>
+Table of supported species
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
++-------------------+-------------------+-----------+
+| Common name       | Scientific name   | Taxon ID  |
++===================+===================+===========+
+|C.intestinalis     |Ciona intestinalis |7719       |
++-------------------+-------------------+-----------+
+|Cat                |Felis catus        |9685       |
++-------------------+-------------------+-----------+
+|Chicken            |Gallus gallus      |9031       |
++-------------------+-------------------+-----------+
+|Chimpanzee         |Pan troglodytes    |9598       |
++-------------------+-------------------+-----------+
+|Cow                |Bos taurus         |9913       |
++-------------------+-------------------+-----------+
+|Dog                |Canis lupus familiaris|9615    |
++-------------------+-------------------+-----------+
+|Gorilla            |Gorilla gorilla gorilla|9595   |
++-------------------+-------------------+-----------+
+|Horse              |Equus caballus     |9796       |
++-------------------+-------------------+-----------+
+|Human              |Homo sapiens       |9606       |
++-------------------+-------------------+-----------+
+|Macaque            |Macaca mulatta     |9544       |
++-------------------+-------------------+-----------+
+|Marmoset           |Callithrix jacchus |9483       |
++-------------------+-------------------+-----------+
+|Medaka             |Oryzias latipes    |8090       |
++-------------------+-------------------+-----------+
+|Mouse              |Mus musculus       |10090      |
++-------------------+-------------------+-----------+
+|Olive baboon       |Papio anubis       |9555       |
++-------------------+-------------------+-----------+
+|Opossum            |Monodelphis domestica|13616    |
++-------------------+-------------------+-----------+
+|Orangutan          |Pongo abelii       |9601       |
++-------------------+-------------------+-----------+
+|Pig                |Sus scrofa         |9823       |
++-------------------+-------------------+-----------+
+|Platypus           |Ornithorhynchus anatinus|9258  |
++-------------------+-------------------+-----------+
+|Rabbit             |Oryctolagus cuniculus|9986     |
++-------------------+-------------------+-----------+
+|Rat                |Rattus norvegicus  |10116      |
++-------------------+-------------------+-----------+
+|Sheep              |Ovis aries         |9940       |
++-------------------+-------------------+-----------+
+|Tetraodon          |Tetraodon nigroviridis|99883   |
++-------------------+-------------------+-----------+
+|Turkey             |Meleagris gallopavo|9103       |
++-------------------+-------------------+-----------+
+|Vervet-AGM         |Chlorocebus sabaeus|60711      |
++-------------------+-------------------+-----------+
+|Zebra Finch        |Taeniopygia guttata|59729      |
++-------------------+-------------------+-----------+
+
 
