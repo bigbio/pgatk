@@ -174,9 +174,9 @@ Table of supported species
 +-------------------+-------------------+-----------+
 |Cow                |Bos taurus         |9913       |
 +-------------------+-------------------+-----------+
-|Dog                |Canis lupus familiaris|9615    |
+|Dog                |Canis lupus        |9615      |
 +-------------------+-------------------+-----------+
-|Gorilla            |Gorilla gorilla gorilla|9595   |
+|Gorilla            |Gorilla            |9595       |
 +-------------------+-------------------+-----------+
 |Horse              |Equus caballus     |9796       |
 +-------------------+-------------------+-----------+
@@ -192,27 +192,27 @@ Table of supported species
 +-------------------+-------------------+-----------+
 |Olive baboon       |Papio anubis       |9555       |
 +-------------------+-------------------+-----------+
-|Opossum            |Monodelphis domestica|13616    |
+|Opossum            |Monodelphis        |13616      |
 +-------------------+-------------------+-----------+
 |Orangutan          |Pongo abelii       |9601       |
 +-------------------+-------------------+-----------+
 |Pig                |Sus scrofa         |9823       |
 +-------------------+-------------------+-----------+
-|Platypus           |Ornithorhynchus anatinus|9258  |
+|Platypus           |Ornithorhynchus    |9258       |
 +-------------------+-------------------+-----------+
-|Rabbit             |Oryctolagus cuniculus|9986     |
+|Rabbit             |Oryctolagus        |9986       |
 +-------------------+-------------------+-----------+
 |Rat                |Rattus norvegicus  |10116      |
 +-------------------+-------------------+-----------+
 |Sheep              |Ovis aries         |9940       |
 +-------------------+-------------------+-----------+
-|Tetraodon          |Tetraodon nigroviridis|99883   |
+|Tetraodon          |Tetraodon          |99883      |
 +-------------------+-------------------+-----------+
-|Turkey             |Meleagris gallopavo|9103       |
+|Turkey             |Meleagris          |9103       |
 +-------------------+-------------------+-----------+
-|Vervet-AGM         |Chlorocebus sabaeus|60711      |
+|Vervet-AGM         |Chlorocebus        |60711      |
 +-------------------+-------------------+-----------+
-|Zebra Finch        |Taeniopygia guttata|59729      |
+|Zebra Finch        |Taeniopygia        |59729      |
 +-------------------+-------------------+-----------+
 
 
