@@ -122,7 +122,10 @@ Usage
 How to easily run the tool (example Human):
 
 .. code-block:: python
+   :linenos:
+
    java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
+
 
 
 Optional arguments
