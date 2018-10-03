@@ -1,7 +1,8 @@
 .. _pepgenome
 
+
 PepGenome: Mapping Peptidoforms to Genome Coordinates
-------------------------------------
+===========================
 
 In proteogenomic analyses it is essential to know the loci (genome position) giving rise to **peptides** in order to improve genomic annotation and the functional characterization of protein products in their biological context. With next-generation sequencing of DNA and RNA for each sample studied by proteomic mass spectrometry integration and visualisation in a common coordinate system, i.e. the genome, is vital for systems biology. To facilitate this type of integration not only the genomic locations of modified peptides but specifically the genomic loci of associated with these modifications is required.
 
@@ -11,7 +12,7 @@ In proteogenomic analyses it is essential to know the loci (genome position) giv
 
 
 Input format (.tsv)
-~~~~~~~~~~~~
+------------------------
 
 The input format required by PepGenome is a tab delimited file with four columns (.tsv).
 
@@ -32,7 +33,7 @@ The input format required by PepGenome is a tab delimited file with four columns
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
 
 Output formats
-~~~~~~~~~~~~
+------------------------
 
 BED
 ~~~~~~~~~~
@@ -110,7 +111,7 @@ GCT
 In this format the peptide sequences are combines with the Ensembl gene identifier. It contains the genomic loci for each peptide as well as the quantitative values for each peptide in different samples as a matrix.
 
 Usage
-~~~~~~~~~~~
+-------------------
 
 **Required arguments**:
 
@@ -119,7 +120,7 @@ Usage
 - **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``` -in file.tsv```)
 
 Optional arguments
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 - **-format** : Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
 - **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE``
@@ -130,7 +131,7 @@ Optional arguments
 - **-chr**:  Export chr prefix Allowed 0, 1. (e.g. ```-chr 1```)  ```DEFAULT = 0```
 
 Table of supported species
-~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 +-------------------+-------------------+-----------+
 | Common name       | Scientific name   | Taxon ID  |
