@@ -86,6 +86,7 @@ public class PepGenomeToolTest {
         }
 
         deleteOnExits();
+        log.info(" ");
 
     }
 
@@ -137,6 +138,7 @@ public class PepGenomeToolTest {
         }
 
         deleteOnExits();
+        log.info(" ");
 
     }
     private boolean compareBedLines(List<String> bedLine, List<String> cbedLine) {

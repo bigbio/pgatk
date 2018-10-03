@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome;
 
 
+import org.apache.log4j.Logger;
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
@@ -10,8 +11,6 @@ import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
 import org.ehcache.sizeof.SizeOf;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,7 +20,7 @@ import java.util.stream.Stream;
 
 public class PepGenomeTool {
 
-    private static Logger log = LoggerFactory.getLogger(PepGenomeTool.class);
+    private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
 
     //exit codes --------------------------------
     private static final int GENOME_MAPPER_EXIT_HELP = 1;
@@ -54,6 +53,8 @@ public class PepGenomeTool {
 
 
     public static void main(String[] args) {
+        long startTime = System.nanoTime();
+
         Options options = new Options();
         options.addOption(Option.builder(ARG_FASTA).hasArg(true).desc("Filepath for file containing protein sequences in FASTA format").build())
                 .addOption(Option.builder(ARG_GTF).hasArg(true).desc("Filepath for file containing genome annotation in GTF format").build())
@@ -367,9 +368,14 @@ public class PepGenomeTool {
             }
             //if there is a problem with the reading of crucial files the program will end prematurely.
         } catch (Exception e) {
+            log.info(e.getMessage());
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
+
         log.info("DONE..");
+        long endTime   = System.nanoTime();
+        long totalTime = (long)((endTime - startTime)/1000000000.0);
+        log.debug("Running time -- " + totalTime + " Min");
     }
 }
