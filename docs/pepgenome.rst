@@ -39,93 +39,66 @@ BED
 
 This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome.
 
-+-----------------------------------------+------------------------------------------------------------+
-| Colour                                  | Description                                                |
-+=========================================+============================================================+
-|.. image:: images/uniquetranscript.svg   | Peptide is unique to single gene AND single transcript     |
-|   :width: 25                            |                                                            |
-+-----------------------------------------+------------------------------------------------------------+
++-----------------------------------------+------------------------------------------------------------------------------+
+| Colour                                  | Description                                                                  |
++=========================================+==============================================================================+
+|.. image:: images/uniquetranscript.svg   | Peptide is unique to single gene AND single transcript                       |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/uniquegene.svg         | Peptide is unique to single gene BUT shared between multiple transcripts     |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/notunique.svg          | Peptide is shared between multiple genes                                     |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
 
-			<td bgcolor="#000000"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/uniquegene.svg" height="25px"></td>
-			<td>Peptide is unique to single gene BUT shared between multiple transcripts</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#808080"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/notunique.svg" height="25px"></td>
-			<td>Peptide is shared between multiple genes</td>
-		</tr>
-	</tbody>
-</table>
+
 
 PTMBED
 ~~~~~~~~~~~
 
 Like BED but containing the location of the post-translational modification on the genome. Thick parts of the peptide blocks indicate the position of the post-translational modification on a single amino acid (short thick block) while longer blocks indicate the occurrence of the first and last post-translational modification and residues in between. In the PTMBED the colour code is changed to indicate the type of modification.
 
-<table border="0" width="100%">
-	<thead>
-		<tr>
-			<th scope="col" width="20%">Colour</th>
-			<th scope="col" width="80%">Post-translational Modification</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td bgcolor="#FF3333"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/phospho.svg" height="25px"></td>
-			<td>Phosphorylation (phospho)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#CC6600"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/acetyl.svg" height="25px"></td>
-			<td>Acetylation (acetyl)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#FF9933"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/amidated.svg" height="25px"></td>
-			<td>Amidation (amidated)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#CCCC00"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/oxidation.svg" height="25px"></td>
-			<td>Oxidation (oxidation)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#00CC00"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/methyl.svg" height="25px"></td>
-			<td>Methylation (methyl)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#33FF33"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/glygly.svg" height="25px"></td>
-			<td>Ubiquitinylation (glygly; gg)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#00CCCC"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/sulfo.svg" height="25px"></td>
-			<td>Sulfation (sulfo)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#3399FF"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/palmitoyl.svg" height="25px"></td>
-			<td>Palmitoylation (palmitoyl)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#0000CC"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/formyl.svg" height="25px"></td>
-			<td>Formylation (formyl)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#3333FF"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/deamidated.svg" height="25px"></td>
-			<td>Deamidation (deamidated)</td>
-		</tr>
-		<tr></tr>
-		<tr>
-			<td bgcolor="#FF3399"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/any.svg" height="25px"></td>
-			<td>Any other post-translational modification</td>
-		</tr>
-	</tbody>
-</table>
++-----------------------------------------+------------------------------------------------------------------------------+
+| Colour                                  | Post-translational Modification                                              |
++=========================================+==============================================================================+
+|.. image:: images/phospho.svg            | Phosphorylation (phospho)                                                    |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/acetyl.svg             | Acetylation (acetyl)                                                         |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/amidated.svg           | Amidation (amidated)                                                         |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/oxidation.svg          | Oxidation (oxidation)                                                        |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/oxidation.svg          | Oxidation (oxidation)                                                        |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/methyl.svg             | Methylation (methyl)                                                         |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/glygly.svg             | Ubiquitinylation (glygly; gg)                                                |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/sulfo.svg              | Sulfation (sulfo)                                                            |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/palmitoyl.svg          | Palmitoylation (palmitoyl)                                                   |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/formyl.svg             | Formylation (formyl)                                                         |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/deamidated.svg         | Deamidation (deamidated)                                                     |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+|.. image:: images/any.svg                | Any other post-translational modification                                    |
+|   :width: 25                            |                                                                              |
++-----------------------------------------+------------------------------------------------------------------------------+
+
 
 GTF
 ~~~~~~~~~
