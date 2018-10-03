@@ -39,20 +39,13 @@ BED
 
 This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome.
 
-<table align="left" border="0" width="100%">
-	<thead>
-		<tr>
-			<th scope="col" width="20%">Colour</th>
-			<th scope="col" width="80%">Description</th>
-		</tr>
-	</thead>
-	<tbody>
-		<tr>
-			<td bgcolor="#F00000"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/uniquetranscript.svg" height="25px"></td>
-			<td>Peptide is unique to single gene AND single transcript</td>
-		</tr>
-		<tr></tr>
-		<tr>
++-----------------------------------------+------------------------------------------------------------+
+| Colour                                  | Description                                                |
++=========================================+============================================================+
+|.. image:: images/uniquetranscript.svg   | Peptide is unique to single gene AND single transcript     |
+|   :width: 25                            |                                                            |
++-----------------------------------------+------------------------------------------------------------+
+
 			<td bgcolor="#000000"><img src="http://ngs.sanger.ac.uk/production/proteogenomics/trackhubs_files/color/uniquegene.svg" height="25px"></td>
 			<td>Peptide is unique to single gene BUT shared between multiple transcripts</td>
 		</tr>
