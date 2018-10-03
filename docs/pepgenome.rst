@@ -10,12 +10,24 @@ In proteogenomic analyses it is essential to know the loci (genome position) giv
 
 
 
-Input format
+Input format (.tsv)
 ~~~~~~~~~~~~
 
-The input format required by PepGenome is a tab delimited file with four columns.
+The input format required by PepGenome is a tab delimited file with four columns (.tsv).
 
-<table border="0" width="100%"><thead><tr><th scope="col">Column</th><th scope="col">Column header</th><th scope="col">Description</th></tr></thead><tbody><tr><td>1</td><td>Sample</td><td>Name of sample or experiment|<tr><td>2</td><td>Peptide</td><td>Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine</td></tr><tr><td>3</td><td>PSMs</td><td>Number of peptide-spectrum matches (PSMs) for the given peptide</td></tr><tr><td>4</td><td>Quant</td><td>Quantitative value for the given peptide in the given sample</td></tr></tbody></table>
++-------------------+------------------+-----------------------------------------+
+| Column            | Column header    | Description                             |
++===================+==================+=========================================+
+|1                  |Sample            |Name of sample or experiment             |
++-------------------+------------------+-----------------------------------------+
+|2                  |Peptide           |Peptide sequence *                       |
++-------------------+------------------+-----------------------------------------+
+|3                  |PSMs              |Number (PSMs)                            |
++-------------------+------------------+-----------------------------------------+
+|4                  |Quant             |Quantitative value in the given sample   |
++-------------------+------------------+-----------------------------------------+
+
+.. note:: * Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
 
@@ -135,28 +147,21 @@ Usage
 ~~~~~~~~~~~
 
 **Required arguments**:
-<table border="0" widht="100%"><tbody><tr><td width="20%">
-<pre>-fasta TRANSL</pre>
-</td><td>Filepath for file containing protein sequences in FASTA format</td></tr><tr><td>
-<pre>-gtf ANNO</pre>
-</td><td width="80%">Gene annotation with coding sequences (CDS) in GTF format</td></tr><tr><td>
-<pre>-in *.tsv</pre>
-</td><td>Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format)</td></tr></tbody></table>
 
-**Optional arguments**:
+- **-fasta**: Filepath for file containing protein sequences in FASTA format
+- **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format
+- **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format).
 
-<table border="0" width="100%"><tbody><tr><td width="20%">
-<pre>-format OUTF</pre>
-</td><td width="80%">Set output format GTF, GCT, BED, PTMBED or ALL. Comma separated combination possible. Default = ALL</td></tr><tr><td>
-<pre>-merge TRUE/FALSE</pre>
-</td><td>Set TRUE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE</td></tr><tr><td><pre>-source SRC</pre></td><td>Set TRUE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE</td></tr><tr><td>
-<pre>-mm NUM</pre>
-</td><td>Number of mismatches allowed in mapping (0, 1 or 2). DEFAULT = 0</td></tr><tr><td>
-<pre>-mmmode TRUE/FALSE</pre>
-</td><td>Set TRUE to restrict number of mismatch in kmer to 1. DEFAULT = FALSE</td></tr><tr><td>
-<pre>-species SPECIES</pre></td><td>Set species using common or scientific name or taxonomy ID. Default is Human (Homo sapiens, 9606).</td></tr>
-<tr><td><pre>-chr NUM</pre></td><td>Export chr prefix Allowed 0, 1.  (DEFAULT = 0)</td></tr>
-</tbody></table>
+Optional arguments
+~~~~~~~~~~~~~~~~~~~
+
+- **-format** : Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
+- **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE
+- **-source**:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE
+- **-mm** : Number of mismatches allowed in mapping (0, 1 or 2). DEFAULT = 0
+- **-mmmode**: Set TRUE/FALSE to restrict number of mismatch in kmer to 1. DEFAULT = FALSE.
+- **-species**: Set species using common or scientific name or taxonomy ID (e.g. -species 9606). Default is Human (Homo sapiens, 9606).
+- **-chr**:  Export chr prefix Allowed 0, 1. (e.g. -chr 1)  (DEFAULT = 0)
 
 Table of supported species
 ~~~~~~~~~~~~~~~~~~~~~~~~~
