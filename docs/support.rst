@@ -7,7 +7,7 @@ The ProteoGeonomics Analysis Toolkit is developed by the following people:
 
 - Yasset Perez-Riverol (EMBL-EBI)
 - Enrique Audain (Kiel University)
-
+- Chakradhar Reddy Bandla
 
 
 
