@@ -19,14 +19,3 @@ Proteogenomics can be also seen as the way to present proteomics evidences in to
 
 .. note:: You can read a more about the topic here: https://www.nature.com/articles/nmeth.3144
 
-Contents
---------
-
-.. toctree::
-   :maxdepth: 2
-
-
-   tools
-   .. toctree::
-   :maxdepth: 3
-

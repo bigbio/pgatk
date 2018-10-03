@@ -18,8 +18,6 @@ Contents
    :maxdepth: 2
 
 
-
-
 Appendix, Indices and tables
 ----------------------------
 
