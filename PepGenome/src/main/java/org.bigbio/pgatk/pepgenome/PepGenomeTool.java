@@ -6,7 +6,8 @@ import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.GTFParser;
-import org.bigbio.pgatk.pepgenome.io.ResultParser;
+import org.bigbio.pgatk.pepgenome.io.MzTabInputPeptideFileParser;
+import org.bigbio.pgatk.pepgenome.io.TabInputPeptideFileParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
@@ -19,6 +20,35 @@ import java.util.stream.Stream;
 
 
 public class PepGenomeTool {
+
+    private enum INPUT_FILE_FORMAT{
+        TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)"),
+        MZTAB("mztab", "mzTab file format (.mztab)"),
+        MZIDENML("mzid", "MzIndetML file format (.mzid)");
+
+        private String name;
+        private String description;
+
+        INPUT_FILE_FORMAT(String name, String description) {
+            this.name = name;
+            this.description = description;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getDescription() {
+            return description;
+        }
+
+        public static INPUT_FILE_FORMAT findByString(String key){
+            for(INPUT_FILE_FORMAT value: values())
+                if(value.getName().equalsIgnoreCase(key))
+                    return value;
+            return INPUT_FILE_FORMAT.TAB;
+        }
+    }
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
 
@@ -40,6 +70,7 @@ public class PepGenomeTool {
     private static final String ARG_CHR = "chr";
     private static final String ARG_HELP = "h";
     private static final String ARG_INMEMORY = "inm";
+    private static final String ARG_INPUT_FORMAT = "inf";
 
     //DEFAULT values
     private static boolean mergeFlag = false;
@@ -50,6 +81,8 @@ public class PepGenomeTool {
     private static String source = "PoGo";
     private static boolean chrincluded = false;
     private static boolean inMemory = true;
+    private static INPUT_FILE_FORMAT fileFormat = INPUT_FILE_FORMAT.TAB;
+
 
 
     public static void main(String[] args) {
@@ -67,6 +100,7 @@ public class PepGenomeTool {
                 .addOption(Option.builder(ARG_SPECIES).hasArg(true).desc("Please give species using common or scientific name (default human). For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome").build())
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
                 .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
+                .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true).desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
                 .addOption(Option.builder(ARG_HELP).hasArg(false).desc("Print this help & exit").build());
 
         CommandLineParser parser = new DefaultParser();
@@ -85,6 +119,9 @@ public class PepGenomeTool {
             log.info("*** Missing mandatory parameters: -fasta, -gtf and -in ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
         }
+
+        if(cmd.hasOption(ARG_INPUT_FORMAT))
+            fileFormat = INPUT_FILE_FORMAT.findByString(cmd.getOptionValue(ARG_INPUT_FORMAT));
 
         if (cmd.hasOption(ARG_INMEMORY) && cmd.getOptionValue(ARG_INMEMORY).equalsIgnoreCase("1")) {
             inMemory = false;
@@ -110,12 +147,12 @@ public class PepGenomeTool {
         }
 
         String[] peptideInputFilePaths = Utils.tokenize(peptideInputFilePathsParam, ",", true);
-        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo"};
+        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid"};
         if (Stream.of(peptideInputFilePaths)
                 .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith))
                 .collect(Collectors.toList())
                 .size() != peptideInputFilePaths.length) {
-            log.info(" *** Please provide valid input for -in. Allowed file extensions are .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
+            log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
@@ -189,7 +226,7 @@ public class PepGenomeTool {
                 GenomeMapper.ID.EXON_ID = GenomeMapper.TAX.get(speciesParam).getExonId();
                 GenomeMapper.ID.LENGTH = GenomeMapper.TAX.get(speciesParam).getLength();
             } else {
-                System.err.println("ERROR: Species/Taxonomy: " + speciesParam + "is not supported. For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome");
+                System.err.println("ERROR: Species/Taxonomy: " + speciesParam + "is not supported. For a full list of supported species please go to https://pgatk.readthedocs.io/en/latest/pepgenome.html#table-of-supported-species");
                 System.exit(GENOME_MAPPER_EXIT_HELP);
             }
         }
@@ -220,6 +257,7 @@ public class PepGenomeTool {
         log.info("reading FASTA: " + fastaFilePath);
 
         try {
+
             CoordinateWrapper coordinate_wrapper = new CoordinateWrapper();
             coordinate_wrapper.read_fasta_file(fastaFilePath);
 
@@ -275,7 +313,11 @@ public class PepGenomeTool {
 
                 String path6 = final_peptide_path_results + "_unmapped.txt";
 
-                ResultParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                if(fileFormat == INPUT_FILE_FORMAT.MZTAB)
+                    MzTabInputPeptideFileParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                else
+                    TabInputPeptideFileParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+
                 log.info("Results done! (" + peptideInputFilePath + ")");
                 log.info("writing output files");
 

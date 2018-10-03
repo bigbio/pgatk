@@ -11,10 +11,10 @@ In proteogenomic analyses it is essential to know the loci (genome position) giv
 
 
 
-Input format (.tsv)
+Input format (Tab delimited)
 ------------------------
 
-The input format required by PepGenome is a tab delimited file with four columns (.tsv).
+The input format required by PepGenome is a tab delimited file with four columns. It can contains the following extensions ```.tsv```, ```.pogo``` or ```.txt```.
 
 +-------------------+------------------+-----------------------------------------+
 | Column            | Column header    | Description                             |
@@ -29,6 +29,8 @@ The input format required by PepGenome is a tab delimited file with four columns
 +-------------------+------------------+-----------------------------------------+
 
 .. note:: * Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
+
+
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
 

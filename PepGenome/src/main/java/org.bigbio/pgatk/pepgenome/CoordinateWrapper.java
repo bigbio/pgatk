@@ -64,7 +64,7 @@ public class CoordinateWrapper implements Serializable {
         }
     }
 
-    //adds a peptide to the existing peptides list. this is used in the ResultParser so
+    //adds a peptide to the existing peptides list. this is used in the TabInputPeptideFileParser so
     //that already found peptides dont have to be mapped again.
     public final void add_to_existing_peptides(String peptideSequence, PeptideEntry peptideEntry) {
         m_existing_peptides.add(peptideSequence, peptideEntry);
