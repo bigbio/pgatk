@@ -114,20 +114,20 @@ Usage
 
 **Required arguments**:
 
-- **-fasta**: Filepath for file containing protein sequences in FASTA format
-- **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format
-- **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format).
+- **-fasta**: Filepath for file containing protein sequences in FASTA format. (e.g. ``` -fasta gencode.v25.pc_translations.fa```)
+- **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format. (e.g. ``` -gtf gencode.v25.annotation.gtf```)
+- **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``` -in file.tsv```)
 
 Optional arguments
 ~~~~~~~~~~~~~~~~~~~
 
 - **-format** : Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
-- **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE
-- **-source**:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). Default = FALSE
-- **-mm** : Number of mismatches allowed in mapping (0, 1 or 2). DEFAULT = 0
-- **-mmmode**: Set TRUE/FALSE to restrict number of mismatch in kmer to 1. DEFAULT = FALSE.
-- **-species**: Set species using common or scientific name or taxonomy ID (e.g. -species 9606). Default is Human (Homo sapiens, 9606).
-- **-chr**:  Export chr prefix Allowed 0, 1. (e.g. -chr 1)  (DEFAULT = 0)
+- **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE``
+- **-source**:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE```
+- **-mm** : Number of mismatches allowed in mapping (0, 1 or 2). ```DEFAULT = 0```
+- **-mmmode**: Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ```DEFAULT = FALSE```.
+- **-species**: Set species using common or scientific name or taxonomy ID (e.g. ```-species 9606```). Default is Human (Homo sapiens, 9606).
+- **-chr**:  Export chr prefix Allowed 0, 1. (e.g. ```-chr 1```)  ```DEFAULT = 0```
 
 Table of supported species
 ~~~~~~~~~~~~~~~~~~~~~~~~~
