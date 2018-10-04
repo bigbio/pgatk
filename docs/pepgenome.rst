@@ -35,10 +35,10 @@ The input format required by PepGenome is a tab delimited file with four columns
 Output formats
 ------------------------
 
-BED
+BED Files
 ~~~~~~~~~~
 
-This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome.
+This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome. Read here BED_
 
 +-----------------------------------------+------------------------------------------------------------------------------+
 | Colour                                  | Description                                                                  |
