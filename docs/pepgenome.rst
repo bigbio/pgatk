@@ -121,12 +121,7 @@ Usage
 
 How to easily run the tool (**e.g. Human**)::
 
-    $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
-
-Create a directory inside your project to hold your docs::
-
-    $ cd /path/to/project
-    $ mkdir docs
+    $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode-{version}.gtf -fasta gencode-{version}-translations.fa -in file.tsv
 
 
 Optional arguments
