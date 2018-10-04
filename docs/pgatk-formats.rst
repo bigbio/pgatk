@@ -84,10 +84,13 @@ The **pedBed** Fields and Properties supported by PGATK:
 
 .. note:: BED input files (and input received from stdin) are tab-delimited. The following types of BED files are supported by PGATK:
 
-   **BED4**: A BED file where each feature is described by chrom, start, end, and name. (e.g. chr1  11873  14409  VLADIMIR)
-   **BED6**: A BED file where each feature is described by chrom, start, end, name, score, and strand. (e.g. chr1 11873 14409 VLADIMIR 0 +)
-   **BED12**: A BED file where each feature is described by all twelve columns listed above. (Default option in all tools)
-   **BED12+11**: A complete Bed file including **required** fields and optionals.
+   - **BED4**: A BED file where each feature is described by chrom, start, end, and name. (e.g. chr1  11873  14409  VLADIMIR)
+
+   - **BED6**: A BED file where each feature is described by chrom, start, end, name, score, and strand. (e.g. chr1 11873 14409 VLADIMIR 0 +)
+
+   - **BED12**: A BED file where each feature is described by all twelve columns listed above. (Default option in all tools)
+
+   - **BED12+11**: A complete Bed file including **required** fields and optionals.
 
 Color
 ~~~~~~~~~~~~
