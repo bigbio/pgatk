@@ -7,7 +7,7 @@ PepGenome: Mapping Peptidoforms to Genome Coordinates
 In proteogenomic analyses it is essential to know the loci (genome position) giving rise to **peptides** in order to improve genomic annotation and the functional characterization of protein products in their biological context. With next-generation sequencing of DNA and RNA for each sample studied by proteomic mass spectrometry integration and visualisation in a common coordinate system, i.e. the genome, is vital for systems biology. To facilitate this type of integration not only the genomic locations of modified peptides but specifically the genomic loci of associated with these modifications is required.
 
 
-.. note:: The **PepGenome** tool quickly and efficiently identify genomic loci of peptides and post-translational modifications and couple these mappings with associated quantitative values. Using reference gene annotation (GTF files) and an associated transcript translations (Protein fasta files) our tool identifies the genomic loci of peptides given as input and generates output in different formats borrowed from genomics and transcriptomics which can be loaded in various genome browsers such as `UCSC Genome Browser https://genome.ucsc.edu/`_, `Ensembl Genome Browser http://www.ensembl.org/index.html`_.
+.. note:: The **PepGenome** tool quickly and efficiently identify genomic loci of peptides and post-translational modifications and couple these mappings with associated quantitative values. Using reference gene annotation (GTF files) and an associated transcript translations (Protein fasta files) our tool identifies the genomic loci of peptides given as input and generates output in different formats borrowed from genomics and transcriptomics which can be loaded in various genome browsers such as `UCSC Genome Browser <https://genome.ucsc.edu/>`_, `Ensembl Genome Browser <http://www.ensembl.org/index.html>`_.
 
 
 Input format (Tab delimited)
@@ -38,7 +38,7 @@ Output formats
 BED Files
 ~~~~~~~~~~
 
-This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome. Read here BED_
+This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome. Read here :ref:`bed`
 
 +-----------------------------------------+------------------------------------------------------------------------------+
 | Colour                                  | Description                                                                  |
