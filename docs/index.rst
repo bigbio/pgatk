@@ -24,18 +24,3 @@ Contents
    support
    .. toctree::
    :maxdepth: 2
-
-
-
-
-Appendix, Indices and tables
-----------------------------
-
-.. toctree::
-
-   introduction
-   tools
-   pgatk-formats
-   support
-
-* :ref:`genindex`
