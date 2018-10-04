@@ -27,7 +27,7 @@ The input format required by PepGenome is a tab delimited file with four columns
 |4                  |Quant             |Quantitative value in the given sample   |
 +-------------------+------------------+-----------------------------------------+
 
-.. hint:: * Peptide sequence with PSI-MS modification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
+.. hint:: *Peptide sequence with PSI-MS modification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
 
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
@@ -121,7 +121,8 @@ Usage
 
 How to easily run the tool (**e.g. Human**)::
 
-    $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.gtf -fasta gencode-translations.fa -in file.tsv
+    $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode-{version}.gtf
+      -fasta gencode-{version}-translations.fa -in file.tsv
 
 
 Optional arguments
