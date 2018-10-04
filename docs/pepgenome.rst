@@ -40,67 +40,6 @@ BED Files
 
 This format contains the genomic loci for peptides, the exon-structure, the peptide sequence, as well as a colour code for uniqueness of peptides within the genome. Read here :ref:`bed`
 
-+-----------------------------------------+------------------------------------------------------------------------------+
-| Colour                                  | Description                                                                  |
-+=========================================+==============================================================================+
-|.. image:: images/uniquetranscript.svg   | Peptide is unique to single gene AND single transcript                       |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/uniquegene.svg         | Peptide is unique to single gene BUT shared between multiple transcripts     |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/notunique.svg          | Peptide is shared between multiple genes                                     |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-
-
-
-PTMBED
-~~~~~~~~~~~
-
-Like BED but containing the location of the post-translational modification on the genome. Thick parts of the peptide blocks indicate the position of the post-translational modification on a single amino acid (short thick block) while longer blocks indicate the occurrence of the first and last post-translational modification and residues in between. In the PTMBED the colour code is changed to indicate the type of modification.
-
-+-----------------------------------------+------------------------------------------------------------------------------+
-| Colour                                  | Post-translational Modification                                              |
-+=========================================+==============================================================================+
-|.. image:: images/phospho.svg            | Phosphorylation (phospho)                                                    |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/acetyl.svg             | Acetylation (acetyl)                                                         |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/amidated.svg           | Amidation (amidated)                                                         |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/oxidation.svg          | Oxidation (oxidation)                                                        |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/oxidation.svg          | Oxidation (oxidation)                                                        |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/methyl.svg             | Methylation (methyl)                                                         |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/glygly.svg             | Ubiquitinylation (glygly; gg)                                                |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/sulfo.svg              | Sulfation (sulfo)                                                            |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/palmitoyl.svg          | Palmitoylation (palmitoyl)                                                   |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/formyl.svg             | Formylation (formyl)                                                         |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/deamidated.svg         | Deamidation (deamidated)                                                     |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-|.. image:: images/any.svg                | Any other post-translational modification                                    |
-|   :width: 25                            |                                                                              |
-+-----------------------------------------+------------------------------------------------------------------------------+
-
-
 GTF
 ~~~~~~~~~
 

@@ -21,6 +21,7 @@ import java.util.stream.Stream;
 
 public class PepGenomeTool {
 
+    private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
     private enum INPUT_FILE_FORMAT{
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)"),
         MZTAB("mztab", "mzTab file format (.mztab)"),
@@ -50,7 +51,7 @@ public class PepGenomeTool {
         }
     }
 
-    private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
+
 
     //exit codes --------------------------------
     private static final int GENOME_MAPPER_EXIT_HELP = 1;
