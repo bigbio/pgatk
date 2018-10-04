@@ -1,4 +1,4 @@
-table proBed
+table pepBed
 "BED12+13 bed File 1.0.0"
 (
 string  chrom;  "Reference sequence chromosome"

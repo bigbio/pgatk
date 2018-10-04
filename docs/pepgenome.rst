@@ -10,7 +10,6 @@ In proteogenomic analyses it is essential to know the loci (genome position) giv
 .. note:: The **PepGenome** tool quickly and efficiently identify genomic loci of peptides and post-translational modifications and couple these mappings with associated quantitative values. Using reference gene annotation (GTF files) and an associated transcript translations (Protein fasta files) our tool identifies the genomic loci of peptides given as input and generates output in different formats borrowed from genomics and transcriptomics which can be loaded in various genome browsers such as `UCSC Genome Browser https://genome.ucsc.edu/`_, `Ensembl Genome Browser http://www.ensembl.org/index.html`_.
 
 
-
 Input format (Tab delimited)
 ------------------------
 
@@ -29,7 +28,6 @@ The input format required by PepGenome is a tab delimited file with four columns
 +-------------------+------------------+-----------------------------------------+
 
 .. note:: * Peptide sequence with PSI-MS nodification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
-
 
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
@@ -121,9 +119,10 @@ Usage
 - **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format. (e.g. ``` -gtf gencode.v25.annotation.gtf```)
 - **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``` -in file.tsv```)
 
-How to easily run the tool (**e.g. Human**):
+How to easily run the tool (**e.g. Human**)::
 
-.. note::  java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
+      $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode.v25.annotation.gtf -fasta gencode.v25.pc_translations.fa -in Test_small.tsv
+
 
 Optional arguments
 -------------------

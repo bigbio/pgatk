@@ -17,6 +17,10 @@ Contents
    .. toctree::
    :maxdepth: 2
 
+   pgatk-formats
+   .. toctree::
+   :maxdepth: 2
+
    support
    .. toctree::
    :maxdepth: 2
@@ -29,7 +33,9 @@ Appendix, Indices and tables
 
 .. toctree::
 
-   http-status-codes
-   glossary
+   introduction
+   tools
+   pgatk-formats
+   support
 
 * :ref:`genindex`
