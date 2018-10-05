@@ -12,7 +12,6 @@ import uk.ac.ebi.pride.jmztab.utils.MZTabFileParser;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -26,7 +25,7 @@ import java.util.Map;
  *
  * @author ypriverol on 03/10/2018.
  */
-public class MzTabInputPeptideFileParser {
+public class MzTabInputPeptideFileParser implements PeptideInputReader{
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(MzTabInputPeptideFileParser.class);
 
@@ -37,7 +36,7 @@ public class MzTabInputPeptideFileParser {
      *
      * @param file input file.
      */
-    public static void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
+    public void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
 
         File mzTabFile = new File(file);
         FileOutputStream ofs = new FileOutputStream(unmappedoutput);

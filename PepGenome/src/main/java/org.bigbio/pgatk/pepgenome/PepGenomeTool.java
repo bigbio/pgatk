@@ -8,6 +8,7 @@ import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.GTFParser;
 import org.bigbio.pgatk.pepgenome.io.MzTabInputPeptideFileParser;
 import org.bigbio.pgatk.pepgenome.io.TabInputPeptideFileParser;
+import org.bigbio.pgatk.pepgenome.io.custom.PeptideAtlasPeptideParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
@@ -23,14 +24,16 @@ public class PepGenomeTool {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
     private enum INPUT_FILE_FORMAT{
-        TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)"),
-        MZTAB("mztab", "mzTab file format (.mztab)"),
-        MZIDENML("mzid", "MzIndetML file format (.mzid)");
+        TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
+        MZTAB("mztab", "mzTab file format (.mztab)", MzTabInputPeptideFileParser.class),
+        PEPTIDEATLAS("peptideatlas", "PeptideAtlas PeptideBuild (.tsv)", PeptideAtlasPeptideParser.class),
+        MZIDENML("mzid", "MzIndetML file format (.mzid)", MzTabInputPeptideFileParser.class);
 
         private String name;
         private String description;
+        private String Class;
 
-        INPUT_FILE_FORMAT(String name, String description) {
+        INPUT_FILE_FORMAT(String name, String description, Class classType) {
             this.name = name;
             this.description = description;
         }
@@ -315,9 +318,11 @@ public class PepGenomeTool {
                 String path6 = final_peptide_path_results + "_unmapped.txt";
 
                 if(fileFormat == INPUT_FILE_FORMAT.MZTAB)
-                    MzTabInputPeptideFileParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                    new MzTabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                else if(fileFormat == INPUT_FILE_FORMAT.PEPTIDEATLAS)
+                    new PeptideAtlasPeptideParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
                 else
-                    TabInputPeptideFileParser.read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                    new TabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
 
                 log.info("Results done! (" + peptideInputFilePath + ")");
                 log.info("writing output files");

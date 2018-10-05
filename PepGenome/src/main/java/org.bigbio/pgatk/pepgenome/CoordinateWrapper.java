@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class CoordinateWrapper implements Serializable {
+
     private static final long serialVersionUID = -5604555402952311335L;
     //holds fasta headers and the associated ProteinEntry objects.
     private Map<String, ProteinEntry> m_map;

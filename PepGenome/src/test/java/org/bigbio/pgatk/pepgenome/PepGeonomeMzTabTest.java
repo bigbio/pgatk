@@ -38,10 +38,10 @@ public class PepGeonomeMzTabTest  {
 
         fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/control_exo_rep1_high_mol_weight.dat-pride.mztab")).toURI()).getAbsolutePath();
 
-        fileFasta = unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/gencode.v25.pc_translations.fa.gz")).toURI())).getAbsolutePath();
+        fileFasta = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/gencode.v25.pc_translations.fa.gz")).toURI())).getAbsolutePath();
 
         File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz")).toURI());
-        fileGTF = unGzip(inputGZfile).getAbsolutePath();
+        fileGTF = TestUtils.unGzip(inputGZfile).getAbsolutePath();
 
     }
 
@@ -66,7 +66,7 @@ public class PepGeonomeMzTabTest  {
 
         File outputBed = new File(fileIn.replace(".txt", ".bed"));
 
-        List<List<String>> bedLines = getBedLines(outputBed);
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(4577, bedLines.size());
 
         deleteOnExits();
@@ -78,30 +78,5 @@ public class PepGeonomeMzTabTest  {
         String fileBed = fileIn.replaceAll(".txt", ".bed");
         File fileInput = new File(fileBed);
         fileInput.deleteOnExit();
-    }
-
-    public static File unGzip(File infile) throws IOException {
-        File outFile = new File(infile.getParent(), infile.getName().replaceAll("\\.gz$", ""));
-        try (GZIPInputStream gin = new GZIPInputStream(new FileInputStream(infile)); FileOutputStream fos = new FileOutputStream(outFile)) {
-            byte[] buf = new byte[100000];
-            int len;
-            while ((len = gin.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
-
-            fos.close();
-            return outFile;
-        }
-    }
-
-    private List<List<String>> getBedLines(File inFile) throws IOException {
-        BufferedReader buf = new BufferedReader(new FileReader(inFile));
-        List<List<String>> bedLines = new ArrayList<>();
-        String line;
-        while((line = buf.readLine()) != null){
-            String[] lines = line.split("\t");
-            bedLines.add(Arrays.asList(lines));
-        }
-        return bedLines;
     }
 }

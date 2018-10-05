@@ -159,8 +159,12 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
         peptideEntries.clear();
     }
 
-    //delegates to peptide_entry after checking if that peptide already
-    //exists and creating it if it doesn't
+    /**
+     * Delegates to peptide_entry after checking if that peptide already
+     * exists and creating it if it doesn't
+     *
+     */
+
     public final int addPeptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry) {
         int added = 0;
         String sequenceWoPtm = Utils.remove_ptms(sequence);

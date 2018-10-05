@@ -58,11 +58,18 @@ public class Utils {
         return tmp.toUpperCase();
     }
 
-    //converts a sequence into an isosequence. this means replacing all 'I' and 'L' chars with 'J'
-    //leaves the original string unchanged.
+
+
+
+    /**
+     * Converts a sequence into an isosequence. this means replacing all 'I' and 'L' chars with 'J'
+     * leaves the original string unchanged.
+     *
+     * @param sequence Original sequence
+     * @return new sequence with all I and J replaced.
+     */
     public static String make_iso_sequence(String sequence) {
-        return sequence.replaceAll("I", "J")
-                .replaceAll("L", "J");
+        return sequence.replaceAll("I", "J").replaceAll("L", "J");
     }
 
     //this function creates the an entry for a CoordinateMapType.

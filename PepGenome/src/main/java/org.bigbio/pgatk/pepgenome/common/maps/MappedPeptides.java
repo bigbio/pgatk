@@ -10,8 +10,13 @@ import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.*;
 
-//the mapped peptides class connects the different classes
-//and offers functions to wite all found peptides.
+/**
+ * The mapped peptides class connects the different classes
+ * and offers functions to write all found peptides.
+ *
+ * @author ypriverol
+ */
+
 public class MappedPeptides implements Serializable {
 
     private static final long serialVersionUID = -2379620873628957732L;
@@ -279,7 +284,18 @@ public class MappedPeptides implements Serializable {
         return ss.toString();
     }
 
-    //passes the peptide insertion and lookup to the MapEntry.
+    /**
+     * Passes the peptide insertion and lookup to the MapEntry.
+     * @param coordwrapper
+     * @param sequence Sequence
+     * @param tag Tags
+     * @param sigPSMs Number of PMs
+     * @param genes Genes to be Map
+     * @param ofstream File outputStream
+     * @param quant Quant Value
+     * @param transcriptsEntry Transcript Value
+     * @throws Exception
+     */
     public final void add_peptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry) throws Exception {
         if (!m_tissuemap.containsKey(tag)) {
             m_tissuemap.put(tag, m_tissueindex);

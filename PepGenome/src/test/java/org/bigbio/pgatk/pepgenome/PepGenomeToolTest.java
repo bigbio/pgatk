@@ -40,7 +40,7 @@ public class PepGenomeToolTest {
         fileFasta = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/minimal_gencode.v25.pc_translations.fa")).toURI()).getAbsolutePath();
         File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz")).toURI());
 
-        fileGTF = unGzip(inputGZfile).getAbsolutePath();
+        fileGTF = TestUtils.unGzip(inputGZfile).getAbsolutePath();
 
         fileCPogo = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/cpogo/Testfile_small.bed")).toURI()).getAbsolutePath();
 
@@ -65,11 +65,11 @@ public class PepGenomeToolTest {
         File outputBed = new File(fileIn.replace(".txt", ".bed"));
         File cPogoBed = new File(fileCPogo);
 
-        List<List<String>> bedLines = getBedLines(outputBed);
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(29, bedLines.size());
 
 
-        List<List<String>> cPogoLines = getBedLines(cPogoBed);
+        List<List<String>> cPogoLines = TestUtils.getBedLines(cPogoBed);
         Assert.assertEquals(bedLines.size(), cPogoLines.size());
 
         for (List<String> bedLine1 : bedLines) {
@@ -117,11 +117,11 @@ public class PepGenomeToolTest {
         File outputBed = new File(fileIn.replace(".txt", ".bed"));
         File cPogoBed = new File(fileCPogo);
 
-        List<List<String>> bedLines = getBedLines(outputBed);
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(29, bedLines.size());
 
 
-        List<List<String>> cPogoLines = getBedLines(cPogoBed);
+        List<List<String>> cPogoLines = TestUtils.getBedLines(cPogoBed);
         Assert.assertEquals(bedLines.size(), cPogoLines.size());
 
         for (List<String> bedLine1 : bedLines) {
@@ -145,28 +145,5 @@ public class PepGenomeToolTest {
         return cbedLine.containsAll(bedLine);
     }
 
-    public static File unGzip(File infile) throws IOException {
-        File outFile = new File(infile.getParent(), infile.getName().replaceAll("\\.gz$", ""));
-        try (GZIPInputStream gin = new GZIPInputStream(new FileInputStream(infile)); FileOutputStream fos = new FileOutputStream(outFile)) {
-            byte[] buf = new byte[100000];
-            int len;
-            while ((len = gin.read(buf)) > 0) {
-                fos.write(buf, 0, len);
-            }
 
-            fos.close();
-            return outFile;
-        }
-    }
-
-    private List<List<String>> getBedLines(File inFile) throws IOException {
-        BufferedReader buf = new BufferedReader(new FileReader(inFile));
-        List<List<String>> bedLines = new ArrayList<>();
-        String line;
-        while((line = buf.readLine()) != null){
-            String[] lines = line.split("\t");
-            bedLines.add(Arrays.asList(lines));
-        }
-        return bedLines;
-    }
 }

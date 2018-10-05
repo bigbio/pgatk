@@ -11,12 +11,18 @@ public class ExistingPeptides {
     public ExistingPeptides() {
     }
 
-    //evaluates if a certain peptidestring is already present
+    /**
+     * Evaluates if a certain PeptideString is already present
+     * @param peptideString
+     * @return true if peptide exists
+     */
     public final boolean contains(String peptideString) {
         return m_existing_peptides.containsKey(peptideString);
     }
 
-    // add an entry. creates the entry in the map if it does not already exist
+    /**
+     *
+     */
     public final void add(String peptideString, PeptideEntry peptideEntry) {
         ArrayList<PeptideEntry> peptideEntries = m_existing_peptides.computeIfAbsent(peptideString, k -> new ArrayList<>());
         peptideEntries.add(peptideEntry);

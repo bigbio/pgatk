@@ -22,11 +22,11 @@ import java.util.Map;
  * @author ypriverol
  */
 
-public class TabInputPeptideFileParser {
+public class TabInputPeptideFileParser implements PeptideInputReader{
 
     //read function. this reads the peptides input and sets the wheels in motion.
     //this function will set the wheels in motion to find the peptides in the proteins.
-    public static void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
+    public void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
 
         FileInputStream ifs = new FileInputStream(file);
         BufferedReader reader = new BufferedReader(new InputStreamReader(ifs));
