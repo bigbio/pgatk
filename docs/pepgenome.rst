@@ -59,8 +59,11 @@ Usage
 
 How to easily run the tool (**e.g. Human**)::
 
-    $ java -jar -Xmx5G PepGenome-{version}.jar -gtf gencode-{version}.gtf
+    $ java -jar -Xmx5G PepGenome-{version}-bin.jar -gtf gencode-{version}.gtf
       -fasta gencode-{version}-translations.fa -in file.tsv
+
+
+.. note:: the tool can be download from these `url <https://github.com/bigbio/pgatk/releases>`_
 
 
 Optional arguments
