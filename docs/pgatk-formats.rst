@@ -155,3 +155,29 @@ Like BED but containing the location of the post-translational modification on t
 |.. image:: images/any.svg                | Any other post-translational modification                                    |
 |   :width: 25                            |                                                                              |
 +-----------------------------------------+------------------------------------------------------------------------------+
+
+
+Additional Files formats
+---------------------------
+
+Peptide Atlas Peptide List
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+`PeptideAtlas <www.peptideatlas.org>`_ released every month/year a list of peptides that has been found/identified by MS/MS (see the list `here <https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/defaultBuildsPepsProts?_subtab=3>`_). The PGATK support the output list as input of some of the tools such as :ref:`pepgenome` .
+
++----------------------+--------------------------------+
+|Column                |Description                     |
++======================+================================+
+|peptide_accession     |Peptide Accession (PAp06389395) |
++----------------------+--------------------------------+
+|peptide_sequence      |Peptide Sequence                |
++----------------------+--------------------------------+
+|best_probability      |Best Peptide Probability        |
++----------------------+--------------------------------+
+|n_observations        |Spectral counting               |
++----------------------+--------------------------------+
+|....                  | More properties not used       |
++----------------------+--------------------------------+
+
+.. note:: A full pipeline to map the PeptideAltas peptide evidences to Genome Coordinates can be found here.
+
