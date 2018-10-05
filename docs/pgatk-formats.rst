@@ -58,6 +58,8 @@ The **pedBed** Fields and Properties supported by PGATK:
 +---------------------------+-----------------------------------------------+-------------+
 |transcriptAccession        |Transcript Accession                           |             |
 +---------------------------+-----------------------------------------------+-------------+
+|peptideSequence            |Peptide Sequence with no PTMs added            |             |
++---------------------------+-----------------------------------------------+-------------+
 |proteinUniqueness          |Peptide uniqueness                             |             |
 |                           |(See color code :ref:`color`)                  |             |
 +---------------------------+-----------------------------------------------+-------------+
