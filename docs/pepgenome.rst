@@ -63,7 +63,7 @@ How to easily run the tool (**e.g. Human**)::
       -fasta gencode-{version}-translations.fa -in file.tsv
 
 
-.. note:: the tool can be download from these `url <https://github.com/bigbio/pgatk/releases>`_
+.. note:: the tool can be download from `PepGenome Releases <https://github.com/bigbio/pgatk/releases>`_
 
 
 Optional arguments
