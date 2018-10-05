@@ -165,19 +165,21 @@ Peptide Atlas Peptide List
 
 `PeptideAtlas <www.peptideatlas.org>`_ released every month/year a list of peptides that has been found/identified by MS/MS (see the list `here <https://db.systemsbiology.net/sbeams/cgi/PeptideAtlas/defaultBuildsPepsProts?_subtab=3>`_). The PGATK support the output list as input of some of the tools such as :ref:`pepgenome` .
 
-+----------------------+--------------------------------+
-|Column                |Description                     |
-+======================+================================+
-|peptide_accession     |Peptide Accession (PAp06389395) |
-+----------------------+--------------------------------+
-|peptide_sequence      |Peptide Sequence                |
-+----------------------+--------------------------------+
-|best_probability      |Best Peptide Probability        |
-+----------------------+--------------------------------+
-|n_observations        |Spectral counting               |
-+----------------------+--------------------------------+
-|....                  | More properties not used       |
-+----------------------+--------------------------------+
++----------------+----------------------+--------------------------------+
+|Column          |Field                 |Description                     |
++================+======================+================================+
+|1               |peptide_accession     |Peptide Accession (PAp06389395) |
++----------------+----------------------+--------------------------------+
+|2               |peptide_sequence      |Peptide Sequence                |
++----------------+----------------------+--------------------------------+
+|3               |best_probability      |Best Peptide Probability        |
++----------------+----------------------+--------------------------------+
+|4               |n_observations        |Spectral counting               |
++----------------+----------------------+--------------------------------+
+|....            |                      | More properties not used       |
++----------------+----------------------+--------------------------------+
+
+.. hint:: For our pipelines and tools the order of the column is important.
 
 .. note:: A full pipeline to map the PeptideAltas peptide evidences to Genome Coordinates can be found here.
 
