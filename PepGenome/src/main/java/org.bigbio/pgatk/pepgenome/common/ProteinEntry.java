@@ -110,25 +110,25 @@ public class ProteinEntry implements Serializable {
     //returns the genomic coordinates.
     //mapping function. takes the positions calculated in the KmereMap and generates the genomic coordinates for all peptides of this protein.
     public ArrayList<ArrayList<GenomeCoordinates>> find_coordinates(int peptideseqSize, ArrayList<PositionMismatchT> positions) {
-        ArrayList<ArrayList<GenomeCoordinates>> found_coordinates = new ArrayList<>();
-        Coordinates peptide_coordinates = new Coordinates();
-        peptide_coordinates.setCterm(Offset.off3);
-        peptide_coordinates.setNterm(Offset.off3);
+        ArrayList<ArrayList<GenomeCoordinates>> foundCoordinates = new ArrayList<>();
+        Coordinates peptideCoordinates = new Coordinates();
+        peptideCoordinates.setCterm(Offset.off3);
+        peptideCoordinates.setNterm(Offset.off3);
 
         //iterate all found positions
         for (PositionMismatchT current : positions) {
-            peptide_coordinates.setStart(current.position_in_protein());
-            peptide_coordinates.setEnd(current.position_in_protein() + (peptideseqSize - 1));
+            peptideCoordinates.setStart(current.position_in_protein());
+            peptideCoordinates.setEnd(current.position_in_protein() + (peptideseqSize - 1));
             ArrayList<GenomeCoordinates> single = new ArrayList<>();
-            m_coordinates_map.stream().filter(e -> e.getKey().equals(peptide_coordinates))
+            m_coordinates_map.stream().filter(e -> e.getKey().equals(peptideCoordinates))
                     .forEach(fe -> {
-                        Pair<Coordinates, GenomeCoordinates> coordinatesPartial = Utils.get_coordinates(fe.getKey(), fe.getValue(), peptide_coordinates);
+                        Pair<Coordinates, GenomeCoordinates> coordinatesPartial = Utils.get_coordinates(fe.getKey(), fe.getValue(), peptideCoordinates);
                         single.add(coordinatesPartial.getValue());
                     });
             //and has to be done several times to find all peptides.
-            found_coordinates.add(single);
+            foundCoordinates.add(single);
         }
-        return found_coordinates;
+        return foundCoordinates;
     }
 
     @Override

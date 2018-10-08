@@ -8,8 +8,6 @@ import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.PeptideInputReader;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
-import uk.ac.ebi.pride.jmztab.model.PSM;
-import uk.ac.ebi.pride.jmztab.utils.MZTabFileParser;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -74,15 +72,14 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
                 quant = Double.parseDouble(tokens.get(3));
                 //the matching will only use the amino acids.
                 iso_seq_without_ptms = Utils.make_iso_sequence(Utils.remove_ptms(peptide_string));
-                if(peptide_string.equalsIgnoreCase("EIPMDPSIQNELTQPPTITK")){
-                    log.info(iso_seq_without_ptms);
-                }
-
                 if (!coordwrapper.isPeptidePresent(iso_seq_without_ptms)) {
                     //the gene_id_map.find_peptide function will match the peptide.
                     gene_id_map = k.find_peptide(iso_seq_without_ptms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
                         mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
+                    }
+                    if (gene_id_map.isEmpty()){
+                        ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
                     }
                 } else {
                     //if the peptide already exists its genomic coordinates dont have to be recalculated.
@@ -93,6 +90,9 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
                     }
                 }
             }
+            ofs.flush();
+            ofs.close();
+
         } catch (IOException e) {
             log.error("Could not create mzTab file reader", e);
             throw new IOException("The file doesn't not exists -- " + file);

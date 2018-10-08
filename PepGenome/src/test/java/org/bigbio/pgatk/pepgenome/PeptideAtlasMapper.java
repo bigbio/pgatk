@@ -7,10 +7,8 @@ import org.junit.Test;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.GZIPInputStream;
 
 /**
  * This code is licensed under the Apache License, Version 2.0 (the
@@ -30,12 +28,15 @@ public class PeptideAtlasMapper {
     String fileIn = null;
     String fileFasta = null;
     String fileGTF = null;
+    private String fileUnmappedIn;
 
 
     @Before
     public void setUp() throws Exception {
 
         fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("peptideatlas/peptideatlas-500.tsv")).toURI()).getAbsolutePath();
+        fileUnmappedIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("peptideatlas/peptideatlas-unmapped-500.tsv")).toURI()).getAbsolutePath();
+
 
         fileFasta = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/gencode.v25.pc_translations.fa.gz")).toURI())).getAbsolutePath();
 
@@ -67,6 +68,35 @@ public class PeptideAtlasMapper {
 
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(109869, bedLines.size());
+
+        deleteOnExits();
+        log.info(" ");
+
+    }
+
+    @Test
+    public void peptideUnMappedTest() throws IOException {
+        log.info("InMemoryTest");
+        List<String> argList = new ArrayList<>();
+
+        argList.add("-in");
+        argList.add(fileUnmappedIn);
+        argList.add("-fasta");
+        argList.add(fileFasta);
+        argList.add("-gtf");
+        argList.add(fileGTF);
+        argList.add("-inf");
+        argList.add("peptideatlas");
+
+
+        String[] args = new String[argList.size()];
+        argList.toArray(args);
+        PepGenomeTool.main(args);
+
+        File outputBed = new File(fileUnmappedIn.replace(".tsv", ".bed"));
+
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
+        Assert.assertEquals(0, bedLines.size());
 
         deleteOnExits();
         log.info(" ");

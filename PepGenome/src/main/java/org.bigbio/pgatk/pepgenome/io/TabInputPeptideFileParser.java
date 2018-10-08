@@ -65,6 +65,9 @@ public class TabInputPeptideFileParser implements PeptideInputReader{
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
                         mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
                     }
+                    if (gene_id_map.isEmpty()){
+                        ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
+                    }
                 } else {
                     //if the peptide already exists its genomic coordinates dont have to be recalculated.
                     //only the tags and PTMs have to be added

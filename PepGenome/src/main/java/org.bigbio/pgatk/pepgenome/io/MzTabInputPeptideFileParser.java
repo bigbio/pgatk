@@ -36,7 +36,7 @@ public class MzTabInputPeptideFileParser implements PeptideInputReader{
      *
      * @param file input file.
      */
-    public void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
+    public  void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
 
         File mzTabFile = new File(file);
         FileOutputStream ofs = new FileOutputStream(unmappedoutput);
@@ -68,6 +68,9 @@ public class MzTabInputPeptideFileParser implements PeptideInputReader{
                     gene_id_map = k.find_peptide(iso_seq_without_ptms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
                         mapping.add_peptide(coordwrapper, peptide_string, ms_run, sigPSMs, gene_id_map.size(), ofs, quant, it);
+                    }
+                    if (gene_id_map.isEmpty()){
+                        ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + ms_run + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
                     }
                 } else {
                     //if the peptide already exists its genomic coordinates dont have to be recalculated.

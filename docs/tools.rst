@@ -5,5 +5,5 @@ PGATK Tools
    :maxdepth: 2
 
    PepGenome <pepgenome>
-   PepBed <pepbed>
+   PepBedR <pepbedr>
 

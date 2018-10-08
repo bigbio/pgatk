@@ -7,10 +7,8 @@ import org.junit.Test;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-import java.util.zip.GZIPInputStream;
 
 /**
  * This code is licensed under the Apache License, Version 2.0 (the

@@ -8,7 +8,6 @@ import org.junit.runners.MethodSorters;
 
 import java.io.*;
 import java.util.*;
-import java.util.zip.GZIPInputStream;
 
 /**
  * This code is licensed under the Apache License, Version 2.0 (the

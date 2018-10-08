@@ -72,14 +72,9 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
         this.numTranscripts = 0;
         this.geneUnique = true;
         this.transcriptUnique = true;
-//        this.pepCoordinates = new TreeSet<>(new PeptidecoordsPCompare());
-//        this.tissueTags = new TreeMap<>();
         this.startCoord = 0;
         this.endCoord = 0;
         this.associatedGene = associatedgene;
-//        this.pepForms = = new TreeMap<>();
-//        this.transcriptIds = new TreeSet<>();
-//        this.exonIds = new TreeSet<>();
     }
 
     //generates a map that holds all PTMs in the given sequence.
@@ -385,103 +380,103 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
 
     //this function creates a coordinate_map_type and works similar to a CoordinateMapTypeConstructor.
     private static ArrayList<Pair<Coordinates, GenomeCoordinates>> create_coordinate_map_type(ArrayList<GenomeCoordinates> genomecoords) {
-        ArrayList<Pair<Coordinates, GenomeCoordinates>> coord_map = new ArrayList<>();
-        Coordinates prev_prot_coord = new Coordinates();
-        prev_prot_coord.setCterm(Offset.off3);
-        prev_prot_coord.setNterm(Offset.off3);
-        prev_prot_coord.setStart(0);
-        prev_prot_coord.setEnd(0);
+        ArrayList<Pair<Coordinates, GenomeCoordinates>> coordMap = new ArrayList<>();
+        Coordinates prevProtCoord = new Coordinates();
+        prevProtCoord.setCterm(Offset.off3);
+        prevProtCoord.setNterm(Offset.off3);
+        prevProtCoord.setStart(0);
+        prevProtCoord.setEnd(0);
 
-        for (GenomeCoordinates genome_coordinates_itr : genomecoords) {
-            Coordinates prot_coord = new Coordinates();
-            GenomeCoordinates genome_coordinates = new GenomeCoordinates(genome_coordinates_itr);
-            if (genome_coordinates.getStrand() == Strand.rev) {
-                int start = genome_coordinates.getEnd();
-                int end = genome_coordinates.getStart();
-                genome_coordinates.setStart(start);
-                genome_coordinates.setEnd(end);
+        for (GenomeCoordinates genomeCoordinatesItr : genomecoords) {
+            Coordinates protCoord = new Coordinates();
+            GenomeCoordinates genomeCoordinates = new GenomeCoordinates(genomeCoordinatesItr);
+            if (genomeCoordinates.getStrand() == Strand.rev) {
+                int start = genomeCoordinates.getEnd();
+                int end = genomeCoordinates.getStart();
+                genomeCoordinates.setStart(start);
+                genomeCoordinates.setEnd(end);
             }
 
-            if (prev_prot_coord.getCterm() != Offset.off3) {
-                prot_coord.setNterm(Offset.forValue(3 - prev_prot_coord.getCterm().getValue()));
+            if (prevProtCoord.getCterm() != Offset.off3) {
+                protCoord.setNterm(Offset.forValue(3 - prevProtCoord.getCterm().getValue()));
             } else {
-                prot_coord.setNterm(Offset.off3);
+                protCoord.setNterm(Offset.off3);
             }
 
             int length;
 
-            if (genome_coordinates.getStrand() == Strand.fwd) {
-                length = genome_coordinates.getEnd() - genome_coordinates.getStart() + 1;
+            if (genomeCoordinates.getStrand() == Strand.fwd) {
+                length = genomeCoordinates.getEnd() - genomeCoordinates.getStart() + 1;
             } else {
-                length = genome_coordinates.getStart() - genome_coordinates.getEnd() + 1;
+                length = genomeCoordinates.getStart() - genomeCoordinates.getEnd() + 1;
             }
             // calc cterm
             if (length % 3 == 0) {
-                if (prot_coord.getNterm() != Offset.off3) {
-                    prot_coord.setCterm(Offset.forValue(3 - prot_coord.getNterm().getValue()));
+                if (protCoord.getNterm() != Offset.off3) {
+                    protCoord.setCterm(Offset.forValue(3 - protCoord.getNterm().getValue()));
                 } else {
-                    prot_coord.setCterm(Offset.off3);
+                    protCoord.setCterm(Offset.off3);
                 }
             } else if (length % 3 == 2) {
-                if (prot_coord.getNterm() == Offset.off3) {
-                    prot_coord.setCterm(Offset.off2);
-                } else if (prot_coord.getNterm() == Offset.off2) {
-                    prot_coord.setCterm(Offset.off3);
-                } else if (prot_coord.getNterm() == Offset.off1) {
-                    prot_coord.setCterm(Offset.off1);
+                if (protCoord.getNterm() == Offset.off3) {
+                    protCoord.setCterm(Offset.off2);
+                } else if (protCoord.getNterm() == Offset.off2) {
+                    protCoord.setCterm(Offset.off3);
+                } else if (protCoord.getNterm() == Offset.off1) {
+                    protCoord.setCterm(Offset.off1);
                 }
             } else if (length % 3 == 1) {
-                if (prot_coord.getNterm() == Offset.off3) {
-                    prot_coord.setCterm(Offset.off1);
-                } else if (prot_coord.getNterm() == Offset.off1) {
-                    prot_coord.setCterm(Offset.off3);
-                } else if (prot_coord.getNterm() == Offset.off2) {
-                    prot_coord.setCterm(Offset.off2);
+                if (protCoord.getNterm() == Offset.off3) {
+                    protCoord.setCterm(Offset.off1);
+                } else if (protCoord.getNterm() == Offset.off1) {
+                    protCoord.setCterm(Offset.off3);
+                } else if (protCoord.getNterm() == Offset.off2) {
+                    protCoord.setCterm(Offset.off2);
                 }
             }
 
             // calc protein coordinates
-            if (prot_coord.getNterm() != Offset.off3) {
-                prot_coord.setStart(prev_prot_coord.getEnd());
+            if (protCoord.getNterm() != Offset.off3) {
+                protCoord.setStart(prevProtCoord.getEnd());
             } else {
-                if (prev_prot_coord.getEnd() == 0 && coord_map.isEmpty()) {
-                    prot_coord.setStart(0);
+                if (prevProtCoord.getEnd() == 0 && coordMap.isEmpty()) {
+                    protCoord.setStart(0);
                 } else {
-                    prot_coord.setStart(prev_prot_coord.getEnd() + 1);
+                    protCoord.setStart(prevProtCoord.getEnd() + 1);
                 }
             }
 
             int offsets = 0;
-            if (prot_coord.getNterm() != Offset.off3) {
-                offsets = offsets + prot_coord.getNterm().getValue();
+            if (protCoord.getNterm() != Offset.off3) {
+                offsets = offsets + protCoord.getNterm().getValue();
             }
 
-            if (genome_coordinates.getStrand() == Strand.fwd) {
-                length = genome_coordinates.getEnd() - genome_coordinates.getStart() + 1 - offsets;
+            if (genomeCoordinates.getStrand() == Strand.fwd) {
+                length = genomeCoordinates.getEnd() - genomeCoordinates.getStart() + 1 - offsets;
             } else {
-                length = genome_coordinates.getStart() - genome_coordinates.getEnd() + 1 - offsets;
+                length = genomeCoordinates.getStart() - genomeCoordinates.getEnd() + 1 - offsets;
             }
 
             int pep_length = length / 3;
 
-            int pep_end = prot_coord.getStart() + pep_length - 1;
-            if (prot_coord.getCterm() != Offset.off3) {
+            int pep_end = protCoord.getStart() + pep_length - 1;
+            if (protCoord.getCterm() != Offset.off3) {
                 pep_end = pep_end + 1;
             }
-            if (prot_coord.getNterm() != Offset.off3) {
+            if (protCoord.getNterm() != Offset.off3) {
                 pep_end = pep_end + 1;
             }
 
-            prot_coord.setEnd(pep_end);
+            protCoord.setEnd(pep_end);
 
-            prev_prot_coord = prot_coord;
+            prevProtCoord = protCoord;
 
-            coord_map.add(new Pair<>(prot_coord, genome_coordinates));
+            coordMap.add(new Pair<>(protCoord, genomeCoordinates));
         }
-        return coord_map;
+        return coordMap;
     }
 
-    //adds a peptide. this funciton is used if this specific peptide has not yet been found. it will also find the peptides genomic coordinates.
+    //adds a peptide. this function is used if this specific peptide has not yet been found. it will also find the peptides genomic coordinates.
     public final void add_peptide(CoordinateWrapper coordwrapper, String sequence, String ptmSequence, String tag, int sigPSMs, TranscriptsT transcripts, int genes, FileOutputStream ofstream, double quant) {
         if (pSequence.isEmpty()) {
             pSequence = sequence;
