@@ -34,7 +34,7 @@ public class KmerSortedMap implements IKmerMap {
     //in the gencode fasta file, data analysis showed that the average size of the list is 18 elements (for approx. 93 000 proteins)
     //and the map size is at approx 1.8m elements.
 
-    private Map<String, IKmerEntry[]> m_kmersTemp = new ConcurrentHashMap<>();
+    private Map<String, IKmerEntry[]> m_kmersTemp;
 
     private Map<String, IKmerEntry[]> m_kmers;
 
@@ -48,7 +48,7 @@ public class KmerSortedMap implements IKmerMap {
 
     private KmerSortedMap.ProteinMatcher proteinMatcher;
 
-    public KmerSortedMap() {
+    public KmerSortedMap(int kmerSize) {
         sorted = false;
         this.m_key_gen = new PossibleKeyGenerator(this);
         if ((GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES > 1) && GenomeMapper.PEPTIDE_MAPPER.ONE_IN_FIVE_MODE) {
@@ -56,6 +56,8 @@ public class KmerSortedMap implements IKmerMap {
         } else {
             proteinMatcher = new KmerSortedMap.MatcherNormal();
         }
+
+        m_kmersTemp = new ConcurrentHashMap<>(kmerSize);
     }
 
     //digests and adds a protein to the map.

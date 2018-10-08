@@ -49,35 +49,34 @@ public class MzTabInputPeptideFileParser implements PeptideInputReader{
         try {
             MZTabFileParser parser = new MZTabFileParser(mzTabFile, new FileOutputStream(mzTabFile.getAbsolutePath() + "errors.out"));
 
-            String peptide_string;
-            String ms_run = file;
-            String iso_seq_without_ptms;
+            String peptideString;
+            String isoSeqWithoutPtms;
             int sigPSMs;
             double quant;
             Map<String, TranscriptsT> gene_id_map;
 
             for(PSM psm: parser.getMZTabFile().getPSMs()){
-                peptide_string = psm.getSequence();
+                peptideString = psm.getSequence();
                 quant = 1.0;
                 sigPSMs = 1;
                 //the matching will only use the amino acids.
-                iso_seq_without_ptms = Utils.make_iso_sequence(Utils.remove_ptms(peptide_string));
+                isoSeqWithoutPtms = Utils.make_iso_sequence(Utils.remove_ptms(peptideString));
 
-                if (!coordwrapper.isPeptidePresent(iso_seq_without_ptms)) {
+                if (!coordwrapper.isPeptidePresent(isoSeqWithoutPtms)) {
                     //the gene_id_map.find_peptide function will match the peptide.
-                    gene_id_map = k.find_peptide(iso_seq_without_ptms);
+                    gene_id_map = k.find_peptide(isoSeqWithoutPtms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
-                        mapping.add_peptide(coordwrapper, peptide_string, ms_run, sigPSMs, gene_id_map.size(), ofs, quant, it);
+                        mapping.add_peptide(coordwrapper, peptideString, file, sigPSMs, gene_id_map.size(), ofs, quant, it);
                     }
                     if (gene_id_map.isEmpty()){
-                        ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + ms_run + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
+                        ofs.write(("No-Gene" + "\t" + peptideString + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + file + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
                     }
                 } else {
                     //if the peptide already exists its genomic coordinates dont have to be recalculated.
                     //only the tags and PTMs have to be added
-                    ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(iso_seq_without_ptms);
+                    ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(isoSeqWithoutPtms);
                     for (PeptideEntry aRefVec : refVec) {
-                        aRefVec.add_peptide(peptide_string, ms_run, sigPSMs, quant);
+                        aRefVec.add_peptide(peptideString, file, sigPSMs, quant);
                     }
                 }
             }

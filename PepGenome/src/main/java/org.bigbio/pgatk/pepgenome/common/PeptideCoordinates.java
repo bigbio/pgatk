@@ -156,18 +156,18 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
     }
 
     @Override
-    public int compareTo(PeptideCoordinates otherInstance) {
-        if (lessThan(otherInstance)) {
+    public int compareTo(PeptideCoordinates o) {
+        if (lessThan(o)) {
             return -1;
         }
-        if (otherInstance.lessThan(this)) {
+        if (o.lessThan(this)) {
             return 1;
         }
         return 0;
     }
 
     @Override
-    public boolean equals(Object otherInstance) {
-        return compareTo((PeptideCoordinates) otherInstance) == 0;
+    public boolean equals(Object obj) {
+        return compareTo((PeptideCoordinates) obj) == 0;
     }
 }

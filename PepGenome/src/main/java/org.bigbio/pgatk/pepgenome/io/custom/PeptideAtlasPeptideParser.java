@@ -52,7 +52,6 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
         try {
 
             String peptide_string;
-            String ms_run = file;
             String iso_seq_without_ptms;
             String tissue;
             int sigPSMs;
@@ -86,7 +85,7 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
                     //only the tags and PTMs have to be added
                     ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(iso_seq_without_ptms);
                     for (PeptideEntry aRefVec : refVec) {
-                        aRefVec.add_peptide(peptide_string, ms_run, sigPSMs, quant);
+                        aRefVec.add_peptide(peptide_string, file, sigPSMs, quant);
                     }
                 }
             }

@@ -11,11 +11,11 @@ public class MapentryPCompare implements Comparator<MapEntry>, Serializable {
     private static final long serialVersionUID = 2616763124059915920L;
 
     @Override
-    public int compare(MapEntry lhs, MapEntry rhs) {
-        if (lhs.lessThan(rhs)) {
+    public int compare(MapEntry o1, MapEntry o2) {
+        if (o1.lessThan(o2)) {
             return -1;
         }
-        if (rhs.lessThan(lhs)) {
+        if (o2.lessThan(o1)) {
             return 1;
         }
         return 0;

@@ -23,10 +23,10 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
     private List<String> m_tags = new ArrayList<>();
 
     @Override
-    public int compareTo(GeneEntry otherInstance) {
-        if (isLessThan(otherInstance)) {
+    public int compareTo(GeneEntry o) {
+        if (isLessThan(o)) {
             return -1;
-        } else if (otherInstance.isLessThan(this)) {
+        } else if (o.isLessThan(this)) {
             return 1;
         }
         return 0;

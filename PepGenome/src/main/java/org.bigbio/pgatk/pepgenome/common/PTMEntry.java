@@ -48,8 +48,8 @@ public class PTMEntry implements Serializable {
     }
 
     @Override
-    public boolean equals(Object o) {
-        return equalsTo((PTMEntry) o);
+    public boolean equals(Object obj) {
+        return equalsTo((PTMEntry) obj);
     }
 
     //returns true if the ptm_psi_name, start and end coords are the same,

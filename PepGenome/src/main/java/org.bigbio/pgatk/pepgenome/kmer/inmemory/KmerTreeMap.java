@@ -24,7 +24,7 @@ public class KmerTreeMap implements IKmerMap, Serializable {
     //kmerMap
     //in the gencode fasta file, data analysis showed that the average size of the list is 18 elements (for approx. 93 000 proteins)
     //and the map size is at approx 1.8m elements.
-    private Map<String, IKmerEntry[]> m_kmers = new TreeMap<>();
+    private Map<String, IKmerEntry[]> m_kmers;
 
     //gene_id map
     private Map<String, TranscriptsT> m_gene_id_map = new TreeMap<>();
@@ -42,6 +42,9 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         } else {
             proteinMatcher = new MatcherNormal();
         }
+
+
+
     }
 
     //digests and adds a protein to the map.

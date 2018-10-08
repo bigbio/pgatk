@@ -11,11 +11,11 @@ public class PeptidecoordsPCompare implements Comparator<PeptideCoordinates>, Se
     private static final long serialVersionUID = -3542945510049682487L;
 
     @Override
-    public int compare(PeptideCoordinates lhs, PeptideCoordinates rhs) {
-        if (lhs.lessThan(rhs)) {
+    public int compare(PeptideCoordinates o1, PeptideCoordinates o2) {
+        if (o1.lessThan(o2)) {
             return -1;
         }
-        if (rhs.lessThan(lhs)) {
+        if (o2.lessThan(o1)) {
             return 1;
         }
         return 0;

@@ -24,10 +24,10 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
     private Set<String> transcripts = new TreeSet<>();
 
     @Override
-    public int compareTo(MapEntry otherInstance) {
-        if (lessThan(otherInstance)) {
+    public int compareTo(MapEntry o) {
+        if (lessThan(o)) {
             return -1;
-        } else if (otherInstance.lessThan(this)) {
+        } else if (o.lessThan(this)) {
             return 1;
         }
         return 0;

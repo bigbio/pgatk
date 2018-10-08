@@ -268,12 +268,14 @@ public class PepGenomeTool {
             log.info("Fasta done: " + coordinate_wrapper.size() + " proteins read.");
             log.info("building KmerTreeMap...");
 
+            int kmerSize = (coordinate_wrapper.getTotalAACount()/coordinate_wrapper.getNumberOfProteins());
+            kmerSize = (kmerSize/GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH)*coordinate_wrapper.getNumberOfProteins();
 
             IKmerMap kmer_map;
             if(inMemory)
                 kmer_map = new KmerTreeMap();
             else
-                kmer_map = new KmerSortedMap();
+                kmer_map = new KmerSortedMap(kmerSize);
 
             coordinate_wrapper.add_all_proteins_to_kmer_map(kmer_map);
 

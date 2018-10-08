@@ -58,10 +58,10 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     private Set<String> exonIds = new TreeSet<>();
 
     @Override
-    public int compareTo(PeptideEntry otherInstance) {
-        if (lessThan(otherInstance)) {
+    public int compareTo(PeptideEntry o) {
+        if (lessThan(o)) {
             return -1;
-        } else if (otherInstance.lessThan(this)) {
+        } else if (o.lessThan(this)) {
             return 1;
         }
         return 0;

@@ -34,18 +34,18 @@ public class Coordinates<T> implements Comparable<T>, Serializable {
     }
 
     @Override
-    public int compareTo(T otherInstance) {
-        if (lt(this, (Coordinates) otherInstance)) {
+    public int compareTo(T o) {
+        if (lt(this, (Coordinates) o)) {
             return -1;
-        } else if (lt((Coordinates) otherInstance, this)) {
+        } else if (lt((Coordinates) o, this)) {
             return 1;
         }
         return 0;
     }
 
     @Override
-    public boolean equals(Object otherInstance) {
-        return compareTo((T) otherInstance) == 0;
+    public boolean equals(Object obj) {
+        return compareTo((T) obj) == 0;
     }
 
     public int getStart() {

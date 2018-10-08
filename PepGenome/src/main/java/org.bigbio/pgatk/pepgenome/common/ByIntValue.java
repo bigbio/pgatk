@@ -10,11 +10,11 @@ public class ByIntValue implements Comparator<Pair<String, Integer>>, Serializab
     private static final long serialVersionUID = -6930072683573085416L;
 
     @Override
-    public int compare(Pair<String, Integer> lhs, Pair<String, Integer> rhs) {
-        if (lhs.getValue() < rhs.getValue()) {
+    public int compare(Pair<String, Integer> o1, Pair<String, Integer> o2) {
+        if (o1.getValue() < o2.getValue()) {
             return -1;
         }
-        if (rhs.getValue() < lhs.getValue()) {
+        if (o2.getValue() < o1.getValue()) {
             return 1;
         }
         return 0;

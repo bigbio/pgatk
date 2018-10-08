@@ -75,6 +75,7 @@ public class FastaParser implements Serializable {
         if (mLine == null || !mLine.startsWith(">")) {
             mLine = "";
         }
+
         return new FastaEntry(header, sequenceBuilder.toString());
     }
 }

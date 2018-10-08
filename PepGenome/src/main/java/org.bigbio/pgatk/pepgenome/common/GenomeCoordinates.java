@@ -33,18 +33,18 @@ public class GenomeCoordinates extends Coordinates<GenomeCoordinates> implements
     }
 
     @Override
-    public int compareTo(GenomeCoordinates otherInstance) {
-        if (lessThan(otherInstance)) {
+    public int compareTo(GenomeCoordinates o) {
+        if (lessThan(o)) {
             return -1;
-        } else if (otherInstance.lessThan(this)) {
+        } else if (o.lessThan(this)) {
             return 1;
         }
         return 0;
     }
 
     @Override
-    public boolean equals(Object otherInstance) {
-        return compareTo((GenomeCoordinates) otherInstance) == 0;
+    public boolean equals(Object obj) {
+        return compareTo((GenomeCoordinates) obj) == 0;
     }
 
     private boolean comapre2(GenomeCoordinates lhs, GenomeCoordinates rhs) {
