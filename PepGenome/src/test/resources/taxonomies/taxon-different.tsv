@@ -1,0 +1,3 @@
+peptide_accession	peptide_sequence	best_probability	n_observations	empirical_proteotypic_score	SSRCalc_relative_hydrophobicity	n_samples	n_protein_mappings	n_genome_locations	is_exon_spanning	is_subpeptide_of	protease_ids	atlas build name	organism_full_name
+PAp06389395	QYAVFAK	1.000	1	0.04	41.85	1	-1	-1	?		10	Human 2018-01b	Zebrafish
+PAp06389265	LPIIVTTYAK	1.000	4	0.08	42.68	2	-1	-1	?		10	Human 2018-01b	Zebrafish

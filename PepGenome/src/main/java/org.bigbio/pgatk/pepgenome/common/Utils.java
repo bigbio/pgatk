@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.bigbio.pgatk.pepgenome.common.Chromosome.scaffold;
+
 public class Utils {
 
     public static void printHelpAndExitProgram(final Options options, boolean shouldExit, int exitCode) {
@@ -391,4 +393,5 @@ public class Utils {
         int end = ((from + len) > str.length()) ? str.length() : ((from + len));
         return str.substring(from, end);
     }
+
 }

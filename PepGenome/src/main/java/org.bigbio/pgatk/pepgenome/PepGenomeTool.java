@@ -4,6 +4,7 @@ package org.bigbio.pgatk.pepgenome;
 import org.apache.log4j.Logger;
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
+import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.GTFParser;
 import org.bigbio.pgatk.pepgenome.io.MzTabInputPeptideFileParser;

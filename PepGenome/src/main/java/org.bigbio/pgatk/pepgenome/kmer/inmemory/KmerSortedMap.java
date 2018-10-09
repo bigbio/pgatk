@@ -3,7 +3,7 @@ package org.bigbio.pgatk.pepgenome.kmer.inmemory;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bigbio.pgatk.pepgenome.PossibleKeyGenerator;
 import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
-import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
+import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.PositionMismatchT;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
 import org.bigbio.pgatk.pepgenome.common.Utils;

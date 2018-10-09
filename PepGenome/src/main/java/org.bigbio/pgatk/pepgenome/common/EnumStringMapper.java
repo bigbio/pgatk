@@ -1,5 +1,7 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -534,9 +536,12 @@ public class EnumStringMapper {
             }
         }
         if (substr.length() >= 4) {
-            if (substr.startsWith("ACFV") || substr.startsWith("AAEX") || substr.startsWith("AQIB") || substr.startsWith("JSUE") || substr.startsWith("AAGW") || substr.startsWith("AMGL") || substr.startsWith("AACZ") || substr.startsWith("AHZZ") || substr.startsWith("AABR") || substr.startsWith("AAND") || substr.endsWith("hap1") || substr.endsWith("hap2") || substr.endsWith("ndom")) {
-                return scaffold;
-            }
+//            if (substr.startsWith("ACFV") || substr.startsWith("AAEX") || substr.startsWith("AQIB") || substr.startsWith("JSUE") || substr.startsWith("AAGW") || substr.startsWith("AMGL") || substr.startsWith("AACZ") || substr.startsWith("AHZZ") || substr.startsWith("AABR") || substr.startsWith("AAND") || substr.endsWith("hap1") || substr.endsWith("hap2") || substr.endsWith("ndom")) {
+//                return scaffold;
+//            }
+            Chromosome scaffoldResult = GenomeMapper.ScaffoldIdentifier.findScaffold(substr);
+            if(scaffoldResult != null)
+                return scaffoldResult;
         }
         int chromNum = Integer.parseInt(substr);
         if (chromNum == 1) {

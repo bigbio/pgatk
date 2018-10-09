@@ -1,6 +1,6 @@
 package org.bigbio.pgatk.pepgenome;
 
-import org.bigbio.pgatk.pepgenome.common.GenomeMapper;
+import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import javafx.util.Pair;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 

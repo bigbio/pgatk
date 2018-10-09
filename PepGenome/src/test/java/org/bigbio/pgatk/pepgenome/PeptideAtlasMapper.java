@@ -29,6 +29,9 @@ public class PeptideAtlasMapper {
     String fileFasta = null;
     String fileGTF = null;
     private String fileUnmappedIn;
+    private String fileInZebrafish;
+    private String fileFastaZebrafish;
+    private String fileGTFZebrafish;
 
 
     @Before
@@ -36,12 +39,15 @@ public class PeptideAtlasMapper {
 
         fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("peptideatlas/peptideatlas-500.tsv")).toURI()).getAbsolutePath();
         fileUnmappedIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("peptideatlas/peptideatlas-unmapped-500.tsv")).toURI()).getAbsolutePath();
-
-
         fileFasta = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/gencode.v25.pc_translations.fa.gz")).toURI())).getAbsolutePath();
-
         File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz")).toURI());
         fileGTF = TestUtils.unGzip(inputGZfile).getAbsolutePath();
+
+        fileInZebrafish = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/taxon-different.tsv")).toURI()).getAbsolutePath();
+        fileFastaZebrafish = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Danio_rerio.GRCz11.pep.all.fa.gz")).toURI())).getAbsolutePath();
+        inputGZfile = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Danio_rerio.GRCz11.94.gtf.gz")).toURI()));
+        fileGTFZebrafish = inputGZfile.getAbsolutePath();
+
 
     }
 
@@ -94,6 +100,37 @@ public class PeptideAtlasMapper {
         PepGenomeTool.main(args);
 
         File outputBed = new File(fileUnmappedIn.replace(".tsv", ".bed"));
+
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
+        Assert.assertEquals(0, bedLines.size());
+
+        deleteOnExits();
+        log.info(" ");
+
+    }
+
+    @Test
+    public void zebrafishTest() throws IOException {
+        log.info("InMemoryTest");
+        List<String> argList = new ArrayList<>();
+
+        argList.add("-in");
+        argList.add(fileInZebrafish);
+        argList.add("-fasta");
+        argList.add(fileFastaZebrafish);
+        argList.add("-gtf");
+        argList.add(fileGTFZebrafish);
+        argList.add("-inf");
+        argList.add("peptideatlas");
+        argList.add("-species");
+        argList.add("59729");
+
+
+        String[] args = new String[argList.size()];
+        argList.toArray(args);
+        PepGenomeTool.main(args);
+
+        File outputBed = new File(fileInZebrafish.replace(".tsv", ".bed"));
 
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(0, bedLines.size());
