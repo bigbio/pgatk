@@ -72,6 +72,40 @@ public class PepGeonomeMzTabTest  {
 
     }
 
+    @Test
+    public void mzTabTestMissMatches() throws IOException {
+        log.info("InMemoryTest");
+        List<String> argList = new ArrayList<>();
+
+        argList.add("-in");
+        argList.add(fileIn);
+        argList.add("-fasta");
+        argList.add(fileFasta);
+        argList.add("-gtf");
+        argList.add(fileGTF);
+        argList.add("mm");
+        argList.add("2");
+        argList.add("mmmode");
+        argList.add("true");
+        argList.add("-inf");
+        argList.add("mztab");
+
+
+        String[] args = new String[argList.size()];
+        argList.toArray(args);
+        PepGenomeTool.main(args);
+
+        File outputBed = new File(fileIn.replace(".txt", ".bed"));
+
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
+        Assert.assertEquals(4577, bedLines.size());
+
+        deleteOnExits();
+        log.info(" ");
+
+    }
+
+
     private void deleteOnExits() {
         String fileBed = fileIn.replaceAll(".txt", ".bed");
         File fileInput = new File(fileBed);
