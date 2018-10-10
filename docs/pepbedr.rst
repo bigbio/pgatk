@@ -82,8 +82,8 @@ Output:
 
 .. centered::
 
-   .. image:: images/circlePepBedR.png
-      :width: 400
+.. image:: images/circlePepBedR.png
+   :width: 400
 
 .. note:: The distribution of peptides by chromosome. The PepBedR package use the same color code that :ref:`bed` to each track.
 
