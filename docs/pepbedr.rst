@@ -84,10 +84,11 @@ The distribution of peptides by chromosome. (blue_track: modified peptide;  red_
 Reports
 ------------------
 
-The currert package provides a way to generate **pdf** reports by running the following RScript:
+The current package provides a way to generate **pdf** reports by running the following RScript::
 
      Rscript --verbose --vanilla scripts/build_pepbed_report.R -i PepGenome-Peptide-Atlas.bed.gz
          -ref 'hg38' -o report_peptide_atlas.pdf
+
 
 The build_pepbed_report.R compute compute a full report for a bed file. The paramters ```-ref``` is the Genome Assembly version used to perform the mapping to genome coordinates; and the ```-i``` and ```-o``` are the input bed and output pdf folder.
 
