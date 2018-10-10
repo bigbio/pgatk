@@ -80,8 +80,8 @@ The distribution of peptides by chromosome. (blue_track: modified peptide;  red_
 
 Output:
 
-.. image:: images/circlePepBedR.png   | Peptide features per Chromosomes.               |
-|   :width: 200
+.. image:: images/circlePepBedR.png
+   :width: 200
 
 .. note:: The distribution of peptides by chromosome. The PepBedR package use the same color code that :ref:`bed` to each track.
 
