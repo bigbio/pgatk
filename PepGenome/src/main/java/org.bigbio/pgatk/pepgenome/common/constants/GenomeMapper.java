@@ -138,9 +138,12 @@ public class GenomeMapper {
         TAX.put("sus scrofa", TaxonomyIdentifiers.PIG);
         TAX.put("pig", TaxonomyIdentifiers.PIG);
         TAX.put("9823", TaxonomyIdentifiers.PIG);
-        TAX.put("taeniopygia guttata", TaxonomyIdentifiers.ZEBRAFISH);
-        TAX.put("zebra finch", TaxonomyIdentifiers.ZEBRAFISH);
-        TAX.put("59729", TaxonomyIdentifiers.ZEBRAFISH);
+        TAX.put("taeniopygia guttata", TaxonomyIdentifiers.ZEBRAFINCH);
+        TAX.put("zebra finch", TaxonomyIdentifiers.ZEBRAFINCH);
+        TAX.put("59729", TaxonomyIdentifiers.ZEBRAFINCH);
+        TAX.put("danio rerio", TaxonomyIdentifiers.ZEBRAFISH);
+        TAX.put("zebrafish", TaxonomyIdentifiers.ZEBRAFISH);
+        TAX.put("7955", TaxonomyIdentifiers.ZEBRAFISH);
         TAX.put("tetraodon nigroviridid", TaxonomyIdentifiers.TETRAODON);
         TAX.put("tetraodon", TaxonomyIdentifiers.TETRAODON);
         TAX.put("99883", TaxonomyIdentifiers.TETRAODON);
