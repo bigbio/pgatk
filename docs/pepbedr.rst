@@ -1,45 +1,34 @@
 .. _pepbedr
 
 PepBedR: R package to analyze peptidoforms features in Bed Files
---------------------------------------
+==========================================
 
-The PepBedR package allows users of :ref:`bed` file format to analyze and visualized their data and results.
+The PepBedR package allows users of :ref:`bed` file format to analyze and visualized their data and results. It facilitate two major things:
 
-..
+- Descriptive statistics of PepBed files: Number of unique peptides per chromosome, transcript, gene.
+- Circle plots of peptide features by different Peptide properties (Modification, Uniqueness, Sample properties).
 
-### Parsing Bed file
+.. note:: The PepBedR provides set ```Rscript``` utilities to describe PepBed files.
 
-```{r , message=FALSE, warning=FALSE}
 
-# path to bed file(s)
-bed_path <- '/home/biolinux/temp/human/pride_cluster_peptides_9606_Human_pogo.bed'
-bed_mod_path <-  '/home/biolinux/temp/human/pride_cluster_peptides_9606_Human_pogo_ptm.bed'
+Using R package
+------------------
 
-# import bed file as  dataframe
-bed_df <- readBedFile(inputFile = bed_path)
-bed_mod_df <- readBedFile(inputFile = bed_mod_path)
+Parsing Bed file
+~~~~~~~~~~~~~~~~~
 
-# set column name to bed file
-names(bed_df) <- fieldNames
-names(bed_mod_df) <- fieldNames
+.. code-block:: R
+   :linenos:
 
-# convert dataframe to GRanges
-# all non-modified peptides
-granges_peptide <- buildGRangesFromData(data = bed_df,
-                                        chrColName = "chrom",
-                                        startColName = "chromStart",
-                                        endColName = "chromEnd")
+   bed_path <- '/home/biolinux/temp/human/pride_cluster_peptides_9606_Human_pogo.bed'
 
-# all modified peptides
-granges_mod_peptide <- buildGRangesFromData(data = bed_mod_df,
-                                            chrColName = "chrom",
-                                            startColName = "chromStart",
-                                            endColName = "chromEnd")
-```
+   granges_peptide <- importBEDasGRange(inputFile = bed_path)
 
-\newpage
+   n_features <- length(granges_peptide)
+   message(c('Imported ', n_features, ' peptides...'))
 
-### Computing some basic stats from the data
+Computing some basic stats from the data
+~~~~~~~~~~~~~~~~~~~~~
 
 ```{r , message=FALSE, warning=FALSE}
 # getting number of features(peptides) by chromosome
