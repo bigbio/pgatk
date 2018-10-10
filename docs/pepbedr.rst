@@ -78,6 +78,10 @@ The distribution of peptides by chromosome. (blue_track: modified peptide;  red_
    circos.genomicDensity(bed_mod, col = c("#0000FF80"), track.height = 0.1, baseline = 0)
    circos.clear()
 
+Output:
+
+.. image:: images/circlePepBedR.png   | Peptide features per Chromosomes.               |
+|   :width: 25
 
 .. note:: The distribution of peptides by chromosome. The PepBedR package use the same color code that :ref:`bed` to each track.
 

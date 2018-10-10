@@ -531,15 +531,12 @@ public class EnumStringMapper {
             return chrM;
         }
         if (substr.length() >= 2) {
-            if (substr.startsWith("GL") || substr.startsWith("KI") || substr.startsWith("JH") || substr.startsWith("KB") || substr.startsWith("GJ") || substr.startsWith("HT") || substr.startsWith("KL") || substr.startsWith("KE") || substr.startsWith("Un") || substr.startsWith("un") || substr.startsWith("cu") || substr.startsWith("KQ") || substr.startsWith("sc") || substr.startsWith("ul") || substr.startsWith("Co") || substr.startsWith("Ul")) {
-                return scaffold;
-            }
+            Chromosome scaffoldResult = GenomeMapper.ScaffoldIdentifier.findScaffoldTwoCode(substr);
+            if(scaffoldResult != null)
+                return scaffoldResult;
         }
         if (substr.length() >= 4) {
-//            if (substr.startsWith("ACFV") || substr.startsWith("AAEX") || substr.startsWith("AQIB") || substr.startsWith("JSUE") || substr.startsWith("AAGW") || substr.startsWith("AMGL") || substr.startsWith("AACZ") || substr.startsWith("AHZZ") || substr.startsWith("AABR") || substr.startsWith("AAND") || substr.endsWith("hap1") || substr.endsWith("hap2") || substr.endsWith("ndom")) {
-//                return scaffold;
-//            }
-            Chromosome scaffoldResult = GenomeMapper.ScaffoldIdentifier.findScaffold(substr);
+            Chromosome scaffoldResult = GenomeMapper.ScaffoldIdentifier.findScaffoldThreeCode(substr);
             if(scaffoldResult != null)
                 return scaffoldResult;
         }

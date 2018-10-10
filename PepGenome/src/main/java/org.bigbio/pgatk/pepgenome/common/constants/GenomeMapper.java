@@ -8,6 +8,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.bigbio.pgatk.pepgenome.common.Chromosome.scaffold;
+
 /**
  *  These are the default parameters to map the Peptides to a Genome. Some of these parameters
  *  can be change on request by the main tool.
@@ -153,12 +155,14 @@ public class GenomeMapper {
         final static List<String> SCAFFOLD_IDENTIFIER_START = Arrays.asList(new String[]{"ACFV","AAEX", "AQIB", "JSUE", "AAGW", "AMGL", "AACZ", "AHZZ","AABR", "AAND"});
         final static List<String> SCAFFOLD_IDENTIFIER_END = Arrays.asList(new String[]{"hap1", "hap2", "ndom"});
 
+        final static List<String> SCAFFOLD_IDENTIFIER_TWO_START = Arrays.asList(new String[]{"KZ", "KN", "GL", "KI", "JH", "KB", "GJ", "HT","KL", "KE","Un", "un", "cu","KQ","sc","ul","Co", "Ul"});
+
         /**
          * Find scaffold for an specific Scafold notation.
          * @param substr
          * @return Scaffold
          */
-        public static Chromosome findScaffold(String substr){
+        public static Chromosome findScaffoldThreeCode(String substr){
             Chromosome scaffold = null;
             for(String value: SCAFFOLD_IDENTIFIER_START){
                 if(substr.startsWith(value))
@@ -166,6 +170,21 @@ public class GenomeMapper {
             }
             for(String value: SCAFFOLD_IDENTIFIER_END){
                 if(substr.endsWith(value))
+                    scaffold = Chromosome.scaffold;
+            }
+            return scaffold;
+
+        }
+
+        /**
+         * Find scaffold for an specific Scafold notation.
+         * @param substr
+         * @return Scaffold
+         */
+        public static Chromosome findScaffoldTwoCode(String substr){
+            Chromosome scaffold = null;
+            for(String value: SCAFFOLD_IDENTIFIER_TWO_START){
+                if(substr.startsWith(value))
                     scaffold = Chromosome.scaffold;
             }
             return scaffold;
