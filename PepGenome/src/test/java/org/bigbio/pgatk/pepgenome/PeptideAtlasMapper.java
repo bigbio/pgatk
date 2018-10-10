@@ -123,7 +123,7 @@ public class PeptideAtlasMapper {
         argList.add("-inf");
         argList.add("peptideatlas");
         argList.add("-species");
-        argList.add("59729");
+        argList.add("7955");
 
 
         String[] args = new String[argList.size()];
