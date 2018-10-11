@@ -133,7 +133,7 @@ public class PeptideAtlasMapper {
         File outputBed = new File(fileInZebrafish.replace(".tsv", ".bed"));
 
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
-        Assert.assertEquals(0, bedLines.size());
+        Assert.assertEquals(7, bedLines.size());
 
         deleteOnExits();
         log.info(" ");
