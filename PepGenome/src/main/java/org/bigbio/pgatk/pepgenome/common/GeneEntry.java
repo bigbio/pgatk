@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class GeneEntry implements Comparable<GeneEntry>, Serializable {
 
@@ -23,6 +25,12 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
     private String m_gene_name;
     //tags. (ncRNA_host,...)
     private List<String> m_tags = new ArrayList<>();
+    //pattern for gene ID
+    private static Pattern GENEPATTERN = Pattern.compile("gene_id \"([^\"]*)\"");
+    //pattern for transcript ID
+    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript_id \"([^\"]*)\"");
+    //pattern for exon ID
+    private static Pattern EXONPATTERN = Pattern.compile("exon_id \"([^\"]*)\"");
 
     @Override
     public int compareTo(GeneEntry o) {
@@ -114,39 +122,33 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
         return m_coord.getChr() == Chromosome.scaffold && !m_coord.getChrscaf().equals("");
     }
 
-    //looks for the text specified in common.GenomeMapper::ID::geneId and returns the ID (including the trailing number of length common.GenomeMapper::ID::length - common.GenomeMapper::ID::geneId.length()).
+    //looks for the text specified GENEPATTERN and returns the ID.
     public static String extract_gene_id(String gtfGeneLine) {
-        int start = gtfGeneLine.indexOf(GenomeMapper.ID.GENE_ID);
-        String value = "";
-        if (start != -1) {
-            if ((start + GenomeMapper.ID.LENGTH) < gtfGeneLine.length()) {
-                value = gtfGeneLine.substring(start, start + GenomeMapper.ID.LENGTH);
-            }
-        }
+    	String value = "";
+    	Matcher geneMatcher = GENEPATTERN.matcher(gtfGeneLine);
+    	if (geneMatcher.find()) {
+    		value = geneMatcher.group(1);
+    	}
         return value;
     }
 
-    //looks for the text specified in common.GenomeMapper::ID::transcriptId and returns the ID (including the trailing number of length common.GenomeMapper::ID::length - common.GenomeMapper::ID::transcriptId.length()).
+    //looks for the text specified in TRNASCRIPTPATTERN and returns the ID.
     public static String extract_transcript_id(String gtfGeneLine) {
-        int index = gtfGeneLine.indexOf(GenomeMapper.ID.TRANSCRIPT_ID);
-        String value = "";
-        if (index != -1) {
-            if ((index + GenomeMapper.ID.LENGTH) < gtfGeneLine.length()) {
-                value = gtfGeneLine.substring(index, index + GenomeMapper.ID.LENGTH);
-            }
-        }
+    	String value = "";
+    	Matcher transcriptMatcher = TRANSCRIPTPATTERN.matcher(gtfGeneLine);
+    	if (transcriptMatcher.find()) {
+    		value = transcriptMatcher.group(1);
+    	}
         return value;
     }
 
-    //looks for the text specified in GenomeMapper::ID::exonId and returns the ID (including the trailing number of length GenomeMapper::ID::length - GenomeMapper::ID::exonId.length()).
+    //looks for the text specified in EXONPATTERN and returns the ID.
     public static String extract_exon_id(String gtfGeneLine) {
-        int index = gtfGeneLine.indexOf(GenomeMapper.ID.EXON_ID);
-        String value = "";
-        if (index != -1) {
-            if ((index + GenomeMapper.ID.LENGTH) < gtfGeneLine.length()) {
-                value = gtfGeneLine.substring(index, index + GenomeMapper.ID.LENGTH);
-            }
-        }
+    	String value = "";
+    	Matcher exonMatcher = EXONPATTERN.matcher(gtfGeneLine);
+    	if (exonMatcher.find()) {
+    		value = exonMatcher.group(1);
+    	}
         return value;
     }
 

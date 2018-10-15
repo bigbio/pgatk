@@ -5,6 +5,8 @@ import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ProteinEntry implements Serializable {
     private static final long serialVersionUID = -1732196455282495216L;
@@ -16,6 +18,10 @@ public class ProteinEntry implements Serializable {
     private String m_gene_id;
     //the AA sequence.
     private String m_aa_sequence;
+    //regex pattern for gene ID
+    private static Pattern GENEPATTERN = Pattern.compile("gene:([^\\s]*)\\s");
+  //regex pattern for gene ID
+    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript:([^\\s]*)\\s");
 
     //std::multimap <Coordinates (protein coordinates), GenomeCoordinates(corresponding genomic coordinates), Coordinates (passing this as third argument will use the Coordinates::operator() as comparator)>
     //the first Coordinate are the coordinates of exons within the protein and the GenomeCoordinate is its corresponding location in the genome.
@@ -59,26 +65,31 @@ public class ProteinEntry implements Serializable {
 
     //gets the transcriptId from a fasta header
     private String extract_transcript_id_fasta(String str) {
-        int index = str.indexOf(GenomeMapper.ID.TRANSCRIPT_ID);
-        String value = "";
-
-        if (index != -1) {
-            if ((index + (GenomeMapper.ID.LENGTH - 1)) < str.length()) {
-                value = str.substring(index, index + GenomeMapper.ID.LENGTH);
-            }
-        }
+    	String value = "";
+    	Matcher transcriptMatcher = TRANSCRIPTPATTERN.matcher(str);
+    	if (transcriptMatcher.find()) {
+    		value = transcriptMatcher.group(1);
+    	} else {
+    		String[] split = str.split("\\|");
+    		if(split.length==8) {
+    			value = split[1];
+    		}
+    	}
         return value;
     }
 
     //gets the gene id from a fasta header
     private String extract_gene_id_fasta(String str) {
-        int start = str.indexOf(GenomeMapper.ID.GENE_ID);
-        String value = "";
-        if (start != -1) {
-            if ((start + GenomeMapper.ID.LENGTH - 1) < str.length()) {
-                value = str.substring(start, start + GenomeMapper.ID.LENGTH);
-            }
-        }
+    	String value = "";
+    	Matcher geneMatcher = GENEPATTERN.matcher(str);
+    	if (geneMatcher.find()) {
+    		value = geneMatcher.group(1);
+    	} else {
+    		String[] split = str.split("\\|");
+    		if(split.length==8) {
+    			value = split[2];
+    		}
+    	}
         return value;
     }
 

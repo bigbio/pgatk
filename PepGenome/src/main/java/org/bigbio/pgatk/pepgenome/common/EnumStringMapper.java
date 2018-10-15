@@ -148,12 +148,42 @@ public class EnumStringMapper {
                 return "39";
             case chr40:
                 return "40";
+            case chrI:
+            	return "I";
+            case chrII:
+            	return "II";
+            case chrIII:
+            	return "III";
+            case chrIV:
+            	return "IV";
+            case chrV:
+            	return "V";
+            case chrVI:
+            	return "VI";
+            case chrVII:
+            	return "VII";
+            case chrVIII:
+            	return "VIII";
+            case chrIX:
+            	return "IX";
             case chrX:
-                return "chrX";
+                return "X";
+            case chrXI:
+            	return "XI";
+            case chrXII:
+            	return "XII";
+            case chrXIII:
+            	return "XIII";
+            case chrXIV:
+            	return "XIV";
+            case chrXV:
+            	return "XV";
+            case chrXVI:
+            	return "XVI";
             case chrY:
-                return "chrY";
+                return "Y";
             case chrXY:
-                return "chrXY";
+                return "XY";
             case chrX1:
                 return "X1";
             case chrX2:
@@ -210,6 +240,8 @@ public class EnumStringMapper {
                 return "Z";
             case chrM:
                 return "MT";
+            case chrMito:
+            	return "Mito";
             case scaffold:
                 return "";
             default:
@@ -313,8 +345,38 @@ public class EnumStringMapper {
                 return "chr39";
             case chr40:
                 return "chr40";
+            case chrI:
+            	return "chrI";
+            case chrII:
+            	return "chrII";
+            case chrIII:
+            	return "chrIII";
+            case chrIV:
+            	return "chrIV";
+            case chrV:
+            	return "chrV";
+            case chrVI:
+            	return "chrVI";
+            case chrVII:
+            	return "chrVII";
+            case chrVIII:
+            	return "chrVIII";
+            case chrIX:
+            	return "chrIX";
             case chrX:
                 return "chrX";
+            case chrXI:
+            	return "chrXI";
+            case chrXII:
+            	return "chrXII";
+            case chrXIII:
+            	return "chrXIII";
+            case chrXIV:
+            	return "chrXIV";
+            case chrXV:
+            	return "chrXV";
+            case chrXVI:
+            	return "chrXVI";
             case chrY:
                 return "chrY";
             case chrXY:
@@ -375,6 +437,8 @@ public class EnumStringMapper {
                 return "chrZ";
             case chrM:
                 return "chrM";
+            case chrMito:
+            	return "chrMito";
             case scaffold:
                 return "scaffold";
             default:
@@ -413,8 +477,53 @@ public class EnumStringMapper {
             substr = str;
         }
 
+        if (substr.equals("I")) {
+            return chrI;
+        }
+        if (substr.equals("II")) {
+            return chrII;
+        }
+        if (substr.equals("III")) {
+            return chrIII;
+        }
+        if (substr.equals("IV")) {
+            return chrIV;
+        }
+        if (substr.equals("V")) {
+            return chrV;
+        }
+        if (substr.equals("VI")) {
+            return chrVI;
+        }
+        if (substr.equals("VII")) {
+            return chrVII;
+        }
+        if (substr.equals("VIII")) {
+            return chrVIII;
+        }
+        if (substr.equals("IX")) {
+            return chrIX;
+        }
         if (substr.equals("X")) {
             return chrX;
+        }
+        if (substr.equals("XI")) {
+            return chrXI;
+        }
+        if (substr.equals("XII")) {
+            return chrXII;
+        }
+        if (substr.equals("XIII")) {
+            return chrXIII;
+        }
+        if (substr.equals("XIV")) {
+            return chrXIV;
+        }
+        if (substr.equals("XV")) {
+            return chrXV;
+        }
+        if (substr.equals("XVI")) {
+            return chrXVI;
         }
         if (substr.equals("W")) {
             return chrW;
@@ -529,6 +638,9 @@ public class EnumStringMapper {
         }
         if (substr.equals("M") || substr.equals("MT")) {
             return chrM;
+        }
+        if (substr.equals("Mito")) {
+        	return chrMito;
         }
         if (substr.length() >= 2) {
             Chromosome scaffoldResult = GenomeMapper.ScaffoldIdentifier.findScaffoldTwoCode(substr);

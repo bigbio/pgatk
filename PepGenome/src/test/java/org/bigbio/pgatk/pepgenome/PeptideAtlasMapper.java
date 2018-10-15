@@ -32,6 +32,9 @@ public class PeptideAtlasMapper {
     private String fileInZebrafish;
     private String fileFastaZebrafish;
     private String fileGTFZebrafish;
+    private String fileInYeast;
+    private String fileFastaYeast;
+    private String fileGTFYeast;
 
 
     @Before
@@ -47,6 +50,11 @@ public class PeptideAtlasMapper {
         fileFastaZebrafish = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Danio_rerio.GRCz11.pep.all.fa.gz")).toURI())).getAbsolutePath();
         inputGZfile = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Danio_rerio.GRCz11.94.gtf.gz")).toURI()));
         fileGTFZebrafish = inputGZfile.getAbsolutePath();
+        
+        fileInYeast = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/yeast.tsv")).toURI()).getAbsolutePath();
+        fileFastaYeast = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Saccharomyces_cerevisiae.R64-1-1.pep.all.fa.gz")).toURI())).getAbsolutePath();
+        inputGZfile = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("taxonomies/Saccharomyces_cerevisiae.R64-1-1.94.gtf.gz")).toURI()));
+        fileGTFYeast = inputGZfile.getAbsolutePath();
 
 
     }
@@ -73,7 +81,7 @@ public class PeptideAtlasMapper {
         File outputBed = new File(fileIn.replace(".tsv", ".bed"));
 
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
-        Assert.assertEquals(109869, bedLines.size());
+        Assert.assertEquals(109873, bedLines.size());
 
         deleteOnExits();
         log.info(" ");
@@ -133,7 +141,38 @@ public class PeptideAtlasMapper {
         File outputBed = new File(fileInZebrafish.replace(".tsv", ".bed"));
 
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
-        Assert.assertEquals(7, bedLines.size());
+        Assert.assertEquals(0, bedLines.size());
+
+        deleteOnExits();
+        log.info(" ");
+
+    }
+    
+    @Test
+    public void yeastTest() throws IOException {
+        log.info("InMemoryTest");
+        List<String> argList = new ArrayList<>();
+
+        argList.add("-in");
+        argList.add(fileInYeast);
+        argList.add("-fasta");
+        argList.add(fileFastaYeast);
+        argList.add("-gtf");
+        argList.add(fileGTFYeast);
+        argList.add("-inf");
+        argList.add("peptideatlas");
+        argList.add("-species");
+        argList.add("4932");
+
+
+        String[] args = new String[argList.size()];
+        argList.toArray(args);
+        PepGenomeTool.main(args);
+
+        File outputBed = new File(fileInYeast.replace(".tsv", ".bed"));
+
+        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
+        Assert.assertEquals(3, bedLines.size());
 
         deleteOnExits();
         log.info(" ");

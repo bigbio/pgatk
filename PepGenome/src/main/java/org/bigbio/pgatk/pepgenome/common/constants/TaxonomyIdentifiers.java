@@ -32,7 +32,8 @@ public enum TaxonomyIdentifiers {
     PIG("ENSSSCG", "ENSSSCT", "ENSSSCE", 18),
     ZEBRAFINCH("ENSTGUG", "ENSTGUT", "ENSTGUE", 18),
     ZEBRAFISH("ENSDARG", "ENSDART", "ENSDARE", 18),
-    TETRAODON("ENSTNIG", "ENSTNIT", "ENSTNIE", 18);
+    TETRAODON("ENSTNIG", "ENSTNIT", "ENSTNIE", 18),
+	YEAST("Y","Y","Y",8);
 
     private String geneId;
     private String transcriptId;

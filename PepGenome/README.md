@@ -179,5 +179,6 @@ Table of supported species
 <tr><td>Vervet-AGM</td><td>Chlorocebus sabaeus</td><td>60711</td></tr>
 <tr><td>Zebra Finch</td><td>Taeniopygia guttata</td><td>59729</td></tr></tbody>
 <tr><td>Zebrafish</td><td>Danio rerio</td><td>7955</td></tr></tbody>
+<tr><td>Yeast</td><td>Saccharomyces cerevisiae</td><td>4932</td></tr></tbody>
 </table>
 
