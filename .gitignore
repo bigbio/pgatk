@@ -15,3 +15,8 @@ docs/_templates/
 *.hprof
 *.DS_Store
 *.log
+PepGenome/.classpath
+PepGenome/.project
+pgatk-formats/.classpath
+pgatk-formats/.project
+*.prefs

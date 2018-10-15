@@ -147,6 +147,9 @@ public class GenomeMapper {
         TAX.put("tetraodon nigroviridid", TaxonomyIdentifiers.TETRAODON);
         TAX.put("tetraodon", TaxonomyIdentifiers.TETRAODON);
         TAX.put("99883", TaxonomyIdentifiers.TETRAODON);
+        TAX.put("saccharomyces cerevisiae", TaxonomyIdentifiers.YEAST);
+        TAX.put("yeast", TaxonomyIdentifiers.YEAST);
+        TAX.put("4932", TaxonomyIdentifiers.YEAST);
     }
 
     /**
