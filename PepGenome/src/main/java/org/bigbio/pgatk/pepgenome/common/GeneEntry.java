@@ -81,7 +81,7 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
         if (String.valueOf(m_coord.getChr().getValue()).compareTo(String.valueOf(rhs.m_coord.getChr().getValue())) < 0) {
             return true;
         }
-        if (m_coord.getChr() == rhs.m_coord.getChr()) {
+        if (m_coord.getChr().getValue() == rhs.m_coord.getChr().getValue()) {
             if (m_coord.getStart() == rhs.m_coord.getStart()) {
                 return m_coord.getEnd() < rhs.m_coord.getEnd();
             }
@@ -114,12 +114,12 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
 
     //check if gene entry maps to chromosomes (e.g. chr1, chrX, 10, etc.)
     public final boolean is_primary() {
-        return m_coord.getChr() != Chromosome.chrNA && m_coord.getChr() != Chromosome.scaffold && m_coord.getChr() != Chromosome.chrXY;
+        return !m_coord.getChr().isNA() && !m_coord.getChr().isScaffold();
     }
 
     //check if gene entry maps to patch, haplotype or scaffold
     public final boolean is_patchhaploscaff() {
-        return m_coord.getChr() == Chromosome.scaffold && !m_coord.getChrscaf().equals("");
+        return m_coord.getChr().isScaffold() && !m_coord.getChrscaf().equals("");
     }
 
     //looks for the text specified GENEPATTERN and returns the ID.

@@ -9,8 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.bigbio.pgatk.pepgenome.common.Chromosome.scaffold;
-
 public class Utils {
 
     public static void printHelpAndExitProgram(final Options options, boolean shouldExit, int exitCode) {
@@ -165,8 +163,8 @@ public class Utils {
 
     //a more sophisticated operator== for common.GenomeCoordinates.
     public static boolean same_coordinates(GenomeCoordinates lhs, GenomeCoordinates rhs) {
-        return ((lhs.getChr() != Chromosome.scaffold && lhs.getChr() == rhs.getChr())
-                || (lhs.getChr() == Chromosome.scaffold && lhs.getChrscaf().equals(rhs.getChrscaf())))
+        return ((!lhs.getChr().isScaffold() && lhs.getChr() == rhs.getChr())
+                || (lhs.getChr().isScaffold() && lhs.getChrscaf().equals(rhs.getChrscaf())))
                 && (lhs.start == rhs.start) && (lhs.end == rhs.end)
                 && (lhs.getFrame() == rhs.getFrame())
                 && (lhs.getStrand() == rhs.getStrand());
@@ -191,9 +189,9 @@ public class Utils {
     }
 
     private static StringBuilder coord2StrCommon(GenomeCoordinates coords, boolean chrincluded, StringBuilder ss) {
-        if (coords.getChr() == Chromosome.scaffold && !chrincluded) {
+        if (coords.getChr().isScaffold() && !chrincluded) {
             ss.append(coords.getChrscaf());
-        } else if (coords.getChr() == Chromosome.scaffold && chrincluded) {
+        } else if (coords.getChr().isScaffold() && chrincluded) {
             ss.append("scaffold").append(coords.getChrscaf());
         } else if (!chrincluded) {
             ss.append(EnumStringMapper.enumToString(coords.getChr()));
@@ -337,7 +335,7 @@ public class Utils {
     public static GenomeCoordinates extract_coordinates_from_gtf_line(List<String> tokens) {
         GenomeCoordinates coord = new GenomeCoordinates();
         coord.setChr(EnumStringMapper.string_to_chromosome(tokens.get(0)));
-        if (coord.getChr() == Chromosome.scaffold) {
+        if (coord.getChr().isScaffold()) {
             coord.setChrscaf(tokens.get(0));
         } else {
             coord.setChrscaf("");

@@ -1,132 +1,101 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 //possible chromosomes
-public enum Chromosome {
-    chr1(1),
-    chr1A(2),
-    chr1B(3),
-    chr2(4),
-    chr2A(5),
-    chr2a(6),
-    chr2B(7),
-    chr2b(8),
-    chr3(9),
-    chr4(10),
-    chr4A(11),
-    chr5(12),
-    chr6(13),
-    chr7(14),
-    chr8(15),
-    chr9(16),
-    chr10(17),
-    chr11(18),
-    chr12(19),
-    chr13(20),
-    chr14(21),
-    chr15(22),
-    chr16(23),
-    chr17(24),
-    chr18(25),
-    chr19(26),
-    chr20(27),
-    chr21(28),
-    chr22(29),
-    chr23(30),
-    chr24(31),
-    chr25(32),
-    chr26(33),
-    chr27(34),
-    chr28(35),
-    chr29(36),
-    chr30(37),
-    chr31(38),
-    chr32(39),
-    chr33(40),
-    chr34(41),
-    chr35(42),
-    chr36(43),
-    chr37(44),
-    chr38(45),
-    chr39(46),
-    chr40(47),
-    chrI(48),
-    chrII(49),
-    chrIII(50),
-    chrIV(51),
-    chrV(52),
-    chrVI(53),
-    chrVII(54),
-    chrVIII(55),
-    chrIX(56),	
-    chrX(57),
-    chrXI(58),
-    chrXII(59),
-    chrXIII(60),
-    chrXIV(61),
-    chrXV(62),
-    chrXVI(63),
-    chrY(64),
-    chrXY(65),
-    chrX1(66),
-    chrX2(67),
-    chrX3(68),
-    chrX5(69),
-    chrA1(70),
-    chrA2(71),
-    chrA3(72),
-    chrB1(73),
-    chrB2(74),
-    chrB3(75),
-    chrB4(76),
-    chrC1(77),
-    chrC2(78),
-    chrD1(79),
-    chrD2(80),
-    chrD3(81),
-    chrD4(82),
-    chrE1(83),
-    chrE2(84),
-    chrE3(85),
-    chrF1(86),
-    chrF2(87),
-    chrLG2(88),
-    chrLG5(89),
-    chrLGE22(90),
-    chrW(91),
-    chrZ(92),
-    chrM(93),
-    chrMito(94),
-    chrLGE64(95),
-    chrNA(-1),
-    scaffold(0);
+public class Chromosome implements Serializable {
 
-    private int intValue;
-    private static Map<Integer, Chromosome> mappings;
+	private static final long serialVersionUID = -3608154103569444727L;
+	
+	private static Map<String, Integer> chrToInt;
+    private static Map<Integer, String> intToChr;
 
-    private static Map<Integer, Chromosome> getMappings() {
-        if (mappings == null) {
+    private String name;
+    
+    public Chromosome(String name) {
+    	if(getChrToInt().containsKey(name)) {
+    		this.name = name;
+    	} else {
+    		this.name = "NA";
+    	}
+    }
+
+    private static Map<String, Integer> getChrToInt() {
+        if (chrToInt == null) {
             synchronized (Chromosome.class) {
-                if (mappings == null) {
-                    mappings = new HashMap<>();
+                if (chrToInt == null) {
+                	chrToInt = new HashMap<String, Integer>();
                 }
             }
         }
-        return mappings;
+        return chrToInt;
+    }
+    
+    private static Map<Integer, String> getIntToChr() {
+        if (intToChr == null) {
+            synchronized (Chromosome.class) {
+                if (intToChr == null) {
+                	intToChr = new HashMap<Integer, String>();
+                }
+            }
+        }
+        return intToChr;
     }
 
-    Chromosome(int value) {
-        intValue = value;
-        getMappings().put(value, this);
-    }
 
     public int getValue() {
-        return intValue;
+    	if(getChrToInt().containsKey(name)) {
+    		return getChrToInt().get(name);
+    	} else {
+    		return -1;
+    	}
+    }
+    
+    public String getName() {
+    	return name;
+    }
+    
+    public boolean isScaffold() {
+    	return name.equals("scaffold");
+    }
+    
+    public boolean isNA() {
+    	return name.equals("NA");
     }
 
-    public static Chromosome forValue(int value) {
-        return getMappings().get(value);
+    public static String forValue(int value) {
+    	if(getIntToChr().containsKey(value)) {
+    		return getIntToChr().get(value);
+    	} else {
+    		return "NA";
+    	}
+    }
+    
+    public static int forName(String name) {
+    	if(getChrToInt().containsKey(name)) {
+    		return getChrToInt().get(name);
+    	} else {
+    		return -1;
+    	}
+    }
+    
+    public static void addChr(String name) {
+    	String tmpname = name;
+    	if(tmpname.startsWith("chr") || tmpname.startsWith("Chr")) {
+    		tmpname = tmpname.substring(3);
+    	}
+    	if(!getChrToInt().containsKey(tmpname)) {
+    		getChrToInt().put(tmpname, getChrToInt().size()+1);
+    		getIntToChr().put(getChrToInt().get(tmpname), tmpname);
+    		if(tmpname.equals("M")) {
+    			getChrToInt().put("MT", getChrToInt().size()+1);
+        		getIntToChr().put(getChrToInt().get("MT"), "MT");
+    		} else if(tmpname.equals("MT")) {
+    			getChrToInt().put("M", getChrToInt().size()+1);
+        		getIntToChr().put(getChrToInt().get("M"), "M");
+    		}
+    	}
     }
 }

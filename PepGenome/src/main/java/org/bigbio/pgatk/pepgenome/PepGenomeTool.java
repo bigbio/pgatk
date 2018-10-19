@@ -7,6 +7,7 @@ import org.apache.commons.cli.*;
 import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.GTFParser;
+import org.bigbio.pgatk.pepgenome.io.GenomeFastaParser;
 import org.bigbio.pgatk.pepgenome.io.MzTabInputPeptideFileParser;
 import org.bigbio.pgatk.pepgenome.io.TabInputPeptideFileParser;
 import org.bigbio.pgatk.pepgenome.io.custom.PeptideAtlasPeptideParser;
@@ -71,11 +72,11 @@ public class PepGenomeTool {
     private static final String ARG_SOURCE = "source";
     private static final String ARG_MM = "mm";
     private static final String ARG_MMMODE = "mmmode";
-    private static final String ARG_SPECIES = "species";
     private static final String ARG_CHR = "chr";
     private static final String ARG_HELP = "h";
     private static final String ARG_INMEMORY = "inm";
     private static final String ARG_INPUT_FORMAT = "inf";
+    private static final String ARG_GENOME_FASTA = "genome";
 
     //DEFAULT values
     private static boolean mergeFlag = false;
@@ -102,7 +103,7 @@ public class PepGenomeTool {
                 .addOption(Option.builder(ARG_SOURCE).hasArg(true).desc("Please give a source name which will be used in the second column in the output gtf file (default: PoGo)").build())
                 .addOption(Option.builder(ARG_MM).hasArg(true).desc("Allowed mismatches (0, 1 or 2; default: 0)").build())
                 .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismaches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
-                .addOption(Option.builder(ARG_SPECIES).hasArg(true).desc("Please give species using common or scientific name (default human). For a full list of supported species please go to https://github.com/bigbio/pgatk/tree/master/PepGenome").build())
+                .addOption(Option.builder(ARG_GENOME_FASTA).hasArg(true).desc("Filepath for file containing genome sequence in FASTA format used to extract chromosome names and order and differenciate between assembly and scaffolds. If not set chromosome and scaffold names and order is extracted from GTF input.").build())
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
                 .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
                 .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true).desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
@@ -135,6 +136,7 @@ public class PepGenomeTool {
         String fastaFilePath = cmd.getOptionValue(ARG_FASTA);
         String gtfFilePath = cmd.getOptionValue(ARG_GTF);
         String peptideInputFilePathsParam = cmd.getOptionValue(ARG_IN);
+        String fastaGenomeFilePath = cmd.getOptionValue(ARG_GENOME_FASTA);
 
         if (fastaFilePath == null || !(fastaFilePath.endsWith(".fasta") || fastaFilePath.endsWith(".fa"))) {
             log.info(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
@@ -222,20 +224,6 @@ public class PepGenomeTool {
             }
         }
 
-        String speciesParam = cmd.getOptionValue(ARG_SPECIES);
-        if (speciesParam != null) {
-            speciesParam = speciesParam.toLowerCase();
-            if (GenomeMapper.TAX.containsKey(speciesParam)) {
-                GenomeMapper.ID.GENE_ID = GenomeMapper.TAX.get(speciesParam).getGeneId();
-                GenomeMapper.ID.TRANSCRIPT_ID = GenomeMapper.TAX.get(speciesParam).getTranscriptId();
-                GenomeMapper.ID.EXON_ID = GenomeMapper.TAX.get(speciesParam).getExonId();
-                GenomeMapper.ID.LENGTH = GenomeMapper.TAX.get(speciesParam).getLength();
-            } else {
-                System.err.println("ERROR: Species/Taxonomy: " + speciesParam + "is not supported. For a full list of supported species please go to https://pgatk.readthedocs.io/en/latest/pepgenome.html#table-of-supported-species");
-                System.exit(GENOME_MAPPER_EXIT_HELP);
-            }
-        }
-
         String chrParam = cmd.getOptionValue(ARG_CHR);
         if (chrParam != null) {
             int par = -1;
@@ -259,10 +247,16 @@ public class PepGenomeTool {
 
         String pluralString = (GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES == 1) ? " mismatch" : " mismatches";
         log.info("Start: allowing " + GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES + pluralString);
-        log.info("reading FASTA: " + fastaFilePath);
+        
 
         try {
+        	
+        	if(fastaGenomeFilePath != null) {
+        		log.info("reading genome FASTA: " + fastaGenomeFilePath);
+        		GenomeFastaParser.readGenomeFASTA(fastaGenomeFilePath);
+        	}
 
+        	log.info("reading FASTA: " + fastaFilePath);
             CoordinateWrapper coordinate_wrapper = new CoordinateWrapper();
             coordinate_wrapper.read_fasta_file(fastaFilePath);
 
@@ -314,6 +308,12 @@ public class PepGenomeTool {
                     final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".txt");
                 } else if (peptideInputFilePath.endsWith(".tsv")) {
                     final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".tsv");
+                } else if (peptideInputFilePath.endsWith(".pogo")) {
+                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".pogo");
+                } else if (peptideInputFilePath.endsWith(".mztab")) {
+                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mztab");
+                } else if (peptideInputFilePath.endsWith(".mzid")) {
+                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mzid");
                 }
 
 //                ArrayList<String> tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(curr_input_file_path, ".")));
@@ -378,6 +378,12 @@ public class PepGenomeTool {
                     final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".txt");
                 } else if (final_peptide_path_results.endsWith(".tsv")) {
                     final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".tsv");
+                } else if (final_peptide_path_results.endsWith(".pogo")) {
+                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".pogo");
+                } else if (final_peptide_path_results.endsWith(".mztab")) {
+                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mztab");
+                } else if (final_peptide_path_results.endsWith(".mzid")) {
+                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mzid");
                 }
 
                 String path4 = final_peptide_path_results + filename_mm_postfix + "_merged.gtf";
