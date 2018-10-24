@@ -142,6 +142,11 @@ public class PepGenomeTool {
             log.info(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
+        
+        if (fastaGenomeFilePath != null && !(fastaGenomeFilePath.endsWith(".fasta") || fastaGenomeFilePath.endsWith(".fa"))) {
+            log.info(" *** Please provide valid input for -genome. The input filename has to end with .fa or .fasta *** ");
+            Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
+        }
 
         if (gtfFilePath == null || !gtfFilePath.endsWith(".gtf")) {
             log.info(" *** Please provide valid input for -gtf. The input filename has to end with .gtf  ***");

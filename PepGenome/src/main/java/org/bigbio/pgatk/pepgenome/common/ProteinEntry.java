@@ -19,9 +19,9 @@ public class ProteinEntry implements Serializable {
     //the AA sequence.
     private String m_aa_sequence;
     //regex pattern for gene ID
-    private static Pattern GENEPATTERN = Pattern.compile("gene:([^\\s]*)\\s");
+    private static Pattern GENEPATTERN = Pattern.compile("gene:([^\\s\\.]*)[^\\s]*\\s");
   //regex pattern for gene ID
-    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript:([^\\s]*)\\s");
+    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript:([^\\s\\.]*)[^\\s]*\\s");
 
     //std::multimap <Coordinates (protein coordinates), GenomeCoordinates(corresponding genomic coordinates), Coordinates (passing this as third argument will use the Coordinates::operator() as comparator)>
     //the first Coordinate are the coordinates of exons within the protein and the GenomeCoordinate is its corresponding location in the genome.
@@ -72,7 +72,8 @@ public class ProteinEntry implements Serializable {
     	} else {
     		String[] split = str.split("\\|");
     		if(split.length==8) {
-    			value = split[1];
+    			String[] dotsplit = split[1].split("\\.");
+    			value = dotsplit[0];
     		}
     	}
         return value;
@@ -87,7 +88,8 @@ public class ProteinEntry implements Serializable {
     	} else {
     		String[] split = str.split("\\|");
     		if(split.length==8) {
-    			value = split[2];
+    			String[] dotsplit = split[2].split("\\.");
+    			value = dotsplit[0];
     		}
     	}
         return value;

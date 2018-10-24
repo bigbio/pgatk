@@ -26,11 +26,11 @@ public class GeneEntry implements Comparable<GeneEntry>, Serializable {
     //tags. (ncRNA_host,...)
     private List<String> m_tags = new ArrayList<>();
     //pattern for gene ID
-    private static Pattern GENEPATTERN = Pattern.compile("gene_id \"([^\"]*)\"");
+    private static Pattern GENEPATTERN = Pattern.compile("gene_id \"([^\"\\.]*)[^\"]*\"");
     //pattern for transcript ID
-    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript_id \"([^\"]*)\"");
+    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript_id \"([^\"\\.]*)[^\"]*\"");
     //pattern for exon ID
-    private static Pattern EXONPATTERN = Pattern.compile("exon_id \"([^\"]*)\"");
+    private static Pattern EXONPATTERN = Pattern.compile("exon_id \"([^\"\\.]*)[^\"]*\"");
 
     @Override
     public int compareTo(GeneEntry o) {

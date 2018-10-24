@@ -63,7 +63,7 @@ public class EnumStringMapper {
 
     public static String enumToChrString(Chromosome chr) {
         String name = enumToString(chr);
-        if(!name.startsWith("chr") && !name.startsWith("Chr") && !name.equals("scaffold")) {
+        if(!name.startsWith("chr") && !name.startsWith("Chr") && !chr.isScaffold() && !chr.isNA()) {
         	return "chr" + name;
         } else {
         	return name;

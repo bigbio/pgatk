@@ -2,7 +2,9 @@ package org.bigbio.pgatk.pepgenome.common;
 
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 //possible chromosomes
 public class Chromosome implements Serializable {
@@ -11,11 +13,12 @@ public class Chromosome implements Serializable {
 	
 	private static Map<String, Integer> chrToInt;
     private static Map<Integer, String> intToChr;
+    private static Set<String> scaffoldnames;
 
     private String name;
     
     public Chromosome(String name) {
-    	if(getChrToInt().containsKey(name)) {
+    	if(getChrToInt().containsKey(name) || getScaffoldNames().contains(name)) {
     		this.name = name;
     	} else {
     		this.name = "NA";
@@ -43,6 +46,17 @@ public class Chromosome implements Serializable {
         }
         return intToChr;
     }
+    
+    private static Set<String> getScaffoldNames() {
+    	if (scaffoldnames == null) {
+    		synchronized (Chromosome.class) {
+    			if (scaffoldnames == null) {
+    				scaffoldnames = new HashSet<String>();
+    			}
+    		}
+    	}
+    	return scaffoldnames;
+    }
 
 
     public int getValue() {
@@ -58,7 +72,7 @@ public class Chromosome implements Serializable {
     }
     
     public boolean isScaffold() {
-    	return name.equals("scaffold");
+    	return getScaffoldNames().contains(name);
     }
     
     public boolean isNA() {
@@ -96,6 +110,12 @@ public class Chromosome implements Serializable {
     			getChrToInt().put("M", getChrToInt().size()+1);
         		getIntToChr().put(getChrToInt().get("M"), "M");
     		}
+    	}
+    }
+    
+    public static void addScaffold(String name) {
+    	if(!getScaffoldNames().contains(name)) {
+    		getScaffoldNames().add(name);
     	}
     }
 }

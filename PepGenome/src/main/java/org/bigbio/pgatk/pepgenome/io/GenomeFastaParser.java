@@ -22,11 +22,10 @@ public class GenomeFastaParser  implements Serializable {
 					if (line.contains("dna:chromosome") || line.contains("dna:genescaffold")) {
 						Chromosome.addChr(split[0].substring(1));
 					} else if (line.contains("dna:scaffold")) {
-						Chromosome.addChr("scaffold");
+						Chromosome.addScaffold(split[0].substring(1));
 					}
 				}
 			}
-			Chromosome.addChr("scaffold");
 			GenomeMapper.PEPTIDE_MAPPER.CHR_FROM_GENOME_FASTA = true;
 			br.close();
 		} catch (IOException e) {
