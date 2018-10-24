@@ -69,73 +69,12 @@ How to easily run the tool (**e.g. Human**)::
 Optional arguments
 -------------------
 
-- **-format** : Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
+- **-format**:  Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
 - **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE``
 - **-source**:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE```
-- **-mm** : Number of mismatches allowed in mapping (0, 1 or 2). ```DEFAULT = 0```
-- **-mmmode**: Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ```DEFAULT = FALSE```.
-- **-species**: Set species using common or scientific name or taxonomy ID (e.g. ```-species 9606```). Default is Human (Homo sapiens, 9606).
+- **-mm**:      Number of mismatches allowed in mapping (0, 1 or 2). ```DEFAULT = 0```
+- **-mmmode**:  Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ```DEFAULT = FALSE```.
+- **-genome**:  Filepath for the fine containing genome sequences in Ensembl FASTA format. Used to identify chromosome names and order and differenciate between chromosomes and scaffolds. If not set chromosome names are extracted from the GTF file without differenciation between chromosomes and scaffolds. (e.g. ``` -genome Homo_sapiens.GRCh38.89.dna.primary_assembly.fa```)
 - **-chr**:  Export chr prefix Allowed 0, 1. (e.g. ```-chr 1```)  ```DEFAULT = 0```
-
-Table of supported species
---------------------------
-
-+-------------------+-------------------+-----------+
-| Common name       | Scientific name   | Taxon ID  |
-+===================+===================+===========+
-|C.intestinalis     |Ciona intestinalis |7719       |
-+-------------------+-------------------+-----------+
-|Cat                |Felis catus        |9685       |
-+-------------------+-------------------+-----------+
-|Chicken            |Gallus gallus      |9031       |
-+-------------------+-------------------+-----------+
-|Chimpanzee         |Pan troglodytes    |9598       |
-+-------------------+-------------------+-----------+
-|Cow                |Bos taurus         |9913       |
-+-------------------+-------------------+-----------+
-|Dog                |Canis lupus        |9615       |
-+-------------------+-------------------+-----------+
-|Gorilla            |Gorilla            |9595       |
-+-------------------+-------------------+-----------+
-|Horse              |Equus caballus     |9796       |
-+-------------------+-------------------+-----------+
-|Human              |Homo sapiens       |9606       |
-+-------------------+-------------------+-----------+
-|Macaque            |Macaca mulatta     |9544       |
-+-------------------+-------------------+-----------+
-|Marmoset           |Callithrix jacchus |9483       |
-+-------------------+-------------------+-----------+
-|Medaka             |Oryzias latipes    |8090       |
-+-------------------+-------------------+-----------+
-|Mouse              |Mus musculus       |10090      |
-+-------------------+-------------------+-----------+
-|Olive baboon       |Papio anubis       |9555       |
-+-------------------+-------------------+-----------+
-|Opossum            |Monodelphis        |13616      |
-+-------------------+-------------------+-----------+
-|Orangutan          |Pongo abelii       |9601       |
-+-------------------+-------------------+-----------+
-|Pig                |Sus scrofa         |9823       |
-+-------------------+-------------------+-----------+
-|Platypus           |Ornithorhynchus    |9258       |
-+-------------------+-------------------+-----------+
-|Rabbit             |Oryctolagus        |9986       |
-+-------------------+-------------------+-----------+
-|Rat                |Rattus norvegicus  |10116      |
-+-------------------+-------------------+-----------+
-|Sheep              |Ovis aries         |9940       |
-+-------------------+-------------------+-----------+
-|Tetraodon          |Tetraodon          |99883      |
-+-------------------+-------------------+-----------+
-|Turkey             |Meleagris          |9103       |
-+-------------------+-------------------+-----------+
-|Vervet-AGM         |Chlorocebus        |60711      |
-+-------------------+-------------------+-----------+
-|Zebra Finch        |Taeniopygia        |59729      |
-+-------------------+-------------------+-----------+
-|Zebrafish          |Danio rerio        |7955       |
-+-------------------+-------------------+-----------+
-|Yeast              |S. cerevisiae      |4932       |
-+-------------------+-------------------+-----------+
 
 

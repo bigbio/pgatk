@@ -75,6 +75,11 @@ public class GTFParser {
     private static boolean is_cds(List<String> tokens) {
         return tokens.get(2).equals("CDS");
     }
+    
+  //returns true if position 2 in the GTF says "exon"
+    private static boolean is_exon(List<String> tokens) {
+        return tokens.get(2).equals("exon");
+    }
 
     //returns true if position 2 in the GTF says "transcript"
     private static boolean is_next_transcript(List<String> tokens) {
@@ -92,6 +97,7 @@ public class GTFParser {
             throw new IllegalStateException("Problem in reading GTF file");
         }
 
+        String exonID = "";
         ProteinEntry proteinEntry = null;
         ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinatesMap = new ArrayList<>();
 //        Coordinates protein_coordinates = new Coordinates();
@@ -114,6 +120,7 @@ public class GTFParser {
             }
             String transcriptId = GeneEntry.extract_transcript_id(line);
             if (is_next_transcript(tokens)) {
+            	exonID = "";
                 mapping.add_transcript_id_to_gene(line);
                 if (proteinEntry != null) {
                     proteinEntry.set_coordinate_map(coordinatesMap);
@@ -130,10 +137,16 @@ public class GTFParser {
                 prevProteinCoordinates.setStart(0);
                 prevProteinCoordinates.setEnd(0);
                 coordinatesMap = new ArrayList<>();
+            } else if (is_exon(tokens)) {
+            	exonID = GeneEntry.extract_exon_id(line);
             } else if (is_cds(tokens)) {
                 GenomeCoordinates genCoord = Utils.extract_coordinates_from_gtf_line(tokens);
                 genCoord.setTranscriptid(transcriptId);
-                genCoord.setExonid(GeneEntry.extract_exon_id(line));
+                String tmp_exonID = GeneEntry.extract_exon_id(line);
+                if(tmp_exonID.equals("")) {
+                	tmp_exonID = exonID;
+                }
+                genCoord.setExonid(tmp_exonID);
                 Coordinates proteinCoordinates = new Coordinates();
                 // get nterm from prev exon
                 if (genCoord.getFrame() != Frame.unknown) {

@@ -48,16 +48,16 @@ public class GenomeCoordinates extends Coordinates<GenomeCoordinates> implements
     }
 
     private boolean comapre2(GenomeCoordinates lhs, GenomeCoordinates rhs) {
-        if (lhs.chr == Chromosome.scaffold && rhs.chr == Chromosome.scaffold && lhs.chrscaf.equals(rhs.chrscaf)) {
+        if (lhs.chr.isScaffold() && rhs.chr.isScaffold() && lhs.chrscaf.equals(rhs.chrscaf)) {
             return lhs.start < rhs.start && lhs.end < rhs.end && lhs.end >= rhs.start;
         }
-        if (lhs.chr == Chromosome.scaffold && rhs.chr == Chromosome.scaffold && !lhs.chrscaf.equals(rhs.chrscaf)) {
+        if (lhs.chr.isScaffold() && rhs.chr.isScaffold() && !lhs.chrscaf.equals(rhs.chrscaf)) {
             return lhs.chrscaf.compareTo(rhs.chrscaf) < 0;
         }
-        if (lhs.chr == Chromosome.scaffold && rhs.chr != Chromosome.scaffold) {
+        if (lhs.chr.isScaffold() && !rhs.chr.isScaffold()) {
             return false;
         }
-        if (lhs.chr != Chromosome.scaffold && rhs.chr == Chromosome.scaffold) {
+        if (!lhs.chr.isScaffold() && rhs.chr.isScaffold()) {
             return true;
         }
         if (lhs.chr == rhs.chr) {
@@ -67,23 +67,23 @@ public class GenomeCoordinates extends Coordinates<GenomeCoordinates> implements
     }
 
     public boolean equals2(GenomeCoordinates rhs) {
-        return ((chr != Chromosome.scaffold && chr == rhs.chr) || (chr == Chromosome.scaffold && chrscaf.equals(rhs.chrscaf))) && start >= rhs.start && end <= rhs.end;
+        return ((!chr.isScaffold() && chr == rhs.chr) || (chr.isScaffold() && chrscaf.equals(rhs.chrscaf))) && start >= rhs.start && end <= rhs.end;
     }
 
     private boolean lessThan(GenomeCoordinates rhs) {
-        if (chr == Chromosome.scaffold && rhs.chr == Chromosome.scaffold && chrscaf.equals(rhs.chrscaf)) {
+        if (chr.isScaffold() && rhs.chr.isScaffold() && chrscaf.equals(rhs.chrscaf)) {
             if (start == rhs.start) {
                 return end < rhs.end;
             }
             return start < rhs.start;
         }
-        if (chr == Chromosome.scaffold && rhs.chr == Chromosome.scaffold && !chrscaf.equals(rhs.chrscaf)) {
+        if (chr.isScaffold() && rhs.chr.isScaffold() && !chrscaf.equals(rhs.chrscaf)) {
             return chrscaf.compareTo(rhs.chrscaf) < 0;
         }
-        if (chr == Chromosome.scaffold && rhs.chr != Chromosome.scaffold) {
+        if (chr.isScaffold() && !rhs.chr.isScaffold()) {
             return false;
         }
-        if (chr != Chromosome.scaffold && rhs.chr == Chromosome.scaffold) {
+        if (!chr.isScaffold() && rhs.chr.isScaffold()) {
             return true;
         }
         if (chr == rhs.chr) {
