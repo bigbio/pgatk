@@ -1,0 +1,4 @@
+peptide_accession	peptide_sequence	best_probability	n_observations	empirical_proteotypic_score	SSRCalc_relative_hydrophobicity	n_samples	n_protein_mappings	n_genome_locations	is_exon_spanning	is_subpeptide_of	protease_ids	atlas build name	organism_full_name
+PAp00194002	DYLPPASLNHLMLLSK	1.00	17	0.04	39.30	1	-1	-1	?		10	Human 2018-01b	Yeast
+PAp01392597	SAPIPDLQPFFK	0.92	13	0.08	36.34	2	-1	-1	?		10	Human 2018-01b	Yeast
+PAp00325245	EPILSPNSVSYR	0.75	4	0.06	25.87	2	-1	-1	?		10	Human 2018-01b	Yeast
