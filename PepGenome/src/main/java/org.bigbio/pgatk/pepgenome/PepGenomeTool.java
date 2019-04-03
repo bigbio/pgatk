@@ -96,7 +96,7 @@ public class PepGenomeTool {
         Options options = new Options();
         options.addOption(Option.builder(ARG_FASTA).hasArg(true).desc("Filepath for file containing protein sequences in FASTA format").build())
                 .addOption(Option.builder(ARG_GTF).hasArg(true).desc("Filepath for file containing genome annotation in GTF format").build())
-                .addOption(Option.builder(ARG_IN).hasArg(true).desc("Comma(,) separated filepaths for files containing peptide identifications (Contents of the file should be in tab seperated format. i.e., File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant)").build())
+                .addOption(Option.builder(ARG_IN).hasArg(true).desc("Comma(,) separated filepaths for files containing peptide identifications (Contents of the file can tab seperated format. i.e., File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant; or mzTab, and mzIdentML)").build())
                 .addOption(Option.builder(ARG_MERGE).hasArg(true).desc("Set 'true' to merge mappings from all files from input (default 'false')").build())
                 .addOption(Option.builder(ARG_FORMAT).hasArg(true).desc("Select the output formats from gtf, gct, bed, ptmbed, all or combinations thereof separated by ',' (default all)").build())
                 .addOption(Option.builder(ARG_SOURCE).hasArg(true).desc("Please give a source name which will be used in the second column in the output gtf file (default: PoGo)").build())
