@@ -1,0 +1,37 @@
+<assembly>
+    <id>bin</id>
+
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+
+    <dependencySets>
+        <dependencySet>
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>lib</outputDirectory>
+            <unpack>false</unpack>
+            <scope>runtime</scope>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <fileSet>
+            <directory>${project.basedir}/target</directory>
+            <includes>
+                <include>${artifactId}-${version}.jar</include>
+            </includes>
+            <outputDirectory></outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.outputDirectory}</directory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.basedir}</directory>
+            <includes>
+                <include>README.md</include>
+                <include>LICENSE</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>

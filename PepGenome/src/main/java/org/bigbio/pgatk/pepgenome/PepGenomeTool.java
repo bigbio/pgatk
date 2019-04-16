@@ -25,7 +25,7 @@ import java.util.stream.Stream;
 public class PepGenomeTool {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
-    private enum INPUT_FILE_FORMAT{
+    public enum INPUT_FILE_FORMAT{
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
         MZTAB("mztab", "mzTab file format (.mztab)", MzTabInputPeptideFileParser.class),
         PEPTIDEATLAS("peptideatlas", "PeptideAtlas PeptideBuild (.tsv)", PeptideAtlasPeptideParser.class),
@@ -97,12 +97,12 @@ public class PepGenomeTool {
         Options options = new Options();
         options.addOption(Option.builder(ARG_FASTA).hasArg(true).desc("Filepath for file containing protein sequences in FASTA format").build())
                 .addOption(Option.builder(ARG_GTF).hasArg(true).desc("Filepath for file containing genome annotation in GTF format").build())
-                .addOption(Option.builder(ARG_IN).hasArg(true).desc("Comma(,) separated filepaths for files containing peptide identifications (Contents of the file can tab seperated format. i.e., File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant; or mzTab, and mzIdentML)").build())
+                .addOption(Option.builder(ARG_IN).hasArg(true).desc("Comma(,) separated file paths for files containing peptide identifications (Contents of the file can tab separated format. i.e., File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant; or mzTab, and mzIdentML)").build())
                 .addOption(Option.builder(ARG_MERGE).hasArg(true).desc("Set 'true' to merge mappings from all files from input (default 'false')").build())
                 .addOption(Option.builder(ARG_FORMAT).hasArg(true).desc("Select the output formats from gtf, gct, bed, ptmbed, all or combinations thereof separated by ',' (default all)").build())
                 .addOption(Option.builder(ARG_SOURCE).hasArg(true).desc("Please give a source name which will be used in the second column in the output gtf file (default: PoGo)").build())
                 .addOption(Option.builder(ARG_MM).hasArg(true).desc("Allowed mismatches (0, 1 or 2; default: 0)").build())
-                .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismaches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
+                .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismatches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
                 .addOption(Option.builder(ARG_GENOME_FASTA).hasArg(true).desc("Filepath for file containing genome sequence in FASTA format used to extract chromosome names and order and differenciate between assembly and scaffolds. If not set chromosome and scaffold names and order is extracted from GTF input.").build())
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
                 .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
