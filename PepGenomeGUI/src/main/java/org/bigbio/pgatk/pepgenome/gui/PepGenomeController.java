@@ -173,12 +173,17 @@ public class PepGenomeController implements Initializable {
         PepGenomeTask task = new PepGenomeTask(openTextField.getText(), fastaTextFile.getText(), gtfTextFile.getText(), mismatchCheckBox.isSelected(), 0,
                 chrCheck.isSelected(), mergeOutput.isSelected(), gtfCheck.isSelected(),
                 pepBedCheck.isSelected(), gctCheck.isSelected(), ptmBedCheck.isSelected());
+
         progressBar.progressProperty().bind(task.progressProperty());
+
         task.setOnRunning((runningEvent) -> {
             mapBtn.setDisable(true);
             fastaOpenBtn.setDisable(true);
             gftOpenBtn.setDisable(true);
             fileOpenBtn.setDisable(true);
+            openTextField.setDisable(true);
+            fastaTextFile.setDisable(true);
+            gtfTextFile.setDisable(true);
         });
 
         task.setOnSucceeded((successEvent) -> {
@@ -188,6 +193,10 @@ public class PepGenomeController implements Initializable {
             fileOpenBtn.setDisable(false);
             progressBar.progressProperty().unbind();
             progressBar.setProgress(0);
+
+            openTextField.setDisable(false);
+            fastaTextFile.setDisable(false);
+            gtfTextFile.setDisable(false);
         });
 
         Thread th = new Thread(task);
