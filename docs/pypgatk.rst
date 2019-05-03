@@ -52,14 +52,14 @@ Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html
       This tool enables to download from enseml ftp the FASTA and GTF files
 
       Options:
-        -c, --config-file TEXT          Configuration file for the ensembl data downloader pipeline
-        -o, --output-directory TEXT     Output directory for the peptide databases
-        -fp, --folder-prefix-release TEXT Output folder prefix to download the data
+        -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
+        -o, --output_directory TEXT     Output directory for the peptide databases
+        -fp, --folder_prefix_release TEXT Output folder prefix to download the data
         -t, --taxonomy TEXT             Taxonomy List (comma separated) that will be use to download the data from Ensembl
-        -sg, --skip-gtf                 Skip the gtf file during the download
-        -sp, --skip-protein             Skip the protein fasta file during download
-        -sc, --skip-cds                 Skip the CDS file download
-        -snr, --skip-ncrna              Skip the ncRNA file download
+        -sg, --skip_gtf                 Skip the gtf file during the download
+        -sp, --skip_protein             Skip the protein fasta file during download
+        -sc, --skip_cds                 Skip the CDS file download
+        -snr, --skip_ncrna              Skip the ncRNA file download
         -h, --help                      Show this message and exit.
 
 
@@ -80,8 +80,8 @@ Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is
       Usage: pypgatk.py cosmic-downloader [OPTIONS]
 
       Options:
-        -c, --config-file TEXT       Configuration file for the ensembl data downloader pipeline
-        -o, --output-directory TEXT  Output directory for the peptide databases
+        -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
+        -o, --output_directory TEXT  Output directory for the peptide databases
         -u, --username TEXT          Username for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
         -p, --password TEXT          Password for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
         -h, --help                   Show this message and exit.
@@ -101,14 +101,14 @@ Currently is not possible to search the studies by PubMedID, only can be search 
       Usage: pypgatk.py cbioportal-downloader [OPTIONS]
 
       Options:
-        -c, --config-file TEXT Configuration file for the ensembl data downloader pipeline
-        -o, --output-directory TEXT  Output directory for the peptide databases
-        -l, --list-studies           Print the list of all the studies in cBioPortal (https://www.cbioportal.org)
-        -d, --download-study TEXT    Download an specific Study from cBioPortal -- (all to download all studies)
+        -c, --config_file TEXT Configuration file for the ensembl data downloader pipeline
+        -o, --output_directory TEXT  Output directory for the peptide databases
+        -l, --list_studies           Print the list of all the studies in cBioPortal (https://www.cbioportal.org)
+        -d, --download_study TEXT    Download an specific Study from cBioPortal -- (all to download all studies)
         -h, --help                   Show this message and exit.
 
 
-The argument `-l` (`--list-studies`) allow the users to list all the studies store in cBioPortal. If the user is interested in only one study, it can use the argument `-d` (`--download-study`).
+The argument `-l` (`--list_studies`) allow the users to list all the studies store in cBioPortal. If the user is interested in only one study, it can use the argument `-d` (`--download_study`).
 
 From Genome information to protein sequence databases
 ----------------------------
@@ -128,13 +128,13 @@ Cosmic Mutations to Proitein sequences
       Usage: pypgatk.py cosmic-to-proteindb [OPTIONS]
 
       Options:
-        -c, --config-file TEXT      Configuration file for the cosmic data pipelines
-        -in, --input-mutation TEXT  Cosmic Mutation data file
-        -fa, --input-genes TEXT     All Cosmic genes
-        -out, --output-db TEXT      Protein database including all the mutations
+        -c, --config_file TEXT      Configuration file for the cosmic data pipelines
+        -in, --input_mutation TEXT  Cosmic Mutation data file
+        -fa, --input_genes TEXT     All Cosmic genes
+        -out, --output_db TEXT      Protein database including all the mutations
         -h, --help                  Show this message and exit.
 
-The file input of the tool `-in` (`--input-mutation`) is the cosmic mutation data file. The genes file `-fa` (`--input-genes`) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
+The file input of the tool `-in` (`--input_mutation`) is the cosmic mutation data file. The genes file `-fa` (`--input_genes`) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
 The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
 
 cBioPortal Mutations to Protein sequences
@@ -150,14 +150,14 @@ use the command `cbioportal-to-proteindb` to convert the bcioportal mutations fi
       Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
 
       Options:
-        -c, --config-file TEXT      Configuration for
-        -in, --input-mutation TEXT  Cbioportal mutation file
-        -fa, --input-cds TEXT       CDS genes from ENSEMBL database
-        -out, --output-db TEXT      Protein database including all the mutations
+        -c, --config_file TEXT      Configuration for
+        -in, --input_mutation TEXT  Cbioportal mutation file
+        -fa, --input_cds TEXT       CDS genes from ENSEMBL database
+        -out, --output_db TEXT      Protein database including all the mutations
         -h, --help                  Show this message and exit.
 
-The file input of the tool `-in` (`--input-mutation`) is the cbioportal mutation data file. The CDS sequence for all genes input file `-fa` (`--input-genes`) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the `ensembl-downloader` command.
-The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
+The file input of the tool `-in` (`--input_mutation`) is the cbioportal mutation data file. The CDS sequence for all genes input file `-fa` (`--input_genes`) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the `ensembl-downloader` command.
+The output of the tool is a protein fasta file and will be written in the following path `-out` (--output_db)
 
 Contributions
 -----------------------
