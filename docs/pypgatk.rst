@@ -74,6 +74,8 @@ Downloading mutation data from `COSMIC https://cancer.sanger.ac.uk/cosmic`_ is p
 - Cosmic all genes (All_COSMIC_Genes)
 
 .. code-block:: bash
+   :linenos:
+
    $: python3.7 pypgatk.py cosmic-downloader -h
       Usage: pypgatk.py cosmic-downloader [OPTIONS]
 
@@ -93,6 +95,8 @@ Downloading mutation data from `cBioPortal https://www.cbioportal.org/`_ is perf
 Currently is not possible to search the studies by PubMedID, only can be search by study_id.
 
 .. code-block:: bash
+   :linenos:
+
    $: python3.7 pypgatk.py cbioportal-downloader -h
       Usage: pypgatk.py cbioportal-downloader [OPTIONS]
 
@@ -118,6 +122,8 @@ Cosmic Mutations to Proitein sequences
 `COSMIC https://cancer.sanger.ac.uk/cosmic/`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
 
 .. code-block:: bash
+   :linenos:
+
    $: python3.7 pypgatk.py cosmic-to-proteindb -h
       Usage: pypgatk.py cosmic-to-proteindb [OPTIONS]
 
@@ -138,6 +144,8 @@ The cBioPortal for Cancer Genomics provides visualization, analysis and download
 use the command `cbioportal-to-proteindb` to convert the bcioportal mutations file into a protein sequence database file.
 
 .. code-block:: bash
+   :linenos:
+   
    $: python3.7 pypgatk.py cbioportal-to-proteindb -h
       Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
 
