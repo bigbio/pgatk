@@ -34,14 +34,14 @@ The `Data downloader` is a set of `COMMANDs` to download data from different Gen
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading data from [ENSEMBL](https://www.ensembl.org/info/data/ftp/index.html) can be done using the command `ensembl-downloader`. The current tool enables to download the following files for each taxonomy:
+Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command `ensembl-downloader`. The current tool enables to download the following files for each taxonomy:
 
 - GTF
 - Protein Sequence (FASTA),
 - CDS (FASTA)
 - Variation (VCF))
 
-.. hint:: By default the command `ensembl-downloader` download all file types for all the ensembl species.
+.. hint:: By default the command `ensembl-downloader` download all file types for all the ENSEMBL species.
 
 .. code-block:: bash
    :linenos:
@@ -68,7 +68,7 @@ Each of the file types can be skip using the corresponding option. For example, 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `COSMIC https://cancer.sanger.ac.uk/cosmic`_ is performed using the COMMAND `cosmic-downloader`. The current COMMAND allows users to download the following files:
+Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND `cosmic-downloader`. The current COMMAND allows users to download the following files:
 
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
@@ -91,7 +91,7 @@ Downloading mutation data from `COSMIC https://cancer.sanger.ac.uk/cosmic`_ is p
 Downloading cBioPortal data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `cBioPortal https://www.cbioportal.org/`_ is performed using the command `cbioportal-downloader`. cBioPortal store multiple studies (https://www.cbioportal.org/datasets) containing mutation data.
+Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command `cbioportal-downloader`. cBioPortal store multiple studies (https://www.cbioportal.org/datasets) containing mutation data.
 Currently is not possible to search the studies by PubMedID, only can be search by study_id.
 
 .. code-block:: bash
@@ -119,7 +119,7 @@ commands depending on the mutation provider (cBioPortal or COSMIC).
 Cosmic Mutations to Proitein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`COSMIC https://cancer.sanger.ac.uk/cosmic/`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
+`COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
 
 .. code-block:: bash
    :linenos:
@@ -145,7 +145,7 @@ use the command `cbioportal-to-proteindb` to convert the bcioportal mutations fi
 
 .. code-block:: bash
    :linenos:
-   
+
    $: python3.7 pypgatk.py cbioportal-to-proteindb -h
       Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
 
