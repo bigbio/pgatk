@@ -131,7 +131,7 @@ Cosmic Mutations to Proitein sequences
 The file input of the tool `-in` (`--input-mutation`) is the cosmic mutation data file. The genes file `-fa` (`--input-genes`) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
 The output of the tool is a protein fasta file and will be written in the following path `-out` (--output-db)
 
-cBioPortal Mutations to Proitein sequences
+cBioPortal Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. All datasets can be viewed in this web page (https://www.cbioportal.org/datasets). The current tool
