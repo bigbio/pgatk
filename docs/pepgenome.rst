@@ -27,7 +27,7 @@ The input format required by PepGenome is a tab delimited file with four columns
 |4                  |Quant             |Quantitative value in the given sample   |
 +-------------------+------------------+-----------------------------------------+
 
-.. hint:: *Peptide sequence with PSI-MS modification names in round brackets following the mpdified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
+.. hint:: *Peptide sequence with PSI-MS modification names in round brackets following the modified amino acid, e.g. PEPT(Phopsho)IDE for a phosphorylated threonine.
 
 
 .. note:: In addition the tool support mzTab and mzIdentML File format input.
@@ -76,5 +76,3 @@ Optional arguments
 - **-mmmode**:  Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ```DEFAULT = FALSE```.
 - **-genome**:  Filepath for the fine containing genome sequences in Ensembl FASTA format. Used to identify chromosome names and order and differenciate between chromosomes and scaffolds. If not set chromosome names are extracted from the GTF file without differenciation between chromosomes and scaffolds. (e.g. ``` -genome Homo_sapiens.GRCh38.89.dna.primary_assembly.fa```)
 - **-chr**:  Export chr prefix Allowed 0, 1. (e.g. ```-chr 1```)  ```DEFAULT = 0```
-
-
