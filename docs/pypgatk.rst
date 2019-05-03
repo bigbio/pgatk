@@ -63,7 +63,7 @@ Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html
         -h, --help                      Show this message and exit.
 
 
-Each of the file types can be skip using the corresponding option. For example, if the user do not want to download the the protein sequence fasta file, it can be skip by using the argument `pypgatk.py ensembl-downloader --skip-protein`
+Each of the file types can be skip using the corresponding option. For example, if the user do not want to download the the protein sequence fasta file, it can be skip by using the argument `pypgatk.py ensembl-downloader --skip_protein`
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -116,7 +116,7 @@ From Genome information to protein sequence databases
 The **Pypgatk** framework provides a set of tools (COMMAND) to convert genome mutation and variant databases to protein sequence databases (FASTA). In order to perform this task, we have implemented multiple
 commands depending on the mutation provider (cBioPortal or COSMIC).
 
-Cosmic Mutations to Proitein sequences
+Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool use the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
