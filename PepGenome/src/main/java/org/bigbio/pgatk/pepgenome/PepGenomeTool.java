@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome;
 
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.apache.commons.cli.*;
@@ -161,9 +162,7 @@ public class PepGenomeTool {
         String[] peptideInputFilePaths = Utils.tokenize(peptideInputFilePathsParam, ",", true);
         String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid"};
         if (Stream.of(peptideInputFilePaths)
-                .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith))
-                .collect(Collectors.toList())
-                .size() != peptideInputFilePaths.length) {
+                .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith)).count() != peptideInputFilePaths.length) {
             log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
@@ -290,7 +289,7 @@ public class PepGenomeTool {
 
             MappedPeptides mapped_peptides = new MappedPeptides();
             Assembly assem = GTFParser.get_instance().read(gtfFilePath, coordinate_wrapper, mapped_peptides);
-            log.info("GTF done!\nComputing genomic coordinates for: ");
+            log.info("GTF done!");
 
             // Creating a post-fix for file name specifying mode of mapping using mismatches
             String filename_mm_postfix = "";
@@ -306,20 +305,8 @@ public class PepGenomeTool {
             }
 
             for (String peptideInputFilePath : peptideInputFilePaths) {
-                log.info(peptideInputFilePath);
-
-                String final_peptide_path_results = peptideInputFilePath;
-                if (peptideInputFilePath.endsWith(".txt")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".txt");
-                } else if (peptideInputFilePath.endsWith(".tsv")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".tsv");
-                } else if (peptideInputFilePath.endsWith(".pogo")) {
-                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".pogo");
-                } else if (peptideInputFilePath.endsWith(".mztab")) {
-                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mztab");
-                } else if (peptideInputFilePath.endsWith(".mzid")) {
-                	final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mzid");
-                }
+                log.info("Computing genomic coordinates for: " + peptideInputFilePath);
+                String final_peptide_path_results = FilenameUtils.removeExtension(peptideInputFilePath);
 
 //                ArrayList<String> tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(curr_input_file_path, ".")));
 
@@ -378,18 +365,7 @@ public class PepGenomeTool {
             if (mergeFlag) {
 //                ArrayList<String> tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(peptideInputFilePaths[0], ".")));
 
-                String final_peptide_path_results = peptideInputFilePaths[0];
-                if (final_peptide_path_results.endsWith(".txt")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".txt");
-                } else if (final_peptide_path_results.endsWith(".tsv")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".tsv");
-                } else if (final_peptide_path_results.endsWith(".pogo")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".pogo");
-                } else if (final_peptide_path_results.endsWith(".mztab")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mztab");
-                } else if (final_peptide_path_results.endsWith(".mzid")) {
-                    final_peptide_path_results = Utils.removeExtension(final_peptide_path_results, ".mzid");
-                }
+                String final_peptide_path_results = FilenameUtils.removeExtension(peptideInputFilePaths[0]);
 
                 String path4 = final_peptide_path_results + filename_mm_postfix + "_merged.gtf";
                 String path5 = final_peptide_path_results + filename_mm_postfix + "_merged.bed";
