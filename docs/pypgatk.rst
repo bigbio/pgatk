@@ -4,7 +4,7 @@
 Pypgatk: Python Tools for ProteoGenomics
 ===========================
 
-The Pypgatk framework and library provides a set of tools and functionalities to perform proteogenomics analysis. In order to execute a task in `pypgatk` the user should use a `COMMAND` that perform the specific task and the
+The Pypgatk framework and library provides a set of tools and functionalities to perform proteogenomics analysis. In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` that perform the specific task and the
 specific task arguments/options:
 
 .. code-block:: bash
@@ -31,19 +31,19 @@ specific task arguments/options:
 Data downloader Tool
 ------------------
 
-The `Data downloader` is a set of `COMMANDs` to download data from different Genomics data providers such as ENSEMBL, COSMIC or cBioPortal.
+The Data downloader is a set of COMMANDs to download data from different Genomics data providers such as ENSEMBL, COSMIC or cBioPortal.
 
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command `ensembl-downloader`. The current tool enables to download the following files for each taxonomy:
+Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. The current tool enables to download the following files for each taxonomy:
 
 - GTF
 - Protein Sequence (FASTA),
 - CDS (FASTA)
 - Variation (VCF))
 
-.. hint:: By default the command `ensembl-downloader` download all file types for all the ENSEMBL species.
+.. hint:: By default the command ``ensembl-downloader`` download all file types for all the ENSEMBL species.
 
 .. code-block:: bash
    :linenos:
@@ -66,12 +66,12 @@ Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html
         -h, --help                      Show this message and exit.
 
 
-Each of the file types can be skip using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument `pypgatk.py ensembl-downloader --skip_protein`
+Each of the file types can be skip using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk.py ensembl-downloader --skip_protein``
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND `cosmic-downloader`. The current COMMAND allows users to download the following files:
+Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. The current COMMAND allows users to download the following files:
 
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
@@ -94,7 +94,7 @@ Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is
 Downloading cBioPortal data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command `cbioportal-downloader`. cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets).
+Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command ``cbioportal-downloader``. cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets).
 Currently, it is not possible to search the studies by PubMedID, they can only be search by study_id.
 
 .. code-block:: bash
@@ -111,7 +111,7 @@ Currently, it is not possible to search the studies by PubMedID, they can only b
         -h, --help                   Show this message and exit.
 
 
-The argument `-l` (`--list_studies`) allow the users to list all the studies stored in cBioPortal. The `-d` (`--download_study`) argument can be used to obtain mutation data from a particular study.
+The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
 
 From Genome information to protein sequence databases
 ----------------------------
@@ -122,7 +122,7 @@ commands depending on the mutation provider (cBioPortal or COSMIC, ENSEMBL).
 Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool uses the command `cosmic-to-proteindb` to convert the cosmic somatic mutations file into a protein sequence database file.
+`COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic somatic mutations file into a protein sequence database file.
 
 .. code-block:: bash
    :linenos:
@@ -137,14 +137,14 @@ Cosmic Mutations to Protein sequences
         -out, --output_db TEXT      Protein database including all the mutations
         -h, --help                  Show this message and exit.
 
-The file input of the tool `-in` (`--input_mutation`) is the cosmic mutation data file. The genes file `-fa` (`--input_genes`) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
+The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
 The output of the tool is a protein fasta file and is written in the following path `-out` (--output-db)
 
 cBioPortal Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). The current tool
-uses the command `cbioportal-to-proteindb` to convert the bcioportal mutations file into a protein sequence database file.
+uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations file into a protein sequence database file.
 
 .. code-block:: bash
    :linenos:
@@ -159,12 +159,12 @@ uses the command `cbioportal-to-proteindb` to convert the bcioportal mutations f
         -out, --output_db TEXT      Protein database including the mutations
         -h, --help                  Show this message and exit.
 
-The file input of the tool `-in` (`--input_mutation`) is the cbioportal mutation data file. The CDS sequence for all genes input file `-fa` (`--input_genes`) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the `ensembl-downloader` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
-The output of the tool is a protein fasta file and it is written in the following path `-out` (--output_db)
+The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the ``ensembl-downloader`` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
+The output of the tool is a protein fasta file and it is written in the following path ``-out`` (``--output_db``)
 
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. Variant calling methods generate a VCF file that could be used as input with VEP for variant annotation. VEP reports the trasncripts that are affected by the each variant along with the consequences of the effect. The vcf_to_proteindb COMMAND takes the VEP-annotated VCF and translates all genomic variatns in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selected the desired biotypes and consequences.
+Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. Variant calling methods generate a VCF file that could be used as input with VEP for variant annotation. VEP reports the trasncripts that are affected by the each variant along with the consequences of the effect. The ``vcf_to_proteindb`` COMMAND takes the VEP-annotated VCF and translates all genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selected the desired biotypes and consequences.
 
 .. code-block:: bash
    :linenos:
@@ -180,7 +180,7 @@ Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. V
         --output_proteindb          Output file to write the resulting variant protein sequences
         -h, --help                  Show this message and exit.
 
-The file input of the tool `--vep_annotated_vcf` is the VCF file that can be obtained with the data_downloader COMMAND, for instance. The `gene_annotations_gtf` file can be obtained with the data_downloader COMMAND, for instance. The GTF file should match the one used for the variant annotation in VEP. The `--transcripts_fasta` file contains the CDS and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the gffread tool.
+The file input of the tool ``--vep_annotated_vcf`` is the VCF file that can be obtained with the data_downloader COMMAND, for instance. The ``gene_annotations_gtf`` file can be obtained with the data_downloader COMMAND, for instance. The GTF file should match the one used for the variant annotation in VEP. The ``--transcripts_fasta`` file contains the CDS and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the gffread tool.
 
 .. code-block:: bash
    :linenos:
