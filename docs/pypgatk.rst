@@ -89,7 +89,7 @@ Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is
         -p, --password TEXT          Password for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
         -h, --help                   Show this message and exit.
 
-.. note:: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).__
+.. note:: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).
 
 Downloading cBioPortal data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -164,7 +164,7 @@ The output of the tool is a protein fasta file and it is written in the followin
 
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. Variant calling methods generate a VCF file that could be used as input with VEP for variant annotation. VEP reports the trasncripts that are affected by the each variant along with the consequences of the effect. The vcf_to_proteindb COMMAND takes the VEP-annotated VCF and translates all genomic variatns in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selected the desired biotypes and consequences. 
+Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. Variant calling methods generate a VCF file that could be used as input with VEP for variant annotation. VEP reports the trasncripts that are affected by the each variant along with the consequences of the effect. The vcf_to_proteindb COMMAND takes the VEP-annotated VCF and translates all genomic variatns in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selected the desired biotypes and consequences.
 
 .. code-block:: bash
    :linenos:
@@ -184,10 +184,10 @@ The file input of the tool `--vep_annotated_vcf` is the VCF file that can be obt
 
 .. code-block:: bash
    :linenos:
-   
+
    $: gffread -F -w transcripts_fasta.fa -g genome.fa gene_annotations_gtf
-   
-The output of the tool is a protein fasta file and is written in the following path `--output_proteindb`.
+
+The output of the tool is a protein fasta file and is written in the following path ``--output_proteindb``.
 
 
 Transcripts (DNA) to Protein sequences
