@@ -181,11 +181,14 @@ Variant Calling Format (VCFv4.1) is a text file to represent genomic variants. V
         -h, --help                  Show this message and exit.
 
 The file input of the tool `--vep_annotated_vcf` is the VCF file that can be obtained with the data_downloader COMMAND, for instance. The `gene_annotations_gtf` file can be obtained with the data_downloader COMMAND, for instance. The GTF file should match the one used for the variant annotation in VEP. The `--transcripts_fasta` file contains the CDS and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the gffread tool.
-code-block:: bash
+
+.. code-block:: bash
    :linenos:
-   gffread -F -w transcripts_fasta.fa -g genome.fa gene_annotations_gtf
+   
+   $: gffread -F -w transcripts_fasta.fa -g genome.fa gene_annotations_gtf
    
 The output of the tool is a protein fasta file and is written in the following path `--output_proteindb`.
+
 
 Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
