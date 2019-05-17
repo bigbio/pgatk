@@ -1,10 +1,12 @@
 package org.bigbio.pgatk.pepgenome;
 
 
+import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.log4j.Logger;
-import org.bigbio.pgatk.pepgenome.common.*;
-import org.apache.commons.cli.*;
+import org.bigbio.pgatk.pepgenome.common.Assembly;
+import org.bigbio.pgatk.pepgenome.common.SparkConfig;
+import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.io.GTFParser;
@@ -19,14 +21,14 @@ import org.ehcache.sizeof.SizeOf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
 public class PepGenomeTool {
 
     private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
-    public enum INPUT_FILE_FORMAT{
+
+    public enum INPUT_FILE_FORMAT {
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
         MZTAB("mztab", "mzTab file format (.mztab)", MzTabInputPeptideFileParser.class),
         PEPTIDEATLAS("peptideatlas", "PeptideAtlas PeptideBuild (.tsv)", PeptideAtlasPeptideParser.class),
@@ -49,14 +51,13 @@ public class PepGenomeTool {
             return description;
         }
 
-        public static INPUT_FILE_FORMAT findByString(String key){
-            for(INPUT_FILE_FORMAT value: values())
-                if(value.getName().equalsIgnoreCase(key))
+        public static INPUT_FILE_FORMAT findByString(String key) {
+            for (INPUT_FILE_FORMAT value : values())
+                if (value.getName().equalsIgnoreCase(key))
                     return value;
             return INPUT_FILE_FORMAT.TAB;
         }
     }
-
 
 
     //exit codes --------------------------------
@@ -77,6 +78,7 @@ public class PepGenomeTool {
     private static final String ARG_HELP = "h";
     private static final String ARG_INMEMORY = "inm";
     private static final String ARG_INPUT_FORMAT = "inf";
+    private static final String ARG_SPARK_MASTER = "spark_master";
     private static final String ARG_GENOME_FASTA = "genome";
 
     //DEFAULT values
@@ -90,9 +92,10 @@ public class PepGenomeTool {
     private static boolean inMemory = true;
     private static INPUT_FILE_FORMAT fileFormat = INPUT_FILE_FORMAT.TAB;
 
-
-
     public static void main(String[] args) {
+
+        System.setProperty("hadoop.home.dir", "/");
+
         long startTime = System.nanoTime();
 
         Options options = new Options();
@@ -108,6 +111,7 @@ public class PepGenomeTool {
                 .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
                 .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
                 .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true).desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
+                .addOption(Option.builder(ARG_SPARK_MASTER).hasArg(true).desc("Spark master String. i.e., to run locally use: local[*]").build())
                 .addOption(Option.builder(ARG_HELP).hasArg(false).desc("Print this help & exit").build());
 
         CommandLineParser parser = new DefaultParser();
@@ -127,11 +131,19 @@ public class PepGenomeTool {
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
         }
 
-        if(cmd.hasOption(ARG_INPUT_FORMAT))
+        if (cmd.hasOption(ARG_INPUT_FORMAT))
             fileFormat = INPUT_FILE_FORMAT.findByString(cmd.getOptionValue(ARG_INPUT_FORMAT));
 
         if (cmd.hasOption(ARG_INMEMORY) && cmd.getOptionValue(ARG_INMEMORY).equalsIgnoreCase("1")) {
             inMemory = false;
+        }
+
+        if (cmd.hasOption(ARG_SPARK_MASTER)) {
+            String master = cmd.getOptionValue(ARG_SPARK_MASTER);
+            if (master != null) {
+                SparkConfig sparkConfig = SparkConfig.getInstance();
+                sparkConfig.setMaster(master);
+            }
         }
 
         String fastaFilePath = cmd.getOptionValue(ARG_FASTA);
@@ -143,7 +155,7 @@ public class PepGenomeTool {
             log.info(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
-        
+
         if (fastaGenomeFilePath != null && !(fastaGenomeFilePath.endsWith(".fasta") || fastaGenomeFilePath.endsWith(".fa"))) {
             log.info(" *** Please provide valid input for -genome. The input filename has to end with .fa or .fasta *** ");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
@@ -251,38 +263,38 @@ public class PepGenomeTool {
 
         String pluralString = (GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES == 1) ? " mismatch" : " mismatches";
         log.info("Start: allowing " + GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES + pluralString);
-        
+
 
         try {
-        	
-        	if(fastaGenomeFilePath != null) {
-        		log.info("reading genome FASTA: " + fastaGenomeFilePath);
-        		GenomeFastaParser.readGenomeFASTA(fastaGenomeFilePath);
-        	}
 
-        	log.info("reading FASTA: " + fastaFilePath);
+            if (fastaGenomeFilePath != null) {
+                log.info("reading genome FASTA: " + fastaGenomeFilePath);
+                GenomeFastaParser.readGenomeFASTA(fastaGenomeFilePath);
+            }
+
+            log.info("reading FASTA: " + fastaFilePath);
             CoordinateWrapper coordinate_wrapper = new CoordinateWrapper();
             coordinate_wrapper.read_fasta_file(fastaFilePath);
 
             log.info("Fasta done: " + coordinate_wrapper.size() + " proteins read.");
             log.info("building KmerTreeMap...");
 
-            int kmerSize = (coordinate_wrapper.getTotalAACount()/coordinate_wrapper.getNumberOfProteins());
-            kmerSize = (kmerSize/GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH)*coordinate_wrapper.getNumberOfProteins();
+            int kmerSize = (coordinate_wrapper.getTotalAACount() / coordinate_wrapper.getNumberOfProteins());
+            kmerSize = (kmerSize / GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH) * coordinate_wrapper.getNumberOfProteins();
 
             IKmerMap kmer_map;
-            if(inMemory)
+            if (inMemory)
                 kmer_map = new KmerTreeMap();
             else
                 kmer_map = new KmerSortedMap(kmerSize);
 
             coordinate_wrapper.add_all_proteins_to_kmer_map(kmer_map);
 
-            if(!inMemory)
-                ((KmerSortedMap)kmer_map).sortKmer();
+            if (!inMemory)
+                ((KmerSortedMap) kmer_map).sortKmer();
 
             SizeOf sizeOf = SizeOf.newInstance();
-            log.info((int) (sizeOf.deepSizeOf(kmer_map)/1000000) + " MB");
+            log.info((int) (sizeOf.deepSizeOf(kmer_map) / 1000000) + " MB");
 
             log.info("KmerTreeMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
             log.info("reading GTF: " + gtfFilePath);
@@ -312,9 +324,9 @@ public class PepGenomeTool {
 
                 String path6 = final_peptide_path_results + "_unmapped.txt";
 
-                if(fileFormat == INPUT_FILE_FORMAT.MZTAB)
+                if (fileFormat == INPUT_FILE_FORMAT.MZTAB)
                     new MzTabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
-                else if(fileFormat == INPUT_FILE_FORMAT.PEPTIDEATLAS)
+                else if (fileFormat == INPUT_FILE_FORMAT.PEPTIDEATLAS)
                     new PeptideAtlasPeptideParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
                 else
                     new TabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
@@ -412,8 +424,8 @@ public class PepGenomeTool {
         }
 
         log.info("DONE..");
-        long endTime   = System.nanoTime();
-        long totalTime = (long)((endTime - startTime)/1000000000.0);
+        long endTime = System.nanoTime();
+        long totalTime = (long) ((endTime - startTime) / 1000000000.0);
         log.debug("Running time -- " + totalTime + " Min");
     }
 }
