@@ -244,7 +244,6 @@ DNA sequences given in a fasta format can be translated using the ``dnaseq-to-pr
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
 The most suited --input_fasta file can be generated from a given GTF file using the gffread commad as follows:
 .. code-block:: bash
-   :linenos:
 
    $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
