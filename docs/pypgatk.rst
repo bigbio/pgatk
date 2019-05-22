@@ -212,7 +212,6 @@ The output of the tool is a protein fasta file and is written in the following p
 Examples
 
 Translate human missense variants from ENSEMBL that have a minimum AF 5% and affect any protein_coding gene or lincRNAs. 
-Command:
 
 .. code-block:: bash
    :linenos:
@@ -224,7 +223,6 @@ by default  vcf-to-proteindb considers transcript that have a coding sequence th
 Also, by default all consequences are accepted except those given with --exclude_biotypes.
 
 Translate human missense variants or insert_framshift from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
-Command: 
 
 .. code-block:: bash
    :linenos:
@@ -286,6 +284,7 @@ However, it is not required to have those information in the fasta header but th
 
 Example: 
 Generate the canonical protein database, i.e. translate all protein coding transcripts:
+
 .. code-block:: bash
    :linenos:
    
