@@ -216,7 +216,11 @@ Translate human missense variants from ENSEMBL that have a minimum AF 5% and aff
 .. code-block:: bash
    :linenos:
    
- 	$: python3.7 pypgatk.py vcf-to-proteindb --vep_annotated_vcf homo_sapiens_incl_consequences.vcf --include_biotypes --lincRNA include_consequences missense --af_threshold 0.05
+ 	$: python3.7 pypgatk.py vcf-to-proteindb 
+ 		--vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
+ 		--include_biotypes lincRNA 
+ 		--include_consequences missense 
+ 		--af_threshold 0.05
 
 Explanation of the command:
 by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the --include_biotypes option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <link to ENSBML biotypes>. The choice of using gene or transcript biotype can be specified using the --biotype_str option.
@@ -227,7 +231,13 @@ Translate human missense variants or insert_framshift from gnoMAD that have a mi
 .. code-block:: bash
    :linenos:
    
- 	$: python3.7 pypgatk.py vcf-to-proteindb --vep_annotated_vcf gnmad_genome.vcf include_consequences missense, frameshift_insert --annotation_field_name vep --af_threshold 0.01 --af_field control_af --biotype_str transcript_type --transcript_index 6
+ 	$: python3.7 pypgatk.py vcf-to-proteindb 
+ 		--vep_annotated_vcf gnmad_genome.vcf 
+ 		--include_consequences missense, frameshift_insert 
+ 		--annotation_field_name vep --af_threshold 0.01 
+ 		--af_field control_af 
+ 		--biotype_str transcript_type 
+ 		--transcript_index 6
 
 Explanation of the command:
 by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes 
@@ -288,9 +298,9 @@ Example: Generate the canonical protein database, i.e. translate all protein cod
    :linenos:
    
 	$: python3.7 pypgatk.py dnaseq-to-proteindb 
-	--config_file config/ensembl_config.yaml 
-	--input_fasta testdata/test.fa 
-	--output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
+		--config_file config/ensembl_config.yaml 
+		--input_fasta testdata/test.fa 
+		--output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
 
 
 Contributions
