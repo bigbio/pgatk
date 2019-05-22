@@ -11,9 +11,9 @@ specific task arguments/options:
    :linenos:
 
    $: python3.7 pypgatk -h
-      Usage: pypgatk.py [OPTIONS] COMMAND [ARGS]...
+      Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
-      This is the main tool that give access to all commands and options provided by the pypgatk
+      This is the main tool that give access to all commands and options provided by the pypgatk_cli
 
       Options:
          -h, --help  Show this message and exit.
@@ -48,8 +48,8 @@ Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py ensembl-downloader -h
-      Usage: pypgatk.py ensembl-downloader [OPTIONS]
+   $: python3.7 pypgatk_cli.py ensembl-downloader -h
+      Usage: pypgatk_cli.py ensembl-downloader [OPTIONS]
 
       This tool enables to download from ENSEMBL ftp the FASTA, GTF and VCF files
 
@@ -66,7 +66,7 @@ Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html
         -h, --help                      Show this message and exit.
 
 
-Each of the file types can be skip using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk.py ensembl-downloader --skip_protein``
+Each of the file types can be skip using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk_cli.py ensembl-downloader --skip_protein``
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -79,8 +79,8 @@ Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py cosmic-downloader -h
-      Usage: pypgatk.py cosmic-downloader [OPTIONS]
+   $: python3.7 pypgatk_cli.py cosmic-downloader -h
+      Usage: pypgatk_cli.py cosmic-downloader [OPTIONS]
 
       Options:
         -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
@@ -100,8 +100,8 @@ Currently, it is not possible to search the studies by PubMedID, they can only b
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py cbioportal-downloader -h
-      Usage: pypgatk.py cbioportal-downloader [OPTIONS]
+   $: python3.7 pypgatk_cli.py cbioportal-downloader -h
+      Usage: pypgatk_cli.py cbioportal-downloader [OPTIONS]
 
       Options:
         -c, --config_file TEXT Configuration file for the ensembl data downloader pipeline
@@ -127,8 +127,8 @@ Cosmic Mutations to Protein sequences
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py cosmic-to-proteindb -h
-      Usage: pypgatk.py cosmic-to-proteindb [OPTIONS]
+   $: python3.7 pypgatk_cli.py cosmic-to-proteindb -h
+      Usage: pypgatk_cli.py cosmic-to-proteindb [OPTIONS]
 
       Options:
         -c, --config_file TEXT      Configuration file for the cosmic data pipelines
@@ -149,8 +149,8 @@ uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py cbioportal-to-proteindb -h
-      Usage: pypgatk.py cbioportal-to-proteindb [OPTIONS]
+   $: python3.7 pypgatk_cli.py cbioportal-to-proteindb -h
+      Usage: pypgatk_cli.py cbioportal-to-proteindb [OPTIONS]
 
       Options:
         -c, --config_file TEXT      Configuration for cBioportal
@@ -169,8 +169,8 @@ Variant Calling Format (VCFv4.1) is a text file representing genomic variants. V
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py vcf-to-proteindb -h
-      Usage: pypgatk.py vcf-to-proteindb [OPTIONS]
+   $: python3.7 pypgatk_cli.py vcf-to-proteindb -h
+      Usage: pypgatk_cli.py vcf-to-proteindb [OPTIONS]
 
       Required parameters:
         -c, --config_file TEXT      Configuration for VCF conversion parameters
