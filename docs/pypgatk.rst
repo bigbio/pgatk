@@ -276,9 +276,13 @@ However, it is not required to have those information in the fasta header but th
 
 
 
-Example:
-Generate the canonical protein database, i.e. translate all protein coding transcripts
-python3.7 pypgatk.py dnaseq-to-proteindb --config_file config/ensembl_config.yaml --input_fasta testdata/test.fa --output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
+Example: 
+Generate the canonical protein database, i.e. translate all protein coding transcripts:
+
+.. code-block:: bash
+   :linenos:
+   
+	$: python3.7 pypgatk.py dnaseq-to-proteindb --config_file config/ensembl_config.yaml --input_fasta testdata/test.fa --output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
 
 
 Contributions
