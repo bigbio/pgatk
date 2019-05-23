@@ -287,16 +287,12 @@ Also, by default all consequences are accepted except those given with --exclude
  		--transcript_index 6
 
 .. hint:: 
-	:linenos:
-		- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
-		- The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
-		- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
+	- The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
+	- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
 
-.. note:: 
-	:linenos:
-	
-		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
-
+.. note:: As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
+		
 		--af_field (from the VCF INFO field)
 		--annotation_field_name (from the VCF INFO field)
 		--transcript_index (from the annotation field in the VCF INFO field)
@@ -310,7 +306,7 @@ of all kinds of transcripts (coding and noncoding) by specifying the desired bio
 The most suited --input_fasta file can be generated from a given GTF file using the gffread commad as follows:
 
 .. code-block:: bash
-   :linenos:
+   
    $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
 The fasta file that is generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. Also, it specifies the CDS positions for the protein coding transcripts.
