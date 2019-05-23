@@ -119,16 +119,17 @@ Currently, it is not possible to search the studies by PubMedID, they can only b
 
 The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
 
-Example: Download data for studyID all_stjude_2016:
+Examples
+
+- Download data for studyID all_stjude_2016:
+
 .. code-block:: bash
-   :linenos:
 
    $: python3.7 pypgatk_cli.py cbioportal-downloader -d all_stjude_2016
    
-Example: Download data for all studies in cBioportal
+- Download data for all studies in cBioportal
 
 .. code-block:: bash
-   :linenos:
 
    $: python3.7 pypgatk_cli.py cbioportal-downloader -d all
 
@@ -165,11 +166,12 @@ The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic 
 The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
 The output of the tool is a protein fasta file and is written in the following path `-out` (--output-db)
 
-Example: generate a proteinDB per cancer type from COSMIC mutations
+Examples: 
+
+- generate a proteinDB per cancer type from COSMIC mutations
 
 .. code-block:: bash
-   :linenos:
-
+  
    python3.7 pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa -s
 
 cBioPortal Mutations to Protein sequences
@@ -199,12 +201,13 @@ uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations
 The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the ``ensembl-downloader`` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
 The output of the tool is a protein fasta file and it is written in the following path ``-out`` (``--output_db``)
 
-Example translate mutations from Leukemia samples in studyID: all_stjude_2016 (downloaded above):
+Examples:
+
+- translate mutations from Leukemia samples in studyID: all_stjude_2016 (downloaded above):
 
 .. code-block:: bash
-   :linenos:
    
- 	$: python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
+   $: python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
  	
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -253,9 +256,9 @@ The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be obt
 
 The output of the tool is a protein fasta file and is written in the following path ``--output_proteindb``.
 
-Examples
+Examples:
 
-Translate human missense variants from ENSEMBL that have a minimum AF 5% and affect any protein_coding gene or lincRNAs. 
+- Translate human missense variants from ENSEMBL that have a minimum AF 5% and affect any protein_coding gene or lincRNAs. 
 
 .. code-block:: bash
    :linenos:
@@ -270,7 +273,7 @@ Explanation of the command:
 by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the --include_biotypes option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <link to ENSBML biotypes>. The choice of using gene or transcript biotype can be specified using the --biotype_str option.
 Also, by default all consequences are accepted except those given with --exclude_biotypes.
 
-Translate human missense variants or insert_framshift from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
+- Translate human missense variants or insert_framshift from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
 
 .. code-block:: bash
    :linenos:
@@ -337,7 +340,9 @@ However, it is not required to have those information in the fasta header but th
 
 
 
-Example: Generate the canonical protein database, i.e. translate all protein coding transcripts:
+Examples:
+
+- Generate the canonical protein database, i.e. translate all protein coding transcripts:
 
 .. code-block:: bash
    :linenos:
