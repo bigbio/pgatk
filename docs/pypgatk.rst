@@ -293,11 +293,17 @@ Also, by default all consequences are accepted except those given with --exclude
 
 .. note:: 
 		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
+		
 			--af_field (from the VCF INFO field)
+			
 			--annotation_field_name (from the VCF INFO field)
+			
 			--transcript_index (from the annotation field in the VCF INFO field)
+			
 			--consequence_index (from the annotation field in the VCF INFO field)
+			
 			--biotype_str (from the GTF INFO field)
+			
 
 Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
