@@ -196,7 +196,7 @@ uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations
         -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier 
         -h, --help                       Show this message and exit.
 
-.. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (options -s and -t are given).
+.. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (that is when -s or -t is given).
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the ``ensembl-downloader`` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
 The output of the tool is a protein fasta file and it is written in the following path ``-out`` (``--output_db``)
@@ -286,20 +286,19 @@ Also, by default all consequences are accepted except those given with --exclude
  		--biotype_str transcript_type 
  		--transcript_index 6
 
-Explanation of the command:
-by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes 
-and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes. 
-The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter, 
-the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af.
-Also, since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
+..hint:: by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
+..hint:: The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
+..hint:: Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
 
-*As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
+.. note:: 
+	:linenos:
+		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
 
---af_field (from the VCF INFO field)
---annotation_field_name (from the VCF INFO field)
---transcript_index (from the annotation field in the VCF INFO field)
---consequence_index (from the annotation field in the VCF INFO field)
---biotype_str (from the GTF INFO field)
+		--af_field (from the VCF INFO field)
+		--annotation_field_name (from the VCF INFO field)
+		--transcript_index (from the annotation field in the VCF INFO field)
+		--consequence_index (from the annotation field in the VCF INFO field)
+		--biotype_str (from the GTF INFO field)
 
 Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
