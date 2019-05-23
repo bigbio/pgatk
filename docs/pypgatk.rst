@@ -286,12 +286,15 @@ Also, by default all consequences are accepted except those given with --exclude
  		--biotype_str transcript_type 
  		--transcript_index 6
 
-.. hint:: by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
-.. hint:: The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
-.. hint:: Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
+.. hint:: 
+	:linenos:
+		- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
+		- The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
+		- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
 
 .. note:: 
 	:linenos:
+	
 		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
 
 		--af_field (from the VCF INFO field)
