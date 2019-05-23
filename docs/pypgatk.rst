@@ -262,7 +262,7 @@ Translate human missense variants from ENSEMBL that have a minimum AF 5% and aff
    
  	$: python3.7 pypgatk.py vcf-to-proteindb 
  		--vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
- 		--include_biotypes lincRNA 
+ 		--include_biotypes lncRNA 
  		--include_consequences missense 
  		--af_threshold 0.05
 
@@ -303,8 +303,9 @@ Transcripts (DNA) to Protein sequences
 DNA sequences given in a fasta format can be translated using the ``dnaseq-to-proteindb`` tool. This tool allows for translation 
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
 The most suited --input_fasta file can be generated from a given GTF file using the gffread commad as follows:
-.. code-block:: bash
 
+.. code-block:: bash
+   :linenos:
    $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
 The fasta file that is generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. Also, it specifies the CDS positions for the protein coding transcripts.
