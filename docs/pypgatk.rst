@@ -4,7 +4,8 @@
 Pypgatk: Python Tools for ProteoGenomics
 ===========================
 
-The Pypgatk framework and library provides a set of tools and functionalities to perform proteogenomics analysis. In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` that perform the specific task and the
+The Pypgatk framework and library provides a set of tools and functionalities to perform proteogenomics analysis. 
+In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` that perform the specific task and the
 specific task arguments/options:
 
 .. code-block:: bash
@@ -36,7 +37,8 @@ The Data downloader is a set of COMMANDs to download data from different Genomic
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. The current tool enables to download the following files for each taxonomy:
+Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
+The current tool enables to download the following files for each taxonomy:
 
 - GTF
 - Protein Sequence (FASTA),
@@ -71,7 +73,8 @@ Each of the file types can be skip using the corresponding option. For example, 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. The current COMMAND allows users to download the following files:
+Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. 
+The current COMMAND allows users to download the following files:
 
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
@@ -82,19 +85,22 @@ Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is
    $: python3.7 pypgatk_cli.py cosmic-downloader -h
       Usage: pypgatk_cli.py cosmic-downloader [OPTIONS]
 
-      Options:
-        -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
-        -o, --output_directory TEXT  Output directory for the peptide databases
+      Required parameters:
         -u, --username TEXT          Username for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
         -p, --password TEXT          Password for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
+	  
+	  Optional parameters:
+        -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
+        -o, --output_directory TEXT  Output directory for the peptide databases
         -h, --help                   Show this message and exit.
-
+        
 .. note:: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).
 
 Downloading cBioPortal data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command ``cbioportal-downloader``. cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets).
+Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command ``cbioportal-downloader``. 
+cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets).
 Currently, it is not possible to search the studies by PubMedID, they can only be search by study_id.
 
 .. code-block:: bash
@@ -113,6 +119,20 @@ Currently, it is not possible to search the studies by PubMedID, they can only b
 
 The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
 
+Example: Download data for studyID all_stjude_2016:
+.. code-block:: bash
+   :linenos:
+
+   $: python3.7 pypgatk_cli.py cbioportal-downloader -d all_stjude_2016
+   
+Example: Download data for all studies in cBioportal
+
+.. code-block:: bash
+   :linenos:
+
+   $: python3.7 pypgatk_cli.py cbioportal-downloader -d all
+
+
 From Genome information to protein sequence databases
 ----------------------------
 
@@ -122,7 +142,8 @@ commands depending on the data provider (cBioPortal or COSMIC, ENSEMBL) and the 
 Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-`COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic somatic mutations file into a protein sequence database file.
+`COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. 
+The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic somatic mutations file into a protein sequence database file.
 
 .. code-block:: bash
    :linenos:
@@ -130,15 +151,26 @@ Cosmic Mutations to Protein sequences
    $: python3.7 pypgatk_cli.py cosmic-to-proteindb -h
       Usage: pypgatk_cli.py cosmic-to-proteindb [OPTIONS]
 
-      Options:
-        -c, --config_file TEXT      Configuration file for the cosmic data pipelines
+      Required parameters:
         -in, --input_mutation TEXT  Cosmic Mutation data file
         -fa, --input_genes TEXT     All Cosmic genes
         -out, --output_db TEXT      Protein database including all the mutations
+      
+      Optional parameters:
+        -c, --config_file TEXT      Configuration file for the cosmic data pipelines
+        -t, --tissue_type           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default all)
+        -s,	--split_by_tissue_type  Generate a proteinDB output file for each tissue type in the mutations file (affected by --tissue_type) (default False)
         -h, --help                  Show this message and exit.
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
 The output of the tool is a protein fasta file and is written in the following path `-out` (--output-db)
+
+Example: generate a proteinDB per cancer type from COSMIC mutations
+
+.. code-block:: bash
+   :linenos:
+
+   python3.7 pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa -s
 
 cBioPortal Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -153,15 +185,27 @@ uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations
       Usage: pypgatk_cli.py cbioportal-to-proteindb [OPTIONS]
 
       Options:
-        -c, --config_file TEXT      Configuration for cBioportal
-        -in, --input_mutation TEXT  Cbioportal mutation file
-        -fa, --input_cds TEXT       CDS genes from ENSEMBL database
-        -out, --output_db TEXT      Protein database including the mutations
-        -h, --help                  Show this message and exit.
+        -c, --config_file TEXT           Configuration for cBioportal
+        -in, --input_mutation TEXT       Cbioportal mutation file
+        -fa, --input_cds TEXT            CDS genes from ENSEMBL database
+        -out, --output_db TEXT           Protein database including the mutations
+        -t, --tissue_type TEXT           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default all)
+        -s,	--split_by_tissue_type BOOL  Generate a proteinDB output file for each tissue type in the mutations file (affected by --tissue_type) (default False)
+        -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier 
+        -h, --help                       Show this message and exit.
+
+.. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (options -s and -t are given).
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the ``ensembl-downloader`` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
 The output of the tool is a protein fasta file and it is written in the following path ``-out`` (``--output_db``)
 
+Example translate mutations from Leukemia samples in studyID: all_stjude_2016 (downloaded above):
+
+.. code-block:: bash
+   :linenos:
+   
+ 	$: python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
+ 	
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
