@@ -159,12 +159,12 @@ The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic 
       
       Optional parameters:
         -c, --config_file TEXT      Configuration file for the cosmic data pipelines
-        -t, --tissue_type           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default all)
-        -s,	--split_by_tissue_type  Generate a proteinDB output file for each tissue type in the mutations file (affected by --tissue_type) (default False)
+        -t, --tissue_type           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default ``all``)
+        -s,	--split_by_tissue_type  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
         -h, --help                  Show this message and exit.
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
-The output of the tool is a protein fasta file and is written in the following path `-out` (--output-db)
+The output of the tool is a protein fasta file and is written in the following path `-out` (``--output_db``)
 
 Examples: 
 
@@ -191,8 +191,8 @@ uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations
         -in, --input_mutation TEXT       Cbioportal mutation file
         -fa, --input_cds TEXT            CDS genes from ENSEMBL database
         -out, --output_db TEXT           Protein database including the mutations
-        -t, --tissue_type TEXT           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default all)
-        -s,	--split_by_tissue_type BOOL  Generate a proteinDB output file for each tissue type in the mutations file (affected by --tissue_type) (default False)
+        -t, --tissue_type TEXT           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default ``all``)
+        -s,	--split_by_tissue_type BOOL  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
         -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier 
         -h, --help                       Show this message and exit.
 
@@ -203,7 +203,7 @@ The output of the tool is a protein fasta file and it is written in the followin
 
 Examples:
 
-- translate mutations from Leukemia samples in studyID: all_stjude_2016 (downloaded above):
+- translate mutations from ``Leukemia`` samples in studyID: ``all_stjude_2016`` (downloaded above):
 
 .. code-block:: bash
    
@@ -211,7 +211,10 @@ Examples:
  	
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-Variant Calling Format (VCFv4.1) is a text file representing genomic variants. Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
+Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
+Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
+VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. 
+The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
 
 .. code-block:: bash
    :linenos:
@@ -241,13 +244,14 @@ Variant Calling Format (VCFv4.1) is a text file representing genomic variants. V
   		--exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
         --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
   		--include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
-  		--include_consequences TEXT	Consider variants that have one of these consequences (default is all)
+  		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: <https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html>
   		--biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
   		--ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
   		--accepted_filters TEXT	Accepted filters for variant parsing
         -h, --helP		Show this message and exit.
 
-The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be obtained with the data_downloader COMMAND, for instance. The ``gene_annotations_gtf`` file can be obtained with the data_downloader COMMAND, for instance. The GTF file should match the one used for the variant annotation in VEP. The ``--input_fasta`` file contains the CDS and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the gffread tool.
+The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be obtained with the ``ensembl-downloader`` COMMAND, for instance. 
+The ``gene_annotations_gtf`` file can also be obtained with the ensembl_downloader COMMAND or it can be a user VCF file. The GTF file should match the one used for the variant annotation in VEP. The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the ``gffread`` tool as follows:
 
 .. code-block:: bash
    :linenos:
@@ -258,7 +262,7 @@ The output of the tool is a protein fasta file and is written in the following p
 
 Examples:
 
-- Translate human missense variants from ENSEMBL that have a minimum AF 5% and affect any protein_coding gene or lincRNAs. 
+- Translate human *missense* variants from ENSEMBL that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*. 
 
 .. code-block:: bash
    :linenos:
@@ -270,10 +274,11 @@ Examples:
  		--af_threshold 0.05
 
 Explanation of the command:
-by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the --include_biotypes option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <link to ENSBML biotypes>. The choice of using gene or transcript biotype can be specified using the --biotype_str option.
-Also, by default all consequences are accepted except those given with --exclude_biotypes.
+by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
+The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``.
+Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
 
-- Translate human missense variants or insert_framshift from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
+- Translate human *missense* variants or *inframe_insertion* from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
 
 .. code-block:: bash
    :linenos:
@@ -287,9 +292,9 @@ Also, by default all consequences are accepted except those given with --exclude
  		--transcript_index 6
 
 .. hint:: 
-	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
-	- The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
-	- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
+	- By default  ``vcf-to-proteindb`` considers transcript that have a coding sequence that includes all *protein_coding* transcripts and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
+	- The provided VCF file has some specific properties: the annotation field is specified with the string *vep* hence the ``--annotation_field_name parameter``,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the ``--af_field`` is set to ``control_af``. 
+	- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default ``biotype_str`` from *transcript_biotype* to *transcript_type* (as written in the GTF file).
 
 .. note:: 
 		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
@@ -309,14 +314,14 @@ Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DNA sequences given in a fasta format can be translated using the ``dnaseq-to-proteindb`` tool. This tool allows for translation 
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
-The most suited --input_fasta file can be generated from a given GTF file using the gffread commad as follows:
+The most suited ``--input_fasta`` file can be generated from a given GTF file using the ``gffread`` commad as follows:
 
 .. code-block:: bash
    
    $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
 The fasta file that is generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. Also, it specifies the CDS positions for the protein coding transcripts.
-The dnaseq-to-proteindb command recognizes the features such as biotype and expression values in the fasta header that are taken from the GTF INFO filed (if available).
+The ``dnaseq-to-proteindb`` command recognizes the features such as biotype and expression values in the fasta header that are taken from the GTF INFO filed (if available).
 However, it is not required to have those information in the fasta header but their presence enables the user to filter by biotype and expression values during the translation step. 
 
 .. code-block:: bash
@@ -346,7 +351,7 @@ However, it is not required to have those information in the fasta header but th
 
 Examples:
 
-- Generate the canonical protein database, i.e. translate all protein coding transcripts:
+- Generate the canonical protein database, i.e. translate all *protein_coding* transcripts:
 
 .. code-block:: bash
    :linenos:
