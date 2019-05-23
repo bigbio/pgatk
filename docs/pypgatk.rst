@@ -291,13 +291,13 @@ Also, by default all consequences are accepted except those given with --exclude
 	- The provided vcf file has some specific properties: the annotation field is specified with the string 'vep' hence the --annotation_field_name parameter,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the --af_field is set to control_af. 
 	- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default biotype_str from transcript_biotype to transcript_type (as written in the GTF file).
 
-.. note:: As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
-		
-		--af_field (from the VCF INFO field)
-		--annotation_field_name (from the VCF INFO field)
-		--transcript_index (from the annotation field in the VCF INFO field)
-		--consequence_index (from the annotation field in the VCF INFO field)
-		--biotype_str (from the GTF INFO field)
+.. note:: 
+		As shown in the two examples above, when ENSEMBL data is used, the default options should work. However, for using other data sources such as variants from gnomAD, GTF from GENOCODE and others one or more of the following parameters need to be changed:
+			--af_field (from the VCF INFO field)
+			--annotation_field_name (from the VCF INFO field)
+			--transcript_index (from the annotation field in the VCF INFO field)
+			--consequence_index (from the annotation field in the VCF INFO field)
+			--biotype_str (from the GTF INFO field)
 
 Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
