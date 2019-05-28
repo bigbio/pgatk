@@ -1,10 +1,11 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 //possible offsets.
-public enum Offset {
+public enum Offset implements Serializable {
     off1(1),
     off2(2),
     off3(3);

@@ -17,7 +17,6 @@ import java.io.FileOutputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,11 +59,19 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
             }
             ArrayList<String> tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(line, "\t", false)));
             //using only the tokens needed.
-            tissue = tokens.get(0);
-            peptide_string = tokens.get(1);
+            tissue = tokens.get(0).trim();
+            peptide_string = tokens.get(1).trim();
             //std::cout << "Mapping following peptide: " << peptide_string << std::endl;
-            sigPSMs = Integer.parseInt(tokens.get(2));
-            quant = Double.parseDouble(tokens.get(3));
+            String sigPsmStr = tokens.get(2).trim();
+            if (sigPsmStr.length() == 0) {
+                sigPsmStr = "0";
+            }
+            sigPSMs = Integer.parseInt(sigPsmStr);
+            String quantStr = tokens.get(3).trim();
+            if (quantStr.length() == 0) {
+                quantStr = "0";
+            }
+            quant = Double.parseDouble(quantStr);
 
             //clearing the tokens list for the next iteration.
             tokens.clear();
@@ -103,6 +110,11 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
 
         SparkSession sparkSession = SparkSession.builder().
                 master(SparkConfig.getInstance().getMaster())
+                .config("spark.executor.memory", "10g")
+                .config("spark.yarn.executor.memoryOverhead", "1g")
+                .config("spark.driver.memory", "10g")
+                .config("spark.memory.offHeap.enabled", true)
+                .config("spark.memory.offHeap.size", "10g")
                 .appName("pgatk tab input file parser")
                 .getOrCreate();
 
@@ -111,15 +123,27 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
 //                .option("header", "true")
                 .csv(file);
 
-        List<Row> rows = tsv.collectAsList();
-        for (Row r : rows) {
-            String tissue = r.getString(0);
+        tsv.foreach(r -> {
+//            System.out.println(r);
+//        });
+//        List<Row> rows = tsv.collectAsList();
+//        for (Row r : rows) {
+                    String tissue = r.getString(0).trim();
             if ((tissue.toLowerCase().startsWith("experiment")) || (tissue.toLowerCase().startsWith("sample"))) {
-                continue;
+                return;
             }
-            String peptide_string = r.getString(1);
-            int sigPSMs = Integer.parseInt(r.getString(2));
-            double quant = Double.parseDouble(r.getString(3));
+
+                    String peptide_string = r.getString(1).trim();
+                    String sigPsmStr = r.getString(2).trim();
+                    if (sigPsmStr.length() == 0) {
+                        sigPsmStr = "0";
+                    }
+                    int sigPSMs = Integer.parseInt(sigPsmStr);
+                    String quantStr = r.getString(3).trim();
+                    if (quantStr.length() == 0) {
+                        quantStr = "0";
+                    }
+                    double quant = Double.parseDouble(quantStr);
 
             if (sigPSMs > 0) {
                 //the matching will only use the amino acids.
@@ -144,6 +168,7 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
                 }
             }
         }
+        );
 
         ofs.close();
     }

@@ -1,10 +1,11 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 //possible frames
-public enum Frame {
+public enum Frame implements Serializable {
     frame1(1),
     frame2(2),
     frame3(3),
