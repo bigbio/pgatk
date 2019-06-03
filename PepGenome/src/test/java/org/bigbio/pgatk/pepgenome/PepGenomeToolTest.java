@@ -56,11 +56,13 @@ public class PepGenomeToolTest {
         List<String> argList = new ArrayList<>();
 
         argList.add("-in");
-        argList.add(fileIn);
+        argList.add("/Volumes/work/pgatk/spark/pgatk_input.txt");
         argList.add("-fasta");
         argList.add(fileFasta);
         argList.add("-gtf");
         argList.add(fileGTF);
+        argList.add("-spark_master");
+        argList.add("local[*]");
 
         String[] args = new String[argList.size()];
         argList.toArray(args);
@@ -89,12 +91,12 @@ public class PepGenomeToolTest {
             Assert.assertTrue(found);
         }
 
-        deleteAfterTest();
+//        deleteAfterTest();
         log.info(" ");
 
     }
 
-    @Test
+    //    @Test
     public void mainInDB() throws IOException {
         log.info("InDBTest");
         List<String> argList = new ArrayList<>();
@@ -152,7 +154,8 @@ public class PepGenomeToolTest {
         argList.add("-gtf");
         argList.add(fileGTF);
         argList.add("-spark_master");
-        argList.add("local[*]");
+//        argList.add("local[*]");
+        argList.add("10.41.12.76:7077");
 
         String[] args = new String[argList.size()];
         argList.toArray(args);

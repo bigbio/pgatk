@@ -11,12 +11,10 @@ import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,7 +24,7 @@ import java.util.Map;
  * @author ypriverol
  */
 
-public class TabInputPeptideFileParser implements PeptideInputReader {
+public class TabInputPeptideFileParser implements PeptideInputReader, Serializable {
 
     public void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
         if (SparkConfig.getInstance().getMaster() != null) {
@@ -110,11 +108,12 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
 
         SparkSession sparkSession = SparkSession.builder().
                 master(SparkConfig.getInstance().getMaster())
-                .config("spark.executor.memory", "10g")
-                .config("spark.yarn.executor.memoryOverhead", "1g")
-                .config("spark.driver.memory", "10g")
-                .config("spark.memory.offHeap.enabled", true)
-                .config("spark.memory.offHeap.size", "10g")
+//                .config("spark.executor.memory", "10g")
+//                .config("spark.yarn.executor.memoryOverhead", "1g")
+//                .config("spark.driver.memory", "10g")
+//                .config("spark.memory.offHeap.enabled", true)
+//                .config("spark.memory.offHeap.size", "10g")
+                .config("spark.jars", "/Volumes/work/PepGenome-1.0.0-SNAPSHOT.jar")
                 .appName("pgatk tab input file parser")
                 .getOrCreate();
 
@@ -123,11 +122,13 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
 //                .option("header", "true")
                 .csv(file);
 
-        tsv.foreach(r -> {
+//        JavaRDD<Row> tsv2 = tsv.javaRDD();
+
+//        tsv.foreach(r -> {
 //            System.out.println(r);
 //        });
-//        List<Row> rows = tsv.collectAsList();
-//        for (Row r : rows) {
+        List<Row> rows = tsv.collectAsList();
+        for (Row r : rows) {
                     String tissue = r.getString(0).trim();
             if ((tissue.toLowerCase().startsWith("experiment")) || (tissue.toLowerCase().startsWith("sample"))) {
                 return;
@@ -168,7 +169,7 @@ public class TabInputPeptideFileParser implements PeptideInputReader {
                 }
             }
         }
-        );
+//        );
 
         ofs.close();
     }
