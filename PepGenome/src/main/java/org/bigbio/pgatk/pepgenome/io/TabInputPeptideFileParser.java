@@ -113,7 +113,8 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
 //                .config("spark.driver.memory", "10g")
 //                .config("spark.memory.offHeap.enabled", true)
 //                .config("spark.memory.offHeap.size", "10g")
-                .config("spark.jars", "/Volumes/work/PepGenome-1.0.0-SNAPSHOT.jar")
+//                .config("spark.jars", "/somepath/PepGenome-1.0.0-SNAPSHOT.jar")
+                .config("spark.ui.enabled", false)
                 .appName("pgatk tab input file parser")
                 .getOrCreate();
 
