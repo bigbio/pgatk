@@ -13,7 +13,7 @@ In proteogenomic analyses it is essential to know the loci (genome position) giv
 Input format (Tab delimited)
 ------------------------
 
-The input format required by PepGenome is a tab delimited file with four columns. It can contains the following extensions ```.tsv```, ```.pogo``` or ```.txt```.
+The input format required by PepGenome is a tab delimited file with four columns. It can contains the following extensions ``.tsv``, ``.pogo`` or ``.txt``.
 
 +-------------------+------------------+-----------------------------------------+
 | Column            | Column header    | Description                             |
@@ -53,9 +53,9 @@ Usage
 
 **Required arguments**:
 
-- **-fasta**: Filepath for file containing protein sequences in FASTA format. (e.g. ``` -fasta gencode.v25.pc_translations.fa```)
-- **-gtf**:   Gene annotation with coding sequences (CDS) in GTF format. (e.g. ``` -gtf gencode.v25.annotation.gtf```)
-- **-in**:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``` -in file.tsv```)
+- ``-fasta``: Filepath for file containing protein sequences in FASTA format. (e.g. ``-fasta gencode.v25.pc_translations.fa``)
+- ``-gtf``:   Gene annotation with coding sequences (CDS) in GTF format. (e.g. ``-gtf gencode.v25.annotation.gtf``)
+- ``-in``:    Path to single input file or comma separated list of paths to input files containing peptides to be mapped with associated number of peptide to spectrum matches, sample name and quantitative value (see input file format). (e.g. ``-in file.tsv``)
 
 How to easily run the tool (**e.g. Human**)::
 
@@ -69,10 +69,10 @@ How to easily run the tool (**e.g. Human**)::
 Optional arguments
 -------------------
 
-- **-format**:  Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ```Default = ALL```
-- **-merge**:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE``
-- **-source**:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ```Default = FALSE```
-- **-mm**:      Number of mismatches allowed in mapping (0, 1 or 2). ```DEFAULT = 0```
-- **-mmmode**:  Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ```DEFAULT = FALSE```.
-- **-genome**:  Filepath for the fine containing genome sequences in Ensembl FASTA format. Used to identify chromosome names and order and differenciate between chromosomes and scaffolds. If not set chromosome names are extracted from the GTF file without differenciation between chromosomes and scaffolds. (e.g. ``` -genome Homo_sapiens.GRCh38.89.dna.primary_assembly.fa```)
-- **-chr**:  Export chr prefix Allowed 0, 1. (e.g. ```-chr 1```)  ```DEFAULT = 0```
+- ``-format``:  Set output format _GTF_, _GCT_, _BED_, _PTMBED_ or _ALL_. Comma separated combination possible. ``Default = ALL``
+- ``-merge``:   Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ``Default = FALSE``
+- ``-source``:  Set TRUE/FALSE to merge output of multiple input files (output will be named after last input file *_merged). ``Default = FALSE``
+- ``-mm``:      Number of mismatches allowed in mapping (0, 1 or 2). ``DEFAULT = 0``
+- ``-mmmode``:  Set TRUE/FALSE to restrict number of mismatch in kmer to 1. ``DEFAULT = FALSE``.
+- ``-genome``:  Filepath for the fine containing genome sequences in Ensembl FASTA format. Used to identify chromosome names and order and differenciate between chromosomes and scaffolds. If not set chromosome names are extracted from the GTF file without differenciation between chromosomes and scaffolds. (e.g. `` -genome Homo_sapiens.GRCh38.89.dna.primary_assembly.fa``)
+- ``-chr``:  Export chr prefix Allowed 0, 1. (e.g. ``-chr 1``)  ``DEFAULT = 0``

@@ -294,9 +294,6 @@ public class PepGenomeTool {
             if (!inMemory)
                 ((KmerSortedMap) kmer_map).sortKmer();
 
-            SizeOf sizeOf = SizeOf.newInstance();
-            log.info((int) (sizeOf.deepSizeOf(kmer_map) / 1000000) + " MB");
-
             log.info("KmerTreeMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
             log.info("reading GTF: " + gtfFilePath);
 
