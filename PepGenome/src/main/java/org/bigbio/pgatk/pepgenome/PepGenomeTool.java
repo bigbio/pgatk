@@ -138,10 +138,11 @@ public class PepGenomeTool {
             inMemory = false;
         }
 
+        SparkConfig sparkConfig = SparkConfig.getInstance();
+        sparkConfig.setMaster(null);
         if (cmd.hasOption(ARG_SPARK_MASTER)) {
             String master = cmd.getOptionValue(ARG_SPARK_MASTER);
             if (master != null) {
-                SparkConfig sparkConfig = SparkConfig.getInstance();
                 sparkConfig.setMaster(master);
             }
         }

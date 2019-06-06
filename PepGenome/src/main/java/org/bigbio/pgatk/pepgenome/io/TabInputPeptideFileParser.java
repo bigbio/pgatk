@@ -108,44 +108,32 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
 
         SparkSession sparkSession = SparkSession.builder().
                 master(SparkConfig.getInstance().getMaster())
-//                .config("spark.executor.memory", "10g")
-//                .config("spark.yarn.executor.memoryOverhead", "1g")
-//                .config("spark.driver.memory", "10g")
-//                .config("spark.memory.offHeap.enabled", true)
-//                .config("spark.memory.offHeap.size", "10g")
-//                .config("spark.jars", "/somepath/PepGenome-1.0.0-SNAPSHOT.jar")
                 .config("spark.ui.enabled", false)
                 .appName("pgatk tab input file parser")
                 .getOrCreate();
 
         Dataset<Row> tsv = sparkSession.read()
                 .option("sep", "\t")
-//                .option("header", "true")
                 .csv(file);
 
-//        JavaRDD<Row> tsv2 = tsv.javaRDD();
-
-//        tsv.foreach(r -> {
-//            System.out.println(r);
-//        });
         List<Row> rows = tsv.collectAsList();
         for (Row r : rows) {
-                    String tissue = r.getString(0).trim();
+            String tissue = r.getString(0).trim();
             if ((tissue.toLowerCase().startsWith("experiment")) || (tissue.toLowerCase().startsWith("sample"))) {
-                return;
+                continue;
             }
 
-                    String peptide_string = r.getString(1).trim();
-                    String sigPsmStr = r.getString(2).trim();
-                    if (sigPsmStr.length() == 0) {
-                        sigPsmStr = "0";
-                    }
-                    int sigPSMs = Integer.parseInt(sigPsmStr);
-                    String quantStr = r.getString(3).trim();
-                    if (quantStr.length() == 0) {
-                        quantStr = "0";
-                    }
-                    double quant = Double.parseDouble(quantStr);
+            String peptide_string = r.getString(1).trim();
+            String sigPsmStr = r.getString(2).trim();
+            if (sigPsmStr.length() == 0) {
+                sigPsmStr = "0";
+            }
+            int sigPSMs = Integer.parseInt(sigPsmStr);
+            String quantStr = r.getString(3).trim();
+            if (quantStr.length() == 0) {
+                quantStr = "0";
+            }
+            double quant = Double.parseDouble(quantStr);
 
             if (sigPSMs > 0) {
                 //the matching will only use the amino acids.
@@ -170,8 +158,6 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
                 }
             }
         }
-//        );
-
         ofs.close();
     }
 }
