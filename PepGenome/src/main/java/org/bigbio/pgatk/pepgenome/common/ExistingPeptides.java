@@ -1,10 +1,11 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.TreeMap;
 
-public class ExistingPeptides {
+public class ExistingPeptides implements Serializable {
 
     private Map<String, ArrayList<PeptideEntry>> m_existing_peptides = new TreeMap<>();
 
