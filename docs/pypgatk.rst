@@ -4,9 +4,9 @@
 Pypgatk: Python Tools for ProteoGenomics
 ===========================
 
-The Pypgatk framework and library provides a set of tools and functionalities to perform proteogenomics analysis. 
-In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` that perform the specific task and the
-specific task arguments/options:
+The Pypgatk framework and library provides a set of tools to perform proteogenomics analysis. 
+In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` to perform the specific task and specify the
+specific task arguments:
 
 .. code-block:: bash
    :linenos:
@@ -14,7 +14,7 @@ specific task arguments/options:
    $: python3.7 pypgatk -h
       Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
-      This is the main tool that give access to all commands and options provided by the pypgatk_cli
+      This is the main tool that gives access to all commands and options provided by the pypgatk_cli
 
       Options:
          -h, --help  Show this message and exit.
@@ -27,6 +27,25 @@ specific task arguments/options:
         ensembl-downloader       Command to download the ensembl information
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
+        generate-decoy      	 Command to generate decoy database from a proteindb
+
+
+Installation
+------------
+
+`pypgatk` depends on several `Python3` packages that are listed in `requirements.txt`, install them with `pip`:
+
+.. code-block:: bash
+
+   $: pip install -r requirements.txt
+
+Build the `pypgatk` package from source: 
+
+.. code-block:: bash
+   :linenos:
+		git clone https://github.com/bigbio/py-pgatk.git
+		cd py-pgatk
+		python setup.py install
 
 
 Data downloader Tool
