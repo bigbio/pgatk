@@ -34,39 +34,40 @@ Installation
 ------------
 
 Clone the source code for pypgatk from source:
+
 .. code-block:: bash 
 
 	git clone https://github.com/bigbio/py-pgatk.git
  
 ``pypgatk`` depends on several ``Python3`` packages that are listed in ``requirements.txt``, once in the downloaded directory install the dependencies using ``pip``:
+
 .. code-block:: bash
 
-   $: pip install -r requirements.txt
+   pip install -r requirements.txt
 
-Build the ``pypgatk`` package from source:
-
+Install the ``pypgatk`` package from source:
 
 .. code-block:: bash
    :linenos:
    
-   python setup.py install
+   python3 setup.py install
 
 
 Data downloader Tool
 ------------------
 
-The Data downloader is a set of COMMANDs to download data from different Genomics data providers such as ENSEMBL, COSMIC or cBioPortal.
+The Data downloader is a set of COMMANDs to download data from different Genomics data providers including ENSEMBL, COSMIC and cBioPortal.
 
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
-The current tool enables to download the following files for each taxonomy:
+The current tool enables downloading the following files for each taxonomy:
 
 - GTF
-- Protein Sequence (FASTA),
+- Protein Sequence (FASTA)
 - CDS (FASTA)
-- Variation (VCF))
+- Nucleotide Variation (VCF)
 
 .. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species.
 
