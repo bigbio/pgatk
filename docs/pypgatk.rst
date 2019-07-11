@@ -46,11 +46,9 @@ Build the ``pypgatk`` package from source
 .. code-block:: bash
    :linenos:
    
-   $: git clone https://github.com/bigbio/py-pgatk.git
+   $: git clone
    cd py-pgatk
    python setup.py install
-
-done
 
 
 Data downloader Tool
