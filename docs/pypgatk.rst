@@ -35,15 +35,20 @@ Installation
 
 Clone the source code for pypgatk from source:
 
-.. code-block:: bash 
 
-	git clone https://github.com/bigbio/py-pgatk.git
+.. code-block:: bash
+   :linenos:
+   
+   git clone https://github.com/bigbio/py-pgatk.git
  
+
 ``pypgatk`` depends on several ``Python3`` packages that are listed in ``requirements.txt``, once in the downloaded directory install the dependencies using ``pip``:
 
 .. code-block:: bash
-
+   :linenos:
+   
    pip install -r requirements.txt
+
 
 Install the ``pypgatk`` package from source:
 
