@@ -33,16 +33,17 @@ specific task arguments:
 Installation
 ------------
 
-`pypgatk` depends on several `Python3` packages that are listed in `requirements.txt`, install them with `pip`:
+``pypgatk`` depends on several ``Python3`` packages that are listed in ``requirements.txt``, install them with ``pip``:
 
 .. code-block:: bash
 
    $: pip install -r requirements.txt
 
-Build the `pypgatk` package from source: 
+Build the ``pypgatk`` package from source
 
 .. code-block:: bash
    :linenos:
+   
 		git clone https://github.com/bigbio/py-pgatk.git
 		cd py-pgatk
 		python setup.py install
