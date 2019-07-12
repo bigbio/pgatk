@@ -6,7 +6,7 @@ Pypgatk: Python Tools for ProteoGenomics
 
 The Pypgatk framework and library provides a set of tools to perform proteogenomics analysis. 
 In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` to perform the specific task and specify the
-specific task arguments:
+task arguments:
 
 .. code-block:: bash
    :linenos:
@@ -24,7 +24,7 @@ specific task arguments:
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-downloader        Command to download the cosmic mutation database
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        ensembl-downloader       Command to download the ensembl information
+        :ref:`ensembl-downloader <ensembl-downloader>`       Command to download the ensembl information
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
         generate-decoy      	 Command to generate decoy database from a proteindb
@@ -100,8 +100,6 @@ Each of the file types can be skip using the corresponding option. For example, 
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-
-test for details see :ref:`ensembl-downloader`
 
 Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. 
 The current COMMAND allows users to download the following files:
