@@ -24,17 +24,20 @@ task arguments:
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-downloader        Command to download the cosmic mutation database
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        :ref:`ensembl-downloader <ensembl-downloader>`       Command to download the ensembl information
+        ensembl-downloader       Command to download the ensembl information
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
         generate-decoy      	 Command to generate decoy database from a proteindb
 
 
+.. _installation:
+
 Installation
 ------------
+- Easy install is through pip::
+	pip install pypgatk
 
-Clone the source code for pypgatk from source:
-
+- Clone the source code for pypgatk from source:
 
 .. code-block:: bash
    
@@ -64,7 +67,7 @@ The Data downloader is a set of COMMANDs to download data from different Genomic
 
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-
+:ref:`ensembl-downloader <ensembl-downloader>`
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
 The current tool enables downloading the following files for each taxonomy:
 
