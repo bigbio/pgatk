@@ -94,8 +94,9 @@ Command options
         -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
         -o, --output_directory TEXT     Output directory for the peptide databases
         -fp, --folder_prefix_release TEXT Output folder prefix to download the data
-        -t, --taxonomy TEXT             Taxonomy List (comma separated) that will be use to download the data from Ensembl
-        -sv, --skip_vcf                 Skip the vcf file during the download
+        -t, --taxonomy TEXT             Taxonomy identifiers (comma separated) that will be use to download the data from Ensembl
+        -l, --list_taxonomies TEXT             List the available species from Ensembl, users can find the desired taxonomy identifier from this list.
+	-sv, --skip_vcf                 Skip the vcf file during the download
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
@@ -117,7 +118,7 @@ Examples
 	python pypgatk_cli.py ensembl-downloader -t 9103 -sd -o ensembl_files
 
 
-.. note:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the ``-t`` option. To list all available species run the command with ``-l`` option.
+.. note:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the ``-t`` option. To list all available species run the command with ``-l (--list_taxonomies)`` option.
 
 .. note:: Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``--skip_protein``. Also, note that not all file types exists for all species so obviously the downloaded files depends on availabiliy of the dataset in ENSEMBL.
 
@@ -187,7 +188,7 @@ Command options
         -h, --help                   Show this message and exit.
 
 
-.. note:: The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
+.. note:: The argument ``-l`` (``--list_studies``) allows the user to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
 
 .. _cbioportal_downloader_examples:
 
@@ -197,16 +198,18 @@ Examples
 	
 	python pypgatk_cli.py cbioportal-downloader -d blca_mskcc_solit_2014 -o cbiportal_files
    
-- Download data for all studies in cBioPortal through the `data hub <https://github.com/cBioPortal/datahub/>`_::
+- Download data for all studies in cBioPortal through the `data hub <https://github.com/cBioPortal/datahub/tree/master/public>`_::
 
 	python pypgatk_cli.py cbioportal-downloader -d all -o cbioportal_files
 
 
-From Genome information to protein sequence databases
-----------------------------
+.. _generate-proteindb:
 
-The **Pypgatk** framework provides a set of tools (COMMAND) to convert genome mutation and variant databases to protein sequence databases (FASTA). In order to perform this task, we have implemented multiple
-commands depending on the data provider (cBioPortal or COSMIC, ENSEMBL) and the data type.
+Generate protein databases
+--------------------------
+
+The **Pypgatk** framework provides a set of tools (COMMAND) to generate protein databaseas in FASTA format from DNA sequences, variants and mutations. In order to perform this task, we have implemented multiple
+commands depending on data type provided by the user and the public data providers (cBioPortal or COSMIC, ENSEMBL).
 
 Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
