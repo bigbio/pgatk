@@ -296,6 +296,7 @@ Annotated variants (VCF) to protein sequences
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
 Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
 VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. 
+
 The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
 
 Command options
@@ -356,7 +357,7 @@ Examples:
  		--af_threshold 0.05
 
 .. note:: 
-	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined `here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>`_. 
 	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
 	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
 
