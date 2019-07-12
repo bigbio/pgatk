@@ -8,6 +8,7 @@ The Pypgatk framework and library provides a set of tools to perform proteogenom
 In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` to perform the specific task and specify the
 task arguments:
 
+
 .. code-block:: bash
    :linenos:
 
@@ -55,6 +56,7 @@ Install the ``pypgatk`` package from source:
    
    python3 setup.py install
 
+
 .. _data-downloader:
 
 Data downloader Tool
@@ -66,10 +68,9 @@ The Data downloader is a set of COMMANDs to download data from different Genomic
 
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
-:ref:`ensembl-downloader <ensembl-downloader>`
+
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
 The current tool enables downloading the following files for any taxonomy that is available ENSEMBL:
-
 - GTF
 - Protein Sequence (FASTA)
 - CDS (FASTA)
@@ -77,7 +78,8 @@ The current tool enables downloading the following files for any taxonomy that i
 - Non-coding RNA sequences (FASTA)
 - Nucleotide Variation (VCF)
 
-.. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species. To limit the download to a specific species give the species identifier using the ``-t`` option. To get a list of all available species run the command with ``-l`` option.
+Command manual
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -100,7 +102,9 @@ The current tool enables downloading the following files for any taxonomy that i
         -h, --help                      Show this message and exit.
 
 
-Each of the file types can be skip using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk_cli.py ensembl-downloader --skip_protein``
+.. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species. To limit the download to a specific species give the species identifier using the ``-t`` option. For instance, to download all files  for Tureky (species id=9103), use: ``python ensembl-downloader -t 9103``. To get a list of all available species run the command with ``-l`` option.
+
+.. hint:: Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk_cli.py ensembl-downloader --skip_protein``
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
