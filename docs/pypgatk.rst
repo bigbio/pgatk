@@ -71,6 +71,7 @@ Downloading ENSEMBL data.
 
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
 The current tool enables downloading the following files for any taxonomy that is available ENSEMBL:
+
 - GTF
 - Protein Sequence (FASTA)
 - CDS (FASTA)
@@ -98,24 +99,31 @@ Command options
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
-        -sn, --skip_ncrna              Skip the ncRNA file download
 	-sd, --skip_cdna              	Skip the cDNA file download
+        -sn, --skip_ncrna              Skip the ncRNA file download
         -h, --help                      Show this message and exit.
 
 
-.. hint:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a specific species give the species identifier using the ``-t`` option. To get a list of all available species run the command with ``-l`` option.
-
-.. hint:: Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk_cli.py ensembl-downloader --skip_protein``
+.. _ensembl_downloader_examples:
 
 Examples
+
 - List all species without downloading any data::
 
-	$: python pypgatk_cli.py ensembl-downloader -l -sv -sg -sp -sc -sn -sd
+	python pypgatk_cli.py ensembl-downloader -l -sv -sg -sp -sc -sd -sn
 
 - Download all files except cDNA for Tureky (species id=9103, note that th species id cab be obtained from the list above):: 
 
-	$: python pypgatk_cli.py ensembl-downloader -t 9103
+	python pypgatk_cli.py ensembl-downloader -t 9103 -sd -o ensembl_files
 
+
+.. note:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the ``-t`` option. To list all available species run the command with ``-l`` option.
+
+.. note:: Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``--skip_protein``. Also, note that not all file types exists for all species so obviously the downloaded files depends on availabiliy of the dataset in ENSEMBL.
+
+.. hint:: a VCF file per chromosome is downloaded for homo sapiens due to the large file size they have been distributed this way by ENSEMBL. For other species, a single VCF including all chromosomes is downloaded.  
+
+.. _cosmic-downloader:
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -126,10 +134,13 @@ The current COMMAND allows users to download the following files:
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
 
+Command options
+^^^^^^^^^^^^^^
+
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk_cli.py cosmic-downloader -h
+   $: python pypgatk_cli.py cosmic-downloader -h
       Usage: pypgatk_cli.py cosmic-downloader [OPTIONS]
 
       Required parameters:
@@ -143,12 +154,24 @@ The current COMMAND allows users to download the following files:
         
 .. note:: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).
 
+.. _cosmic_downloader_examples:
+
+Examples
+
+- Downlaod ``CosmicMutantExport.tsv.gz`` and ``All_COSMIC_Genes.fasta.gz``::
+	
+	python pypgatk_cli.py cosmic-downloader -u userName -p passWord -c config/cosmic_config.yaml -o cosmic_files
+
+.. _cbioportal-downloader:
+
 Downloading cBioPortal data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command ``cbioportal-downloader``. 
-cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets).
-Currently, it is not possible to search the studies by PubMedID, they can only be search by study_id.
+cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets). Each dataset in cBioPortal has an associated study_id.
+
+Command options
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -164,21 +187,19 @@ Currently, it is not possible to search the studies by PubMedID, they can only b
         -h, --help                   Show this message and exit.
 
 
-The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
+.. note:: The argument ``-l`` (``--list_studies``) allow the users to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
+
+.. _cbioportal_downloader_examples:
 
 Examples
 
-- Download data for studyID all_stjude_2016:
-
-.. code-block:: bash
-
-   $: python3.7 pypgatk_cli.py cbioportal-downloader -d all_stjude_2016
+- Download data for study ID `blca_mskcc_solit_2014 <https://www.cbioportal.org/study/summary?id=blca_mskcc_solit_2014>`_::
+	
+	python pypgatk_cli.py cbioportal-downloader -d blca_mskcc_solit_2014 -o cbiportal_files
    
-- Download data for all studies in cBioportal
+- Download data for all studies in cBioPortal through the `data hub <https://github.com/cBioPortal/datahub/>`_::
 
-.. code-block:: bash
-
-   $: python3.7 pypgatk_cli.py cbioportal-downloader -d all
+	python pypgatk_cli.py cbioportal-downloader -d all -o cbioportal_files
 
 
 From Genome information to protein sequence databases
