@@ -24,7 +24,7 @@ specific task arguments:
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-downloader        Command to download the cosmic mutation database
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        ensembl-downloader       Command to download the ensembl information
+        :ref:`ensembl-downloader`       Command to download the ensembl information
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
         generate-decoy      	 Command to generate decoy database from a proteindb
@@ -59,6 +59,8 @@ Data downloader Tool
 ------------------
 
 The Data downloader is a set of COMMANDs to download data from different Genomics data providers including ENSEMBL, COSMIC and cBioPortal.
+
+.. _ensembl-downloader:
 
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
