@@ -2,7 +2,7 @@
 
 
 Pypgatk: Python Tools for ProteoGenomics
-===========================
+========================================
 
 The Pypgatk framework and library provides a set of tools to perform proteogenomics analysis. 
 In order to execute a task in ``pypgatk`` the user should use a ``COMMAND`` to perform the specific task and specify the
@@ -96,16 +96,16 @@ Command options
         -fp, --folder_prefix_release TEXT Output folder prefix to download the data
         -t, --taxonomy TEXT             Taxonomy identifiers (comma separated) that will be use to download the data from Ensembl
         -l, --list_taxonomies TEXT             List the available species from Ensembl, users can find the desired taxonomy identifier from this list.
-	-sv, --skip_vcf                 Skip the vcf file during the download
+		-sv, --skip_vcf                 Skip the vcf file during the download
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
-	-sd, --skip_cdna              	Skip the cDNA file download
+		-sd, --skip_cdna              	Skip the cDNA file download
         -sn, --skip_ncrna              Skip the ncRNA file download
         -h, --help                      Show this message and exit.
 
 
-.. _ensembl_downloader_examples:
+.. _ensembl-downloader_example:
 
 Examples
 
@@ -117,6 +117,9 @@ Examples
 
 	python pypgatk_cli.py ensembl-downloader -t 9103 -sd -o ensembl_files
 
+- *[To be implemented]* Download CDS file for Humans (species id=9606) from release 94 and genome assembly GRCh37 :: 
+
+	python pypgatk_cli.py ensembl-downloader -t 9606 -sv -sg -sp -sd -sn -o ensembl_files --release 94 --assembly GRCh37
 
 .. note:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the ``-t`` option. To list all available species run the command with ``-l (--list_taxonomies)`` option.
 
@@ -155,7 +158,7 @@ Command options
         
 .. note:: In order to be able to download COSMIC data, the user should provide a user and password. Please first register in COSMIC database (https://cancer.sanger.ac.uk/cosmic/register).
 
-.. _cosmic_downloader_examples:
+.. _cosmic-downloader_example:
 
 Examples
 
@@ -189,8 +192,8 @@ Command options
 
 
 .. note:: The argument ``-l`` (``--list_studies``) allows the user to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
-
-.. _cbioportal_downloader_examples:
+	
+.. _cbioportal-downloader_example:
 
 Examples
 
@@ -217,7 +220,7 @@ Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. 
-The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic somatic mutations file into a protein sequence database file.
+The command ``cosmic-to-proteindb`` converts the cosmic somatic mutations file into a protein sequence database file.
 
 Command options
 ^^^^^^^^^^^^^^
@@ -225,7 +228,7 @@ Command options
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk_cli.py cosmic-to-proteindb -h
+   $: python pypgatk_cli.py cosmic-to-proteindb -h
       Usage: pypgatk_cli.py cosmic-to-proteindb [OPTIONS]
 
       Required parameters:
@@ -239,16 +242,19 @@ Command options
         -s,	--split_by_tissue_type  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
         -h, --help                  Show this message and exit.
 
-The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations.
+The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. 
+The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations. 
+:ref:`Use cosmic-downloader <cosmic-downloader_example>` to obtain the input files from COSMIC.
+
 The output of the tool is a protein fasta file and is written in the following path `-out` (``--output_db``)
+
+.. cosmic-to-proteindb_example:
 
 Examples: 
 
-- generate a proteinDB per cancer type from COSMIC mutations
-
-.. code-block:: bash
+- Generate cancer-type specific protein databases. For each cancer type in COSMIC generate a protein database based on the Primary site given in the mutations file::
   
-   python3.7 pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa -s
+   python pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa --split_by_tissue_type
 
 
 .. _cbioportal-to-proteindb:
@@ -256,8 +262,9 @@ Examples:
 cBioPortal Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). The current tool
-uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations file into a protein sequence database file.
+The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. 
+The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). 
+The command ``cbioportal-to-proteindb`` converts the bcioportal mutations file into a protein sequence database file.
 
 Command options
 ^^^^^^^^^^^^^^
@@ -265,7 +272,7 @@ Command options
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk_cli.py cbioportal-to-proteindb -h
+   $: python pypgatk_cli.py cbioportal-to-proteindb -h
       Usage: pypgatk_cli.py cbioportal-to-proteindb [OPTIONS]
 
       Options:
@@ -280,19 +287,26 @@ Command options
 
 .. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (that is when -s or -t is given).
 
-The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be provided using the ENSEMBL CDS files. In order to download the CDS files, the user can use the ``ensembl-downloader`` command. Please note that the cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
+The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. 
+An example is given in :ref:`cbioportal-downloader <cbioportal-downloader_example>` showing how to obtain the mutations file for a particular study.
+The CDS sequence for all genes input file ``-fa`` (``--input_genes``) can be obtained using the ENSEMBL CDS files, see :ref:`this example <ensembl-downloader_example>`. 
 The output of the tool is a protein fasta file and it is written in the following path ``-out`` (``--output_db``)
+
+.. note:: The cBioportal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
+
+.. _cbioportal-to-proteindb_example:
 
 Examples:
 
-- translate mutations from ``Leukemia`` samples in studyID: ``all_stjude_2016`` (downloaded above)::
+- translate mutations from ``Bladder`` samples in studyID: ``blca_mskcc_solit_2014`` (:ref:`use cbioportal-downloader <cbioportal-downloader_example>` to download the study, then extract the content of the downloaded file)::
 	
-	python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
+	python pypgatk_cli.py cbioportal-to-proteindb --config_file config/cbioportal_config.yaml --input_cds human_hg19_cds.fa  --input_mutation data_mutations_mskcc.txt --clinical_sample_file data_clinical_sample.txt --output_db bladder_proteindb.fa
  
+
 .. _vcf-to-proteindb:
 
 Annotated variants (VCF) to protein sequences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
 Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
 VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. 
@@ -305,7 +319,7 @@ Command options
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk_cli.py vcf-to-proteindb -h
+   $: python pypgatk_cli.py vcf-to-proteindb -h
       Usage: pypgatk_cli.py vcf-to-proteindb [OPTIONS]
 
       Required parameters:
@@ -316,8 +330,8 @@ Command options
         --output_proteindb          Output file to write the resulting variant protein sequences
       
       Options:
-        --translation_table INTEGER     Translation table (Default 1). Please see <www.> for identifiers of translation tables.
-        --mito_translation_table INTEGER	Mito_trans_table (default 2)
+        --translation_table INTEGER     Translation table (Default 1). Please see <https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi> for identifiers of translation tables.
+        --mito_translation_table INTEGER	Mito_trans_table (default 2), also from <https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi> 
         --var_prefix TEXT 	String to add before the variant peptides
         --report_ref_seq	In addition to variant peptides, also report the reference peptide from the transcript overlapping the variant 
         --output_proteindb TEXT	Output file name, exits if already exists
@@ -336,8 +350,11 @@ Command options
   		--accepted_filters TEXT	Accepted filters for variant parsing
         -h, --helP		Show this message and exit.
 
-The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be obtained with the ``ensembl-downloader`` COMMAND, for instance. 
-The ``gene_annotations_gtf`` file can also be obtained with the ensembl_downloader COMMAND or it can be a user VCF file. The GTF file should match the one used for the variant annotation in VEP. The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the ``gffread`` tool as follows::
+The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using ``ensembl-downloader``, see :ref:`an example here <ensembl-downloader_example>`. 
+The ``gene_annotations_gtf`` file can also be obtained with the ``ensembl_downloader``, :ref:`see here <ensembl-downloader_example>`. 
+The GTF file should match the one used for the variant annotation in VEP. 
+The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. 
+This file can be generated from the GTF file using the ``gffread`` tool as follows::
 	
 	$: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
@@ -350,7 +367,7 @@ Examples:
 
 - Translate human *missense* variants from ENSEMBL that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*::
 	
-	python3.7 pypgatk.py vcf-to-proteindb 
+	python pypgatk.py vcf-to-proteindb 
  		--vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
  		--include_biotypes lncRNA 
  		--include_consequences missense 
@@ -363,7 +380,7 @@ Examples:
 
 - Translate human *missense* variants or *inframe_insertion* from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene::
 	
-	$: python3.7 pypgatk.py vcf-to-proteindb 
+	$: python pypgatk.py vcf-to-proteindb 
  		--vep_annotated_vcf gnmad_genome.vcf 
  		--include_consequences missense, frameshift_insert 
  		--annotation_field_name vep --af_threshold 0.01 
@@ -410,7 +427,7 @@ Command options
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk.py dnaseq-to-proteindb -h
+   $: python pypgatk.py dnaseq-to-proteindb -h
       Usage: pypgatk.py dnaseq-to-proteindb [OPTIONS]
 
       Required parameters:
@@ -436,7 +453,7 @@ Examples:
 
 - Generate the canonical protein database, i.e. translate all *protein_coding* transcripts::
 	
-	$: python3.7 pypgatk.py dnaseq-to-proteindb 
+	$: python pypgatk.py dnaseq-to-proteindb 
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/test.fa 
 		--output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
