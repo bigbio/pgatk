@@ -24,7 +24,7 @@ specific task arguments:
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-downloader        Command to download the cosmic mutation database
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        :ref:`ensembl-downloader`       Command to download the ensembl information
+        ensembl-downloader       Command to download the ensembl information
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
         generate-decoy      	 Command to generate decoy database from a proteindb
@@ -100,6 +100,8 @@ Each of the file types can be skip using the corresponding option. For example, 
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
+
+test for details see :ref:`ensembl-downloader`
 
 Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. 
 The current COMMAND allows users to download the following files:
