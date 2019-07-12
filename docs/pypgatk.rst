@@ -344,7 +344,7 @@ Command options
   		--exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
         --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
   		--include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
-  		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: <https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html>
+  		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
   		--biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
   		--ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
   		--accepted_filters TEXT	Accepted filters for variant parsing
@@ -374,7 +374,7 @@ Examples:
  		--af_threshold 0.05
 
 .. note:: 
-	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be one of the ENSEMBL gene/transcript biotypes: <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be one of the ENSEMBL gene/transcript biotypes: https://www.ensembl.org/info/genome/genebuild/biotypes.html. 
 	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
 	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
 
