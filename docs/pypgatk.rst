@@ -208,14 +208,19 @@ Examples
 Generate protein databases
 --------------------------
 
-The **Pypgatk** framework provides a set of tools (COMMAND) to generate protein databaseas in FASTA format from DNA sequences, variants and mutations. In order to perform this task, we have implemented multiple
-commands depending on data type provided by the user and the public data providers (cBioPortal or COSMIC, ENSEMBL).
+The **Pypgatk** framework provides a set of tools (COMMAND) to generate protein databaseas in ``FASTA`` format from DNA sequences, variants, and mutations. In order to perform this task, we have implemented multiple
+commands depending on data type provided by the user and the public data providers (cBioPortal, COSMIC and ENSEMBL).
+
+.. _cosmic-to-proteindb:
 
 Cosmic Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. 
 The current tool uses the command ``cosmic-to-proteindb`` to convert the cosmic somatic mutations file into a protein sequence database file.
+
+Command options
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -245,11 +250,17 @@ Examples:
   
    python3.7 pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa -s
 
+
+.. _cbioportal-to-proteindb:
+
 cBioPortal Mutations to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). The current tool
 uses the command ``cbioportal-to-proteindb`` to convert the bcioportal mutations file into a protein sequence database file.
+
+Command options
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -274,18 +285,21 @@ The output of the tool is a protein fasta file and it is written in the followin
 
 Examples:
 
-- translate mutations from ``Leukemia`` samples in studyID: ``all_stjude_2016`` (downloaded above):
+- translate mutations from ``Leukemia`` samples in studyID: ``all_stjude_2016`` (downloaded above)::
+	
+	python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
+ 
+.. _vcf-to-proteindb:
 
-.. code-block:: bash
-   
-   $: python3.7 pypgatk.py cbioportal-downloader -d all_stjude_2016 -t Leukemia
- 	
 Annotated variants (VCF) to protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
 Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
 VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. 
 The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
+
+Command options
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -322,39 +336,33 @@ The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the ge
         -h, --helP		Show this message and exit.
 
 The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be obtained with the ``ensembl-downloader`` COMMAND, for instance. 
-The ``gene_annotations_gtf`` file can also be obtained with the ensembl_downloader COMMAND or it can be a user VCF file. The GTF file should match the one used for the variant annotation in VEP. The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the ``gffread`` tool as follows:
-
-.. code-block:: bash
-   :linenos:
-
-   $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
+The ``gene_annotations_gtf`` file can also be obtained with the ensembl_downloader COMMAND or it can be a user VCF file. The GTF file should match the one used for the variant annotation in VEP. The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the ``gffread`` tool as follows::
+	
+	$: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
 The output of the tool is a protein fasta file and is written in the following path ``--output_proteindb``.
 
+
+.. _vcf-to-proteindb_examples:
+
 Examples:
 
-- Translate human *missense* variants from ENSEMBL that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*. 
-
-.. code-block:: bash
-   :linenos:
-   
- 	$: python3.7 pypgatk.py vcf-to-proteindb 
+- Translate human *missense* variants from ENSEMBL that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*::
+	
+	python3.7 pypgatk.py vcf-to-proteindb 
  		--vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
  		--include_biotypes lncRNA 
  		--include_consequences missense 
  		--af_threshold 0.05
 
-Explanation of the command:
-by default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
-The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``.
-Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
+.. note:: 
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
+	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
+	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
 
-- Translate human *missense* variants or *inframe_insertion* from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene. 
-
-.. code-block:: bash
-   :linenos:
-   
- 	$: python3.7 pypgatk.py vcf-to-proteindb 
+- Translate human *missense* variants or *inframe_insertion* from gnoMAD that have a minmum 1% allele frquency in control samples and affect any protein_coding gene::
+	
+	$: python3.7 pypgatk.py vcf-to-proteindb 
  		--vep_annotated_vcf gnmad_genome.vcf 
  		--include_consequences missense, frameshift_insert 
  		--annotation_field_name vep --af_threshold 0.01 
@@ -380,20 +388,23 @@ Also, by default all consequences are accepted except those given with ``--exclu
 			
 			--biotype_str (from the GTF INFO field)
 			
+.. _dnaseq-to-proteindb:
 
 Transcripts (DNA) to Protein sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DNA sequences given in a fasta format can be translated using the ``dnaseq-to-proteindb`` tool. This tool allows for translation 
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
-The most suited ``--input_fasta`` file can be generated from a given GTF file using the ``gffread`` commad as follows:
-
-.. code-block:: bash
-   
-   $: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
+The most suited ``--input_fasta`` file can be generated from a given GTF file using the ``gffread`` commad as follows::
+	
+	$: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
 The fasta file that is generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. Also, it specifies the CDS positions for the protein coding transcripts.
 The ``dnaseq-to-proteindb`` command recognizes the features such as biotype and expression values in the fasta header that are taken from the GTF INFO filed (if available).
 However, it is not required to have those information in the fasta header but their presence enables the user to filter by biotype and expression values during the translation step. 
+
+
+Command options
+^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -418,15 +429,12 @@ However, it is not required to have those information in the fasta header but th
   		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str) 
   		-h, --help                     Show this message and exit
 
-
+.. _dnaseq-to-proteindb_examples:
 
 Examples:
 
-- Generate the canonical protein database, i.e. translate all *protein_coding* transcripts:
-
-.. code-block:: bash
-   :linenos:
-   
+- Generate the canonical protein database, i.e. translate all *protein_coding* transcripts::
+	
 	$: python3.7 pypgatk.py dnaseq-to-proteindb 
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/test.fa 
