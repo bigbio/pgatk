@@ -177,7 +177,7 @@ def download_cbioportal_data():
 
 if __name__ == '__main__':
     vcf_to_proteindb()
-    vcf_gnomad_to_proteindb
+    vcf_gnomad_to_proteindb()
     dnaseq_to_proteindb()
     dnaseq_lncrnas_to_proteindb()
     dnaseq_sncrnas_to_proteindb()

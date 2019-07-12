@@ -28,8 +28,8 @@ from pypgatk.toolbox.exceptions import AppConfigException
 @click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
 @click.option('--skip_cdna', '-sd', help='Skip the cDNA file download', is_flag=True)
-@click.option('--skip_ncrna', '-snr', help='Skip the ncRNA file download', is_flag=True)
-@click.option('--skip_vcf', '-svcf', help='Skip the VCF variant file', is_flag=True)
+@click.option('--skip_ncrna', '-sn', help='Skip the ncRNA file download', is_flag=True)
+@click.option('--skip_vcf', '-sv', help='Skip the VCF variant file', is_flag=True)
 def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
                        skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
@@ -81,7 +81,8 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
     logger.info("Pipeline STARTING ... ")
     if list_taxonomies:
         list_of_taxonomies = ensembl_download_service.get_species_from_rest()
-        print(list_of_taxonomies)
+        for taxonomy_info in list_of_taxonomies: 
+            print(taxonomy_info)
     
     ensembl_download_service.download_database_by_species()
 
