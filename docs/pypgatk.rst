@@ -69,7 +69,7 @@ The Data downloader is a set of COMMANDs to download data from different Genomic
 Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
+Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command :ref:`ensembl_downloader <ensembl-downloader>`. 
 The current tool enables downloading the following files for any taxonomy that is available ENSEMBL:
 
 - GTF
@@ -350,8 +350,8 @@ Command options
   		--accepted_filters TEXT	Accepted filters for variant parsing
         -h, --helP		Show this message and exit.
 
-The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using ``ensembl-downloader``, see :ref:`an example here <ensembl-downloader_example>`. 
-The ``gene_annotations_gtf`` file can also be obtained with the ``ensembl_downloader``, :ref:`see here <ensembl-downloader_example>`. 
+The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
+The ``gene_annotations_gtf`` file can also be obtained with the :ref:`ensembl_downloader <ensembl-downloader>`. 
 The GTF file should match the one used for the variant annotation in VEP. 
 The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. 
 This file can be generated from the GTF file using the ``gffread`` tool as follows::
@@ -374,7 +374,7 @@ Examples:
  		--af_threshold 0.05
 
 .. note:: 
-	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be on of the ENSEMBL gene/transcript biotypes defined `here <https://www.ensembl.org/info/genome/genebuild/biotypes.html>`_. 
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be one of the ENSEMBL gene/transcript biotypes: <https://www.ensembl.org/info/genome/genebuild/biotypes.html>. 
 	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
 	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``.
 
