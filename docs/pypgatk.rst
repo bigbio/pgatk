@@ -12,7 +12,7 @@ task arguments:
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk -h
+   $: python pypgatk -h
       Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
       This is the main tool that gives access to all commands and options provided by the pypgatk_cli
@@ -54,7 +54,7 @@ Install the ``pypgatk`` package from source:
 
 .. code-block:: bash
    
-   python3 setup.py install
+   python setup.py install
 
 
 .. _data-downloader:
@@ -78,13 +78,13 @@ The current tool enables downloading the following files for any taxonomy that i
 - Non-coding RNA sequences (FASTA)
 - Nucleotide Variation (VCF)
 
-Command manual
+Command options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
 
-   $: python3.7 pypgatk_cli.py ensembl-downloader -h
+   $: python pypgatk_cli.py ensembl-downloader -h
       Usage: pypgatk_cli.py ensembl-downloader [OPTIONS]
 
       This tool enables to download from ENSEMBL ftp the FASTA, GTF and VCF files
@@ -98,13 +98,24 @@ Command manual
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
-        -snr, --skip_ncrna              Skip the ncRNA file download
+        -sn, --skip_ncrna              Skip the ncRNA file download
+	-sd, --skip_cdna              	Skip the cDNA file download
         -h, --help                      Show this message and exit.
 
 
-.. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species. To limit the download to a specific species give the species identifier using the ``-t`` option. For instance, to download all files  for Tureky (species id=9103), use: ``python ensembl-downloader -t 9103``. To get a list of all available species run the command with ``-l`` option.
+.. hint:: By default the command ``ensembl-downloader`` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a specific species give the species identifier using the ``-t`` option. To get a list of all available species run the command with ``-l`` option.
 
 .. hint:: Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument ``pypgatk_cli.py ensembl-downloader --skip_protein``
+
+Examples
+- List all species without downloading any data::
+
+	$: python pypgatk_cli.py ensembl-downloader -l -sv -sg -sp -sc -sn -sd
+
+- Download all files except cDNA for Tureky (species id=9103, note that th species id cab be obtained from the list above):: 
+
+	$: python pypgatk_cli.py ensembl-downloader -t 9103
+
 
 Downloading COSMIC data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
