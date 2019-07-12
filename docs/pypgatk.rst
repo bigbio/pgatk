@@ -20,13 +20,13 @@ task arguments:
          -h, --help  Show this message and exit.
 
       Commands:
-        cbioportal-downloader    Command to download the the cbioportal studies
-        cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
-        cosmic-downloader        Command to download the cosmic mutation database
-        cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
         ensembl-downloader       Command to download the ensembl information
-        vcf-to-proteindb         Command to translate genomic variatns to protein sequences
+        cbioportal-downloader    Command to download the the cbioportal studies
+        cosmic-downloader        Command to download the cosmic mutation database
         dnaseq-to-proteindb      Command to translate sequences generated from RNA-seq and DNA sequences
+        vcf-to-proteindb         Command to translate genomic variatns to protein sequences
+        cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
+        cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
         generate-decoy      	 Command to generate decoy database from a proteindb
 
 
@@ -34,10 +34,8 @@ task arguments:
 
 Installation
 ------------
-- Easy install is through pip::
-	pip install pypgatk
 
-- Clone the source code for pypgatk from source:
+Clone the source code for pypgatk from source:
 
 .. code-block:: bash
    
@@ -57,6 +55,7 @@ Install the ``pypgatk`` package from source:
    
    python3 setup.py install
 
+.. _data-downloader:
 
 Data downloader Tool
 ------------------
@@ -69,14 +68,16 @@ Downloading ENSEMBL data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 :ref:`ensembl-downloader <ensembl-downloader>`
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command ``ensembl-downloader``. 
-The current tool enables downloading the following files for each taxonomy:
+The current tool enables downloading the following files for any taxonomy that is available ENSEMBL:
 
 - GTF
 - Protein Sequence (FASTA)
 - CDS (FASTA)
+- CDNA sequences (FASTA)
+- Non-coding RNA sequences (FASTA)
 - Nucleotide Variation (VCF)
 
-.. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species.
+.. hint:: By default the command ``ensembl-downloader`` downloads all file types for all the ENSEMBL species. To limit the download to a specific species give the species identifier using the ``-t`` option. To get a list of all available species run the command with ``-l`` option.
 
 .. code-block:: bash
    :linenos:
