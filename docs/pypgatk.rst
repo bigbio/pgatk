@@ -369,8 +369,9 @@ Command Options
 The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
 The ``gene_annotations_gtf`` file can also be obtained with the :ref:`ensembl_downloader <ensembl-downloader>`. 
 The GTF file should match the one used for the variant annotation in VEP. 
+
 The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. 
-This file can be generated from the GTF file using the ``gffread`` tool as follows::
+This file can be generated from the GTF file using the `gffread <http://ccb.jhu.edu/software/stringtie/gff.shtml#gffread>`_ tool as follows::
 	
 	$: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
 
@@ -396,8 +397,8 @@ The output of the tool is a protein fasta file and is written in the following p
 
 - Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples and affect any protein_coding gene::
 	
-	$: python pypgatk.py vcf-to-proteindb 
- 		--vep_annotated_vcf gnmad_genome.vcf 
+	python pypgatk.py vcf-to-proteindb 
+		--vep_annotated_vcf gnmad_genome.vcf 
  		--include_consequences missense, frameshift_insert 
  		--annotation_field_name vep --af_threshold 0.01 
  		--af_field control_af 
