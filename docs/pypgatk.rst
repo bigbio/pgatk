@@ -187,25 +187,37 @@ Command options
         -c, --config_file TEXT Configuration file for the ensembl data downloader pipeline
         -o, --output_directory TEXT  Output directory for the peptide databases
         -l, --list_studies           Print the list of all the studies in cBioPortal (https://www.cbioportal.org)
-        -d, --download_study TEXT    Download an specific Study from cBioPortal -- (all to download all studies)
+        -d, --download_study TEXT    Download a specific Study from cBioPortal -- (all to download all studies)
         -h, --help                   Show this message and exit.
 
 
-.. note:: The argument ``-l`` (``--list_studies``) allows the user to list all the studies stored in cBioPortal. The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
-	
+.. note:: 
+	The argument ``-l`` (``--list_studies``) allows the user to list all the studies stored in cBioPortal. 
+	The ``-d`` (``--download_study``) argument can be used to obtain mutation data from a particular study.
+
 .. _cbioportal-downloader_example:
 
-Examples
+**Examples**
 
 - Download data for study ID `blca_mskcc_solit_2014 <https://www.cbioportal.org/study/summary?id=blca_mskcc_solit_2014>`_::
 	
 	python pypgatk_cli.py cbioportal-downloader -d blca_mskcc_solit_2014 -o cbiportal_files
    
-- Download data for all studies in cBioPortal through the `data hub <https://github.com/cBioPortal/datahub/tree/master/public>`_::
+- Download data for all studies in cBioPortal::
 
 	python pypgatk_cli.py cbioportal-downloader -d all -o cbioportal_files
 
-
+If you phase issues downloading all studies from cBioPortal using the ``cbioportal-downloader``, please download the studies from the `data hub <https://github.com/cBioPortal/datahub/tree/master/public>`_ using git-lfs. 
+git-lfs is used to download large files from gitHub repositories, see `installation instructions: <https://github.com/git-lfs/git-lfs/wiki/Installation>`_.
+Following `instructions given on the datahub repositority <https://github.com/cBioPortal/datahub>`_, download the entire list of datasets using:: 
+	
+	git clone https://github.com/cBioPortal/datahub.git
+	cd datahub
+	git lfs install --local --skip-smudge
+	git lfs pull -I public --include "data_clinical_sample.txt"
+	git lfs pull -I public --include "data_mutations_mskcc.txt"
+	
+	
 .. _generate-proteindb:
 
 Generate protein databases
@@ -301,7 +313,6 @@ Examples:
 - translate mutations from ``Bladder`` samples in studyID: ``blca_mskcc_solit_2014`` (:ref:`use cbioportal-downloader <cbioportal-downloader_example>` to download the study, then extract the content of the downloaded file)::
 	
 	python pypgatk_cli.py cbioportal-to-proteindb --config_file config/cbioportal_config.yaml --input_cds human_hg19_cds.fa  --input_mutation data_mutations_mskcc.txt --clinical_sample_file data_clinical_sample.txt --output_db bladder_proteindb.fa
- 
 
 .. _vcf-to-proteindb:
 
