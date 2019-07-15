@@ -59,14 +59,14 @@ Install the ``pypgatk`` package from source:
 
 .. _data-downloader:
 
-Data downloader Tool
+Data Downloader Tools
 ------------------
 
 The Data downloader is a set of COMMANDs to download data from different Genomics data providers including ENSEMBL, COSMIC and cBioPortal.
 
 .. _ensembl-downloader:
 
-Downloading ENSEMBL data.
+Downloading ENSEMBL Data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command :ref:`ensembl_downloader <ensembl-downloader>`. 
@@ -79,7 +79,7 @@ The current tool enables downloading the following files for any taxonomy that i
 - Non-coding RNA sequences (FASTA)
 - Nucleotide Variation (VCF)
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -129,7 +129,8 @@ Command options
 
 .. _cosmic-downloader:
 
-Downloading COSMIC data.
+
+Downloading COSMIC Data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. 
@@ -138,7 +139,7 @@ The current COMMAND allows users to download the following files:
 - Cosmic mutation file (CosmicMutantExport)
 - Cosmic all genes (All_COSMIC_Genes)
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -168,13 +169,14 @@ Command options
 
 .. _cbioportal-downloader:
 
-Downloading cBioPortal data.
+
+Downloading cBioPortal Data.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is performed using the command ``cbioportal-downloader``. 
 cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets). Each dataset in cBioPortal has an associated study_id.
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -221,7 +223,8 @@ Following `instructions given on the datahub repositority <https://github.com/cB
 	
 .. _generate-proteindb:
 
-Generate protein databases
+
+Generate Protein Databases
 --------------------------
 
 The **Pypgatk** framework provides a set of tools (COMMAND) to generate protein databaseas in ``FASTA`` format from DNA sequences, variants, and mutations. In order to perform this task, we have implemented multiple
@@ -229,13 +232,13 @@ commands depending on data type provided by the user and the public data provide
 
 .. _cosmic-to-proteindb:
 
-Cosmic Mutations to Protein sequences
+Cosmic Mutations to Protein Sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. 
 The command ``cosmic-to-proteindb`` converts the cosmic somatic mutations file into a protein sequence database file.
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -272,14 +275,14 @@ The output of the tool is a protein fasta file and is written in the following p
 
 .. _cbioportal-to-proteindb:
 
-cBioPortal Mutations to Protein sequences
+cBioPortal Mutations to Protein Sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. 
 The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). 
 The command ``cbioportal-to-proteindb`` converts the bcioportal mutations file into a protein sequence database file.
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -317,7 +320,8 @@ The output of the tool is a protein fasta file and it is written in the followin
 
 .. _vcf-to-proteindb:
 
-Annotated variants (VCF) to protein sequences
+
+Annotated Variants (VCF) to Protein Sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
 Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
@@ -325,7 +329,7 @@ VEP reports the trasncripts that are affected by each variant along with the con
 
 The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
@@ -422,7 +426,7 @@ The output of the tool is a protein fasta file and is written in the following p
 
 .. _dnaseq-to-proteindb:
 
-Transcripts (DNA) to Protein sequences
+Transcripts (DNA) to Protein Sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DNA sequences given in a fasta format can be translated using the ``dnaseq-to-proteindb`` tool. This tool allows for translation 
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
@@ -435,7 +439,7 @@ The ``dnaseq-to-proteindb`` command recognizes the features such as biotype and 
 However, it is not required to have those information in the fasta header but their presence enables the user to filter by biotype and expression values during the translation step. 
 
 
-Command options
+Command Options
 ^^^^^^^^^^^^^^
 
 .. code-block:: bash
