@@ -262,7 +262,7 @@ class CancerGenomesService(ParameterConfiguration):
             header = mutfile.readline().strip().split("\t")
         else:
             header = f1.strip().split("\t")
-
+            
         pos_col = header.index("HGVSc")
         enst_col = header.index("Transcript_ID")
 
@@ -291,9 +291,11 @@ class CancerGenomesService(ParameterConfiguration):
                 print("Tumor_Sample_Barcode was not found in the header {} of mutations file: {}".format(header, self._local_mutation_file))
                 return
             
-        for line in mutfile:
+        for i,line in enumerate(mutfile):
             row = line.strip().split("\t")
-            
+            if row[0]=='#':
+                print("skipping line ({}): {}".format(i, row))
+                continue
             #get tissue type and check it
             tissue_type = None
             if self._tissue_type!=['all'] or self._split_by_tissue_type:
@@ -301,9 +303,10 @@ class CancerGenomesService(ParameterConfiguration):
                     tissue_type = sample_tissue_type_dict[row[sample_id_col]]
                 except KeyError:
                     if self._tissue_type!=['all'] or self._split_by_tissue_type:
-                        print("No clinical info was found for sample {}. Skipping: {}".format(row[sample_id_col], line))
+                        print("No clinical info was found for sample {}. Skipping (line {}): {}".format(row[sample_id_col], i, line))
                         continue
-                
+                except IndexError:
+                    print("No sampleID was found in (line {}): {}".format(i, row))
             if tissue_type not in self._tissue_type and self._tissue_type != ['all']:
                 continue
             
@@ -364,6 +367,7 @@ class CancerGenomesService(ParameterConfiguration):
                     print("incorrect deletion, unmatched nucleotide", pos)
 
             elif vartype == "INS":
+                print("***Ins Position not found", i , row)
                 enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
                 if "ins" in pos:
                     ins_dna = pos.split("ins")[1]
@@ -390,7 +394,7 @@ class CancerGenomesService(ParameterConfiguration):
                         tissue_mutations_dict[tissue_type][header] = mut_pro_seq
                     except KeyError:
                         tissue_mutations_dict[tissue_type] = {header: mut_pro_seq}
-                     
+                    
         output.close()
         mutfile.close()
         fafile.close()
