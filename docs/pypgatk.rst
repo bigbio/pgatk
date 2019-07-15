@@ -28,7 +28,7 @@ task arguments:
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        generate-decoy      	 Command to generate decoy database from a proteindb
+        generate-decoy      	   Command to generate decoy database from a proteindb
 
 
 .. _installation:
@@ -60,7 +60,7 @@ Install the ``pypgatk`` package from source:
 .. _data-downloader:
 
 Data Downloader Tools
-------------------
+---------------------
 
 The Data downloader is a set of COMMANDs to download data from different Genomics data providers including ENSEMBL, COSMIC and cBioPortal.
 
@@ -80,7 +80,7 @@ The current tool enables downloading the following files for any taxonomy that i
 - Nucleotide Variation (VCF)
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -90,18 +90,20 @@ Command Options
 
       This tool enables to download from ENSEMBL ftp the FASTA, GTF and VCF files
 
-      Options:
+       Required parameters::
         -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
         -o, --output_directory TEXT     Output directory for the peptide databases
-        -fp, --folder_prefix_release TEXT Output folder prefix to download the data
+      
+      Optional parameters:
+        -l, --list_taxonomies TEXT      List the available species from Ensembl, users can find the desired taxonomy identifier from this list.
+        -fp, --folder_prefix_release    TEXT Output folder prefix to download the data
         -t, --taxonomy TEXT             Taxonomy identifiers (comma separated) that will be use to download the data from Ensembl
-        -l, --list_taxonomies TEXT             List the available species from Ensembl, users can find the desired taxonomy identifier from this list.
-		-sv, --skip_vcf                 Skip the vcf file during the download
+		  -sv, --skip_vcf                 Skip the vcf file during the download
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
-		-sd, --skip_cdna              	Skip the cDNA file download
-        -sn, --skip_ncrna              Skip the ncRNA file download
+		  -sd, --skip_cdna              	 Skip the cDNA file download
+        -sn, --skip_ncrna               Skip the ncRNA file download
         -h, --help                      Show this message and exit.
 
 
@@ -131,7 +133,7 @@ Command Options
 
 
 Downloading COSMIC Data.
-~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading mutation data from `COSMIC <https://cancer.sanger.ac.uk/cosmic>`_ is performed using the COMMAND ``cosmic-downloader``. 
 The current COMMAND allows users to download the following files:
@@ -140,7 +142,7 @@ The current COMMAND allows users to download the following files:
 - Cosmic all genes (All_COSMIC_Genes)
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -152,7 +154,7 @@ Command Options
         -u, --username TEXT          Username for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
         -p, --password TEXT          Password for cosmic database -- please if you dont have one register here (https://cancer.sanger.ac.uk/cosmic/register)
 	  
-	  Optional parameters:
+	   Optional parameters:
         -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
         -o, --output_directory TEXT  Output directory for the peptide databases
         -h, --help                   Show this message and exit.
@@ -177,7 +179,7 @@ Downloading mutation data from `cBioPortal <https://www.cbioportal.org/>`_ is pe
 cBioPortal stores mutation data from multiple studies (https://www.cbioportal.org/datasets). Each dataset in cBioPortal has an associated study_id.
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -185,7 +187,7 @@ Command Options
    $: python3.7 pypgatk_cli.py cbioportal-downloader -h
       Usage: pypgatk_cli.py cbioportal-downloader [OPTIONS]
 
-      Options:
+      Parameters:
         -c, --config_file TEXT Configuration file for the ensembl data downloader pipeline
         -o, --output_directory TEXT  Output directory for the peptide databases
         -l, --list_studies           Print the list of all the studies in cBioPortal (https://www.cbioportal.org)
@@ -233,13 +235,13 @@ commands depending on data type provided by the user and the public data provide
 .. _cosmic-to-proteindb:
 
 Cosmic Mutations to Protein Sequences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 `COSMIC <https://cancer.sanger.ac.uk/cosmic/>`_ the Catalogue of **Human** Somatic Mutations in Cancer – is the world's largest source of expert manually curated somatic mutation information relating to human cancers. 
 The command ``cosmic-to-proteindb`` converts the cosmic somatic mutations file into a protein sequence database file.
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -276,14 +278,14 @@ The output of the tool is a protein fasta file and is written in the following p
 .. _cbioportal-to-proteindb:
 
 cBioPortal Mutations to Protein Sequences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. 
 The available datasets can be viewed in this web page (https://www.cbioportal.org/datasets). 
 The command ``cbioportal-to-proteindb`` converts the bcioportal mutations file into a protein sequence database file.
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -291,14 +293,16 @@ Command Options
    $: python pypgatk_cli.py cbioportal-to-proteindb -h
       Usage: pypgatk_cli.py cbioportal-to-proteindb [OPTIONS]
 
-      Options:
+       Required parameters:
         -c, --config_file TEXT           Configuration for cBioportal
         -in, --input_mutation TEXT       Cbioportal mutation file
         -fa, --input_cds TEXT            CDS genes from ENSEMBL database
         -out, --output_db TEXT           Protein database including the mutations
+       
+       Optional parameters:
         -t, --tissue_type TEXT           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default ``all``)
         -s,	--split_by_tissue_type BOOL  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
-        -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier 
+        -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier (required when ``-t`` or ``-s`` is given). 
         -h, --help                       Show this message and exit.
 
 .. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (that is when -s or -t is given).
@@ -330,7 +334,7 @@ VEP reports the trasncripts that are affected by each variant along with the con
 The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -354,17 +358,17 @@ Command Options
         --annotation_field_name TEXT	Annotation Field name found in the INFO column, e.g CSQ or vep
       	--af_field TEXT	Field name in the VCF INFO column that shows the variant allele frequency (VAF, default is AF).
       	--af_threshold FLOAT      Minium allele frequency threshold for considering the variants
-  		--transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field (separated by |) (default is 3)
- 		--consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field (separated by |) (default is 1)
- 		--exclude_biotypes TEXT         Variants affecting gene/transcripts in these biotypes will not be considered for translation (affected by include_biotypes). 
-  		--exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
-        --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
-  		--include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
-  		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
-  		--biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
-  		--ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
-  		--accepted_filters TEXT	Accepted filters for variant parsing
-        -h, --helP		Show this message and exit.
+         --transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field (separated by |) (default is 3)
+    		--consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field (separated by |) (default is 1)
+    		--exclude_biotypes TEXT         Variants affecting gene/transcripts in these biotypes will not be considered for translation (affected by include_biotypes). 
+     		--exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
+           --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
+     		--include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
+     		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
+     		--biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
+     		--ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
+     		--accepted_filters TEXT	Accepted filters for variant parsing
+           -h, --helP		Show this message and exit.
 
 The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
 The ``gene_annotations_gtf`` file can also be obtained with the :ref:`ensembl_downloader <ensembl-downloader>`. 
@@ -428,7 +432,7 @@ The output of the tool is a protein fasta file and is written in the following p
 .. _dnaseq-to-proteindb:
 
 Transcripts (DNA) to Protein Sequences
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 DNA sequences given in a fasta format can be translated using the ``dnaseq-to-proteindb`` tool. This tool allows for translation 
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
 The most suited ``--input_fasta`` file can be generated from a given GTF file using the ``gffread`` commad as follows::
@@ -441,7 +445,7 @@ However, it is not required to have those information in the fasta header but th
 
 
 Command Options
-^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^
 
 .. code-block:: bash
    :linenos:
@@ -455,16 +459,16 @@ Command Options
         --output_proteindb          Output file to write the resulting variant protein sequences
         
       Optional parameters:	
-  		--translation_table INTEGER    Translation Table (default 1)
-  		--num_orfs INTEGER             Number of ORFs (default 0)
-  		--num_orfs_complement INTEGER  Number of ORFs from the reverse side (default 0)
-  		--skip_including_all_cds       By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes
-  		--include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default None).
-  		--exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
-  		--biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
-  		--expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
-  		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str) 
-  		-h, --help                     Show this message and exit
+         --translation_table INTEGER    Translation Table (default 1)
+     		--num_orfs INTEGER             Number of ORFs (default 0)
+     		--num_orfs_complement INTEGER  Number of ORFs from the reverse side (default 0)
+     		--skip_including_all_cds       By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes
+     		--include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default None).
+     		--exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
+     		--biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
+     		--expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
+     		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str) 
+     		-h, --help                     Show this message and exit
 
 .. _dnaseq-to-proteindb_examples:
 
@@ -482,7 +486,7 @@ Command Options
 	python pypgatk.py dnaseq-to-proteindb 
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/transcript_sequences.fa 
-		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+		--output_proteindb testdata/proteindb_from_lincRNA_canonical_sequences.fa
 		--include_biotypes lincRNA
 	
 - Generate a protein database from processed pseudogene::
@@ -499,9 +503,74 @@ Command Options
 	python pypgatk.py dnaseq-to-proteindb 
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/transcript_sequences.fa 
-		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+		--output_proteindb testdata/proteindb_from_altORFs.fa
 		--include_biotypes altORFs
 		--skip_including_all_cds
+
+.. _generate-decoy:
+
+Generate Decoy Database
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``generate-decoy`` command enables generation of decoy databases for any given protein sequence database. 
+Decoy databases are need to evaluate significance of spectra-sequence matching scores in proteomics mass spectrometry experiments.  
+ 
+*DecoyPYrat* is integrated into ``py-pgatk`` as the standard method for generating decoy sequences. In addition to reversing the target sequences, 
+the tool replaces the cleavage with preceding amino acids. 
+Also, it checks for the presence of the reversed sequence in the target sequences and if found, *DecoyPYrat* shuffles the sequences to avoid target-decoy sequence matches.
+For more information please read the *DecoyPYrat* manual available at: https://www.sanger.ac.uk/science/tools/decoypyrat. 
+
+Command Options
+^^^^^^^^^^^^^^^
+
+.. code-block:: bash
+   :linenos:
+
+   $: python pypgatk.py dnaseq-to-proteindb -h
+      Usage: pypgatk.py dnaseq-to-proteindb [OPTIONS]
+
+      Required parameters:
+        -c, --config_file TEXT          Configuration file for the protein database decoy generation
+        -o, --output TEXT               Output file for decoy database
+        -i, --input TEXT                FASTA file of target protein sequences for
+                                        which to create decoys (*.fasta|*.fa)
+      Optional parameters:
+        -s, --cleavage_sites TEXT       A list of amino acids at which to cleave
+                                        during digestion. Default = KR
+        -a, --anti_cleavage_sites TEXT  A list of amino acids at which not to cleave
+                                        if following cleavage site ie. Proline.
+                                        Default = none
+        -p, --cleavage_position TEXT    Set cleavage to be c or n terminal of
+                                        specified cleavage sites. Options [c, n],
+                                        Default = c
+        -l, --min_peptide_length INTEGER
+                                        Set minimum length of peptides to compare
+                                        between target and decoy. Default = 5
+        -n, --max_iterations INTEGER    Set maximum number of times to shuffle a
+                                        peptide to make it non-target before
+                                        failing. Default=100
+        -x, --do_not_shuffle TEXT       Turn OFF shuffling of decoy peptides that
+                                        are in the target database. Default=false
+        -w, --do_not_switch TEXT        Turn OFF switching of cleavage site with
+                                        preceding amino acid. Default=false
+        -d, --decoy_prefix TEXT         Set accession prefix for decoy proteins in
+                                        output. Default=DECOY_
+        -t, --temp_file TEXT            Set temporary file to write decoys prior to
+                                        shuffling. Default=protein-decoy.fa
+        -b, --no_isobaric TEXT          Do not make decoy peptides isobaric.
+                                        Default=false
+        -m, --memory_save TEXT          Slower but uses less memory (does not store
+                                        decoy peptide list). Default=false
+        -h, --help                      Show this message and exit.
+
+
+.. _generate-decoy_examples:
+
+**Examples**
+
+- Generate decoy sequences for ``proteindb_from_lincRNA_canonical_sequences.fa`` that was generate using :ref:`dnaseq-to-proteindb <dnaseq-to-proteindb_examples>`::
+
+   python pypgatk_cli.py generate-decoy -c config/protein_decoy.yaml --input proteindb_from_lincRNA_canonical_sequences.fa --output decoy_proteindb.fa
 
 
 Contributions
@@ -511,3 +580,5 @@ Contributions
 - Yafeng Zhu ([yafeng](http://github.com/yafeng))
 - Enrique Audain ([enriquea](https://github.com/enriquea))
 - Yasset Perez-Riverol ([ypriverol](https://github.com/ypriverol))
+
+
