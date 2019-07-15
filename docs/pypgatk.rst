@@ -419,8 +419,6 @@ The output of the tool is a protein fasta file and is written in the following p
 			
 		--biotype_str (from the GTF INFO field)
 
-.. note::
-	For a list 
 
 .. _dnaseq-to-proteindb:
 
@@ -430,7 +428,7 @@ DNA sequences given in a fasta format can be translated using the ``dnaseq-to-pr
 of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
 The most suited ``--input_fasta`` file can be generated from a given GTF file using the ``gffread`` commad as follows::
 	
-	$: gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
+	$: gffread -F -w transcript_sequences.fa -g genome.fa gene_annotations_gtf
 
 The fasta file that is generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. Also, it specifies the CDS positions for the protein coding transcripts.
 The ``dnaseq-to-proteindb`` command recognizes the features such as biotype and expression values in the fasta header that are taken from the GTF INFO filed (if available).
@@ -469,10 +467,36 @@ Command options
 
 - Generate the canonical protein database, i.e. translate all *protein_coding* transcripts::
 	
-	$: python pypgatk.py dnaseq-to-proteindb 
+	python pypgatk.py dnaseq-to-proteindb 
 		--config_file config/ensembl_config.yaml 
-		--input_fasta testdata/test.fa 
+		--input_fasta testdata/transcript_sequences.fa 
 		--output_proteindb testdata/proteindb_from_CDSs_DNAseq.fa
+
+- Generate a protein database from lincRNA and canonical proteins::
+
+	python pypgatk.py dnaseq-to-proteindb 
+		--config_file config/ensembl_config.yaml 
+		--input_fasta testdata/transcript_sequences.fa 
+		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+		--include_biotypes lincRNA
+	
+- Generate a protein database from processed pseudogene::
+
+	python pypgatk.py dnaseq-to-proteindb 
+		--config_file config/ensembl_config.yaml 
+		--input_fasta testdata/transcript_sequences.fa 
+		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+		--include_biotypes processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene
+		--skip_including_all_cds 
+	
+- Generate alternative ORFs from canonical sequences::	
+	
+	python pypgatk.py dnaseq-to-proteindb 
+		--config_file config/ensembl_config.yaml 
+		--input_fasta testdata/transcript_sequences.fa 
+		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+		--include_biotypes altORFs
+		--skip_including_all_cds
 
 
 Contributions
