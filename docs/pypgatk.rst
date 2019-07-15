@@ -512,13 +512,14 @@ Command Options
 Generate Decoy Database
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The ``generate-decoy`` command enables generation of decoy databases for any given protein sequence database. 
+``generate-decoy`` command enables generation of decoy databases for any given protein sequence database. 
 Decoy databases are need to evaluate significance of spectra-sequence matching scores in proteomics mass spectrometry experiments.  
  
 *DecoyPYrat* is integrated into ``py-pgatk`` as the standard method for generating decoy sequences. In addition to reversing the target sequences, 
 the tool replaces the cleavage with preceding amino acids. 
 Also, it checks for the presence of the reversed sequence in the target sequences and if found, *DecoyPYrat* shuffles the sequences to avoid target-decoy sequence matches.
 For more information please read the *DecoyPYrat* manual available at: https://www.sanger.ac.uk/science/tools/decoypyrat. 
+
 
 Command Options
 ^^^^^^^^^^^^^^^
