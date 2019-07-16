@@ -120,7 +120,7 @@ class CancerGenomesService(ParameterConfiguration):
                     index = snp.dna_mut.index("ins")
                     insert_dna = snp.dna_mut[index + 3:]
                     if insert_dna.isalpha():
-                        print(insert_dna, snp.dna_mut, snp.aa_mut)
+                        #print(insert_dna, snp.dna_mut, snp.aa_mut)
                         ins_index1 = int(positions[0])
                         seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
                         mut_pro_seq = seq_mut.translate(to_stop=True)
@@ -321,7 +321,7 @@ class CancerGenomesService(ParameterConfiguration):
                 vartype = row[type_col]
                 varclass = row[class_col]
             except IndexError:
-                print(row)
+                print("Incorrect line (i):", row)
                 continue
 
             if varclass not in mutclass:
