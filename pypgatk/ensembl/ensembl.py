@@ -284,7 +284,11 @@ class EnsemblDataService(ParameterConfiguration):
         :param feature_types:
         :return:
         """
-        feature = db[feature_id]
+        try:
+            feature = db[feature_id]
+        except gffutils.exceptions.FeatureNotFoundError: #remove version number from the ID
+            feature = db[feature_id.split('.')[0]]
+        
         coding_features = []
         features = db.children(feature, featuretype=feature_types, order_by='end')
         for f in features:
@@ -342,12 +346,19 @@ class EnsemblDataService(ParameterConfiguration):
                 desc = str(seq_dict[record_id].description)
 
                 key_values = {}  # extract key=value in the desc into a dict
-                for value in desc.split(' '):
+                sep = ' '
+                if '|' in desc:
+                    sep = '|'
+                for value in desc.split(sep):
+                    if value.split('=')[0]=='cds' or value.split(':')[0]=='cds':
+                        value.replace('cds', 'CDS')
                     if '=' in value:
                         key_values[value.split('=')[0]] = value.split('=')[1]
                     elif ':' in value:
                         key_values[value.split(':')[0]] = value.split(':')[1]
-
+                    elif value.split('=')[0]=='CDS': #when only it is specified to be a CDS, it means the whole sequence to be used
+                        key_values[value.split('=')[0]] = '{}-{}'.format(1, len(ref_seq))
+                        
                 feature_biotype = ""
                 if self._biotype_str:
                     try:
@@ -355,7 +366,7 @@ class EnsemblDataService(ParameterConfiguration):
                     except KeyError:
                         print("Biotype info was not found in the header using {} for record {} {}".format(
                             self._biotype_str, record_id, desc))
-
+                
                 # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and (
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
@@ -403,6 +414,10 @@ class EnsemblDataService(ParameterConfiguration):
 
         return self._proteindb_output
 
+    @staticmethod
+    def get_key(fasta_header):
+        return fasta_header.split('|')[0].split(' ')[0]
+    
     def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
@@ -413,17 +428,16 @@ class EnsemblDataService(ParameterConfiguration):
         :param gene_annotations_gtf:
         :return:
         """
-
+        
         db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
-        transcripts_dict = SeqIO.index(input_fasta, "fasta")
+        transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
         # handle cases where the transript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
-
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
+            
             for record in vcf_reader:
-
                 if not self._ignore_filters:
                     if record.FILTER:  # if not PASS: None and empty means PASS
                         if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
@@ -449,6 +463,7 @@ class EnsemblDataService(ParameterConfiguration):
                     trans_table = self._mito_translation_table
 
                 processed_transcript_allele = []
+                
                 for transcript_record in record.INFO[self._annotation_field_name]:
                     transcript_info = transcript_record.split('|')
                     try:
@@ -458,7 +473,6 @@ class EnsemblDataService(ParameterConfiguration):
                               transcript_record)
                         continue
                     consequences.append(consequence)
-
                     try:
                         transcript_id = transcript_info[self._transcript_index]
                     except IndexError:
@@ -494,7 +508,7 @@ class EnsemblDataService(ParameterConfiguration):
                         except (ValueError, IndexError):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
-
+                    print(transcript_id_v)
                     chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)
@@ -512,7 +526,6 @@ class EnsemblDataService(ParameterConfiguration):
                           (feature_biotype not in self._include_biotypes and
                            self._include_biotypes != ['all'])):
                         continue
-
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
                         if transcript_id + str(record.REF) + str(
                                 alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
