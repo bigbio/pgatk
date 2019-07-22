@@ -6,14 +6,14 @@ ensembl_translation:
     var_prefix: "var"
     report_ref_seq: False
     annotation_field_name: 'CSQ'
-    af_field: 'MAF'
+    af_field: ''
     af_threshold: 0.01
     transcript_index: 3
     consequence_index: 1
     exclude_biotypes: ''
     exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'
     skip_including_all_cds: False
-    include_biotypes: ''
+    include_biotypes: 'protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC'
     include_consequences: 'all'
     biotype_str: 'transcript_biotype'
     num_orfs: 3
