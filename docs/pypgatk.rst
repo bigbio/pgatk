@@ -356,19 +356,19 @@ Command Options
         --report_ref_seq	In addition to variant peptides, also report the reference peptide from the transcript overlapping the variant 
         --output_proteindb TEXT	Output file name, exits if already exists
         --annotation_field_name TEXT	Annotation Field name found in the INFO column, e.g CSQ or vep
-      	--af_field TEXT	Field name in the VCF INFO column that shows the variant allele frequency (VAF, default is AF).
-      	--af_threshold FLOAT      Minium allele frequency threshold for considering the variants
-         --transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field (separated by |) (default is 3)
-    		--consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field (separated by |) (default is 1)
-    		--exclude_biotypes TEXT         Variants affecting gene/transcripts in these biotypes will not be considered for translation (affected by include_biotypes). 
-     		--exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
-           --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
-     		--include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
-     		--include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
-     		--biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
-     		--ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
-     		--accepted_filters TEXT	Accepted filters for variant parsing
-           -h, --helP		Show this message and exit.
+        --af_field TEXT	Field name in the VCF INFO column that shows the variant allele frequency (VAF, default is none).
+        --af_threshold FLOAT      Minium allele frequency threshold for considering the variants
+        --transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field (separated by |) (default is 3)
+        --consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field (separated by |) (default is 1)
+        --exclude_biotypes TEXT         Variants affecting gene/transcripts in these biotypes will not be considered for translation (affected by include_biotypes). 
+        --exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
+        --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
+        --include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
+        --include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
+        --biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
+        --ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
+        --accepted_filters TEXT	Accepted filters for variant parsing
+        -h, --helP		Show this message and exit.
 
 The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
 The ``gene_annotations_gtf`` file can also be obtained with the :ref:`ensembl_downloader <ensembl-downloader>`. 
@@ -388,26 +388,33 @@ The output of the tool is a protein fasta file and is written in the following p
 
 - Translate human *missense* variants from ENSEMBL VCFs that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*::
 	
-	python pypgatk.py vcf-to-proteindb 
- 		--vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
- 		--include_biotypes lncRNA 
- 		--include_consequences missense 
- 		--af_threshold 0.05
+	python pypgatk_cli.py vcf-to-proteindb 
+   --vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
+   --input_fasta transcripts.fa
+   --gene_annotations_gtf genes.gtf
+   --include_biotypes lncRNA,protein_coding 
+   --include_consequences missense_variant
+   --af_field MAF
+   --af_threshold 0.05
+   --output_proteindb var_peptides.fa
 
 .. note:: 
 	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be any of the ENSEMBL gene/transcript biotypes: https://www.ensembl.org/info/genome/genebuild/biotypes.html. 
 	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
 	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``. See the list consequences of consequences generated by VEP: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
 
-- Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples and affect any protein_coding gene::
+- Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples and affect any protein coding gene::
 	
-	python pypgatk.py vcf-to-proteindb 
+	python pypgatk_cli.py vcf-to-proteindb 
 		--vep_annotated_vcf gnmad_genome.vcf 
- 		--include_consequences missense, frameshift_insert 
- 		--annotation_field_name vep --af_threshold 0.01 
- 		--af_field control_af 
- 		--biotype_str transcript_type 
- 		--transcript_index 6
+      --input_fasta gencode.fa
+      --gene_annotations_gtf gencode.gtf
+      --include_consequences missense_variant,frameshift_insert 
+      --annotation_field_name vep
+      --af_threshold 0.01
+      --af_field control_af 
+      --biotype_str transcript_type
+      --transcript_index 6
 
 .. hint:: 
 	- By default  ``vcf-to-proteindb`` considers transcript that have a coding sequence which includes all *protein_coding* transcripts and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
@@ -463,7 +470,7 @@ Command Options
      		--num_orfs INTEGER             Number of ORFs (default 0)
      		--num_orfs_complement INTEGER  Number of ORFs from the reverse side (default 0)
      		--skip_including_all_cds       By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes
-     		--include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default None).
+     		--include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default protein coding genes).
      		--exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
      		--biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
      		--expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
