@@ -268,6 +268,7 @@ class EnsemblDataService(ParameterConfiguration):
                                verbose=True,
                                force=False)
         except:  # already exists
+            print("already exists", gtf_db_file)
             pass
 
         db = gffutils.FeatureDB(gtf_db_file)
@@ -508,7 +509,6 @@ class EnsemblDataService(ParameterConfiguration):
                         except (ValueError, IndexError):
                             print("Could not extra cds position from fasta header for: ", desc)
                             pass
-                    print(transcript_id_v)
                     chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)

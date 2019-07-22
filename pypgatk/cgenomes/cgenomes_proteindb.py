@@ -367,7 +367,6 @@ class CancerGenomesService(ParameterConfiguration):
                     print("incorrect deletion, unmatched nucleotide", pos)
 
             elif vartype == "INS":
-                print("***Ins Position not found", i , row)
                 enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
                 if "ins" in pos:
                     ins_dna = pos.split("ins")[1]
