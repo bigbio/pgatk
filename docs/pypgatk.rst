@@ -389,14 +389,14 @@ The output of the tool is a protein fasta file and is written in the following p
 - Translate human *missense* variants from ENSEMBL VCFs that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*::
 	
 	python pypgatk_cli.py vcf-to-proteindb 
-   --vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
-   --input_fasta transcripts.fa
-   --gene_annotations_gtf genes.gtf
-   --include_biotypes lncRNA,protein_coding 
-   --include_consequences missense_variant
-   --af_field MAF
-   --af_threshold 0.05
-   --output_proteindb var_peptides.fa
+      --vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
+      --input_fasta transcripts.fa
+      --gene_annotations_gtf genes.gtf
+      --include_biotypes lncRNA,protein_coding 
+      --include_consequences missense_variant
+      --af_field MAF
+      --af_threshold 0.05
+      --output_proteindb var_peptides.fa
 
 .. note:: 
 	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be any of the ENSEMBL gene/transcript biotypes: https://www.ensembl.org/info/genome/genebuild/biotypes.html. 
@@ -406,7 +406,7 @@ The output of the tool is a protein fasta file and is written in the following p
 - Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples and affect any protein coding gene::
 	
 	python pypgatk_cli.py vcf-to-proteindb 
-		--vep_annotated_vcf gnmad_genome.vcf 
+      --vep_annotated_vcf gnmad_genome.vcf 
       --input_fasta gencode.fa
       --gene_annotations_gtf gencode.gtf
       --include_consequences missense_variant,frameshift_insert 
