@@ -14,6 +14,7 @@ def vcf_to_proteindb():
                             '--vep_annotated_vcf', 'testdata/test.vcf',
                             '--input_fasta', 'testdata/test.fa',
                             '--gene_annotations_gtf', 'testdata/test.gtf',
+                            '--af_field', 'MAF',
                             '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa'])
     assert result.exit_code == 0
 
@@ -49,6 +50,20 @@ def dnaseq_to_proteindb():
                             '--output_proteindb', 'testdata/proteindb_from_CDSs_DNAseq.fa'])
     assert result.exit_code == 0
 
+def dnaseq_ncrnas_to_proteindb():
+    """
+    Test generation of proteinDB from short noncoding RNAs using dnaseq-to-proteindb tool
+    :return:
+    """
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                            '--input_fasta', 'testdata/test.fa',
+                            '--output_proteindb', 'testdata/proteindb_from_lncRNAs_DNAseq.fa',
+                            '--include_biotypes',
+                            'lncRNA,retained_intron,Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
+                            '--skip_including_all_cds'])
+    assert result.exit_code == 0
 
 def dnaseq_lncrnas_to_proteindb():
     """
@@ -61,7 +76,7 @@ def dnaseq_lncrnas_to_proteindb():
                             '--input_fasta', 'testdata/test.fa',
                             '--output_proteindb', 'testdata/proteindb_from_lncRNAs_DNAseq.fa',
                             '--include_biotypes',
-                            '3prime_overlapping_ncrna, ambiguous_orf, antisense, antisense_RNA, lincRNA, ncrna_host, processed_transcript, sense_intronic, sense_overlapping',
+                            'lncRNA,retained_intron',
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
 
@@ -77,7 +92,7 @@ def dnaseq_sncrnas_to_proteindb():
                             '--input_fasta', 'testdata/test.fa',
                             '--output_proteindb', 'testdata/proteindb_from_lncRNAs_DNAseq.fa',
                             '--include_biotypes',
-                            'miRNA, miRNA_pseudogene, miscRNA, miscRNA_pseudogene, Mt_rRNA, Mt_tRNA, rRNA, scRNA, snlRNA, snoRNA, snRNA, tRNA, tRNA_pseudogene',
+                            'Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
 
@@ -179,6 +194,7 @@ if __name__ == '__main__':
     vcf_to_proteindb()
     vcf_gnomad_to_proteindb()
     dnaseq_to_proteindb()
+    dnaseq_ncrnas_to_proteindb()
     dnaseq_lncrnas_to_proteindb()
     dnaseq_sncrnas_to_proteindb()
     dnaseq_pseudogenes_to_proteindb()
