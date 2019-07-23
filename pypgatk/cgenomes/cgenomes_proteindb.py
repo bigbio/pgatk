@@ -342,6 +342,7 @@ class CancerGenomesService(ParameterConfiguration):
                     enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
                 except IndexError:
                     print("Incorrect SNP format or record", i, pos, line)
+                    continue
                 idx = pos.index(">")
                 ref_dna = pos[idx - 1]
                 mut_dna = pos[idx + 1]
