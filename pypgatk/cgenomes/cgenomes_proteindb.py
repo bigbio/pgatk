@@ -323,23 +323,25 @@ class CancerGenomesService(ParameterConfiguration):
             except IndexError:
                 print("Incorrect line (i):", row)
                 continue
-
             if varclass not in mutclass:
                 continue
-
-            if enst in seq_dic:
+            
+            try:
                 seq = seq_dic[enst]
-            else:
-                print("%s not found" % enst)
+            except KeyError:
+                print("%s not found:" % enst)
                 continue
-
+            
             if ":" in pos:
                 cdna_pos = pos.split(":")[1]
             else:
                 cdna_pos = pos
 
             if vartype == "SNP":
-                enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
+                try:
+                    enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
+                except IndexError:
+                    print("Incorrect SNP format or record", i, pos, line)
                 idx = pos.index(">")
                 ref_dna = pos[idx - 1]
                 mut_dna = pos[idx + 1]
@@ -358,7 +360,7 @@ class CancerGenomesService(ParameterConfiguration):
                 try:
                     enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
                 except IndexError:
-                    print("incorrect del format", pos)
+                    print("incorrect del format or record", i, pos, line)
                     continue
                 del_dna = pos.split("del")[1]
                 if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
@@ -367,7 +369,11 @@ class CancerGenomesService(ParameterConfiguration):
                     print("incorrect deletion, unmatched nucleotide", pos)
 
             elif vartype == "INS":
-                enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
+                try:
+                    enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
+                except IndexError:
+                    print("incorrect ins/dup format or record", i, pos, line)
+                    continue
                 if "ins" in pos:
                     ins_dna = pos.split("ins")[1]
                 elif "dup" in pos:
