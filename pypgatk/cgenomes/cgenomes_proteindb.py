@@ -250,16 +250,16 @@ class CancerGenomesService(ParameterConfiguration):
         return sample_tissue_type
     
     @staticmethod
-    def get_mut_header_cols(self, header_cols, row):
+    def get_mut_header_cols(header_cols, row, tissue_type, split_by_tissue_type):
         for col in header_cols.keys():
             header_cols[col] = row.index(col)
         
         #check if tissue type should be considered
-        if self._tissue_type!=['all'] or self._split_by_tissue_type:
+        if tissue_type!=['all'] or split_by_tissue_type:
             try:
                 header_cols["Tumor_Sample_Barcode"] = row.index("Tumor_Sample_Barcode")
             except ValueError:
-                print("Tumor_Sample_Barcode was not found in the header {} of mutations file: {}".format(row, self._local_mutation_file))
+                print("Tumor_Sample_Barcode was not found in the header {} of mutations file".format(row))
                 header_cols["Tumor_Sample_Barcode"] = None
         
         return header_cols
@@ -304,7 +304,7 @@ class CancerGenomesService(ParameterConfiguration):
                 continue
             #check for header in the mutations file and get column indecis
             if set(header_cols.keys()).issubset(set(row)):
-                header_cols = self.get_mut_header_cols(header_cols, row)
+                header_cols = self.get_mut_header_cols(header_cols, row, self._tissue_type, self._split_by_tissue_type)
             #check if any is none in header_cols then continue
             if None in header_cols.values():
                 print("Incorrect header column is given")
