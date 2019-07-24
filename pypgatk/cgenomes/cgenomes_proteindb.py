@@ -268,6 +268,7 @@ class CancerGenomesService(ParameterConfiguration):
         """cBioportal studies have a data_clinical_sample.txt file that shows the Primary Tumor Site per Sample Identifie
         it matches the the Tumor_Sample_Barcode column in the mutations file.
         """
+        regex = re.compile('[^a-zA-Z]')
         mutfile = open(self._local_mutation_file, "r")
         fafile = SeqIO.parse(self._local_complete_genes, "fasta")
         output = open(self._local_output_file, "w")
@@ -418,7 +419,7 @@ class CancerGenomesService(ParameterConfiguration):
         fafile.close()
         
         for tissue_type in tissue_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '')+ '_' + tissue_type.replace(' ','_')+'.fa', 'w') as fn:
+            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', tissue_type) +'.fa', 'w') as fn:
                 for header in tissue_mutations_dict[tissue_type].keys():
                     fn.write(">{}\n{}\n".format(header, tissue_mutations_dict[tissue_type][header]))
          
