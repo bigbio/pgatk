@@ -223,30 +223,31 @@ class CancerGenomesService(ParameterConfiguration):
     @staticmethod
     def get_sample_headers(header_line):
         try:
-            tissue_type_col = header_line.index('Cancer Type')
+            tissue_type_col = header_line.index('CANCER_TYPE')
         except ValueError:
-            print('Cancer Type was not found in the header row:', header_line)
-            return None
+            print('CANCER_TYPE was not found in the header row:', header_line)
+            return None, None
         try:
-            sample_id_col = header_line.index('Sample Identifier')
+            sample_id_col = header_line.index('SAMPLE_ID')
         except ValueError:
-            print('Sample Identifier was not found in the header row:', header_line)
-            return None
+            print('SAMPLE_ID was not found in the header row:', header_line)
+            return None, None
         return tissue_type_col, sample_id_col
     
-    @staticmethod
     def get_tissue_type_per_sample(self, local_clinical_sample_file):
         sample_tissue_type = {}
         if local_clinical_sample_file:
             with open(local_clinical_sample_file, 'r') as clin_fn:
-                sl = clin_fn.readline().strip().split('\t')
-                tissue_type_col, sample_id_col = self.get_sample_headers(sl)
+                tissue_type_col, sample_id_col = None, None
                 for line in clin_fn.readlines():
+                    if line.startswith('#'):
+                        continue
                     sl = line.strip().split('\t')
                     #check for header and re-assign columns
-                    if 'Cancer Type' in sl and 'Sample Identifier' in sl:
+                    if 'SAMPLE_ID' in sl and 'CANCER_TYPE' in sl:
                         tissue_type_col, sample_id_col = self.get_sample_headers(sl)
-                    sample_tissue_type[sl[sample_id_col]] = sl[tissue_type_col].strip().replace(' ','_')
+                    if tissue_type_col and sample_id_col:
+                        sample_tissue_type[sl[sample_id_col]] = sl[tissue_type_col].strip().replace(' ','_')
         return sample_tissue_type
     
     @staticmethod
