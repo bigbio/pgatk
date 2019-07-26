@@ -68,7 +68,7 @@ class CancerGenomesService(ParameterConfiguration):
         cosmic_input = open(self._local_mutation_file, 'r')  # CosmicMutantExport.tsv
 
         header = cosmic_input.readline().split("\t")
-
+        regex = re.compile('[^a-zA-Z]')
         gene_col = header.index("Gene name")
         enst_col = header.index("Accession Number")
         cds_col = header.index("Mutation CDS")
@@ -212,7 +212,7 @@ class CancerGenomesService(ParameterConfiguration):
                         tissue_mutations_dict[row[tissue_col]] = {header: entry}
             
         for tissue_type in tissue_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '')+ '_' + tissue_type.replace(' ','_')+'.fa', 'w') as fn:
+            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', tissue_type) +'.fa', 'w') as fn:
                 for header in tissue_mutations_dict[tissue_type].keys():
                     fn.write(tissue_mutations_dict[tissue_type][header])
             
