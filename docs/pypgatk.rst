@@ -467,16 +467,16 @@ Command Options
         
       Optional parameters:	
          --translation_table INTEGER    Translation Table (default 1)
-     		--num_orfs INTEGER             Number of ORFs (default 0)
-     		--num_orfs_complement INTEGER  Number of ORFs from the reverse side (default 0)
-     		--skip_including_all_cds       By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes
-     		--include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default protein coding genes).
-     		--exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
-     		--biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
-     		--expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
-     		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str)
-         --var_prefix                   Prefix to be added to fasta headers (default none)
-     		-h, --help                     Show this message and exit
+         --num_orfs INTEGER             Number of ORFs (default 0)
+         --num_orfs_complement INTEGER  Number of ORFs from the reverse side (default 0)
+         --skip_including_all_cds       By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes
+         --include_biotypes TEXT        Translate sequences with the spcified biotypes. Multiple biotypes can be given separated by comma. To translate all sequences in the input_fasta file set this option to ``all`` (default protein coding genes).
+         --exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
+         --biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
+         --expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
+         --expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str)
+         --var_prefix TEXT              Prefix to be added to fasta headers (default none)
+         -h, --help                     Show this message and exit
 
 .. _dnaseq-to-proteindb_examples:
 
