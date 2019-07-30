@@ -474,7 +474,8 @@ Command Options
      		--exclude_biotypes TEXT        Skip sequences with unwanted biotypes (affected by --include_biotypes) (default None). 
      		--biotype_str TEXT             String used to identify gene/transcript biotype in the fasta file (default transcript_biotype).
      		--expression_str TEXT          String to be used for extracting expression value (TPM, FPKM, etc) (default None).
-     		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str) 
+     		--expression_thresh FLOAT      Threshold used to filter transcripts based on their expression values (default 5, affected by --expression_str)
+         --var_prefix                   Prefix to be added to fasta headers (default none)
      		-h, --help                     Show this message and exit
 
 .. _dnaseq-to-proteindb_examples:
@@ -494,6 +495,7 @@ Command Options
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/transcript_sequences.fa 
 		--output_proteindb testdata/proteindb_from_lincRNA_canonical_sequences.fa
+      --var_prefix lincRNA_
 		--include_biotypes lincRNA
 	
 - Generate a protein database from processed pseudogene::
@@ -502,6 +504,7 @@ Command Options
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/transcript_sequences.fa 
 		--output_proteindb testdata/proteindb_from_processed_pseudogene.fa
+      --var_prefix pseudogene_
 		--include_biotypes processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene
 		--skip_including_all_cds 
 	
@@ -511,6 +514,7 @@ Command Options
 		--config_file config/ensembl_config.yaml 
 		--input_fasta testdata/transcript_sequences.fa 
 		--output_proteindb testdata/proteindb_from_altORFs.fa
+      --var_prefix altorf_
 		--include_biotypes altORFs
 		--skip_including_all_cds
 
