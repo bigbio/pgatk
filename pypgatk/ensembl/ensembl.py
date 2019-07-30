@@ -400,8 +400,8 @@ class EnsemblDataService(ParameterConfiguration):
                                                        self._include_biotypes == ['all'])):
                     ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs,
                                                  self._num_orfs_complement, to_stop=False)
-
-                    self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
+                    print(self._header_var_prefix)
+                    self.write_output(seq_id=self._header_var_prefix+record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
 
                 # also allow for direct translation of the CDS, when the cds info exists in the fasta header skip_including_all_cds is false
                 if 'CDS' in key_values.keys() and not self._skip_including_all_cds:

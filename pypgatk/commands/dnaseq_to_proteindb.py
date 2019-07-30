@@ -13,6 +13,8 @@ from pypgatk.ensembl.ensembl import EnsemblDataService
 @click.option('--num_orfs_complement', default=0, type=int,
               help='Number of ORFs from the reverse side (default 0)')
 @click.option('--output_proteindb', default="peptide-database.fa", help="Output file name, exits if already exists")
+@click.option('-p', '--var_prefix', default="", help="String to add before the variant peptides")
+
 @click.option('--skip_including_all_cds',
               help="By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes",
               is_flag=True)
@@ -26,7 +28,7 @@ from pypgatk.ensembl.ensembl import EnsemblDataService
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
 def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
-                        output_proteindb,
+                        output_proteindb, var_prefix,
                         skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
                         expression_thresh):
     if input_fasta is None:
@@ -35,6 +37,7 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
     pipeline_arguments = {}
     pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
     pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
+    pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
     pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes
     pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] = skip_including_all_cds
     pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes

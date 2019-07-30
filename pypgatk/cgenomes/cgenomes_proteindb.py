@@ -406,7 +406,7 @@ class CancerGenomesService(ParameterConfiguration):
 
             mut_pro_seq = seq_mut.translate(to_stop=True)
             if len(mut_pro_seq) > 6:
-                header = "Mutation:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
+                header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
                 output.write(">%s\n%s\n" % (header, mut_pro_seq))
                 
                 if self._split_by_tissue_type:
