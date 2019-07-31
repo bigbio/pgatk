@@ -288,8 +288,12 @@ class EnsemblDataService(ParameterConfiguration):
         try:
             feature = db[feature_id]
         except gffutils.exceptions.FeatureNotFoundError: #remove version number from the ID
-            feature = db[feature_id.split('.')[0]]
-        
+            try:
+                feature = db[feature_id.split('.')[0]]
+            except gffutils.exceptions.FeatureNotFoundError:
+                print("""Feature {} found in fasta file but not in gtf file. Check that the fasta file and the gtf files match. 
+                        A common issue is when the fasta file have chromosome patches but not the gtf""".format(feature_id))
+                return None, None, None, None
         coding_features = []
         features = db.children(feature, featuretype=feature_types, order_by='end')
         for f in features:
@@ -512,7 +516,8 @@ class EnsemblDataService(ParameterConfiguration):
                     chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                                       self._biotype_str,
                                                                                       feature_types)
-
+                    if chrom == None: #the record info was not found
+                        continue
                     # skip transcripts with unwanted consequences
                     if (consequence in self._exclude_consequences or
                             (consequence not in self._include_consequences and
