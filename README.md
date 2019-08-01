@@ -18,4 +18,3 @@ Options:
 
 
 Please read the docs here: https://pgatk.readthedocs.io/en/latest/pypgatk.html
------
