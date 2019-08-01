@@ -17,5 +17,5 @@ Options:
   -h, --help  Show this message and exit.
 
 
-##Please read the docs here: <https://pgatk.readthedocs.io/en/latest/pypgatk.html>
+### Please read the docs here: <https://pgatk.readthedocs.io/en/latest/pypgatk.html>
 
