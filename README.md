@@ -28,7 +28,7 @@ pip install pypgatk
 
 ## Bioconda
 
-You can install SCCAF with bioconda (please setup conda and the bioconda channel if you haven't first, as explained [here](https://bioconda.github.io/user/index.html)):
+You can install pypgatk with bioconda (please setup conda and the bioconda channel if you haven't first, as explained [here](https://bioconda.github.io/user/index.html)):
 
 ```
 conda install pypgatk
