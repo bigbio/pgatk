@@ -45,7 +45,7 @@ docker pull quay.io/biocontainers/pypgatk:<tag>
 **NOTE**: Please note that Biocontainers containers do not have a latest tag, as such a docker pull/run without defining the tag will fail. For instance, a valid call would be (for version 0.0.2):
 
 ```
-docker run -it quay.io/biocontainers/pypgatk:0.0.3--py_0
+docker run -it quay.io/biocontainers/pypgatk:0.0.2--py_0
 ```
 
 Inside the container, you can either use the Python interactive shell or the command line version (see below).
@@ -53,7 +53,7 @@ Inside the container, you can either use the Python interactive shell or the com
 
 ## Use latest source code
 
-Alternatively, for the latest version, clone this repo and go into its directory, then execute `pip3 install .`:
+Alternatively, for the latest version, clone this repo and go into its directory, then execute `pip3 install .` :
 
 ```
 git clone https://github.com/bigbio/py-pgatk
@@ -62,17 +62,41 @@ cd py-pgatk
 pip3 install .
 ```
 
+# Usage
 
-In order to execute a task in `pypgatk_cli` the user should use a `COMMAND` that perform the specific task and the specific task arguments/options:
+The pypgatk design combines multiple modules and tools into one framework. All the possible commands are accessible using the commandline tool `pypgatk_cli.py`.
 
-```bash
-$: python3.7 pypgatk_cli.py -h
+```
+$: pypgatk_cli.py -h
 Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
-  This is the main tool that give access to all commands and options provided by the pypgatk
+  This is the main tool that give access to all commands and options
+  provided by the pypgatk
 
 Options:
   -h, --help  Show this message and exit.
+
+Commands:
+  cbioportal-downloader     Command to download the the cbioportal studies
+  cbioportal-to-proteindb  Command to translate cbioportal mutation data into
+                           proteindb
+  cosmic-downloader        Command to download the cosmic mutation database
+  cosmic-to-proteindb      Command to translate Cosmic mutation data into
+                           proteindb
+  dnaseq-to-proteindb      Generate peptides based on DNA sequences
+  ensembl-downloader       Command to download the ensembl information
+  generate-decoy           Create decoy protein sequences. Each protein is
+                           reversed and the cleavage sites switched with
+                           preceding amino acid. Peptides are checked for
+                           existence in target sequences if foundthe tool will
+                           attempt to shuffle them. James.Wright@sanger.ac.uk
+                           2015
+  threeframe-translation   Command to perform 3frame translation
+  vcf-to-proteindb         Generate peptides based on DNA variants from
+                           ENSEMBL VEP VCF files
+
 ```
 
-### Please read the docs here: <https://pgatk.readthedocs.io/en/latest/pypgatk.html>
+The library provides multiple commands to download, translate and generate protein sequence databases from reference and mutation genome databases.
+
+### Please read full docs here: <https://pgatk.readthedocs.io/en/latest/pypgatk.html>
