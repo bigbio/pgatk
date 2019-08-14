@@ -17,6 +17,10 @@ Contents
    .. toctree::
    :maxdepth: 2
 
+   workflows
+   .. toctree::
+   :maxdepth: 2
+
    pgatk-formats
    .. toctree::
    :maxdepth: 2
