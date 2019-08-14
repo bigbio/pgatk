@@ -3,11 +3,6 @@
 PGATK Nextflow Workflows
 ===============
 
-.. toctree::
-   :maxdepth: 2
-
-   ProteoGenomics Database Creation <pgdb>
-
 The ProteoGenomics Analysis Toolkit provides a set of workflows to perform large scale proteogenomics data analysis. All workflows are developed using `nextflow <https://www.nextflow.io/>`_ and `BioContainers <http://biocontainers.pro>`_.
 
 In order to execute any of the PGATK workflows the user should
@@ -65,3 +60,14 @@ The following COMMAND will print the help of the workflow explaining all the pip
    :linenos:
 
    nextflow run main.nf --help
+
+ProteoGenomics Database Workflow (pgdb)
+----------------------------------------
+
+The ProteoGenomics Database Workflow (pgdb) is a nextflow workflow that enables the generation of custom proteogenomics databases for MS proteomics studies.
+
+.. image:: images/pgdb-databases.png
+   :width: 350
+
+
+
