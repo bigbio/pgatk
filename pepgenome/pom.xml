@@ -6,7 +6,7 @@
 
 
     <groupId>org.bigbio.pgatk</groupId>
-    <artifactId>PepGenome</artifactId>
+    <artifactId>pepgenome</artifactId>
     <version>1.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
