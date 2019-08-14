@@ -67,7 +67,7 @@ ProteoGenomics Database Workflow (pgdb)
 The ProteoGenomics Database Workflow (pgdb) is a nextflow workflow that enables the generation of custom proteogenomics databases for MS proteomics studies.
 
 .. image:: images/pgdb-databases.png
-   :width: 350
+   :width: 500
 
 
 
