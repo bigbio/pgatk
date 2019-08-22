@@ -12,6 +12,7 @@ from json import loads
 from requests import get
 
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
+from pypgatk.toolbox.rest import call_api
 
 
 class EnsemblDataDownloadService(ParameterConfiguration):
@@ -88,7 +89,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             self.CONFIG_ENSEMBL_API_SERVER]
         endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
             self.CONFIG_ENSEMBL_API_SPECIES]
-        species_info = loads(get(server + endpoint, headers={"Content-Type": 'application/json'}).text)
+        species_info = loads(call_api(server + endpoint).text)
         self._ensembl_species = species_info['species']
         return self._ensembl_species
 
