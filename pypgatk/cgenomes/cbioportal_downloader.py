@@ -6,6 +6,7 @@ from requests import get
 
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file, clear_cache
+from pypgatk.toolbox.rest import call_api, call_api_raw
 
 
 class CbioPortalDownloadService(ParameterConfiguration):
@@ -64,7 +65,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
             self.CONFIG_CBIOPORTAL_API_SERVER]
         endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
             self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
-        self._cbioportal_studies = get(server + "?" + endpoint).text
+        self._cbioportal_studies = call_api_raw(server + "?" + endpoint).text
         return self._cbioportal_studies
 
     def download_study(self, download_study):
