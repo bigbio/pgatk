@@ -2,7 +2,7 @@ import gffutils
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
-
+import sys
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
@@ -538,8 +538,15 @@ class EnsemblDataService(ParameterConfiguration):
 
                         processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
                         "for non-CDSs, only consider the exon that actually overlaps the variant"
+                        
+                        try:
+                            overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
+                        except TypeError:
+                            print("wrong record in {}, wrong alt: {} in alts: {}".format(record, alt, record.ALT))
+                            sys.exit(0)
+
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
-                                self.check_overlap(record.POS, record.POS + len(alt), features_info)):
+                                overlap_flag):
                             coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
                                                                              Seq(str(alt)), int(record.POS), strand,
                                                                              features_info, cds_info)
