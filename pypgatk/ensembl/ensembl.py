@@ -443,6 +443,9 @@ class EnsemblDataService(ParameterConfiguration):
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             
             for record in vcf_reader:
+                if record.ALT==[None] or record.REF==[None]:
+                    print("Invalid VCF record, skipping: ", record)
+                    continue
                 if not self._ignore_filters:
                     if record.FILTER:  # if not PASS: None and empty means PASS
                         if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
@@ -532,6 +535,8 @@ class EnsemblDataService(ParameterConfiguration):
                            self._include_biotypes != ['all'])):
                         continue
                     for alt in record.ALT:  # in cases of multiple alternative alleles consider all
+                        if alt is None:
+                            continue
                         if transcript_id + str(record.REF) + str(
                                 alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
                             continue
@@ -542,8 +547,8 @@ class EnsemblDataService(ParameterConfiguration):
                         try:
                             overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
                         except TypeError:
-                            print("wrong record in {}, wrong alt: {} in alts: {}".format(record, alt, record.ALT))
-                            sys.exit(0)
+                            print("Wrong VCF record in {}".format(record))
+                            continue
 
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
                                 overlap_flag):
