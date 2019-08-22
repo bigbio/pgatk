@@ -49,7 +49,8 @@ setup(name='pypgatk',
           'six==1.12.0',
           'typed-ast==1.3.5',
           'urllib3==1.24.2',
-          'wrapt==1.11.1'
+          'wrapt==1.11.1',
+          'ratelimit'
       ],
       scripts=['pypgatk/pypgatk_cli.py'],
       packages=find_packages(),
