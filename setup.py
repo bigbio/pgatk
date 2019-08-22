@@ -7,7 +7,6 @@ def readme():
     with open('README.md') as f:
         return f.read()
 
-
 setup(name='pypgatk',
       version='0.0.4',
       description='Python tools for proteogenomics',
@@ -16,7 +15,8 @@ setup(name='pypgatk',
       long_description_content_type='text/markdown',
       author='PgAtk Team',
       author_email='ypriverol@gmail.com',
-      license='Apache 2',
+      license='LICENSE.txt',
+      include_package_data=True,
       install_requires=[
           'argcomplete==1.9.5',
           'argh==0.26.2',
