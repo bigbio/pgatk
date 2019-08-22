@@ -8,7 +8,7 @@ def readme():
         return f.read()
 
 setup(name='pypgatk',
-      version='0.0.4',
+      version='0.0.5',
       description='Python tools for proteogenomics',
       url='http://github.com/bigbio/py-pgatk',
       long_description=readme(),

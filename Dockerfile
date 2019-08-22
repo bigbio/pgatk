@@ -2,7 +2,7 @@ FROM biocontainers/biocontainers:debian-stretch-backports
 MAINTAINER Yasset Perez-Riverol <ypriverol@gmail.com>
 LABEL software="pypgatk" \
     container="pypgatk" \
-    software.version="0.0.1" \
+    software.version="0.0.5" \
     version="1"
 
 RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip && apt-get install -y git
@@ -19,5 +19,3 @@ ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
 ENV PATH=$PATH:/tool/source/pypgatk/
 RUN chmod +x /tool/source/pypgatk/pypgatk_cli.py
-
-USER biodocker
