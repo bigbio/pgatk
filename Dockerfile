@@ -7,6 +7,7 @@ LABEL software="pypgatk" \
 
 RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip && apt-get install -y git
 RUN apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/*
+RUN apt-get update && apt-get install -y procps
 
 WORKDIR /data
 RUN mkdir -p /tool/source && cd /tool/source
