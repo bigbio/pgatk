@@ -369,8 +369,8 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         feature_biotype = key_values[self._biotype_str]
                     except KeyError:
-                        print("Biotype info was not found in the header using {} for record {} {}".format(
-                            self._biotype_str, record_id, desc))
+                        msg = "Biotype info was not found in the header using {} for record {} {}".format(self._biotype_str, record_id, desc)
+                        self.get_logger().debug(msg)
                 
                 # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and (
@@ -388,14 +388,12 @@ class EnsemblDataService(ParameterConfiguration):
                         if float(key_values[self._expression_str]) < self._expression_thresh:
                             continue
                     except KeyError:
-                        print(
-                            "Expression information not found in the fasta header with expression_str: {} for record {} {}".format(
-                                self._expression_str, record_id, desc))
+                        msg = "Expression information not found in the fasta header with expression_str: {} for record {} {}".format(self._expression_str, record_id, desc)
+                        self.get_logger().debug(msg)
                         continue
                     except TypeError:
-                        print("Expression value is not of valid type (float) at record: {} {}".format(record_id,
-                                                                                                      key_values[
-                                                                                                          self._expression_str]))
+                        msg = "Expression value is not of valid type (float) at record: {} {}".format(record_id, key_values[self._expression_str])
+                        self.get_logger().debug(msg)
                         continue
 
                 # translate the whole sequences (3 ORFs) for non CDS sequences and not take alt_ORFs for CDSs
@@ -437,14 +435,15 @@ class EnsemblDataService(ParameterConfiguration):
         db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
         transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
-        # handle cases where the transript has version in the GTF but not in the VCF
+        # handle cases where the transcript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
             
             for record in vcf_reader:
                 if record.ALT==[None] or record.REF==[None]:
-                    print("Invalid VCF record, skipping: ", record)
+                    msg = "Invalid VCF record, skipping: {}".format(record)
+                    self.get_logger().debug(msg)
                     continue
                 if not self._ignore_filters:
                     if record.FILTER:  # if not PASS: None and empty means PASS
@@ -477,15 +476,15 @@ class EnsemblDataService(ParameterConfiguration):
                     try:
                         consequence = transcript_info[self._consequence_index]
                     except IndexError:
-                        print("Give a valid index for the consequence in the INFO field for: ",
-                              transcript_record)
+                        msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
+                        self.get_logger().debug(msg)
                         continue
                     consequences.append(consequence)
                     try:
                         transcript_id = transcript_info[self._transcript_index]
                     except IndexError:
-                        print("Give a valid index for the Transcript ID in the INFO field for: ",
-                              transcript_record)
+                        msg = "Give a valid index for the Transcript ID in the INFO field for: {}".format(transcript_record)
+                        self.get_logger().debug(msg)
                         continue
                     if transcript_id == "":
                         continue
@@ -500,8 +499,8 @@ class EnsemblDataService(ParameterConfiguration):
                         ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
                         desc = str(row.description)
                     except KeyError:
-                        print("Transcript {} not found in fasta of the GTF file {}".format(
-                            transcript_id_v, record))
+                        msg = "Transcript {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
+                        self.get_logger().debug(msg)
                         continue
 
                     feature_types = ['exon']
@@ -514,7 +513,8 @@ class EnsemblDataService(ParameterConfiguration):
                             feature_types = ['CDS', 'stop_codon']
                             num_orfs = 1
                         except (ValueError, IndexError):
-                            print("Could not extra cds position from fasta header for: ", desc)
+                            msg = "Could not extra cds position from fasta header for: {}".format(desc)
+                            self.get_logger().debug(msg)
                             pass
                     chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                                       self._biotype_str,
@@ -547,7 +547,8 @@ class EnsemblDataService(ParameterConfiguration):
                         try:
                             overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
                         except TypeError:
-                            print("Wrong VCF record in {}".format(record))
+                            msg = "Wrong VCF record in {}".format(record)
+                            self.get_logger().debug(msg)
                             continue
 
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
