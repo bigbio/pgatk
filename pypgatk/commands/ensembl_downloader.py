@@ -30,8 +30,9 @@ from pypgatk.toolbox.exceptions import AppConfigException
 @click.option('--skip_cdna', '-sd', help='Skip the cDNA file download', is_flag=True)
 @click.option('--skip_ncrna', '-sn', help='Skip the ncRNA file download', is_flag=True)
 @click.option('--skip_vcf', '-sv', help='Skip the VCF variant file', is_flag=True)
+@click.option('--ensembl_name', '-en', help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
 def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
-                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf):
+                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf, ensembl_name):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -47,6 +48,8 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_FOLDER_PREFIX_RELEASE] = folder_prefix_release
     if taxonomy is not None:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_TAXONOMY] = taxonomy
+    if ensembl_name is not None:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_ENSEMBL_NAME] = ensembl_name
     if list_taxonomies:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_LIST_TAXONOMIES] = list_taxonomies
     if skip_protein is not None and skip_protein:

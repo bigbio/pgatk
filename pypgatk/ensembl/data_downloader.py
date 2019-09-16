@@ -39,7 +39,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_KEY_FILE_EXTENSION = 'file_extension'
     CONFIG_KEY_GTF_FILE = 'gtf_file'
     CONFIG_REST_API_TAXON_ID = 'taxon_id'
+    CONFIG_REST_API_NAME = 'name'
     CONFIG_TAXONOMY = 'taxonomy'
+    CONFIG_ENSEMBL_NAME = 'name'
     CONFIG_LIST_TAXONOMIES = 'list_taxonomies'
     CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
     CONFIG_KEY_SKIP_GTF = 'skip_gtf'
@@ -102,35 +104,15 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         self.get_species_from_rest()
         species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
         species_list = species_parameters.split(",")
+
+        species_name = self.get_pipeline_parameters()[self.CONFIG_ENSEMBL_NAME]
+        species_name_parameters = ()
+        if species_name is not None:
+            species_name_parameters = species_name.split(",")
+
         total_files = []
         files = []
-        if species_list is None or len(species_list) == 0 or len(species_parameters) == 0:
-            for species in self._ensembl_species:
-                self.get_logger().debug(
-                    "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
-                    prot_files = self.get_pep_files(species)
-                    files.extend(prot_files)
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
-                    gtf_files = self.get_gtf_files(species)
-                    files.extend(gtf_files)
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
-                    cds_files = self.get_cds_files(species)
-                    files.extend(cds_files)
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
-                    cdna_files = self.get_cdna_files(species)
-                    files.extend(cdna_files)
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
-                    ncrna_files = self.get_ncrna_files(species)
-                    files.extend(ncrna_files)
-                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
-                    vcf_files = self.get_vcf_files(species)
-                    files.extend(vcf_files)
-                
-                total_files.extend(files)
-                self.get_logger().debug("Files downloaded -- " + ",".join(files))
-                total_files.extend(files)
-        else:
+        if species_list is not None and len(species_list) > 0 and len(species_parameters) > 0:
             for species_id in species_list:
                 for species in self._ensembl_species:
                     if species_id == species[self.CONFIG_REST_API_TAXON_ID]:
@@ -158,6 +140,60 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                         total_files.extend(files)
                         self.get_logger().debug("Files downloaded -- " + ",".join(files))
                         total_files.extend(files)
+        elif species_name_parameters is not None and len(species_name_parameters) > 0:
+            for species_name in species_name_parameters:
+                for species in self._ensembl_species:
+                    if species_name == species[self.CONFIG_REST_API_NAME]:
+                        self.get_logger().debug(
+                            "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_NAME])
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
+                            prot_files = self.get_pep_files(species)
+                            files.extend(prot_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
+                            gtf_files = self.get_gtf_files(species)
+                            files.extend(gtf_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
+                            cds_files = self.get_cds_files(species)
+                            files.extend(cds_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
+                            cdna_files = self.get_cdna_files(species)
+                            files.extend(cdna_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
+                            ncrna_files = self.get_ncrna_files(species)
+                            files.extend(ncrna_files)
+                        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
+                            vcf_files = self.get_vcf_files(species)
+                            files.extend(vcf_files)
+
+                        total_files.extend(files)
+                        self.get_logger().debug("Files downloaded -- " + ",".join(files))
+                        total_files.extend(files)
+        else:
+            for species in self._ensembl_species:
+                self.get_logger().debug(
+                    "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
+                    prot_files = self.get_pep_files(species)
+                    files.extend(prot_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
+                    gtf_files = self.get_gtf_files(species)
+                    files.extend(gtf_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
+                    cds_files = self.get_cds_files(species)
+                    files.extend(cds_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
+                    cdna_files = self.get_cdna_files(species)
+                    files.extend(cdna_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
+                    ncrna_files = self.get_ncrna_files(species)
+                    files.extend(ncrna_files)
+                if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
+                    vcf_files = self.get_vcf_files(species)
+                    files.extend(vcf_files)
+
+                total_files.extend(files)
+                self.get_logger().debug("Files downloaded -- " + ",".join(files))
+                total_files.extend(files)
 
         return total_files
 
