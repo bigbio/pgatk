@@ -7,7 +7,7 @@
 
     <groupId>org.bigbio.pgatk</groupId>
     <artifactId>pepgenome</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.beta</version>
     <packaging>jar</packaging>
 
     <developers>
@@ -174,8 +174,6 @@
             <artifactId>log4j</artifactId>
             <version>${log4j.version}</version>
         </dependency>
-
-
 
     </dependencies>
 
