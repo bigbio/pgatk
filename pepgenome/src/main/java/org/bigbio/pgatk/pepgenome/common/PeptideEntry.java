@@ -1,7 +1,7 @@
 package org.bigbio.pgatk.pepgenome.common;
 
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
-import javafx.util.Pair;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.FileOutputStream;
@@ -39,7 +39,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     private TreeSet<PeptideCoordinates> pepCoordinates = new TreeSet<>(new PeptidecoordsPCompare());
 
     //set of tissues.
-    private Map<String, Pair<ArrayList<Integer>, ArrayList<Double>>> tissueTags = new TreeMap<>();
+    private Map<String, Tuple<ArrayList<Integer>, ArrayList<Double>>> tissueTags = new TreeMap<>();
 
     //lowest startcoord of peptides that share the same sequence.
     private int startCoord;
@@ -155,7 +155,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
             os.write((" tag \"TranscriptIDs:" + transcriptids_to_string() + "\";"
                     + " tag \"ExonIDs:" + exonids_to_string() + "\";").getBytes());
 
-            for (Map.Entry<String, Pair<ArrayList<Integer>, ArrayList<Double>>> current : tissueTags.entrySet()) {
+            for (Map.Entry<String, Tuple<ArrayList<Integer>, ArrayList<Double>>> current : tissueTags.entrySet()) {
                 os.write((" tag \"" + current.getKey() + ":").getBytes());
                 StringBuilder ss_tissue = new StringBuilder();
                 for (int i_tissue = 0; i_tissue < current.getValue().getKey().size(); ++i_tissue) {
@@ -286,7 +286,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
         StringBuilder ss = new StringBuilder();
         for (int i = 1; i < tissuelist.size(); ++i) {
             ss.append("\t");
-            Pair<ArrayList<Integer>, ArrayList<Double>> pair = tissueTags.get(tissuelist.get(i));
+            Tuple<ArrayList<Integer>, ArrayList<Double>> pair = tissueTags.get(tissuelist.get(i));
             if (pair != null) {
                 ArrayList<Double> doubles = pair.getValue();
                 double sum = doubles.stream().mapToDouble(Double::doubleValue).sum();
@@ -313,8 +313,8 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     public final OutputStream to_ptmbed(OutputStream os, boolean chrincluded) throws Exception {
         for (Map.Entry<String, Map<String, PTMEntry>> ptm_it : pepForms.entrySet()) {
             for (Map.Entry<String, PTMEntry> ptm_single_it : ptm_it.getValue().entrySet()) {
-                List<Pair<PeptideCoordinates, GenomeCoordinates>> coord = ptm_single_it.getValue().get_genome_coordinates();
-                for (Pair<PeptideCoordinates, GenomeCoordinates> coord_it : coord) {
+                List<Tuple<PeptideCoordinates, GenomeCoordinates>> coord = ptm_single_it.getValue().get_genome_coordinates();
+                for (Tuple<PeptideCoordinates, GenomeCoordinates> coord_it : coord) {
                     String bed_string = Utils.coordinates_to_short_bed_string(coord_it.getKey().get_transcript_coordinates(), ptm_it.getKey());
                     ArrayList<GenomeCoordinates> exon_coords = coord_it.getKey().get_exon_coordinates();
 
@@ -346,7 +346,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     //adds new tissuetags if they havent existed before.
     public final void add_tags(String tag, int sigPSMs, double quant) {
 
-        Pair<ArrayList<Integer>, ArrayList<Double>> pair = tissueTags.computeIfAbsent(tag, k -> new Pair<>(new ArrayList<>(), new ArrayList<>()));
+        Tuple<ArrayList<Integer>, ArrayList<Double>> pair = tissueTags.computeIfAbsent(tag, k -> new Tuple<>(new ArrayList<>(), new ArrayList<>()));
 
         pair.getKey().add(sigPSMs);
         pair.getValue().add(quant);
@@ -379,8 +379,8 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     }
 
     //this function creates a coordinate_map_type and works similar to a CoordinateMapTypeConstructor.
-    private static ArrayList<Pair<Coordinates, GenomeCoordinates>> create_coordinate_map_type(ArrayList<GenomeCoordinates> genomecoords) {
-        ArrayList<Pair<Coordinates, GenomeCoordinates>> coordMap = new ArrayList<>();
+    private static ArrayList<Tuple<Coordinates, GenomeCoordinates>> create_coordinate_map_type(ArrayList<GenomeCoordinates> genomecoords) {
+        ArrayList<Tuple<Coordinates, GenomeCoordinates>> coordMap = new ArrayList<>();
         Coordinates prevProtCoord = new Coordinates();
         prevProtCoord.setCterm(Offset.off3);
         prevProtCoord.setNterm(Offset.off3);
@@ -471,7 +471,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
 
             prevProtCoord = protCoord;
 
-            coordMap.add(new Pair<>(protCoord, genomeCoordinates));
+            coordMap.add(new Tuple<>(protCoord, genomeCoordinates));
         }
         return coordMap;
     }

@@ -1,6 +1,6 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import javafx.util.Pair;
+
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ public class PTMEntry implements Serializable {
     private int peptideEndCoord;
 
     //holds all added ptms and their genomic locations.
-    private TreeSet<Pair<PeptideCoordinates, GenomeCoordinates>> ptmCoord = new TreeSet<>(new PeptidecoordsPairPcompare());
+    private TreeSet<Tuple<PeptideCoordinates, GenomeCoordinates>> ptmCoord = new TreeSet<>(new PeptidecoordsPairPcompare());
 
     public PTMEntry() {
         this.peptideStartCoord = -1;
@@ -59,8 +59,8 @@ public class PTMEntry implements Serializable {
     }
 
     //returns a pair of start and end coord for the current PTM.
-    public final Pair<Integer, Integer> get_range() {
-        return new Pair<>(peptideStartCoord, peptideEndCoord);
+    public final Tuple<Integer, Integer> get_range() {
+        return new Tuple<>(peptideStartCoord, peptideEndCoord);
     }
 
     //decreases m_peptide_start coord if coord is smaller than that
@@ -78,12 +78,12 @@ public class PTMEntry implements Serializable {
     }
 
     //returns a list of all found genome coordinates.
-    public final List<Pair<PeptideCoordinates, GenomeCoordinates>> get_genome_coordinates() {
+    public final List<Tuple<PeptideCoordinates, GenomeCoordinates>> get_genome_coordinates() {
         return new ArrayList<>(ptmCoord);
     }
 
     //adds genome coordinates.
     public final void add_genome_coordinates(PeptideCoordinates coords, GenomeCoordinates ptmcoords) {
-        ptmCoord.add(new Pair<>(coords, ptmcoords));
+        ptmCoord.add(new Tuple<>(coords, ptmcoords));
     }
 }

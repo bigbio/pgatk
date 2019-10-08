@@ -1,7 +1,7 @@
 package org.bigbio.pgatk.pepgenome.io;
 
 import org.bigbio.pgatk.pepgenome.*;
-import javafx.util.Pair;
+
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
 import org.slf4j.Logger;
@@ -99,7 +99,7 @@ public class GTFParser {
 
         String exonID = "";
         ProteinEntry proteinEntry = null;
-        ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinatesMap = new ArrayList<>();
+        ArrayList<Tuple<Coordinates, GenomeCoordinates>> coordinatesMap = new ArrayList<>();
 //        Coordinates protein_coordinates = new Coordinates();
         Coordinates prevProteinCoordinates = new Coordinates();
         Assembly assem = Assembly.none;
@@ -228,7 +228,7 @@ public class GTFParser {
 
                 prevProteinCoordinates = proteinCoordinates;
 
-                coordinatesMap.add(new Pair<>(proteinCoordinates, genCoord));
+                coordinatesMap.add(new Tuple<>(proteinCoordinates, genCoord));
             }
         }
         if (proteinEntry != null) {

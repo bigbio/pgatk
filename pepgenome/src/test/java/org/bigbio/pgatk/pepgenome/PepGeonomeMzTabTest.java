@@ -34,9 +34,9 @@ public class PepGeonomeMzTabTest  {
     @Before
     public void setUp() throws Exception {
 
-        fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/control_exo_rep1_high_mol_weight.dat-pride.mztab")).toURI()).getAbsolutePath();
-
         fileFasta = TestUtils.unGzip(new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/gencode.v25.pc_translations.fa.gz")).toURI())).getAbsolutePath();
+
+        fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("mztab/sample.mztab")).toURI()).getAbsolutePath();
 
         File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz")).toURI());
         fileGTF = TestUtils.unGzip(inputGZfile).getAbsolutePath();

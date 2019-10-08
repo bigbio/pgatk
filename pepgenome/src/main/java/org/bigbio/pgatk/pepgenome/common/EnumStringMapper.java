@@ -5,7 +5,6 @@ import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.bigbio.pgatk.pepgenome.common.Chromosome.*;
 import static org.bigbio.pgatk.pepgenome.common.Strand.*;
 
 public class EnumStringMapper {

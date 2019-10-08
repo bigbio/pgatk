@@ -2,7 +2,7 @@ package org.bigbio.pgatk.pepgenome.common.maps;
 
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 import org.bigbio.pgatk.pepgenome.common.*;
-import javafx.util.Pair;
+
 import org.bigbio.pgatk.pepgenome.common.comparators.MapentryPCompare;
 
 import java.io.FileOutputStream;
@@ -272,13 +272,13 @@ public class MappedPeptides implements Serializable {
 
     //converts the above map to a string that contains all found tissues, delimited by '\t' and sorted.
     private String tissuemap_to_sorted_string(String sep) {
-        TreeSet<Pair<String, Integer>> tissueset = new TreeSet<>(new ByIntValue());
+        TreeSet<Tuple<String, Integer>> tissueset = new TreeSet<>(new ByIntValue());
         for (Map.Entry<String, Integer> it : m_tissuemap.entrySet()) {
-            tissueset.add(new Pair<>(it.getKey(), it.getValue()));
+            tissueset.add(new Tuple<>(it.getKey(), it.getValue()));
         }
 
         StringBuilder ss = new StringBuilder();
-        for (Pair<String, Integer> it : tissueset) {
+        for (Tuple<String, Integer> it : tissueset) {
             ss.append("\t").append(it.getKey());
         }
         return ss.toString();

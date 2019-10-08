@@ -1,6 +1,6 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import javafx.util.Pair;
+
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
@@ -73,7 +73,7 @@ public class Utils {
     }
 
     //this function creates the an entry for a CoordinateMapType.
-    public static Pair<Coordinates, GenomeCoordinates> get_coordinates(Coordinates proteinCoords, GenomeCoordinates genomeCoords, Coordinates peptideCoords) {
+    public static Tuple<Coordinates, GenomeCoordinates> get_coordinates(Coordinates proteinCoords, GenomeCoordinates genomeCoords, Coordinates peptideCoords) {
         int pep_start;
         int pep_end;
 
@@ -158,7 +158,7 @@ public class Utils {
             genome_coordinates.end = end;
         }
 
-        return new Pair<>(partial_peptide_coords, genome_coordinates);
+        return new Tuple<>(partial_peptide_coords, genome_coordinates);
     }
 
     //a more sophisticated operator== for common.GenomeCoordinates.

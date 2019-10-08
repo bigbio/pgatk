@@ -17,7 +17,6 @@ import org.bigbio.pgatk.pepgenome.io.custom.PeptideAtlasPeptideParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
-import org.ehcache.sizeof.SizeOf;
 
 import java.util.ArrayList;
 import java.util.Arrays;

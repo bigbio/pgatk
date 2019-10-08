@@ -29,7 +29,7 @@ public class Chromosome implements Serializable {
         if (chrToInt == null) {
             synchronized (Chromosome.class) {
                 if (chrToInt == null) {
-                	chrToInt = new HashMap<String, Integer>();
+                	chrToInt = new HashMap<>();
                 }
             }
         }
@@ -40,7 +40,7 @@ public class Chromosome implements Serializable {
         if (intToChr == null) {
             synchronized (Chromosome.class) {
                 if (intToChr == null) {
-                	intToChr = new HashMap<Integer, String>();
+                	intToChr = new HashMap<>();
                 }
             }
         }
@@ -51,7 +51,7 @@ public class Chromosome implements Serializable {
     	if (scaffoldnames == null) {
     		synchronized (Chromosome.class) {
     			if (scaffoldnames == null) {
-    				scaffoldnames = new HashSet<String>();
+    				scaffoldnames = new HashSet<>();
     			}
     		}
     	}

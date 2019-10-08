@@ -1,8 +1,5 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import javafx.util.Pair;
-import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -25,7 +22,7 @@ public class ProteinEntry implements Serializable {
 
     //std::multimap <Coordinates (protein coordinates), GenomeCoordinates(corresponding genomic coordinates), Coordinates (passing this as third argument will use the Coordinates::operator() as comparator)>
     //the first Coordinate are the coordinates of exons within the protein and the GenomeCoordinate is its corresponding location in the genome.
-    private ArrayList<Pair<Coordinates, GenomeCoordinates>> m_coordinates_map;
+    private ArrayList<Tuple<Coordinates, GenomeCoordinates>> m_coordinates_map;
     //check if the coding sequence is dividable by 3bp and not offset due to incomplete transcript annotation.
     private int m_cds_annotation_correct;
 
@@ -111,7 +108,7 @@ public class ProteinEntry implements Serializable {
     }
 
     //setter for the coordinatesMap
-    public void set_coordinate_map(ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinatesMap) {
+    public void set_coordinate_map(ArrayList<Tuple<Coordinates, GenomeCoordinates>> coordinatesMap) {
         m_coordinates_map = coordinatesMap;
     }
 
@@ -135,7 +132,7 @@ public class ProteinEntry implements Serializable {
             ArrayList<GenomeCoordinates> single = new ArrayList<>();
             m_coordinates_map.stream().filter(e -> e.getKey().equals(peptideCoordinates))
                     .forEach(fe -> {
-                        Pair<Coordinates, GenomeCoordinates> coordinatesPartial = Utils.get_coordinates(fe.getKey(), fe.getValue(), peptideCoordinates);
+                        Tuple<Coordinates, GenomeCoordinates> coordinatesPartial = Utils.get_coordinates(fe.getKey(), fe.getValue(), peptideCoordinates);
                         single.add(coordinatesPartial.getValue());
                     });
             //and has to be done several times to find all peptides.

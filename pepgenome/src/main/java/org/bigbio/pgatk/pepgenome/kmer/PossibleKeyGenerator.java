@@ -1,6 +1,7 @@
 package org.bigbio.pgatk.pepgenome.kmer;
 
-import javafx.util.Pair;
+
+import org.bigbio.pgatk.pepgenome.common.Tuple;
 import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 
 import java.io.Serializable;
@@ -119,7 +120,7 @@ public class PossibleKeyGenerator implements Serializable {
         }
     }
 
-    private List<Pair<Character, Character>> generateKeysTwoMismatchesCombinations = new ArrayList<>();
+    private List<Tuple<Character, Character>> generateKeysTwoMismatchesCombinations = new ArrayList<>();
     private boolean generateKeysTwoMismatchesCombinationsGenerated = false;
 
     //generates keys for two mismatch matching.
@@ -128,7 +129,7 @@ public class PossibleKeyGenerator implements Serializable {
         if (!generateKeysTwoMismatchesCombinationsGenerated) {
             for (int i = 0; i < GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS.length; ++i) {
                 for (int j = 0; j < GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS.length; j++) {
-                    generateKeysTwoMismatchesCombinations.add(new Pair<>(GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS[i], GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS[j]));
+                    generateKeysTwoMismatchesCombinations.add(new Tuple<>(GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS[i], GenomeMapper.PEPTIDE_MAPPER.ALLOWED_AMINO_ACIDS[j]));
                 }
             }
             generateKeysTwoMismatchesCombinationsGenerated = true;
@@ -143,7 +144,7 @@ public class PossibleKeyGenerator implements Serializable {
                     break;
                 }
                 StringBuilder tmp = new StringBuilder(m_key);
-                for (Pair<Character, Character> pair : generateKeysTwoMismatchesCombinations) {
+                for (Tuple<Character, Character> pair : generateKeysTwoMismatchesCombinations) {
                     char first = pair.getKey();
                     char second = pair.getValue();
                     tmp.setCharAt(i, first);

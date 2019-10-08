@@ -1,6 +1,6 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import javafx.util.Pair;
+
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -14,7 +14,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
     private ArrayList<GenomeCoordinates> m_coordinate_list;
     //passed to the constuctor. holds the peptides coordinates and the associated genomic coordinates.
     //peptide coordinates sorted; used for computing ptm genomic coordinates.
-    private ArrayList<Pair<Coordinates, GenomeCoordinates>> m_coordinates;
+    private ArrayList<Tuple<Coordinates, GenomeCoordinates>> m_coordinates;
     //the coordinates of the current transcript.
     private GenomeCoordinates m_transcript_coordinates;
     //tests if the annotation of the coding sequence is dividable by 3bp and not offset
@@ -34,7 +34,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
         this.m_exonids = new TreeSet<>();
     }
 
-    public PeptideCoordinates(ArrayList<Pair<Coordinates, GenomeCoordinates>> coordinates, int CDSannotationcorrect) {
+    public PeptideCoordinates(ArrayList<Tuple<Coordinates, GenomeCoordinates>> coordinates, int CDSannotationcorrect) {
         this.m_coordinate_list = new ArrayList<>();
         this.m_coordinates = coordinates;
         this.m_cds_annotation_correct = CDSannotationcorrect;
@@ -46,7 +46,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
     }
 
     //this function is the actual search function that will find genomic coordinates for a peptide.
-    public ArrayList<GenomeCoordinates> find_coordinates(Pair<Integer, Integer> peptideproteincoords) {
+    public ArrayList<GenomeCoordinates> find_coordinates(Tuple<Integer, Integer> peptideproteincoords) {
         Coordinates ptm_coordinates = new Coordinates();
         ptm_coordinates.start = peptideproteincoords.getKey();
         ptm_coordinates.end = peptideproteincoords.getValue();
@@ -57,7 +57,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
 
         m_coordinates.stream().filter(e -> e.getKey().equals(ptm_coordinates))
                 .forEach(fe -> {
-                    Pair<Coordinates, GenomeCoordinates> coordinates_partial = Utils.get_coordinates(fe.getKey(), fe.getValue(), ptm_coordinates);
+                    Tuple<Coordinates, GenomeCoordinates> coordinates_partial = Utils.get_coordinates(fe.getKey(), fe.getValue(), ptm_coordinates);
                     ptm.add(coordinates_partial.getValue());
                 });
 
@@ -71,7 +71,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
         //used to generate the exon information in the output
         //this is mainly important to find reverse exons.
         if (m_coordinate_list.isEmpty()) {
-            for (Pair<Coordinates, GenomeCoordinates> gcs : m_coordinates) {
+            for (Tuple<Coordinates, GenomeCoordinates> gcs : m_coordinates) {
                 GenomeCoordinates val = new GenomeCoordinates(gcs.getValue());
                 if (val.getStrand() == Strand.rev) {
                     int start = val.end;
@@ -136,7 +136,7 @@ public class PeptideCoordinates implements Comparable<PeptideCoordinates> {
     }
 
     private void add_ids() {
-        for (Pair<Coordinates, GenomeCoordinates> gcs : m_coordinates) {
+        for (Tuple<Coordinates, GenomeCoordinates> gcs : m_coordinates) {
             GenomeCoordinates val = gcs.getValue();
             m_transcriptids.add(val.getTranscriptid());
             m_exonids.add(val.getExonid());

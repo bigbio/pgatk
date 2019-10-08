@@ -1,7 +1,5 @@
 package org.bigbio.pgatk.pepgenome.common;
 
-import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
-
 import java.io.OutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;

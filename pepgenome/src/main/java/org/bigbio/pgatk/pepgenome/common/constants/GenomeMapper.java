@@ -1,12 +1,5 @@
 package org.bigbio.pgatk.pepgenome.common.constants;
 
-import org.bigbio.pgatk.pepgenome.common.Chromosome;
-
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 /**
  *  These are the default parameters to map the Peptides to a Genome. Some of these parameters
  *  can be change on request by the main tool.
