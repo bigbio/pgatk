@@ -8,7 +8,7 @@ def readme():
         return f.read()
 
 setup(name='pypgatk',
-      version='0.0.5',
+      version='0.0.6',
       description='Python tools for proteogenomics',
       url='http://github.com/bigbio/py-pgatk',
       long_description=readme(),
@@ -54,4 +54,9 @@ setup(name='pypgatk',
       ],
       scripts=['pypgatk/pypgatk_cli.py'],
       packages=find_packages(),
+      entry_points={
+           'console_scripts': [
+             'pypgatk_cli = pypgatk.pypgatk_cli:main'
+      ]},
+      package_data={'pypgatk':['config/*.yaml', 'config/*.json']},
       zip_safe=False)

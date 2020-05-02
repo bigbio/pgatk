@@ -1,14 +1,17 @@
+import os
+
 import click
 
 from pypgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
 from pypgatk.commands.utils import print_help
 
+this_dir, this_filename = os.path.split(__file__)
 
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('--config_file',
               '-c',
               help='Configuration for cbioportal to proteindb tool',
-              default='config/cbioportal_config.yaml')
+              default= this_dir + '../config/cbioportal_config.yaml')
 @click.option('-in', '--input_mutation', help='Cbioportal mutation file')
 @click.option('-fa', '--input_cds', help='CDS genes from ENSEMBL database')
 @click.option('-out', '--output_db', help='Protein database including all the mutations')

@@ -1,12 +1,16 @@
+import os
+
 import click
 
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
 
+this_dir, this_filename = os.path.split(__file__)
+
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
-              default='config/ensembl_config.yaml')
+              default= this_dir + '../config/ensembl_config.yaml')
 @click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')

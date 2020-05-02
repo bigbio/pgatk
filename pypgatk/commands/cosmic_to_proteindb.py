@@ -1,14 +1,18 @@
+import os
+
 import click
 
 from pypgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
 from pypgatk.commands.utils import print_help
+
+this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the cosmic data pipelines',
-              default='config/cosmic_config.yaml')
+              default=this_dir + '../config/cosmic_config.yaml')
 @click.option('-in', '--input_mutation', help='Cosmic Mutation data file')
 @click.option('-fa', '--input_genes', help='All Cosmic genes')
 @click.option('-out', '--output_db', help='Protein database including all the mutations')

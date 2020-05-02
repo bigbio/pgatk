@@ -1,15 +1,18 @@
 import logging
+import os
 
 import click
 
 from pypgatk.proteomics.db.decoy_pyrat import ProteinDBService
 from pypgatk.toolbox.exceptions import AppConfigException
 
+this_dir, this_filename = os.path.split(__file__)
+
 
 @click.command('generate-decoy', short_help='Create decoy protein sequences. Each protein '
                                              'is reversed and the cleavage sites switched with preceding amino acid. Peptides are checked for existence in target sequences if found'
                                              'the tool will attempt to shuffle them. James.Wright@sanger.ac.uk 2015')
-@click.option('--config_file',         '-c', help='Configuration file for the protein database decoy generation', default='config/protein_decoy.yaml')
+@click.option('--config_file',         '-c', help='Configuration file for the protein database decoy generation', default= this_dir + '../config/protein_decoy.yaml')
 @click.option('--output',              '-o', help='Output file for decoy database', default="protein-decoy.fa")
 @click.option('--input',               '-i', help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
 @click.option('--cleavage_sites',      '-s', default='KR', help='A list of amino acids at which to cleave during digestion. Default = KR')

@@ -1,14 +1,19 @@
+import os
+
 import click
 
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
+
+this_dir, this_filename = os.path.split(__file__)
+
 
 
 @click.command('threeframe-translation', short_help="Command to perform 3'frame translation")
 @click.option('--config_file',
               '-c',
               help='Configuration to perform conversion between ENSEMBL Files',
-              default='config/ensembl_config.yaml')
+              default= this_dir + '../config/ensembl_config.yaml')
 @click.option('-in', '--input_fasta', help='input_fasta file to perform the translation')
 @click.option('-t', '--translation_table', help='Translation table default value 1', default='1')
 @click.option('-out', '--output', help='Output File', default="peptide-database.fa")

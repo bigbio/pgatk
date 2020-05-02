@@ -1,14 +1,16 @@
 import logging
+import os
 
 import click
 
 from pypgatk.cgenomes.cbioportal_downloader import CbioPortalDownloadService
 from pypgatk.toolbox.exceptions import AppConfigException
 
+this_dir, this_filename = os.path.split(__file__)
 
 @click.command('cbioportal-downloader', short_help=' Command to download the the cbioportal studies')
 @click.option('--config_file', '-c', help='Configuration file for the ensembl data downloader pipeline',
-              default='config/cbioportal_config.yaml')
+              default=this_dir + '../config/cbioportal_config.yaml')
 @click.option('--output_directory', '-o', help='Output directory for the peptide databases',
               default="./database_cbioportal/")
 @click.option('--list_studies', '-l',

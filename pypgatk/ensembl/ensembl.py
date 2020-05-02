@@ -291,7 +291,7 @@ class EnsemblDataService(ParameterConfiguration):
             try:
                 feature = db[feature_id.split('.')[0]]
             except gffutils.exceptions.FeatureNotFoundError:
-                print("""Feature {} found in fasta file but not in gtf file. Check that the fasta file and the gtf files match. 
+                print("""Feature {} found in fasta file but not in gtf file. Check that the fasta file and the gtf files match.
                         A common issue is when the fasta file have chromosome patches but not the gtf""".format(feature_id))
                 return None, None, None, None
         coding_features = []
@@ -363,7 +363,7 @@ class EnsemblDataService(ParameterConfiguration):
                         key_values[value.split(':')[0]] = value.split(':')[1]
                     elif value.split('=')[0]=='CDS': #when only it is specified to be a CDS, it means the whole sequence to be used
                         key_values[value.split('=')[0]] = '{}-{}'.format(1, len(ref_seq))
-                        
+
                 feature_biotype = ""
                 if self._biotype_str:
                     try:
@@ -371,7 +371,7 @@ class EnsemblDataService(ParameterConfiguration):
                     except KeyError:
                         msg = "Biotype info was not found in the header using {} for record {} {}".format(self._biotype_str, record_id, desc)
                         self.get_logger().debug(msg)
-                
+
                 # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and (
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
@@ -420,7 +420,7 @@ class EnsemblDataService(ParameterConfiguration):
     @staticmethod
     def get_key(fasta_header):
         return fasta_header.split('|')[0].split(' ')[0]
-    
+
     def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
         """
         Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
@@ -431,7 +431,7 @@ class EnsemblDataService(ParameterConfiguration):
         :param gene_annotations_gtf:
         :return:
         """
-        
+
         db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
         transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
@@ -439,7 +439,7 @@ class EnsemblDataService(ParameterConfiguration):
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
         with open(self._proteindb_output, 'w') as prots_fn:
             vcf_reader = vcf.Reader(open(vcf_file, 'r'))
-            
+
             for record in vcf_reader:
                 if record.ALT==[None] or record.REF==[None]:
                     msg = "Invalid VCF record, skipping: {}".format(record)
@@ -470,7 +470,7 @@ class EnsemblDataService(ParameterConfiguration):
                     trans_table = self._mito_translation_table
 
                 processed_transcript_allele = []
-                
+
                 for transcript_record in record.INFO[self._annotation_field_name]:
                     transcript_info = transcript_record.split('|')
                     try:
@@ -543,7 +543,7 @@ class EnsemblDataService(ParameterConfiguration):
 
                         processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
                         "for non-CDSs, only consider the exon that actually overlaps the variant"
-                        
+
                         try:
                             overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
                         except TypeError:
@@ -577,6 +577,62 @@ class EnsemblDataService(ParameterConfiguration):
                                                       prots_fn=prots_fn)
 
         return self._proteindb_output
+
+    def check_proteindb(self, input_fasta : str = None, num_aa: str = 6):
+
+      input_handle = open(input_fasta, 'r')
+      output_handle = open(self._proteindb_output, 'w')
+      proteins = []
+      pcount = 0
+      stop_count = 0
+      gap_count = 0
+      no_met = 0
+      less = 0
+
+      for record in SeqIO.parse(input_handle, 'fasta'):
+
+        seq = str(record.seq)
+        pcount += 1
+
+
+        # parse the description string into a dictionary
+        new_desc_string = record.description
+        new_desc_string = new_desc_string[new_desc_string.find(' ') + 1:]
+        # test for odd amino acids, stop codons, gaps
+        if not seq.startswith('M'):
+          no_met += 1
+        if seq.endswith('*'):
+          seq = seq[:-1]
+        if '*' in seq:
+          stop_count += 1
+          cut = seq.index('*')
+          string = ' (Premature stop %s/%s)' % (cut, len(seq))
+          new_desc_string = new_desc_string + string
+          seq = seq[:cut]
+        if '-' in seq:
+          gap_count += 1
+          new_desc_string = new_desc_string + ' (Contains gaps)'
+
+        # save the protein in list
+
+        if len(seq) > num_aa:
+          protein = {}
+          protein['description'] = new_desc_string
+          protein['sequence'] = seq
+          protein['accession'] = record.id
+          proteins.append(protein)
+
+          output_handle.write(">{}\t{}\n{}\n".format(record.id, new_desc_string, seq))
+        else:
+          less += 1
+
+      print("   translations that do not start with Met:", no_met)
+      print("   translations that have premature stop codons:", stop_count)
+      print("   translations that contain gaps:", gap_count)
+      print("   total number of input sequences was:", pcount)
+      print("   total number of sequences written was:", len(proteins))
+      print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
+
 
     def write_output(self, seq_id, desc, seqs, prots_fn):
         """write the orfs to the output file"""

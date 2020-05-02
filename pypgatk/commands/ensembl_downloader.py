@@ -1,16 +1,18 @@
 import logging
+import os
 
 import click
 
 from pypgatk.ensembl.data_downloader import EnsemblDataDownloadService
 from pypgatk.toolbox.exceptions import AppConfigException
 
+this_dir, this_filename = os.path.split(__file__)
 
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
-              default='config/ensembl_downloader_config.yaml')
+              default=this_dir + '../config/ensembl_downloader_config.yaml')
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
@@ -79,14 +81,14 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
 
     ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
 
-    
+
     logger = ensembl_download_service.get_logger_for("Main Pipeline Ensembl Downloader")
     logger.info("Pipeline STARTING ... ")
     if list_taxonomies:
         list_of_taxonomies = ensembl_download_service.get_species_from_rest()
-        for taxonomy_info in list_of_taxonomies: 
+        for taxonomy_info in list_of_taxonomies:
             print(taxonomy_info)
-    
+
     ensembl_download_service.download_database_by_species()
 
     logger.info("Pipeline Finish !!!")

@@ -1,16 +1,19 @@
 import logging
+import os
 
 import click
 
 from pypgatk.cgenomes.cosmic_downloader import CosmicDownloadService
 from pypgatk.toolbox.exceptions import AppConfigException
 
+this_dir, this_filename = os.path.split(__file__)
+
 
 @click.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
 @click.option('--config_file',
               '-c',
               help='Configuration file for the ensembl data downloader pipeline',
-              default='config/cosmic_config.yaml')
+              default=this_dir + '../config/cosmic_config.yaml')
 @click.option('--output_directory',
               '-o',
               help='Output directory for the peptide databases',
