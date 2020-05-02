@@ -1,7 +1,7 @@
 # Python tools for ProteoGenomics Analysis Toolkit
 
 
-[![Build Status](https://travis-ci.org/bigbio/py-pgatk.svg?branch=master)](https://travis-ci.org/bigbio/py-pgatk)
+![Python application](https://github.com/bigbio/py-pgatk/workflows/Python%20application/badge.svg)
 [![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/pypgatk/README.html)
 
 
