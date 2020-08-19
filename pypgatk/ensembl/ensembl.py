@@ -124,22 +124,22 @@ class EnsemblDataService(ParameterConfiguration):
             self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
 
         self._num_orfs = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.NUM_ORFS]
-        if self.NUM_ORFS is self.get_pipeline_parameters():
+        if self.NUM_ORFS in self.get_pipeline_parameters():
             self._num_orfs = self.get_pipeline_parameters()[self.NUM_ORFS]
 
         self._num_orfs_complement = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.NUM_ORFS_COMPLEMENT]
-        if self.NUM_ORFS_COMPLEMENT is self.get_pipeline_parameters():
+        if self.NUM_ORFS_COMPLEMENT in self.get_pipeline_parameters():
             self._num_orfs_complement = self.get_pipeline_parameters()[self.NUM_ORFS_COMPLEMENT]
 
         self._expression_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.EXPRESSION_STR]
-        if self.EXPRESSION_STR is self.get_pipeline_parameters():
+        if self.EXPRESSION_STR in self.get_pipeline_parameters():
             self._expression_str = self.get_pipeline_parameters()[self.EXPRESSION_STR]
 
         self._expression_thresh = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
             self.EXPRESSION_THRESH]
-        if self.EXPRESSION_THRESH is self.get_pipeline_parameters():
+        if self.EXPRESSION_THRESH in self.get_pipeline_parameters():
             self._expression_thresh = self.get_pipeline_parameters()[self.EXPRESSION_THRESH]
 
         self._ignore_filters = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
@@ -376,10 +376,10 @@ class EnsemblDataService(ParameterConfiguration):
                 if 'CDS' in key_values.keys() and (
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
-                elif feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
+                elif self._biotype_str and (feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
                                                (
                                                        feature_biotype not in self._include_biotypes and self._include_biotypes != [
-                                                   'all'])):
+                                                   'all']))):
                     continue
 
                 # check wether to filter on expression and if it passes
