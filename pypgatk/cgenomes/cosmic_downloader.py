@@ -15,7 +15,10 @@ class CosmicDownloadService(ParameterConfiguration):
     CONFIG_COSMIC_FTP_PASSWORD = "cosmic_password"
     CONFIG_COSMIC_MUTATIONS_URL = "mutations_url"
     CONFIG_COSMIC_MUTATIONS_FILE = "mutations_file"
+    CONFIG_COSMIC_CELLLINE_MUTATIONS_URL = "mutations_cellline_url"
+    CONFIG_COSMIC_CELLLINE_MUTATIONS_FILE = "mutations_cellline_file"
     CONFIG_COSMIC_CDS_GENES_FILE = "all_cds_genes_file"
+
 
     def __init__(self, config_file, pipeline_arguments):
         """
@@ -53,24 +56,34 @@ class CosmicDownloadService(ParameterConfiguration):
         """
 
         mutation_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_MUTATIONS_FILE])
+        mutation_celline_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CELLLINE_MUTATIONS_FILE])
         cds_genes_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CDS_GENES_FILE])
 
         server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_FTP_URL]
+
         cosmic_version = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_MUTATIONS_URL]
         mutation_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_MUTATIONS_FILE]
+
+        cosmic_cellline_version = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+          self.CONFIG_COSMIC_CELLLINE_MUTATIONS_URL]
+        mutation_celline_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
+          self.CONFIG_COSMIC_CELLLINE_MUTATIONS_FILE]
 
         all_cds_gene_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_CDS_GENES_FILE]
 
         mutation_url = "{}/{}/{}".format(server, cosmic_version, mutation_file)
         cds_gene_url = "{}/{}/{}".format(server, cosmic_version, all_cds_gene_file)
+        mutation_cellline_url = "{}/{}/{}".format(server, cosmic_cellline_version, mutation_celline_file)
 
         token = "Basic {}".format(self._cosmic_token)
         self.download_file_cosmic(mutation_url, mutation_output_file, token)
         self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
+        self.download_file_cosmic(mutation_celline_file, mutation_celline_output_file, token)
+
 
     def download_file_cosmic(self, url, local_file, token):
         """

@@ -5,6 +5,8 @@ cosmic_data:
     mutations_url: cosmic/file_download/GRCh38/cosmic/v88
     all_cds_genes_file: All_COSMIC_Genes.fasta.gz
     mutations_file: CosmicMutantExport.tsv.gz
+    mutations_cellline_url: cosmic/file_download/GRCh38/cell_lines/v92
+    mutations_cellline_file: CosmicCLP_MutantExport.tsv.gz
     cosmic_user: ""
     cosmic_password: ""
   logger:
