@@ -146,7 +146,8 @@ def cbioportal_to_proteindb():
                             '--input_cds', 'testdata/test_cbioportal_genes.fa',
                             '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
                             '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
-                            '--split_by_tissue_type', '--tissue_type', 'all'])
+                            '--filter_column', 'Tumor_Sample_Barcode'
+                            '--split_by_filter_column', '--accepted_values', 'all'])
     assert result.exit_code == 0
 
 
@@ -161,7 +162,8 @@ def cosmic_to_proteindb():
                             '--input_mutation', 'testdata/test_cosmic_mutations.tsv',
                             '--input_genes', 'testdata/test_cosmic_genes.fa',
                             '--output_db', 'testdata/test_cosmic_mutations_proteindb.fa',
-                            '--split_by_tissue_type', '--tissue_type', 'all'])
+                            '--filter_column', 'Primary site'
+                            '--split_by_filter_column', '--accepted_values', 'all'])
     assert result.exit_code == 0
 
 def generate_decoy_database():
