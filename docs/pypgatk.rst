@@ -250,15 +250,16 @@ Command Options
       Usage: pypgatk_cli.py cosmic-to-proteindb [OPTIONS]
 
       Required parameters:
-        -in, --input_mutation TEXT  Cosmic Mutation data file
-        -fa, --input_genes TEXT     All Cosmic genes
-        -out, --output_db TEXT      Protein database including all the mutations
+        -in, --input_mutation TEXT   Cosmic Mutation data file
+        -fa, --input_genes TEXT      All Cosmic genes
+        -out, --output_db TEXT       Protein database including all the mutations
       
       Optional parameters:
-        -c, --config_file TEXT      Configuration file for the cosmic data pipelines
-        -t, --tissue_type           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default ``all``)
-        -s,	--split_by_tissue_type  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
-        -h, --help                  Show this message and exit.
+        -c, --config_file TEXT       Configuration file for the cosmic data pipelines
+        -f, --filter_column          Column name to use for filtering or splitting mutations by, default value is ``Primary site``
+        -a, --accepted_values        Only consider mutations from records that belong to these groups as specified by ``-filter_column`` option, by default mutations from all groups are considered (default ``all``)
+        -s,	--split_by_filter_column Generate a proteinDB output file for each group in the mutations file (affected by ``--filter_column``) (default ``False``)
+        -h, --help                   Show this message and exit.
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cosmic mutation data file. 
 The genes file ``-fa`` (``--input_genes``) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations. 
@@ -272,7 +273,11 @@ The output of the tool is a protein fasta file and is written in the following p
 
 - Generate cancer-type specific protein databases. For each cancer type in COSMIC generate a protein database based on the Primary site given in the mutations file::
   
-   python pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa --split_by_tissue_type
+   python pypgatk_cli.py cosmic-to-proteindb -in CosmicMutantExport.tsv -fa All_COSMIC_Genes.fasta -out cosmic_proteinDB.fa --split_by_filter_column
+
+- Generate cell-line specific protein databases. For each cell line in COSMIC cell lines generate a protein database based on the Sample name given in the mutations file::
+  
+   python pypgatk_cli.py cosmic-to-proteindb -in CosmicCLP_MutantExport.tsv -fa All_CellLines_Genes.fasta -out cosmicCLP_proteinDB.fa --split_by_filter_column --filter_column 'Sample name'
 
 
 .. _cbioportal-to-proteindb:
@@ -300,12 +305,13 @@ Command Options
         -out, --output_db TEXT           Protein database including the mutations
        
        Optional parameters:
-        -t, --tissue_type TEXT           Only consider mutations from these tissue tyoes, by default mutations from all tissue types are considered (default ``all``)
-        -s,	--split_by_tissue_type BOOL  Generate a proteinDB output file for each tissue type in the mutations file (affected by ``--tissue_type``) (default ``False``)
-        -c, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier (required when ``-t`` or ``-s`` is given). 
+        -f, --filter_column TEXT         Column in the VCF file to be used for filtering or splitting mutations
+        -a, --accepted_values TEXT       Limit mutations to groups (values) (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered
+        -s, --split_by_filter_column     Use this flag to generate a proteinDB per group as specified in the filter_column, default is False
+        -cl, --clinical_sample_file TEXT  Clinical sample file that contains the cancery type per sample identifier (required when ``-t`` or ``-s`` is given). 
         -h, --help                       Show this message and exit.
 
-.. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (that is when -s or -t is given).
+.. note:: The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed if generating tissue type databases is desired (that is when -s or -a is given).
 
 The file input of the tool ``-in`` (``--input_mutation``) is the cbioportal mutation data file. 
 An example is given in :ref:`cbioportal-downloader <cbioportal-downloader_example>` showing how to obtain the mutations file for a particular study.
