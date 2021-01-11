@@ -12,9 +12,10 @@ class CancerGenomesService(ParameterConfiguration):
     CONFIG_OUTPUT_FILE = "output_file"
     CONFIG_COSMIC_DATA = "cosmic_data"
     CONFIG_KEY_DATA = 'proteindb'
-    CONFIG_TISSUE_INFO = 'tissue_info'
-    TISSUE_TYPE = "tissue_type"
-    SPLIT_BY_TISSUE_TYPE = "split_by_tissue_type"
+    CONFIG_FILTER_INFO = 'filter_info'
+    FILTER_COLUMN = "filter_column"
+    ACCEPTED_VALUES = "accepted_values"
+    SPLIT_BY_FILTER_COLUMN = "split_by_filter_column"
     CLINICAL_SAMPLE_FILE = 'clinical_sample_file'
     
     def __init__(self, config_file, pipeline_arguments):
@@ -34,16 +35,20 @@ class CancerGenomesService(ParameterConfiguration):
         if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
             self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
         
-        self._tissue_type = self.get_multiple_options(
-            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.TISSUE_TYPE])
-        if self.TISSUE_TYPE in self.get_pipeline_parameters():
-            self._tissue_type = self.get_multiple_options(self.get_pipeline_parameters()[self.TISSUE_TYPE])
+        self._filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.FILTER_COLUMN]
+        if self.FILTER_COLUMN in self.get_pipeline_parameters():
+            self._filter_column = self.get_pipeline_parameters()[self.FILTER_COLUMN]
 
-        self._split_by_tissue_type = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.SPLIT_BY_TISSUE_TYPE]
-        if self.SPLIT_BY_TISSUE_TYPE in self.get_pipeline_parameters():
-            self._split_by_tissue_type = self.get_pipeline_parameters()[self.SPLIT_BY_TISSUE_TYPE]
+        self._accepted_values = self.get_multiple_options(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.ACCEPTED_VALUES])
+        if self.ACCEPTED_VALUES in self.get_pipeline_parameters():
+            self._accepted_values = self.get_multiple_options(self.get_pipeline_parameters()[self.ACCEPTED_VALUES])
+
+        self._split_by_filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.SPLIT_BY_FILTER_COLUMN]
+        if self.SPLIT_BY_FILTER_COLUMN in self.get_pipeline_parameters():
+            self._split_by_filter_column = self.get_pipeline_parameters()[self.SPLIT_BY_FILTER_COLUMN]
         
-        self._local_clinical_sample_file = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_TISSUE_INFO][self.CLINICAL_SAMPLE_FILE]
+        self._local_clinical_sample_file = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.CLINICAL_SAMPLE_FILE]
         if self.CLINICAL_SAMPLE_FILE in self.get_pipeline_parameters():
             self._local_clinical_sample_file = self.get_pipeline_parameters()[self.CLINICAL_SAMPLE_FILE]
     
@@ -56,6 +61,90 @@ class CancerGenomesService(ParameterConfiguration):
         """
         return list(map(lambda x: x.strip(), options_str.split(",")))
 
+    @staticmethod
+    def get_mut_pro_seq(snp, seq):
+        nucleotide = ["A", "T", "C", "G"]
+        mut_pro_seq = ""
+        if "?" not in snp.dna_mut:  # unambiguous DNA change known in CDS sequence
+            positions = re.findall(r'\d+', snp.dna_mut)
+            if ">" in snp.dna_mut and len(positions) == 1:  # Substitution
+                tmplist = snp.dna_mut.split(">")
+                ref_dna = re.sub("[^A-Z]+", "", tmplist[0])
+                mut_dna = re.sub("[^A-Z]+", "", tmplist[1])
+                index = int(positions[0]) - 1
+                if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:  #
+                    seq_mut = seq[:index] + mut_dna + seq[index + 1:]
+                    mut_pro_seq = seq_mut.translate(to_stop=True)
+            elif "ins" in snp.dna_mut:
+                index = snp.dna_mut.index("ins")
+                insert_dna = snp.dna_mut[index + 3:]
+                if insert_dna.isalpha():
+                    ins_index1 = int(positions[0])
+                    seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
+                    mut_pro_seq = seq_mut.translate(to_stop=True)
+
+            elif "del" in snp.dna_mut:
+                if len(positions) == 2:
+                    del_index1 = int(positions[0]) - 1
+                    del_index2 = int(positions[1])
+                    seq_mut = seq[:del_index1] + seq[del_index2:]
+                    mut_pro_seq = seq_mut.translate(to_stop=True)
+                elif len(positions) == 1:
+                    del_index1 = int(positions[0]) - 1
+                    seq_mut = seq[:del_index1] + seq[del_index1 + 1:]
+                    mut_pro_seq = seq_mut.translate(to_stop=True)
+        else:
+            if "?" not in snp.aa_mut:  # unambiguous aa change known in protein sequence
+                positions = re.findall(r'\d+', snp.aa_mut)
+                protein_seq = str(seq.translate(to_stop=True))
+
+                if "Missense" in snp.type:
+                    mut_aa = snp.aa_mut[-1]
+                    index = int(positions[0]) - 1
+                    mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
+                elif "Nonsense" in snp.type:
+                    index = int(positions[0]) - 1
+                    mut_pro_seq = protein_seq[:index]
+                elif "Insertion - In frame" in snp.type:
+                    index = snp.aa_mut.index("ins")
+                    insert_aa = snp.aa_mut[index + 3:]
+                    if insert_aa.isalpha():
+                        ins_index1 = int(positions[0])
+                        mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
+                elif "Deletion - In frame" in snp.type:
+                    if len(positions) == 2:
+                        del_index1 = int(positions[0]) - 1
+                        del_index2 = int(positions[1])
+                        mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index2:]
+                    elif len(positions) == 1:
+                        del_index1 = int(positions[0]) - 1
+                        mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index1 + 1:]
+                elif "Complex" in snp.type and "frameshift" not in snp.type:
+                    try:
+                        index = snp.aa_mut.index(">")
+                    except ValueError:
+                        return ''
+                    mut_aa = snp.aa_mut[index + 1:]
+                    if "deletion" in snp.type:
+                        del_index1 = int(positions[0]) - 1
+                        del_index2 = int(positions[1])
+                        mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
+                        
+                    elif "insertion" in snp.type:
+                        ins_index1 = int(positions[0]) - 1
+                        mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1 + 1:]
+                    elif "compound substitution" in snp.type:
+                        if "*" not in mut_aa:
+                            del_index1 = int(positions[0]) - 1
+                            del_index2 = int(positions[1])
+                            mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
+                        else:
+                            del_index1 = int(positions[0]) - 1
+                            mut_pro_seq = protein_seq[:del_index1] + mut_aa.replace("*", "")
+                            
+        return mut_pro_seq
+
+
     def cosmic_to_proteindb(self):
         """
         This function translate the mutation file + COSMIC genes into a protein Fasta database. The
@@ -63,9 +152,14 @@ class CancerGenomesService(ParameterConfiguration):
         :return:
         """
         self.get_logger().debug("Starting reading the All cosmic genes")
-        COSMIC_CDS_DB = SeqIO.index(self._local_complete_genes, 'fasta')  # All_COSMIC_Genes.fasta
-
-        cosmic_input = open(self._local_mutation_file, 'r')  # CosmicMutantExport.tsv
+        COSMIC_CDS_DB = {}
+        for record in SeqIO.parse(self._local_complete_genes, 'fasta'):
+            try:
+                COSMIC_CDS_DB[record.id].append(record)
+            except KeyError:
+                COSMIC_CDS_DB[record.id] = [record]
+        
+        cosmic_input = open(self._local_mutation_file, encoding="latin-1")  # CosmicMutantExport.tsv
 
         header = cosmic_input.readline().split("\t")
         regex = re.compile('[^a-zA-Z]')
@@ -74,13 +168,14 @@ class CancerGenomesService(ParameterConfiguration):
         cds_col = header.index("Mutation CDS")
         aa_col = header.index("Mutation AA")
         muttype_col = header.index("Mutation Description")
-        tissue_col = header.index('Primary site')
+        filter_col = None
+        if self._filter_column:
+            filter_col = header.index(self._filter_column)
         
         output = open(self._local_output_file, 'w')
 
         mutation_dic = {}
-        tissue_mutations_dict = {}
-        nucleotide = ["A", "T", "C", "G"]
+        groups_mutations_dict = {}
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
         for line in cosmic_input:
@@ -89,9 +184,10 @@ class CancerGenomesService(ParameterConfiguration):
                 self.get_logger().debug(msg)
             line_counter += 1
             row = line.strip().split("\t")
-            #filter out mutations from unspecified tissues
-            if row[tissue_col] not in self._tissue_type and self._tissue_type!=['all']:
-                continue
+            #filter out mutations from unspecified groups
+            if filter_col:
+                if row[filter_col] not in self._accepted_values and self._accepted_values!=['all']:
+                    continue
             
             if "coding silent" in row[muttype_col]:
                 continue
@@ -100,126 +196,43 @@ class CancerGenomesService(ParameterConfiguration):
                       type=row[muttype_col])
             header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.type.replace(" ", ""))
             try:
-                seq = COSMIC_CDS_DB[snp.gene].seq
+                this_gene_records  = COSMIC_CDS_DB[snp.gene]
+                seqs = []
+                for record in this_gene_records:
+                    seqs.append(record.seq)
+                 
             except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
                 continue
-
-            mut_pro_seq = ""
-            if "?" not in row[cds_col]:  # unambiguous DNA change known in CDS sequence
-                positions = re.findall(r'\d+', snp.dna_mut)
-                if ">" in snp.dna_mut and len(positions) == 1:  # Substitution
-                    tmplist = snp.dna_mut.split(">")
-                    ref_dna = re.sub("[^A-Z]+", "", tmplist[0])
-                    mut_dna = re.sub("[^A-Z]+", "", tmplist[1])
-                    index = int(positions[0]) - 1
-
-                    if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:  #
-                        seq_mut = seq[:index] + mut_dna + seq[index + 1:]
-                        mut_pro_seq = seq_mut.translate(to_stop=True)
-                elif "ins" in snp.dna_mut:
-                    index = snp.dna_mut.index("ins")
-                    insert_dna = snp.dna_mut[index + 3:]
-                    if insert_dna.isalpha():
-                        #print(insert_dna, snp.dna_mut, snp.aa_mut)
-                        ins_index1 = int(positions[0])
-                        seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
-                        mut_pro_seq = seq_mut.translate(to_stop=True)
-
-                elif "del" in snp.dna_mut:
-                    if len(positions) == 2:
-                        del_index1 = int(positions[0]) - 1
-                        del_index2 = int(positions[1])
-                        seq_mut = seq[:del_index1] + seq[del_index2:]
-                        mut_pro_seq = seq_mut.translate(to_stop=True)
-                    elif len(positions) == 1:
-                        del_index1 = int(positions[0]) - 1
-                        seq_mut = seq[:del_index1] + seq[del_index1 + 1:]
-                        mut_pro_seq = seq_mut.translate(to_stop=True)
-            else:
-                if "?" not in row[aa_col]:  # unambiguous aa change known in protein sequence
-                    positions = re.findall(r'\d+', snp.aa_mut)
-                    protein_seq = str(seq.translate(to_stop=True))
-
-                    if "Missense" in snp.type:
-                        mut_aa = snp.aa_mut[-1]
-                        index = int(positions[0]) - 1
-                        mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
-                    elif "Nonsense" in snp.type:
-                        index = int(positions[0]) - 1
-                        mut_pro_seq = protein_seq[:index]
-                    elif "Insertion - In frame" in snp.type:
-                        index = snp.aa_mut.index("ins")
-                        insert_aa = snp.aa_mut[index + 3:]
-                        if insert_aa.isalpha():
-                            ins_index1 = int(positions[0])
-                            mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
-                    elif "Deletion - In frame" in snp.type:
-                        if len(positions) == 2:
-                            del_index1 = int(positions[0]) - 1
-                            del_index2 = int(positions[1])
-                            mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index2:]
-                        elif len(positions) == 1:
-                            del_index1 = int(positions[0]) - 1
-                            mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index1 + 1:]
-                    elif "Complex" in snp.type and "frameshift" not in snp.type:
-                        try:
-                            index = snp.aa_mut.index(">")
-                        except ValueError:
-                            # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                            continue
-                        mut_aa = snp.aa_mut[index + 1:]
-                        if "deletion" in snp.type:
-                            try:
-                                del_index1 = int(positions[0]) - 1
-                                del_index2 = int(positions[1])
-                                mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
-                            except IndexError:
-                                # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                                continue
-                        elif "insertion" in snp.type:
-                            try:
-                                ins_index1 = int(positions[0]) - 1
-                            except IndexError:
-                                # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                                continue
-                            mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1 + 1:]
-                        elif "compound substitution" in snp.type:
-                            if "*" not in mut_aa:
-                                try:
-                                    del_index1 = int(positions[0]) - 1
-                                    del_index2 = int(positions[1])
-                                    mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
-                                except IndexError:
-                                    # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                                    continue
-                            else:
-                                try:
-                                    del_index1 = int(positions[0]) - 1
-                                    mut_pro_seq = protein_seq[:del_index1] + mut_aa.replace("*", "")
-                                except IndexError:
-                                    # print (snp.gene,snp.mRNA,snp.dna_mut,snp.aa_mut,snp.type)
-                                    continue
-            if mut_pro_seq != "":
+            
+            for seq in seqs:
+                try:
+                    mut_pro_seq = self.get_mut_pro_seq(snp, seq)
+                except IndexError:
+                    continue
+                if mut_pro_seq:
+                    break
+            
+            if mut_pro_seq:
                 entry = ">%s\n%s\n" % (header, mut_pro_seq)
                 if header not in mutation_dic:
                     output.write(entry)
                     mutation_dic[header] = 1
                 
-                if self._split_by_tissue_type:
+                if self._split_by_filter_column and filter_col:
                     try:
-                        tissue_mutations_dict[row[tissue_col]][header] = entry
+                        groups_mutations_dict[row[filter_col]][header] = entry
                     except KeyError:
-                        tissue_mutations_dict[row[tissue_col]] = {header: entry}
+                        groups_mutations_dict[row[filter_col]] = {header: entry}
             
-        for tissue_type in tissue_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', tissue_type) +'.fa', 'w') as fn:
-                for header in tissue_mutations_dict[tissue_type].keys():
-                    fn.write(tissue_mutations_dict[tissue_type][header])
+        for group_name in groups_mutations_dict.keys():
+            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', group_name) +'.fa', 'w') as fn:
+                for header in groups_mutations_dict[group_name].keys():
+                    fn.write(groups_mutations_dict[group_name][header])
             
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
         cosmic_input.close()
         output.close()
-        
+    
     @staticmethod
     def get_sample_headers(header_line):
         try:
@@ -251,30 +264,31 @@ class CancerGenomesService(ParameterConfiguration):
         return sample_tissue_type
     
     @staticmethod
-    def get_mut_header_cols(header_cols, row, tissue_type, split_by_tissue_type):
+    def get_mut_header_cols(header_cols, row, filter_column, accepted_values, split_by_filter_column):
         for col in header_cols.keys():
             header_cols[col] = row.index(col)
         
-        #check if tissue type should be considered
-        if tissue_type!=['all'] or split_by_tissue_type:
+        #check if (filter_column) tissue type should be considered
+        if accepted_values!=['all'] or split_by_filter_column:
             try:
-                header_cols["Tumor_Sample_Barcode"] = row.index("Tumor_Sample_Barcode")
+                header_cols[filter_column] = row.index(filter_column)
             except ValueError:
-                print("Tumor_Sample_Barcode was not found in the header {} of mutations file".format(row))
-                header_cols["Tumor_Sample_Barcode"] = None
+                print("{} was not found in the header {} of mutations file".format(filter_column, row))
+                header_cols[filter_column] = None
         
         return header_cols
     
     def cbioportal_to_proteindb(self):
-        """cBioportal studies have a data_clinical_sample.txt file that shows the Primary Tumor Site per Sample Identifie
-        it matches the the Tumor_Sample_Barcode column in the mutations file.
+        """cBioportal studies have a data_clinical_sample.txt file 
+        that shows the Primary Tumor Site per Sample Identifier
+        it matches the the (filter_column) Tumor_Sample_Barcode column in the mutations file.
         """
         regex = re.compile('[^a-zA-Z]')
         mutfile = open(self._local_mutation_file, "r")
         fafile = SeqIO.parse(self._local_complete_genes, "fasta")
         output = open(self._local_output_file, "w")
-        sample_tissue_type_dict = {}
-        tissue_mutations_dict = {}
+        sample_groups_dict = {}
+        group_mutations_dict = {}
         
         seq_dic = {}
         for record in fafile:
@@ -289,10 +303,10 @@ class CancerGenomesService(ParameterConfiguration):
                     "Nonsense_Mutation"]
         
         # check if sample id and clinical files are given, if not and tissue type is required then exit
-        if self._tissue_type!=['all'] or self._split_by_tissue_type:
+        if self._accepted_values!=['all'] or self._split_by_filter_column:
             if self._local_clinical_sample_file:
-                sample_tissue_type_dict = self.get_tissue_type_per_sample(self._local_clinical_sample_file)
-                if sample_tissue_type_dict=={}:
+                sample_groups_dict = self.get_tissue_type_per_sample(self._local_clinical_sample_file)
+                if sample_groups_dict=={}:
                     return
             else:
                 print('No clinical sample file is given therefore no tissue type can be detected.')
@@ -305,23 +319,23 @@ class CancerGenomesService(ParameterConfiguration):
                 continue
             #check for header in the mutations file and get column indecis
             if set(header_cols.keys()).issubset(set(row)):
-                header_cols = self.get_mut_header_cols(header_cols, row, self._tissue_type, self._split_by_tissue_type)
+                header_cols = self.get_mut_header_cols(header_cols, row, self._filter_column, self._accepted_values, self._split_by_filter_column)
             #check if any is none in header_cols then continue
             if None in header_cols.values():
                 print("Incorrect header column is given")
                 continue
             #get tissue type and check it
-            tissue_type = None
-            if self._tissue_type!=['all'] or self._split_by_tissue_type:
+            group = None
+            if self._accepted_values!=['all'] or self._split_by_filter_column:
                 try:
-                    tissue_type = sample_tissue_type_dict[row[header_cols["Tumor_Sample_Barcode"]]]
+                    group = sample_groups_dict[row[header_cols[self._filter_column]]]
                 except KeyError:
-                    if self._tissue_type!=['all'] or self._split_by_tissue_type:
-                        print("No clinical info was found for sample {}. Skipping (line {}): {}".format(row[header_cols["Tumor_Sample_Barcode"]], i, line))
+                    if self._accepted_values!=['all'] or self._split_by_filter_column:
+                        print("No clinical info was found for sample {}. Skipping (line {}): {}".format(row[header_cols[self._filter_column]], i, line))
                         continue
                 except IndexError:
                     print("No sampleID was found in (line {}): {}".format(i, row))
-            if tissue_type not in self._tissue_type and self._tissue_type != ['all']:
+            if group not in self._accepted_values and self._accepted_values != ['all']:
                 continue
             
             gene = row[0]
@@ -409,18 +423,18 @@ class CancerGenomesService(ParameterConfiguration):
                 header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
                 output.write(">%s\n%s\n" % (header, mut_pro_seq))
                 
-                if self._split_by_tissue_type:
+                if self._split_by_filter_column:
                     try:
-                        tissue_mutations_dict[tissue_type][header] = mut_pro_seq
+                        group_mutations_dict[group][header] = mut_pro_seq
                     except KeyError:
-                        tissue_mutations_dict[tissue_type] = {header: mut_pro_seq}
+                        group_mutations_dict[group] = {header: mut_pro_seq}
                     
         output.close()
         mutfile.close()
         fafile.close()
         
-        for tissue_type in tissue_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', tissue_type) +'.fa', 'w') as fn:
-                for header in tissue_mutations_dict[tissue_type].keys():
-                    fn.write(">{}\n{}\n".format(header, tissue_mutations_dict[tissue_type][header]))
+        for group in group_mutations_dict.keys():
+            with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', group) +'.fa', 'w') as fn:
+                for header in group_mutations_dict[group].keys():
+                    fn.write(">{}\n{}\n".format(header, group_mutations_dict[group][header]))
          

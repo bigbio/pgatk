@@ -12,9 +12,10 @@ cbioportal_data_downloader:
     loglevel: DEBUG
   multithreading: True
 proteindb:
-   tissue_info:
-      tissue_type: 'all'
-      split_by_tissue_type: False
+   filter_info:
+      filter_column: 'Tumor_Sample_Barcode'
+      accepted_values: 'all'
+      split_by_filter_column: False
       clinical_sample_file: ''
    
   

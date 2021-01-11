@@ -7,15 +7,17 @@ cosmic_data:
     mutations_file: CosmicMutantExport.tsv.gz
     mutations_cellline_url: cosmic/file_download/GRCh38/cell_lines/v92
     mutations_cellline_file: CosmicCLP_MutantExport.tsv.gz
-    cosmic_user: ""
-    cosmic_password: ""
+    all_celllines_genes_file: All_CellLines_Genes.fasta.gz
+    cosmic_user: ''
+    cosmic_password: ''
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
       INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
     loglevel: DEBUG
 proteindb:
-   tissue_info:
-      tissue_type: 'all'
-      split_by_tissue_type: False
+   filter_info:
+      filter_column: 'Primary site'
+      accepted_values: 'all'
+      split_by_filter_column: False
       clinical_sample_file: ''
