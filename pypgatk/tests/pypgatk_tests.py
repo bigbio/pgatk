@@ -162,7 +162,7 @@ def cosmic_to_proteindb():
                             '--input_mutation', 'testdata/test_cosmic_mutations.tsv',
                             '--input_genes', 'testdata/test_cosmic_genes.fa',
                             '--output_db', 'testdata/test_cosmic_mutations_proteindb.fa',
-                            '--filter_column', 'Primary site'
+                            '--filter_column', 'Primary site',
                             '--split_by_filter_column', '--accepted_values', 'all'])
     assert result.exit_code == 0
 
