@@ -62,7 +62,7 @@ jobs:
       uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
-        files: ./coverage.xml
+        files: ./pypgatk/coverage.xml
         directory: ./coverage/reports/
         env_vars: OS,PYTHON
         name: codecov-umbrella
