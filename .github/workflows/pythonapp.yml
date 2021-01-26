@@ -56,7 +56,7 @@ jobs:
     - name: Update repo with new version info
       uses: EndBug/add-and-commit@v7
       with:
-        add: module/module.json CHANGELOG.md
+        add: CHANGELOG.md
         author_name: Release Auto-Commit
         author_email: ypriverol@gmail.com
         branch: master
