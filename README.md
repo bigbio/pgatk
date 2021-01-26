@@ -99,4 +99,6 @@ Commands:
 
 The library provides multiple commands to download, translate and generate protein sequence databases from reference and mutation genome databases.
 
-### Please read full docs here: <https://pgatk.readthedocs.io/en/latest/pypgatk.html>
+# Full Documentation
+
+[https://pgatk.readthedocs.io/en/latest/pypgatk.html](https://pgatk.readthedocs.io/en/latest/pypgatk.html)
