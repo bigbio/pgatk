@@ -527,7 +527,7 @@ class EnsemblDataService(ParameterConfiguration):
           chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                             self._biotype_str,
                                                                             feature_types)
-          if chrom == None:  # the record info was not found
+          if chrom is None:  # the record info was not found
             continue
           # skip transcripts with unwanted consequences
           if (consequence in self._exclude_consequences or
@@ -661,7 +661,14 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
   def write_output(self, seq_id, desc, seqs, prots_fn):
-    """write the orfs to the output file"""
+    """
+    write the orfs to the output file
+    :param seq_id: Sequence Accession
+    :param desc: Sequence Description
+    :param seqs: Sequence
+    :param prots_fn:
+    :return:
+    """
     write_i = False
     if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
       write_i = True

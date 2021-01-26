@@ -301,34 +301,33 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         return files
 
     def get_gtf_files(self, species: dict, grch37 = False) -> list:
-        """
-        This method retrieve the gtf files for a specific specie object
-        :param species:
-        :return:
-        """
-        """
-          Generate GTF file name from the species info and download the GTF file
-        """
-        files = []
-        try:
-          if grch37:
-            species['assembly'] = 'GRCh37'
+      """
+      This method retrieve the gtf files for a specific specie object
+      :param grch37: if the GrCh37 genome assembly is desired enable to true
+      :param species: species to download the file.
+      :return:
+      """
+      files = []
+      try:
+        if grch37:
+          species['assembly'] = 'GRCh37'
 
-          file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
-                                                 species['release'], )
-          file_url = '{}/release-{}/gtf/{}/{}'.format(
-                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
-                    self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
-          if grch37:
-              file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(
-                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
-                  self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
-          files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+        file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
+                                             species['release'], )
+        file_url = '{}/release-{}/gtf/{}/{}'.format(
+          self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+            self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+        if grch37:
+          file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(
+            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+              self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+        files.append(
+          download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
 
-        except KeyError:
-            self.get_logger().debug("No valid info is available species: ", species)
+      except KeyError:
+        self.get_logger().debug("No valid info is available species: ", species)
 
-        return files
+      return files
 
     def get_vcf_files(self, species: dict) -> list:
         """

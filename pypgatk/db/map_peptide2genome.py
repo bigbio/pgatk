@@ -68,7 +68,7 @@ def get_pep_cor(exon_object_list, n1,
             else:
                 pep_chr_end = exon.end - (n1 - exon.trans_start)
 
-        if n2 <= exon.trans_end and n2 >= exon.trans_start:
+        if exon.trans_end >= n2 >= exon.trans_start:
             pep_chr = exon.chr
             pep_strand = exon.strand
             pep_end_exon = i + 1
