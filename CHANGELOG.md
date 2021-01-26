@@ -4,34 +4,17 @@
 
 [Full Changelog](https://github.com/bigbio/py-pgatk/compare/v0.0.7...v0.0.8)
 
-**Enhancements**
-
-- Cosmic mutations for celllines  [\#28](https://github.com/bigbio/py-pgatk/issues/28)
-
 ## [v0.0.7](https://github.com/bigbio/py-pgatk/tree/v0.0.7) (2021-01-11)
 
 [Full Changelog](https://github.com/bigbio/py-pgatk/compare/v0.0.6...v0.0.7)
 
+**Merged&nbsp;Pull&nbsp;Requests**
+
+- Bump cryptography from 2.6.1 to 3.2 [\#27](https://github.com/bigbio/py-pgatk/pull/27) ([dependabot[bot]](https://github.com/apps/dependabot))
+
 ## [v0.0.6](https://github.com/bigbio/py-pgatk/tree/v0.0.6) (2020-05-02)
 
 [Full Changelog](https://github.com/bigbio/py-pgatk/compare/a531eaf337da65cee25d7867b42da24f999055f3...v0.0.6)
-
-**Enhancements**
-
-- Add the decoy Sanger tool to the library  [\#19](https://github.com/bigbio/py-pgatk/issues/19)
-- Major refactoring of the library to be more package oriented design [\#13](https://github.com/bigbio/py-pgatk/issues/13)
-- Create / Download Canonical protein fasta file from ENSEMBL  [\#1](https://github.com/bigbio/py-pgatk/issues/1)
-
-**Other&nbsp;Changes**
-
-- Download gnomAD variants and matching fasta [\#11](https://github.com/bigbio/py-pgatk/issues/11)
-- VCF to proteinDB [\#10](https://github.com/bigbio/py-pgatk/issues/10)
-- Download population variants from ENSEMBL [\#9](https://github.com/bigbio/py-pgatk/issues/9)
-- GTF to DNA seq [\#6](https://github.com/bigbio/py-pgatk/issues/6)
-- ORFs to peptides [\#5](https://github.com/bigbio/py-pgatk/issues/5)
-- DNA seq to ORFs: [\#4](https://github.com/bigbio/py-pgatk/issues/4)
-- Alt ORFs from protein sequences [\#3](https://github.com/bigbio/py-pgatk/issues/3)
-- Download cancer studies from cbioportal [\#2](https://github.com/bigbio/py-pgatk/issues/2)
 
 
 
