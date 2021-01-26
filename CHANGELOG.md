@@ -2,19 +2,19 @@
 
 ## [v0.0.8](https://github.com/bigbio/py-pgatk/tree/v0.0.8) (2021-01-19)
 
-[Full Changelog](https://github.com/bigbio/py-pgatk/compare/v0.0.7...v0.0.8)
+**Implemented enhancements:**
+
+- Cosmic mutations for celllines  [\#28](https://github.com/bigbio/py-pgatk/issues/28)
 
 ## [v0.0.7](https://github.com/bigbio/py-pgatk/tree/v0.0.7) (2021-01-11)
 
-[Full Changelog](https://github.com/bigbio/py-pgatk/compare/v0.0.6...v0.0.7)
-
-**Merged&nbsp;Pull&nbsp;Requests**
-
-- Bump cryptography from 2.6.1 to 3.2 [\#27](https://github.com/bigbio/py-pgatk/pull/27) ([dependabot[bot]](https://github.com/apps/dependabot))
-
 ## [v0.0.6](https://github.com/bigbio/py-pgatk/tree/v0.0.6) (2020-05-02)
 
-[Full Changelog](https://github.com/bigbio/py-pgatk/compare/a531eaf337da65cee25d7867b42da24f999055f3...v0.0.6)
+**Implemented enhancements:**
+
+- Add the decoy Sanger tool to the library  [\#19](https://github.com/bigbio/py-pgatk/issues/19)
+- Major refactoring of the library to be more package oriented design [\#13](https://github.com/bigbio/py-pgatk/issues/13)
+- Create / Download Canonical protein fasta file from ENSEMBL  [\#1](https://github.com/bigbio/py-pgatk/issues/1)
 
 
 
