@@ -55,7 +55,8 @@ jobs:
         pip install pytest
         pip install pytest-cov
         python setup.py install
-        pytest --cov=./ --cov-report=xml pypgatk/tests/*
+        cd pypgatk
+        pytest --cov=./ --cov-report=xml tests/*
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v1
