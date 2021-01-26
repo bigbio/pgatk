@@ -175,7 +175,7 @@ for peptide, ensp in pep_dic.items():
         exons = feature_dic[enst]
     except KeyError:
         non_mapped_pep += 1
-        continue;
+        continue
 
     aa_seq = str(seq_dic[ensp].seq)
     pep_index = aa_seq.index(peptide)
@@ -193,11 +193,11 @@ for peptide, ensp in pep_dic.items():
     if pep_chr_start > pep_chr_end:
         non_mapped_pep += 1
         # print peptide,ensp,enst
-        continue;
+        continue
     if pep_chr_start <= 0:
         non_mapped_pep += 1
         # print peptide,ensp,enst,pep_trans_start,pep_trans_end
-        continue;
+        continue
 
     # print pep_chr_start,pep_chr_end
     # print pep_start_exon,pep_end_exon

@@ -2,9 +2,6 @@ import gffutils
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
-import sys
-
-from yaml import add_path_resolver
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -189,14 +186,16 @@ class EnsemblDataService(ParameterConfiguration):
     return list(map(lambda x: x.strip(), options_str.split(",")))
 
   @staticmethod
-  def check_overlap(var_start, var_end, features_info=[[0, 1, 'type']]):
+  def check_overlap(var_start, var_end, features_info=None):
     """
         This function returns true when the variant overlaps any of the features
         :param var_start: Start location
         :param var_end: End location
-        :param features_info: Feature information
+        :param features_info: Feature information (default = [[0, 1, 'type']])
         :return:
         """
+    if features_info is None:
+      features_info = [[0, 1, 'type']]
     if var_start == -1:
       return True
     # check if the var overlaps any of the features
@@ -212,13 +211,23 @@ class EnsemblDataService(ParameterConfiguration):
     return False
 
   @staticmethod
-  def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info=[]):
+  def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info=None):
     """
-        the given sequence in the fasta file represents all exons of the transcript combined.
-        for protein coding genes, the CDS is specified therefore the sequence position has to be
-        calculated based on the CDS's positions
-        However, for non-protein coding genes, the whole sequence is used
-        """
+    The given sequence in the fasta file represents all exons of the transcript combined.
+    for protein coding genes, the CDS is specified therefore the sequence position has to be
+    calculated based on the CDS's positions
+    However, for non-protein coding genes, the whole sequence is used
+    :param ref_seq:
+    :param ref_allele:
+    :param var_allele:
+    :param var_pos:
+    :param strand:
+    :param features_info:
+    :param cds_info:
+    :return:
+    """
+    if cds_info is None:
+      cds_info = []
     alt_seq = ""
     if len(cds_info) == 2:
       start_coding_index = cds_info[0] - 1  # it should be index not pos
@@ -270,15 +279,14 @@ class EnsemblDataService(ParameterConfiguration):
                          keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
                          verbose=True,
                          force=False)
-    except:  # already exists
-      print("already exists", gtf_db_file)
-      pass
+    except Exception as e:  # already exists
+      print("Databae already exists" + str(e), gtf_db_file)
 
     db = gffutils.FeatureDB(gtf_db_file)
     return db
 
   @staticmethod
-  def get_features(db, feature_id, biotype_str, feature_types=['exon']):
+  def get_features(db, feature_id, biotype_str, feature_types=None):
     """
         Get chr, genomic positions, strand and biotype for feature_id
         also genomic positions for all its elements (exons/cds&start_codon)
@@ -288,6 +296,8 @@ class EnsemblDataService(ParameterConfiguration):
         :param feature_types:
         :return:
         """
+    if feature_types is None:
+      feature_types = ['exon']
     try:
       feature = db[feature_id]
     except gffutils.exceptions.FeatureNotFoundError:  # remove version number from the ID
@@ -350,8 +360,7 @@ class EnsemblDataService(ParameterConfiguration):
     with open(self._proteindb_output, 'w') as prots_fn:
       for record_id in seq_dict.keys():
 
-        ref_seq = seq_dict[
-          record_id].seq  # get the seq and desc for the record from the fasta of the gtf
+        ref_seq = seq_dict[record_id].seq  # get the seq and desc for the record from the fasta of the gtf
         desc = str(seq_dict[record_id].description)
 
         key_values = {}  # extract key=value in the desc into a dict
@@ -523,7 +532,7 @@ class EnsemblDataService(ParameterConfiguration):
             except (ValueError, IndexError):
               msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
-              pass
+
           chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                             self._biotype_str,
                                                                             feature_types)
@@ -550,7 +559,7 @@ class EnsemblDataService(ParameterConfiguration):
               continue
 
             processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
-            "for non-CDSs, only consider the exon that actually overlaps the variant"
+            # for non-CDSs, only consider the exon that actually overlaps the variant
 
             try:
               overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
@@ -587,13 +596,10 @@ class EnsemblDataService(ParameterConfiguration):
     return self._proteindb_output
 
   @staticmethod
-  def add_protein_to_map(seq: str, new_desc_string: str, id: str, proteins, output_handle):
-    protein = {}
-    protein['description'] = new_desc_string
-    protein['sequence'] = seq
-    protein['accession'] = id
+  def add_protein_to_map(seq: str, new_desc_string: str, protein_id: str, proteins, output_handle):
+    protein = {'description': new_desc_string, 'sequence': seq, 'accession': protein_id}
     proteins.append(protein)
-    output_handle.write(">{}\t{}\n{}\n".format(id, new_desc_string, seq))
+    output_handle.write(">{}\t{}\n{}\n".format(protein_id, new_desc_string, seq))
     return proteins
 
   def check_proteindb(self, input_fasta: str = None, add_stop_codon: bool = False, num_aa: int = 6):
@@ -630,10 +636,10 @@ class EnsemblDataService(ParameterConfiguration):
           codon_index = 1
           for codon in seq_list:
             new_desc_string = new_desc_string + ' codon ' + str(codon_index)
-            id = record.id + '_codon_' + str(codon_index)
+            protein_id = record.id + '_codon_' + str(codon_index)
             seq = codon
             if len(seq) > num_aa:
-              proteins = self.add_protein_to_map(seq, new_desc_string, id, proteins, output_handle)
+              proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
             codon_index = codon_index + 1
         else:
           cut = seq.index('*')
@@ -642,14 +648,14 @@ class EnsemblDataService(ParameterConfiguration):
           seq = seq[:cut]
           # save the protein in list
           if len(seq) > num_aa:
-            id = record.id
-            proteins = self.add_protein_to_map(seq, new_desc_string, id, proteins, output_handle)
+            protein_id = record.id
+            proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
           else:
             less += 1
       else:
         if len(seq) > num_aa:
-          id = record.id
-          proteins = self.add_protein_to_map(seq, new_desc_string, id, proteins, output_handle)
+          protein_id = record.id
+          proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
         else:
           less += 1
 
@@ -660,7 +666,8 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of sequences written was:", len(proteins))
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
-  def write_output(self, seq_id, desc, seqs, prots_fn):
+  @staticmethod
+  def write_output(seq_id, desc, seqs, prots_fn):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
