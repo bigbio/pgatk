@@ -199,6 +199,16 @@ def download_cbioportal_data():
                             '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
     assert result.exit_code == 0
 
+
+def check_ensembl_database():
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
+                          '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output', 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
+  assert result.exit_code == 0
+
+
+
 if __name__ == '__main__':
     vcf_to_proteindb()
     vcf_gnomad_to_proteindb()
@@ -213,3 +223,4 @@ if __name__ == '__main__':
     cosmic_to_proteindb()
     download_ensembl_data()
     download_cbioportal_data()
+    check_ensembl_database()
