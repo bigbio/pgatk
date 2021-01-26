@@ -59,6 +59,6 @@ jobs:
         add: CHANGELOG.md
         author_name: Release Auto-Commit
         author_email: ypriverol@gmail.com
-        branch: master
+        branch: dev
         message: Updates version info for ${{github.event.release.name}}
 
