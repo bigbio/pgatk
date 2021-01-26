@@ -9,30 +9,27 @@ from pypgatk.toolbox.exceptions import AppConfigException
 this_dir, this_filename = os.path.split(__file__)
 
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
-@click.option('--config_file',
-              '-c',
+@click.option('-c', '--config_file',
               help='Configuration file for the ensembl data downloader pipeline',
               default=this_dir + '../config/ensembl_downloader_config.yaml')
-@click.option('--output_directory',
-              '-o',
+@click.option('-o', '--output_directory',
               help='Output directory for the peptide databases',
               default="./database_ensembl/")
-@click.option('--folder_prefix_release',
-              '-fp', help='Output folder prefix to download the data',
+@click.option('-fp', '--folder_prefix_release',
+               help='Output folder prefix to download the data',
               default='release-')
-@click.option('--taxonomy',
-              '-t',
+@click.option('-t', '--taxonomy',
               help='Taxonomy identifiers (comma separated list can be given) that will be use to download the data from Ensembl',
               default='')
-@click.option('--list_taxonomies', '-l',
+@click.option('-l', '--list_taxonomies',
               help='Print the list of all the taxonomies in ENSEMBL (https://www.ensembl.org)', is_flag=True, default=False)
-@click.option('--skip_gtf', '-sg', help="Skip the gtf file during the download", is_flag=True)
-@click.option('--skip_protein', '-sp', help="Skip the protein fasta file during download", is_flag=True)
-@click.option('--skip_cds', '-sc', help='Skip the CDS file download', is_flag=True)
-@click.option('--skip_cdna', '-sd', help='Skip the cDNA file download', is_flag=True)
-@click.option('--skip_ncrna', '-sn', help='Skip the ncRNA file download', is_flag=True)
-@click.option('--skip_vcf', '-sv', help='Skip the VCF variant file', is_flag=True)
-@click.option('--ensembl_name', '-en', help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
+@click.option('-sg', '--skip_gtf',  help="Skip the gtf file during the download", is_flag=True)
+@click.option('-sp', '--skip_protein', help="Skip the protein fasta file during download", is_flag=True)
+@click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
+@click.option('-sd', '--skip_cdna', help='Skip the cDNA file download', is_flag=True)
+@click.option('-sn', '--skip_ncrna', help='Skip the ncRNA file download', is_flag=True)
+@click.option('-sv', '--skip_vcf', help='Skip the VCF variant file', is_flag=True)
+@click.option('-en', '--ensembl_name', help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
 def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
                        skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf, ensembl_name):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""

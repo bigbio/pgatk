@@ -10,17 +10,15 @@ this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
-@click.option('--config_file',
-              '-c',
+@click.option('-c', '--config_file',
               help='Configuration file for the ensembl data downloader pipeline',
               default=this_dir + '../config/cosmic_config.yaml')
-@click.option('--output_directory',
-              '-o',
+@click.option('-o','--output_directory',
               help='Output directory for the peptide databases',
               default="./database_cosmic/")
-@click.option('--username', '-u',
+@click.option('-u', '--username',
               help="Username for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
-@click.option('--password', '-p',
+@click.option('-p', '--password',
               help="Password for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
 @click.pass_context
 def cosmic_downloader(ctx, config_file, output_directory, username, password):

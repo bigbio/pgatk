@@ -9,7 +9,7 @@ this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
-@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
               default= this_dir + '../config/ensembl_config.yaml')
 @click.option('-f', '--input_fasta', help='Path to the transcript sequence')
 @click.option('-v', '--vep_annotated_vcf', help='Path to the vep annotated VCF file')

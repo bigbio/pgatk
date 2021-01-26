@@ -9,7 +9,7 @@ this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
-@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
               default= this_dir + '../config/ensembl_config.yaml')
 @click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
