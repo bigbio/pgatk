@@ -12,7 +12,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
 @click.option('-c', '--config_file',
               help='Configuration file for the ensembl data downloader pipeline',
-              default=this_dir + '../config/cosmic_config.yaml')
+              default=this_dir + '/../config/cosmic_config.yaml')
 @click.option('-o','--output_directory',
               help='Output directory for the peptide databases',
               default="./database_cosmic/")

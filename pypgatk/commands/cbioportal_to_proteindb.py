@@ -10,7 +10,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('-c',   '--config_file',
               help='Configuration for cbioportal to proteindb tool',
-              default= this_dir + '../config/cbioportal_config.yaml')
+              default= this_dir + '/../config/cbioportal_config.yaml')
 @click.option('-in',  '--input_mutation', help='Cbioportal mutation file')
 @click.option('-fa',  '--input_cds', help='CDS genes from ENSEMBL database')
 @click.option('-out', '--output_db', help='Protein database including all the mutations')

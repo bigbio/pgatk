@@ -3,6 +3,7 @@ import json
 
 import requests
 
+from pypgatk.toolbox.exceptions import AppConfigException
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders
 
 
@@ -58,10 +59,10 @@ class CosmicDownloadService(ParameterConfiguration):
 
         mutation_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_MUTATIONS_FILE])
         cds_genes_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CDS_GENES_FILE])
-        
+
         mutation_celline_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CELLLINE_MUTATIONS_FILE])
         cellines_genes_output_file = "{}/{}".format(self.get_local_path_root_cosmic_repo(), self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][self.CONFIG_COSMIC_CELLLINES_GENES_FILE])
-        
+
         server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_FTP_URL]
 
@@ -80,20 +81,20 @@ class CosmicDownloadService(ParameterConfiguration):
 
         all_celllines_gene_file = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
             self.CONFIG_COSMIC_CELLLINES_GENES_FILE]
-        
+
         mutation_url = "{}/{}/{}".format(server, cosmic_version, mutation_file)
         cds_gene_url = "{}/{}/{}".format(server, cosmic_version, all_cds_gene_file)
-        
+
         celllines_gene_url = "{}/{}/{}".format(server, cosmic_cellline_version, all_celllines_gene_file)
         mutation_cellline_url = "{}/{}/{}".format(server, cosmic_cellline_version, mutation_celline_file)
-        
+
         token = "Basic {}".format(self._cosmic_token)
         self.download_file_cosmic(mutation_url, mutation_output_file, token)
         self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
-        
+
         self.download_file_cosmic(celllines_gene_url, cellines_genes_output_file, token)
         self.download_file_cosmic(mutation_cellline_url, mutation_celline_output_file, token)
-        
+
 
     def download_file_cosmic(self, url, local_file, token):
         """
@@ -116,3 +117,7 @@ class CosmicDownloadService(ParameterConfiguration):
                     f.write(response.content)
                     msg = "Download Finish for file '{}'".format(local_file)
                     self.get_logger().debug(msg)
+        else:
+          msg = "Error downloading the COSMIC data, error code {} , error message '{}'".format(response.status_code, local_file)
+          self.get_logger().debug(msg)
+          raise AppConfigException(msg)
