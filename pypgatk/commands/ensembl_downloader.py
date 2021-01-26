@@ -30,8 +30,9 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-sn', '--skip_ncrna', help='Skip the ncRNA file download', is_flag=True)
 @click.option('-sv', '--skip_vcf', help='Skip the VCF variant file', is_flag=True)
 @click.option('-en', '--ensembl_name', help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
+@click.option('--grch37', help='Download a previous version GRCh37 of ensembl genomes', is_flag=True)
 def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
-                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf, ensembl_name):
+                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf, ensembl_name, grch37 = False):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     if config_file is None:
@@ -86,6 +87,6 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
         for taxonomy_info in list_of_taxonomies:
             print(taxonomy_info)
 
-    ensembl_download_service.download_database_by_species()
+    ensembl_download_service.download_database_by_species(grch37)
 
     logger.info("Pipeline Finish !!!")

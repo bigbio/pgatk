@@ -65,7 +65,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         else:
             self._local_path_ensembl = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
-        
+
         self._list_taxonomies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_TAXONOMIES]
         if self.CONFIG_LIST_TAXONOMIES in self.get_pipeline_parameters():
             self._list_taxonomies = self.get_pipeline_parameters()[self.CONFIG_LIST_TAXONOMIES]
@@ -95,7 +95,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         self._ensembl_species = species_info['species']
         return self._ensembl_species
 
-    def download_database_by_species(self):
+    def download_database_by_species(self, grch37 = False):
         """
         This method takes a list of Taxonomies from the commandline parameters and download the Protein fasta files
         and the gtf files.
@@ -119,24 +119,24 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                         self.get_logger().debug(
                             "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
-                            prot_files = self.get_pep_files(species)
+                            prot_files = self.get_pep_files(species, grch37)
                             files.extend(prot_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
-                            gtf_files = self.get_gtf_files(species)
+                            gtf_files = self.get_gtf_files(species, grch37)
                             files.extend(gtf_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
-                            cds_files = self.get_cds_files(species)
+                            cds_files = self.get_cds_files(species, grch37)
                             files.extend(cds_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
-                            cdna_files = self.get_cdna_files(species)
+                            cdna_files = self.get_cdna_files(species, grch37)
                             files.extend(cdna_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
-                            ncrna_files = self.get_ncrna_files(species)
+                            ncrna_files = self.get_ncrna_files(species, grch37)
                             files.extend(ncrna_files)
                         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
                             vcf_files = self.get_vcf_files(species)
                             files.extend(vcf_files)
-                        
+
                         total_files.extend(files)
                         self.get_logger().debug("Files downloaded -- " + ",".join(files))
                         total_files.extend(files)
@@ -173,19 +173,19 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 self.get_logger().debug(
                     "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
-                    prot_files = self.get_pep_files(species)
+                    prot_files = self.get_pep_files(species, grch37)
                     files.extend(prot_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_GTF]:
-                    gtf_files = self.get_gtf_files(species)
+                    gtf_files = self.get_gtf_files(species, grch37)
                     files.extend(gtf_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
-                    cds_files = self.get_cds_files(species)
+                    cds_files = self.get_cds_files(species, grch37)
                     files.extend(cds_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
-                    cdna_files = self.get_cdna_files(species)
+                    cdna_files = self.get_cdna_files(species, grch37)
                     files.extend(cdna_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
-                    ncrna_files = self.get_ncrna_files(species)
+                    ncrna_files = self.get_ncrna_files(species, grch37)
                     files.extend(ncrna_files)
                 if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
                     vcf_files = self.get_vcf_files(species)
@@ -197,75 +197,102 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
         return total_files
 
-    def get_cds_files(self, species: dict) -> list:
+    def get_cds_files(self, species: dict, grch37 = False) -> list:
         """
         Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
         try:
-            file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+          if grch37:
+            species['assembly'] = 'GRCh37'
+          file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/cds/{}'.format(
-                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
-                    self.CONFIG_KEY_BASE_URL],
-                species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+          file_url = '{}/release-{}/fasta/{}/cds/{}'.format(
+              self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+          if grch37:
+              file_url = '{}/grch37/release-{}/fasta/{}/cds/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+          files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
         return files
 
-    def get_cdna_files(self, species: dict) -> list:
+    def get_cdna_files(self, species: dict, grch37 = False) -> list:
         """
         Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
         try:
-            file_name = '{}.{}.cdna.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+          if grch37:
+            species['assembly'] = 'GRCh37'
+          file_name = '{}.{}.cdna.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/cdna/{}'.format(
+          file_url = '{}/release-{}/fasta/{}/cdna/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+          if grch37:
+              file_url = '{}/grch37/release-{}/fasta/{}/cdna/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                  self.CONFIG_KEY_BASE_URL],
+                species['release'], species['name'], file_name)
+          files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
         return files
 
-    def get_ncrna_files(self, species: dict) -> list:
+    def get_ncrna_files(self, species: dict, grch37 = False) -> list:
         """
         Get the cds files for a specific species object.
         :return: List of files names.
         """
         files = []
         try:
-            file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+          if grch37:
+            species['assembly'] = 'GRCh37'
+
+          file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                    species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(
+          file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+          if grch37:
+              file_url = '{}/grch37/release-{}/fasta/{}/ncrna/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                  self.CONFIG_KEY_BASE_URL],
+                species['release'], species['name'], file_name)
+          files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
             print("No valid info is available species: ", species)
 
         return files
 
-    def get_pep_files(self, species: dict) -> list:
+    def get_pep_files(self, species: dict, grch37 = False) -> list:
         """
         Get the peptide files for a specific species object.
         :return: List of files names.
         """
         files = []
         try:
+            # TODO: Would be better to check by API the assembly version
+            if grch37:
+              species['assembly'] = 'GRCh37'
             file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/pep/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL],
+                species['release'], species['name'], file_name)
+            if grch37:
+              file_url = '{}/grch37/release-{}/fasta/{}/pep/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                  self.CONFIG_KEY_BASE_URL],
                 species['release'], species['name'], file_name)
             files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
         except KeyError:
@@ -273,7 +300,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
         return files
 
-    def get_gtf_files(self, species: dict) -> list:
+    def get_gtf_files(self, species: dict, grch37 = False) -> list:
         """
         This method retrieve the gtf files for a specific specie object
         :param species:
@@ -284,17 +311,25 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         """
         files = []
         try:
-            file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
+          if grch37:
+            species['assembly'] = 'GRCh37'
+
+          file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
                                                  species['release'], )
-            file_url = '{}/release-{}/gtf/{}/{}'.format(
+          file_url = '{}/release-{}/gtf/{}/{}'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
-            files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+          if grch37:
+              file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+                  self.CONFIG_KEY_BASE_URL], species['release'], species['name'], file_name)
+          files.append(download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+
         except KeyError:
             self.get_logger().debug("No valid info is available species: ", species)
 
         return files
-    
+
     def get_vcf_files(self, species: dict) -> list:
         """
         This method retrieve the vcf file for a specific specie object
@@ -311,11 +346,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_url = '{}/release-{}/variation/vcf/{}/'.format(
                 self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
                     self.CONFIG_KEY_BASE_URL], species['release'], species['name'])
-            
+
             downloaded_file = download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger())
             if downloaded_file is not None:
                 files.append(downloaded_file)
-            
+
             elif species['name']=='homo_sapiens':
                 "for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here"
                 chrN=1
@@ -333,9 +368,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                     files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
                     file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], 'MT')
                     files.append(download_file(file_url + file_name, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
-                    
+
         except KeyError:
             self.get_logger().debug("No valid info is available species: ", species)
-            
+
         return files
-    
