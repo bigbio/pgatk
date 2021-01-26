@@ -36,3 +36,6 @@ jobs:
         python setup.py install
         cd pypgatk
         python tests/pypgatk_tests.py
+    - name: Generate changelog
+      uses: heinrichreimer/action-github-changelog-generator@v2.2
+
