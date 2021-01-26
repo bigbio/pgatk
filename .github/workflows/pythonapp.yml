@@ -38,4 +38,7 @@ jobs:
         python tests/pypgatk_tests.py
     - name: Generate changelog
       uses: heinrichreimer/action-github-changelog-generator@v2.2
+      with:
+        token: ${{ secrets.REPO_MODIFIED }}
+        unreleased: true
 
