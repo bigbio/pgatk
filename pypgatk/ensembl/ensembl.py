@@ -2,8 +2,6 @@ import gffutils
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
-import sys
-
 from yaml import add_path_resolver
 
 from pypgatk.toolbox.general import ParameterConfiguration
@@ -660,7 +658,8 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of sequences written was:", len(proteins))
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
-  def write_output(self, seq_id, desc, seqs, prots_fn):
+  @staticmethod
+  def write_output(seq_id, desc, seqs, prots_fn):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
