@@ -40,20 +40,6 @@ jobs:
       uses: heinrichreimer/github-changelog-generator-action@v2.2
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        issuesWoLabels: true
-        prWoLabels: true
-        pullRequests: true
-        unreleased: true
-        author: true
-        compareLink: true
-        breakingLabel: '**Breaking&nbsp;Changes**'
-        enhancementLabel: '**Enhancements**'
-        bugsLabel: '**Fixed&nbsp;Bugs**'
-        deprecatedLabel: '**Deprecated**'
-        removedLabel: '**Removed**'
-        securityLabel: '**Security&nbsp;Fixes**'
-        issuesLabel: '**Other&nbsp;Changes**'
-        prLabel: '**Merged&nbsp;Pull&nbsp;Requests**'
 
     - name: Update repo with new version info
       uses: EndBug/add-and-commit@v7
