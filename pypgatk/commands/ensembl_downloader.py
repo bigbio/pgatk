@@ -11,7 +11,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('-c', '--config_file',
               help='Configuration file for the ensembl data downloader pipeline',
-              default=this_dir + '../config/ensembl_downloader_config.yaml')
+              default=this_dir + '/../config/ensembl_downloader_config.yaml')
 @click.option('-o', '--output_directory',
               help='Output directory for the peptide databases',
               default="./database_ensembl/")
