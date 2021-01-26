@@ -36,4 +36,29 @@ jobs:
         python setup.py install
         cd pypgatk
         python tests/pypgatk_tests.py
+    - name: Update changelog
+      uses: heinrichreimer/github-changelog-generator-action@v2.2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        issuesWoLabels: true
+        prWoLabels: true
+        author: true
+        compareLink: true
+        breakingLabel: '**Breaking&nbsp;Changes**'
+        enhancementLabel: '**Enhancements**'
+        bugsLabel: '**Fixed&nbsp;Bugs**'
+        deprecatedLabel: '**Deprecated**'
+        removedLabel: '**Removed**'
+        securityLabel: '**Security&nbsp;Fixes**'
+        issuesLabel: '**Other&nbsp;Changes**'
+        prLabel: '**Merged&nbsp;Pull&nbsp;Requests**'
+
+    - name: Update repo with new version info
+      uses: EndBug/add-and-commit@v7
+      with:
+        add: module/module.json CHANGELOG.md
+        author_name: Release Auto-Commit
+        author_email: ypriverol@gmail.com
+        branch: master
+        message: Updates version info for ${{github.event.release.name}}
 
