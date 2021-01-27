@@ -334,13 +334,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     def get_vcf_files(self, species: dict) -> list:
       """
-              This method retrieve the vcf file for a specific specie object
-              :param species:
-              :return:
-              """
-      """
-        Generate VCF file name from the species info and download it
-        ftp://ftp.ensembl.org/pub/release-97/variation/vcf/felis_catus/felis_catus_incl_consequences.vcf.gz
+      This method retrieve the vcf file for a specific specie object
+      :param species:
+      :return:
       """
       files = []
       try:
