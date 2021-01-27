@@ -586,10 +586,7 @@ class EnsemblDataService(ParameterConfiguration):
 
   @staticmethod
   def add_protein_to_map(seq: str, new_desc_string: str, id: str, proteins, output_handle):
-    protein = {}
-    protein['description'] = new_desc_string
-    protein['sequence'] = seq
-    protein['accession'] = id
+    protein = {'description': new_desc_string, 'sequence': seq, 'accession': id}
     proteins.append(protein)
     output_handle.write(">{}\t{}\n{}\n".format(id, new_desc_string, seq))
     return proteins
