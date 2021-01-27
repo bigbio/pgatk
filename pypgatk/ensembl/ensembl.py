@@ -280,7 +280,7 @@ class EnsemblDataService(ParameterConfiguration):
                          verbose=True,
                          force=False)
     except Exception as e:  # already exists
-      print("Databae already exists", gtf_db_file)
+      print("Databae already exists" + str(e), gtf_db_file)
 
     db = gffutils.FeatureDB(gtf_db_file)
     return db
