@@ -279,10 +279,10 @@ class EnsemblDataService(ParameterConfiguration):
                          force=False)
     except:  # already exists
       print("Databae already exists", gtf_db_file)
-      pass
 
     db = gffutils.FeatureDB(gtf_db_file)
     return db
+
 
   @staticmethod
   def get_features(db, feature_id, biotype_str, feature_types=None):
@@ -558,7 +558,7 @@ class EnsemblDataService(ParameterConfiguration):
               continue
 
             processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
-            "for non-CDSs, only consider the exon that actually overlaps the variant"
+            # for non-CDSs, only consider the exon that actually overlaps the variant
 
             try:
               overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
