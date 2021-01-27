@@ -250,11 +250,13 @@ class EnsemblDataService(ParameterConfiguration):
     nc_index = 0
     if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
       for feature in features_info:  # for every exon, cds or stop codon
-        if var_pos in range(feature[0], feature[1] + 1):  # get index of the var relative to the position of the overlapping feature in the coding region
+        if var_pos in range(feature[0], feature[
+                                          1] + 1):  # get index of the var relative to the position of the overlapping feature in the coding region
           var_index_in_cds = nc_index + (var_pos - feature[0])
           # modify the coding reference sequence accoding to the var_allele
           c = len(ref_allele)
-          alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[var_index_in_cds + c::]  # variant and ref strand??
+          alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[
+                                                               var_index_in_cds + c::]  # variant and ref strand??
           if strand == '-':
             return ref_seq[::-1], alt_seq[::-1]
           else:
@@ -277,12 +279,11 @@ class EnsemblDataService(ParameterConfiguration):
                          keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
                          verbose=True,
                          force=False)
-    except:  # already exists
+    except Exception as e:  # already exists
       print("Databae already exists", gtf_db_file)
 
     db = gffutils.FeatureDB(gtf_db_file)
     return db
-
 
   @staticmethod
   def get_features(db, feature_id, biotype_str, feature_types=None):
@@ -531,7 +532,7 @@ class EnsemblDataService(ParameterConfiguration):
             except (ValueError, IndexError):
               msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
-              pass
+
           chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
                                                                             self._biotype_str,
                                                                             feature_types)
