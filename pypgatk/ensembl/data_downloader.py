@@ -353,13 +353,13 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         files.append(downloaded_file)
 
       elif species['name'] == 'homo_sapiens':
-        "for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here"
+        # for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here"
         chrN = 1
         file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
         downloaded_file = download_file(file_url + file_name,
                                         self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger())
         if downloaded_file is not None:
-          "if chr1 is downloaded then try all others"
+          # if chr1 is downloaded then try all others
           files.append(downloaded_file)
           for chrN in range(2, 23):  # chr2-22
             file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
