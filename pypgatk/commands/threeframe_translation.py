@@ -8,7 +8,6 @@ from pypgatk.ensembl.ensembl import EnsemblDataService
 this_dir, this_filename = os.path.split(__file__)
 
 
-
 @click.command('threeframe-translation', short_help="Command to perform 3'frame translation")
 @click.option('-c', '--config_file',
               help='Configuration to perform conversion between ENSEMBL Files',
@@ -20,7 +19,6 @@ this_dir, this_filename = os.path.split(__file__)
 def threeframe_translation(ctx, config_file, input_fasta, translation_table, output):
     if input_fasta is None:
         print_help()
-
     pipeline_arguments = {EnsemblDataService.TRANSLATION_TABLE: translation_table,
                           EnsemblDataService.PROTEIN_DB_OUTPUT: output}
 

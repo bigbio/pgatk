@@ -161,7 +161,7 @@ class EnsemblDataService(ParameterConfiguration):
         """
 
     input_handle = open(input_fasta, 'r')
-    output_handle = open(self._proteindb_output, 'rw')
+    output_handle = open(self._proteindb_output, 'w')
 
     for record in SeqIO.parse(input_handle, 'fasta'):
       seq = record.seq
