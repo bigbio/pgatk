@@ -188,6 +188,18 @@ def download_ensembl_data():
                             '--taxonomy', '9103', '--output_directory', 'testdata'])
     assert result.exit_code == 0
 
+
+def download_ensembl_data_37():
+  """
+      Test downloading ensembl data for species with taxonomy identifier = 9606
+      :return:
+      """
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
+                          '--taxonomy', '9606', '--output_directory', 'testdata', '--grch37'])
+  assert result.exit_code == 0
+
 def download_cbioportal_data():
     """
         Test downloading cbioportal data for study id: paac_jhu_2014
@@ -198,6 +210,16 @@ def download_cbioportal_data():
                            ['cbioportal-downloader', '--config_file', 'config/cbioportal_config.yaml',
                             '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
     assert result.exit_code == 0
+
+
+def check_ensembl_database():
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
+                          '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output', 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
+  assert result.exit_code == 0
+
+
 
 if __name__ == '__main__':
     vcf_to_proteindb()
@@ -212,4 +234,6 @@ if __name__ == '__main__':
     generate_decoy_database()
     cosmic_to_proteindb()
     download_ensembl_data()
+    download_ensembl_data_37()
     download_cbioportal_data()
+    check_ensembl_database()

@@ -9,8 +9,8 @@ this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
-@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
-              default= this_dir + '../config/ensembl_config.yaml')
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
+              default= this_dir + '/../config/ensembl_config.yaml')
 @click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')
@@ -38,18 +38,16 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
     if input_fasta is None:
         print_help()
 
-    pipeline_arguments = {}
-    pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
-    pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
-    pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
-    pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes
-    pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] = skip_including_all_cds
-    pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes
-    pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
-    pipeline_arguments[EnsemblDataService.NUM_ORFS] = num_orfs
-    pipeline_arguments[EnsemblDataService.NUM_ORFS_COMPLEMENT] = num_orfs_complement
-    pipeline_arguments[EnsemblDataService.EXPRESSION_STR] = expression_str
-    pipeline_arguments[EnsemblDataService.EXPRESSION_THRESH] = expression_thresh
+    pipeline_arguments = {EnsemblDataService.TRANSLATION_TABLE: translation_table,
+                          EnsemblDataService.PROTEIN_DB_OUTPUT: output_proteindb,
+                          EnsemblDataService.HEADER_VAR_PREFIX: var_prefix,
+                          EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
+                          EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
+                          EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
+                          EnsemblDataService.BIOTYPE_STR: biotype_str, EnsemblDataService.NUM_ORFS: num_orfs,
+                          EnsemblDataService.NUM_ORFS_COMPLEMENT: num_orfs_complement,
+                          EnsemblDataService.EXPRESSION_STR: expression_str,
+                          EnsemblDataService.EXPRESSION_THRESH: expression_thresh}
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
     ensembl_data_service.dnaseq_to_proteindb(input_fasta)

@@ -66,7 +66,7 @@ else:
         elif opt == '--miss':
             cleavageMiss = int(arg)
         else:
-            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt);
+            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt)
             sys.exit()
 
 handle1 = SeqIO.parse(fa_file, 'fasta')  # canonical protein sequences

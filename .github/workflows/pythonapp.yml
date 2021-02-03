@@ -36,3 +36,26 @@ jobs:
         python setup.py install
         cd pypgatk
         python tests/pypgatk_tests.py
+    - name: Update changelog
+      uses: heinrichreimer/github-changelog-generator-action@v2.2
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Update repo with new version info
+      uses: EndBug/add-and-commit@v7
+      with:
+        add: CHANGELOG.md
+        author_name: Release Auto-Commit
+        author_email: ypriverol@gmail.com
+        branch: dev
+        message: Updates version info for ${{github.event.release.name}}
+
+    - name: Generate coverage report
+      run: |
+        pip install pytest
+        pip install pytest-cov
+        python setup.py install
+        cd pypgatk
+        pytest --cov=./ --cov-report=xml tests/*
+
+

@@ -9,8 +9,8 @@ this_dir, this_filename = os.path.split(__file__)
 
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
-@click.option('--config_file', '-c', help='Configuration to perform conversion between ENSEMBL Files',
-              default= this_dir + '../config/ensembl_config.yaml')
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
+              default= this_dir + '/../config/ensembl_config.yaml')
 @click.option('-f', '--input_fasta', help='Path to the transcript sequence')
 @click.option('-v', '--vep_annotated_vcf', help='Path to the vep annotated VCF file')
 @click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
@@ -52,25 +52,23 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_anno
     if input_fasta is None or vep_annotated_vcf is None or gene_annotations_gtf is None:
         print_help()
 
-    pipeline_arguments = {}
-    pipeline_arguments[EnsemblDataService.MITO_TRANSLATION_TABLE] = mito_translation_table
-    pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
-    pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
-    pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq
-    pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
-    pipeline_arguments[EnsemblDataService.ANNOTATION_FIELD_NAME] = annotation_field_name
-    pipeline_arguments[EnsemblDataService.AF_FIELD] = af_field
-    pipeline_arguments[EnsemblDataService.AF_THRESHOLD] = af_threshold
-    pipeline_arguments[EnsemblDataService.TRANSCRIPT_INDEX] = transcript_index
-    pipeline_arguments[EnsemblDataService.CONSEQUENCE_INDEX] = consequence_index
-    pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes
-    pipeline_arguments[EnsemblDataService.EXCLUDE_CONSEQUENCES] = exclude_consequences
-    pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] = skip_including_all_cds
-    pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes
-    pipeline_arguments[EnsemblDataService.INCLUDE_CONSEQUENCES] = include_consequences
-    pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
-    pipeline_arguments[EnsemblDataService.IGNORE_FILTERS] = ignore_filters
-    pipeline_arguments[EnsemblDataService.ACCEPTED_FILTERS] = accepted_filters
+    pipeline_arguments = {EnsemblDataService.MITO_TRANSLATION_TABLE: mito_translation_table,
+                          EnsemblDataService.TRANSLATION_TABLE: translation_table,
+                          EnsemblDataService.HEADER_VAR_PREFIX: var_prefix,
+                          EnsemblDataService.REPORT_REFERENCE_SEQ: report_ref_seq,
+                          EnsemblDataService.PROTEIN_DB_OUTPUT: output_proteindb,
+                          EnsemblDataService.ANNOTATION_FIELD_NAME: annotation_field_name,
+                          EnsemblDataService.AF_FIELD: af_field, EnsemblDataService.AF_THRESHOLD: af_threshold,
+                          EnsemblDataService.TRANSCRIPT_INDEX: transcript_index,
+                          EnsemblDataService.CONSEQUENCE_INDEX: consequence_index,
+                          EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
+                          EnsemblDataService.EXCLUDE_CONSEQUENCES: exclude_consequences,
+                          EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
+                          EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
+                          EnsemblDataService.INCLUDE_CONSEQUENCES: include_consequences,
+                          EnsemblDataService.BIOTYPE_STR: biotype_str,
+                          EnsemblDataService.IGNORE_FILTERS: ignore_filters,
+                          EnsemblDataService.ACCEPTED_FILTERS: accepted_filters}
 
     ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
     ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, input_fasta, gene_annotations_gtf)

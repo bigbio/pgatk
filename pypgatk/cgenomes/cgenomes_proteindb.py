@@ -17,7 +17,7 @@ class CancerGenomesService(ParameterConfiguration):
     ACCEPTED_VALUES = "accepted_values"
     SPLIT_BY_FILTER_COLUMN = "split_by_filter_column"
     CLINICAL_SAMPLE_FILE = 'clinical_sample_file'
-    
+
     def __init__(self, config_file, pipeline_arguments):
         """
         Init the class with the specific parameters.
@@ -34,7 +34,7 @@ class CancerGenomesService(ParameterConfiguration):
 
         if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
             self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
-        
+
         self._filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.FILTER_COLUMN]
         if self.FILTER_COLUMN in self.get_pipeline_parameters():
             self._filter_column = self.get_pipeline_parameters()[self.FILTER_COLUMN]
@@ -47,11 +47,11 @@ class CancerGenomesService(ParameterConfiguration):
         self._split_by_filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.SPLIT_BY_FILTER_COLUMN]
         if self.SPLIT_BY_FILTER_COLUMN in self.get_pipeline_parameters():
             self._split_by_filter_column = self.get_pipeline_parameters()[self.SPLIT_BY_FILTER_COLUMN]
-        
+
         self._local_clinical_sample_file = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.CLINICAL_SAMPLE_FILE]
         if self.CLINICAL_SAMPLE_FILE in self.get_pipeline_parameters():
             self._local_clinical_sample_file = self.get_pipeline_parameters()[self.CLINICAL_SAMPLE_FILE]
-    
+
     @staticmethod
     def get_multiple_options(options_str: str):
         """
@@ -129,7 +129,7 @@ class CancerGenomesService(ParameterConfiguration):
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
                         mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
-                        
+
                     elif "insertion" in snp.type:
                         ins_index1 = int(positions[0]) - 1
                         mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1 + 1:]
@@ -141,7 +141,7 @@ class CancerGenomesService(ParameterConfiguration):
                         else:
                             del_index1 = int(positions[0]) - 1
                             mut_pro_seq = protein_seq[:del_index1] + mut_aa.replace("*", "")
-                            
+
         return mut_pro_seq
 
 
@@ -158,7 +158,7 @@ class CancerGenomesService(ParameterConfiguration):
                 COSMIC_CDS_DB[record.id].append(record)
             except KeyError:
                 COSMIC_CDS_DB[record.id] = [record]
-        
+
         cosmic_input = open(self._local_mutation_file, encoding="latin-1")  # CosmicMutantExport.tsv
 
         header = cosmic_input.readline().split("\t")
@@ -171,7 +171,7 @@ class CancerGenomesService(ParameterConfiguration):
         filter_col = None
         if self._filter_column:
             filter_col = header.index(self._filter_column)
-        
+
         output = open(self._local_output_file, 'w')
 
         mutation_dic = {}
@@ -188,7 +188,7 @@ class CancerGenomesService(ParameterConfiguration):
             if filter_col:
                 if row[filter_col] not in self._accepted_values and self._accepted_values!=['all']:
                     continue
-            
+
             if "coding silent" in row[muttype_col]:
                 continue
 
@@ -200,10 +200,10 @@ class CancerGenomesService(ParameterConfiguration):
                 seqs = []
                 for record in this_gene_records:
                     seqs.append(record.seq)
-                 
+
             except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
                 continue
-            
+
             for seq in seqs:
                 try:
                     mut_pro_seq = self.get_mut_pro_seq(snp, seq)
@@ -211,28 +211,28 @@ class CancerGenomesService(ParameterConfiguration):
                     continue
                 if mut_pro_seq:
                     break
-            
+
             if mut_pro_seq:
                 entry = ">%s\n%s\n" % (header, mut_pro_seq)
                 if header not in mutation_dic:
                     output.write(entry)
                     mutation_dic[header] = 1
-                
+
                 if self._split_by_filter_column and filter_col:
                     try:
                         groups_mutations_dict[row[filter_col]][header] = entry
                     except KeyError:
                         groups_mutations_dict[row[filter_col]] = {header: entry}
-            
+
         for group_name in groups_mutations_dict.keys():
             with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', group_name) +'.fa', 'w') as fn:
                 for header in groups_mutations_dict[group_name].keys():
                     fn.write(groups_mutations_dict[group_name][header])
-            
+
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
         cosmic_input.close()
         output.close()
-    
+
     @staticmethod
     def get_sample_headers(header_line):
         try:
@@ -246,7 +246,7 @@ class CancerGenomesService(ParameterConfiguration):
             print('SAMPLE_ID was not found in the header row:', header_line)
             return None, None
         return tissue_type_col, sample_id_col
-    
+
     def get_tissue_type_per_sample(self, local_clinical_sample_file):
         sample_tissue_type = {}
         if local_clinical_sample_file:
@@ -262,12 +262,12 @@ class CancerGenomesService(ParameterConfiguration):
                     if tissue_type_col and sample_id_col:
                         sample_tissue_type[sl[sample_id_col]] = sl[tissue_type_col].strip().replace(' ','_')
         return sample_tissue_type
-    
+
     @staticmethod
     def get_mut_header_cols(header_cols, row, filter_column, accepted_values, split_by_filter_column):
         for col in header_cols.keys():
             header_cols[col] = row.index(col)
-        
+
         #check if (filter_column) tissue type should be considered
         if accepted_values!=['all'] or split_by_filter_column:
             try:
@@ -275,11 +275,11 @@ class CancerGenomesService(ParameterConfiguration):
             except ValueError:
                 print("{} was not found in the header {} of mutations file".format(filter_column, row))
                 header_cols[filter_column] = None
-        
+
         return header_cols
-    
+
     def cbioportal_to_proteindb(self):
-        """cBioportal studies have a data_clinical_sample.txt file 
+        """cBioportal studies have a data_clinical_sample.txt file
         that shows the Primary Tumor Site per Sample Identifier
         it matches the the (filter_column) Tumor_Sample_Barcode column in the mutations file.
         """
@@ -289,19 +289,19 @@ class CancerGenomesService(ParameterConfiguration):
         output = open(self._local_output_file, "w")
         sample_groups_dict = {}
         group_mutations_dict = {}
-        
+
         seq_dic = {}
         for record in fafile:
             newacc = record.id.split(".")[0]
             if newacc not in seq_dic:
                 seq_dic[newacc] = record.seq
-        
-        header_cols = {"HGVSc": None, "Transcript_ID": None, "Variant_Classification": None, 
+
+        header_cols = {"HGVSc": None, "Transcript_ID": None, "Variant_Classification": None,
                        "Variant_Type": None, "HGVSp_Short": None}
         nucleotide = ["A", "T", "C", "G"]
         mutclass = ["Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
                     "Nonsense_Mutation"]
-        
+
         # check if sample id and clinical files are given, if not and tissue type is required then exit
         if self._accepted_values!=['all'] or self._split_by_filter_column:
             if self._local_clinical_sample_file:
@@ -311,7 +311,7 @@ class CancerGenomesService(ParameterConfiguration):
             else:
                 print('No clinical sample file is given therefore no tissue type can be detected.')
                 return
-            
+
         for i,line in enumerate(mutfile):
             row = line.strip().split("\t")
             if row[0]=='#':
@@ -337,7 +337,7 @@ class CancerGenomesService(ParameterConfiguration):
                     print("No sampleID was found in (line {}): {}".format(i, row))
             if group not in self._accepted_values and self._accepted_values != ['all']:
                 continue
-            
+
             gene = row[0]
             try:
                 pos = row[header_cols["HGVSc"]]
@@ -353,13 +353,13 @@ class CancerGenomesService(ParameterConfiguration):
                 continue
             if varclass not in mutclass:
                 continue
-            
+
             try:
                 seq = seq_dic[enst]
             except KeyError:
                 print("%s not found:" % enst)
                 continue
-            
+
             if ":" in pos:
                 cdna_pos = pos.split(":")[1]
             else:
@@ -411,30 +411,30 @@ class CancerGenomesService(ParameterConfiguration):
                         enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[1])[0])
                 else:
                     print("unexpected insertion format")
-                    continue;
+                    continue
 
                 seq_mut = seq[:enst_pos] + ins_dna + seq[enst_pos:]
 
             if seq_mut == "":
-                continue;
+                continue
 
             mut_pro_seq = seq_mut.translate(to_stop=True)
             if len(mut_pro_seq) > 6:
                 header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
                 output.write(">%s\n%s\n" % (header, mut_pro_seq))
-                
+
                 if self._split_by_filter_column:
                     try:
                         group_mutations_dict[group][header] = mut_pro_seq
                     except KeyError:
                         group_mutations_dict[group] = {header: mut_pro_seq}
-                    
+
         output.close()
         mutfile.close()
         fafile.close()
-        
+
         for group in group_mutations_dict.keys():
             with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', group) +'.fa', 'w') as fn:
                 for header in group_mutations_dict[group].keys():
                     fn.write(">{}\n{}\n".format(header, group_mutations_dict[group][header]))
-         
+

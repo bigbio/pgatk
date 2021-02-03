@@ -207,9 +207,9 @@ class ProteinDBService(ParameterConfiguration):
         # loop each seq in the file
         for record in fasta:
                 seq = str(record.seq)
-                dcount+=1	
+                dcount+=1
                 #make sequence isobaric (check args for switch off)
-                if self._isobaric == False:
+                if not self._isobaric:
                         seq = seq.replace('I', 'L')
 
                 #digest sequence add peptides to set
@@ -220,7 +220,7 @@ class ProteinDBService(ParameterConfiguration):
                 decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
 
                 #do not store decoy peptide set in reduced memory mode
-                if self._memory_save == False:
+                if not self._memory_save:
                         #update decoy peptide set
                         dpeps.update( ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
                                                              self._anti_cleavage_sites, self._peptide_length))
