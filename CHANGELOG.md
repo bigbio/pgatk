@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.0.9](https://github.com/bigbio/py-pgatk/tree/v0.0.9) (2021-02-03)
+
+**Implemented enhancements:**
+
+- overlap between config parameters in cgenomes between cosmic and cbioportal downloaders [\#17](https://github.com/bigbio/py-pgatk/issues/17)
+- Major review to the code [\#8](https://github.com/bigbio/py-pgatk/issues/8)
+
+**Fixed bugs:**
+
+- Error from ENSEMBL URL retry  [\#25](https://github.com/bigbio/py-pgatk/issues/25)
+
 ## [v0.0.8](https://github.com/bigbio/py-pgatk/tree/v0.0.8) (2021-01-19)
 
 **Implemented enhancements:**
