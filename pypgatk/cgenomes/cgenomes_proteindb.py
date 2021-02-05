@@ -74,29 +74,29 @@ class CancerGenomesService(ParameterConfiguration):
                 index = int(positions[0]) - 1
                 if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:  #
                     seq_mut = seq[:index] + mut_dna + seq[index + 1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=True)
+                    mut_pro_seq = seq_mut.translate(to_stop=False)
             elif "ins" in snp.dna_mut:
                 index = snp.dna_mut.index("ins")
                 insert_dna = snp.dna_mut[index + 3:]
                 if insert_dna.isalpha():
                     ins_index1 = int(positions[0])
                     seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=True)
+                    mut_pro_seq = seq_mut.translate(to_stop=False)
 
             elif "del" in snp.dna_mut:
                 if len(positions) == 2:
                     del_index1 = int(positions[0]) - 1
                     del_index2 = int(positions[1])
                     seq_mut = seq[:del_index1] + seq[del_index2:]
-                    mut_pro_seq = seq_mut.translate(to_stop=True)
+                    mut_pro_seq = seq_mut.translate(to_stop=False)
                 elif len(positions) == 1:
                     del_index1 = int(positions[0]) - 1
                     seq_mut = seq[:del_index1] + seq[del_index1 + 1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=True)
+                    mut_pro_seq = seq_mut.translate(to_stop=False)
         else:
             if "?" not in snp.aa_mut:  # unambiguous aa change known in protein sequence
                 positions = re.findall(r'\d+', snp.aa_mut)
-                protein_seq = str(seq.translate(to_stop=True))
+                protein_seq = str(seq.translate(to_stop=False))
 
                 if "Missense" in snp.type:
                     mut_aa = snp.aa_mut[-1]
@@ -418,7 +418,7 @@ class CancerGenomesService(ParameterConfiguration):
             if seq_mut == "":
                 continue
 
-            mut_pro_seq = seq_mut.translate(to_stop=True)
+            mut_pro_seq = seq_mut.translate(to_stop=False)
             if len(mut_pro_seq) > 6:
                 header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
                 output.write(">%s\n%s\n" % (header, mut_pro_seq))
