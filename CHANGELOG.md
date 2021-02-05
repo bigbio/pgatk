@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.0.10](https://github.com/bigbio/py-pgatk/tree/v0.0.10) (2021-02-05)
+
+**Implemented enhancements:**
+
+- Ensembl release [\#23](https://github.com/bigbio/py-pgatk/issues/23)
+- Add a changelog.md to the project  [\#22](https://github.com/bigbio/py-pgatk/issues/22)
+
 ## [v0.0.9](https://github.com/bigbio/py-pgatk/tree/v0.0.9) (2021-02-03)
 
 **Implemented enhancements:**
