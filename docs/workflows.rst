@@ -1,11 +1,11 @@
 .. _workflows
 
-PGATK Nextflow Workflows
+PGATK NF-Core Workflows
 ===============
 
-The ProteoGenomics Analysis Toolkit provides a set of workflows to perform large scale proteogenomics data analysis. All workflows are developed using `nextflow <https://www.nextflow.io/>`_ and `BioContainers <http://biocontainers.pro>`_.
+The ProteoGenomics Analysis Toolkit provides a set of workflows to perform large scale proteogenomics data analysis. All workflows are developed using `nextflow <https://www.nextflow.io/>`_ and `BioContainers <http://biocontainers.pro>`_ following `nf-core <https://nf-core.re>`_.
 
-In order to execute any of the PGATK workflows the user should
+All PGATK workflows are deposited in `nf-core <https://nf-core.re>`_.
 
 Requirements
 ---------------
@@ -27,55 +27,20 @@ Download the executable package by copying and pasting the following command in 
 
 .. node:: It will create the nextflow main executable file in the current directory. Optionally, move the nextflow file to a directory accessible by your $PATH variable (this is only required to avoid remembering and typing the full path to nextflow each time you need to run it).
 
-Starting with Docker
-~~~~~~~~~~~~~~~~~~~
+You can read more about how to setup your `nf-core <https://nf-co.re/usage/introduction>`_ or `nextflow <https://nf-co.re/usage/installation>`_ enviroments.
 
-All workflows required Docker or singularity. You can check `here <https://docs.docker.com/install/>`_ How to install docker into your workstation, or `here <https://sylabs.io/guides/3.3/user-guide/quick_start.html#quick-installation-steps>`_ if you are using Singularity.
-
-Download the workflow
+PGDB: proteogenomics database generation
 ----------------------
 
-All PGATK workflows are deposited in github. In order get the workflow in your machine, you can clone the repository using git command:
-
-.. code-block:: bash
-   :linenos:
-
-   git clone https://github.com/bigbio/pgdb.git
-
-
-Users can also run the workflows directly from github repositories using the following command:
-
-.. code-block:: bash
-   :linenos:
-
-   nextflow run http://github.com/bigbio/pgdb
-
-
-Running the workflow
----------------------
-
-The following COMMAND will print the help of the workflow explaining all the pipeline/workflow options.
-
-.. code-block:: bash
-   :linenos:
-
-   nextflow run main.nf --help
-
-ProteoGenomics Database Workflow (pgdb)
-----------------------------------------
-
-The ProteoGenomics Database Workflow (pgdb) is a nextflow workflow that enables the generation of custom proteogenomics databases for MS proteomics studies.
+The ProteoGenomics DataBase (pgdb) generation pipeline is a nf-core workflow that enables the generation of custom proteogenomics databases for MS proteomics studies using the pypgatk library.
 
 .. image:: images/pgdb-databases.png
    :width: 500
 
+The pgdb pipelines enable to generate a variety of ENSEMBL-based proteognomics databases depending of the type of study.
 
-The pgdb enables to generate different databases for proteogenomcis studies. For example, if the study attempt to identified novel seudo-genes, long non-coding RNA peptides and proteins in Human, the users can generate the database by concatenating the ENSEMBL Human reference proteome and the novel coding regions using the following command:
-
-.. code-block:: bash
-   :linenos:
-
-   nextflow run main.nf --taxonomy 9606 --ensembl false --gnomad false --cosmic false --cbioportal false --altorfs false -profile local,standard -c nextflow.config -resume
+Workflow usage
+~~~~~~~~~~~~~~~~~~
 
 All workflow options can be seen by using the ``--help`` command:
 
@@ -185,6 +150,17 @@ All workflow options can be seen by using the ``--help`` command:
     Generate a decoy database from the concatenated database
         (processes: decoy)
     ----------------------------------------------------------------------------------------
+
+Seudo-genes, long non-coding RNAs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If the study attempt to identified novel **seudo-genes**, **long non-coding RNA peptides** and proteins in Human, the users can generate the database by concatenating the ENSEMBL Human reference proteome and the novel coding regions using the following command:
+
+.. code-block:: bash
+   :linenos:
+
+   nextflow run main.nf --taxonomy 9606 --ensembl false --gnomad false --cosmic false --cbioportal false --altorfs false -profile local,standard -c nextflow.config -resume
+
 
 
 
