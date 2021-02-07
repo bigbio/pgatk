@@ -199,39 +199,37 @@ class ProteinDBService(ParameterConfiguration):
         # empty protein sequence
         seq = ''
 
-        # open temporary decoy FASTA file
-        outfa = open(self._temp_file, 'w')
-
         # Open FASTA file using first cmd line argument
         fasta = SeqIO.parse(self._input_fasta, 'fasta')
-        # loop each seq in the file
-        for record in fasta:
-                seq = str(record.seq)
-                dcount+=1
-                #make sequence isobaric (check args for switch off)
-                if not self._isobaric:
-                        seq = seq.replace('I', 'L')
 
-                #digest sequence add peptides to set
-                upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
-                                                         self._anti_cleavage_sites, self._peptide_length))
+        # open temporary decoy FASTA file
+        with open(self._temp_file, 'w') as outfa:
 
-                #reverse and switch protein sequence
-                decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
-
-                #do not store decoy peptide set in reduced memory mode
-                if not self._memory_save:
-                        #update decoy peptide set
-                        dpeps.update( ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
+            # loop each seq in the file
+            for record in fasta:
+                    seq = str(record.seq)
+                    dcount+=1
+                    #make sequence isobaric (check args for switch off)
+                    if not self._isobaric:
+                            seq = seq.replace('I', 'L')
+    
+                    #digest sequence add peptides to set
+                    upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
                                                              self._anti_cleavage_sites, self._peptide_length))
+    
+                    #reverse and switch protein sequence
+                    decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
+    
+                    #do not store decoy peptide set in reduced memory mode
+                    if not self._memory_save:
+                            #update decoy peptide set
+                            dpeps.update( ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
+                                                                 self._anti_cleavage_sites, self._peptide_length))
+    
+                    #write decoy protein accession and sequence to file
+                    outfa.write('>' + self._decoy_prefix + record.id + '\n')
+                    outfa.write(decoyseq + '\n')
 
-                #write decoy protein accession and sequence to file
-                outfa.write('>' + self._decoy_prefix + record.id + '\n')
-                outfa.write(decoyseq + '\n')
-
-        # Close files
-        fasta.close()
-        outfa.close()
 
         # Summarise the numbers of target and decoy peptides and their intersection
         nonDecoys = set()
