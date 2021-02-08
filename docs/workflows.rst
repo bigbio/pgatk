@@ -154,14 +154,27 @@ All workflow options can be seen by using the ``--help`` command:
 Seudo-genes, long non-coding RNAs
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If the study attempt to identified novel **seudo-genes**, **long non-coding RNA peptides** and proteins in Human, the users can generate the database by concatenating the ENSEMBL Human reference proteome and the novel coding regions using the following command:
+If the study attempt to identified novel **pseudo-genes**, **long non-coding RNA peptides** and proteins in Human, the users can generate the database by concatenating the ENSEMBL Human reference proteome and the novel coding regions using the following command:
 
 .. code-block:: bash
    :linenos:
 
-   nextflow run main.nf --taxonomy 9606 --ensembl false --gnomad false --cosmic false --cbioportal false --altorfs false -profile local,standard -c nextflow.config -resume
+   nextflow run main.nf --taxonomy 9606 --ensembl false --gnomad false --cosmic false --cbioportal false --altorfs false -profile local,standard -c nextflow.config
 
+This command will attached to the reference ENSEMBL Human proteome, the **pseudo-genes** and (pipeline option --pseudogenes) and the long non-coding RNA peptides (--ncrna).
 
+.. note:: Most of the options in the pipeline are enable by default. For example **--add_reference**, includes in the results database the reference proteome for the species under study.
 
+COSMIC and cBioPortal Variants
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+If COSMIC variants wants to be added to the database, the following command can be used:
+
+.. code-block:: bash
+   :linenos:
+
+   nextflow run main.nf --taxonomy 9606 --ensembl false --gnomad false --cosmic true --cbioportal false --altorfs false  --cosmic_user_name username --cosmic_password password -profile local,standard -c nextflow.config
+
+.. note:: For COSMIC database a user and password should be provided to the pipeline to be able to download the database variants and the celllines information.
 
 
