@@ -284,13 +284,11 @@ class CancerGenomesService(ParameterConfiguration):
         it matches the the (filter_column) Tumor_Sample_Barcode column in the mutations file.
         """
         regex = re.compile('[^a-zA-Z]')
-        mutfile = open(self._local_mutation_file, "r")
-        fafile = SeqIO.parse(self._local_complete_genes, "fasta")
-        output = open(self._local_output_file, "w")
         sample_groups_dict = {}
         group_mutations_dict = {}
-
         seq_dic = {}
+        
+        fafile = SeqIO.parse(self._local_complete_genes, "fasta")
         for record in fafile:
             newacc = record.id.split(".")[0]
             if newacc not in seq_dic:
@@ -311,127 +309,125 @@ class CancerGenomesService(ParameterConfiguration):
             else:
                 print('No clinical sample file is given therefore no tissue type can be detected.')
                 return
-
-        for i,line in enumerate(mutfile):
-            row = line.strip().split("\t")
-            if row[0]=='#':
-                print("skipping line ({}): {}".format(i, row))
-                continue
-            #check for header in the mutations file and get column indecis
-            if set(header_cols.keys()).issubset(set(row)):
-                header_cols = self.get_mut_header_cols(header_cols, row, self._filter_column, self._accepted_values, self._split_by_filter_column)
-            #check if any is none in header_cols then continue
-            if None in header_cols.values():
-                print("Incorrect header column is given")
-                continue
-            #get tissue type and check it
-            group = None
-            if self._accepted_values!=['all'] or self._split_by_filter_column:
-                try:
-                    group = sample_groups_dict[row[header_cols[self._filter_column]]]
-                except KeyError:
-                    if self._accepted_values!=['all'] or self._split_by_filter_column:
-                        print("No clinical info was found for sample {}. Skipping (line {}): {}".format(row[header_cols[self._filter_column]], i, line))
-                        continue
-                except IndexError:
-                    print("No sampleID was found in (line {}): {}".format(i, row))
-            if group not in self._accepted_values and self._accepted_values != ['all']:
-                continue
-
-            gene = row[0]
-            try:
-                pos = row[header_cols["HGVSc"]]
-                enst = row[header_cols["Transcript_ID"]]
-
-                seq_mut = ""
-                aa_mut = row[header_cols["HGVSp_Short"]]
-
-                vartype = row[header_cols["Variant_Type"]]
-                varclass = row[header_cols["Variant_Classification"]]
-            except IndexError:
-                print("Incorrect line (i):", row)
-                continue
-            if varclass not in mutclass:
-                continue
-
-            try:
-                seq = seq_dic[enst]
-            except KeyError:
-                print("%s not found:" % enst)
-                continue
-
-            if ":" in pos:
-                cdna_pos = pos.split(":")[1]
-            else:
-                cdna_pos = pos
-
-            if vartype == "SNP":
-                try:
-                    enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
-                except IndexError:
-                    print("Incorrect SNP format or record", i, pos, line)
+        
+        with open(self._local_mutation_file, "r") as mutfile, open(self._local_output_file, "w") as output: 
+            for i,line in enumerate(mutfile):
+                row = line.strip().split("\t")
+                if row[0]=='#':
+                    print("skipping line ({}): {}".format(i, row))
                     continue
-                idx = pos.index(">")
-                ref_dna = pos[idx - 1]
-                mut_dna = pos[idx + 1]
-
-                if mut_dna not in nucleotide:
-                    print(mut_dna, "is not a nucleotide base", pos)
+                #check for header in the mutations file and get column indecis
+                if set(header_cols.keys()).issubset(set(row)):
+                    header_cols = self.get_mut_header_cols(header_cols, row, self._filter_column, self._accepted_values, self._split_by_filter_column)
+                #check if any is none in header_cols then continue
+                if None in header_cols.values():
+                    print("Incorrect header column is given")
                     continue
-                try:
-                    if ref_dna == seq[enst_pos - 1]:
-                        seq_mut = seq[:enst_pos - 1] + mut_dna + seq[enst_pos:]
-                    else:
-                        print("incorrect substitution, unmatched nucleotide", pos, enst)
-                except IndexError:
-                    print("incorrect substitution, out of index", pos)
-            elif vartype == "DEL":
-                try:
-                    enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
-                except IndexError:
-                    print("incorrect del format or record", i, pos, line)
-                    continue
-                del_dna = pos.split("del")[1]
-                if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
-                    seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + len(del_dna):]
-                else:
-                    print("incorrect deletion, unmatched nucleotide", pos)
-
-            elif vartype == "INS":
-                try:
-                    enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
-                except IndexError:
-                    print("incorrect ins/dup format or record", i, pos, line)
-                    continue
-                if "ins" in pos:
-                    ins_dna = pos.split("ins")[1]
-                elif "dup" in pos:
-                    ins_dna = pos.split("dup")[1]
-                    if len(ins_dna) > 1:
-                        enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[1])[0])
-                else:
-                    print("unexpected insertion format")
-                    continue
-
-                seq_mut = seq[:enst_pos] + ins_dna + seq[enst_pos:]
-
-            if seq_mut == "":
-                continue
-
-            mut_pro_seq = seq_mut.translate(to_stop=False)
-            if len(mut_pro_seq) > 6:
-                header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
-                output.write(">%s\n%s\n" % (header, mut_pro_seq))
-
-                if self._split_by_filter_column:
+                #get tissue type and check it
+                group = None
+                if self._accepted_values!=['all'] or self._split_by_filter_column:
                     try:
-                        group_mutations_dict[group][header] = mut_pro_seq
+                        group = sample_groups_dict[row[header_cols[self._filter_column]]]
                     except KeyError:
-                        group_mutations_dict[group] = {header: mut_pro_seq}
-
-        output.close()
-        mutfile.close()
-        fafile.close()
+                        if self._accepted_values!=['all'] or self._split_by_filter_column:
+                            print("No clinical info was found for sample {}. Skipping (line {}): {}".format(row[header_cols[self._filter_column]], i, line))
+                            continue
+                    except IndexError:
+                        print("No sampleID was found in (line {}): {}".format(i, row))
+                if group not in self._accepted_values and self._accepted_values != ['all']:
+                    continue
+    
+                gene = row[0]
+                try:
+                    pos = row[header_cols["HGVSc"]]
+                    enst = row[header_cols["Transcript_ID"]]
+    
+                    seq_mut = ""
+                    aa_mut = row[header_cols["HGVSp_Short"]]
+    
+                    vartype = row[header_cols["Variant_Type"]]
+                    varclass = row[header_cols["Variant_Classification"]]
+                except IndexError:
+                    print("Incorrect line (i):", row)
+                    continue
+                if varclass not in mutclass:
+                    continue
+    
+                try:
+                    seq = seq_dic[enst]
+                except KeyError:
+                    print("%s not found:" % enst)
+                    continue
+    
+                if ":" in pos:
+                    cdna_pos = pos.split(":")[1]
+                else:
+                    cdna_pos = pos
+    
+                if vartype == "SNP":
+                    try:
+                        enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
+                    except IndexError:
+                        print("Incorrect SNP format or record", i, pos, line)
+                        continue
+                    idx = pos.index(">")
+                    ref_dna = pos[idx - 1]
+                    mut_dna = pos[idx + 1]
+    
+                    if mut_dna not in nucleotide:
+                        print(mut_dna, "is not a nucleotide base", pos)
+                        continue
+                    try:
+                        if ref_dna == seq[enst_pos - 1]:
+                            seq_mut = seq[:enst_pos - 1] + mut_dna + seq[enst_pos:]
+                        else:
+                            print("incorrect substitution, unmatched nucleotide", pos, enst)
+                    except IndexError:
+                        print("incorrect substitution, out of index", pos)
+                elif vartype == "DEL":
+                    try:
+                        enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
+                    except IndexError:
+                        print("incorrect del format or record", i, pos, line)
+                        continue
+                    del_dna = pos.split("del")[1]
+                    if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
+                        seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + len(del_dna):]
+                    else:
+                        print("incorrect deletion, unmatched nucleotide", pos)
+    
+                elif vartype == "INS":
+                    try:
+                        enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
+                    except IndexError:
+                        print("incorrect ins/dup format or record", i, pos, line)
+                        continue
+                    if "ins" in pos:
+                        ins_dna = pos.split("ins")[1]
+                    elif "dup" in pos:
+                        ins_dna = pos.split("dup")[1]
+                        if len(ins_dna) > 1:
+                            enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[1])[0])
+                    else:
+                        print("unexpected insertion format")
+                        continue
+    
+                    seq_mut = seq[:enst_pos] + ins_dna + seq[enst_pos:]
+    
+                if seq_mut == "":
+                    continue
+    
+                mut_pro_seq = seq_mut.translate(to_stop=False)
+                if len(mut_pro_seq) > 6:
+                    header = "cbiomut:%s:%s:%s:%s" % (enst, gene, aa_mut, varclass)
+                    output.write(">%s\n%s\n" % (header, mut_pro_seq))
+    
+                    if self._split_by_filter_column:
+                        try:
+                            group_mutations_dict[group][header] = mut_pro_seq
+                        except KeyError:
+                            group_mutations_dict[group] = {header: mut_pro_seq}
+    
 
         for group in group_mutations_dict.keys():
             with open(self._local_output_file.replace('.fa', '')+ '_' + regex.sub('', group) +'.fa', 'w') as fn:
