@@ -9,6 +9,7 @@ from Bio import SeqIO
 def trypsin_cleavage(proseq: str, miss_cleavage: int):
   """
   Digest a protein sequence using Trypsin pattern and considering some misscleavages
+
   :param proseq: protein sequence
   :param miss_cleavage: number of misscleavages
   :return:
