@@ -206,6 +206,7 @@ class CancerGenomesService(ParameterConfiguration):
       except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
         continue
 
+      mut_pro_seq = None
       for seq in seqs:
         try:
           mut_pro_seq = self.get_mut_pro_seq(snp, seq)
