@@ -37,9 +37,9 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-m', '--memory_save',
               help='Slower but uses less memory (does not store decoy peptide list). Default=false')
 @click.pass_context
-def generate_database(ctx, config_file, output, input, cleavage_sites, anti_cleavage_sites, cleavage_position,
-                      min_peptide_length,
-                      max_iterations, do_not_shuffle, do_not_switch, decoy_prefix, temp_file, no_isobaric, memory_save):
+def generate_database(ctx, config_file: str, output: str, input : str, cleavage_sites : str, anti_cleavage_sites: str, cleavage_position: str,
+                      min_peptide_length: int,
+                      max_iterations :int, do_not_shuffle :bool, do_not_switch: bool, decoy_prefix: str, temp_file: str, no_isobaric: bool, memory_save: bool):
   if config_file is None:
     msg = "The config file for the pipeline is missing, please provide one "
     logging.error(msg)
