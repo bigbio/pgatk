@@ -14,6 +14,7 @@ def trypsin_cleavage(proseq: str, miss_cleavage: int):
   :param miss_cleavage: number of misscleavages
   :return:
   """
+
   peptides = []
   peptide = ''
   for c, aa in enumerate(proseq):

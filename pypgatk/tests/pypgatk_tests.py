@@ -177,7 +177,7 @@ def generate_decoy_database():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
-                          '--input', 'testdata/test_db.fa', '--output', 'testdata/output_decoy.fa'])
+                          '--input_database', 'testdata/test_db.fa', '--output_database', 'testdata/output_decoy.fa'])
   assert result.exit_code == 0
 
 

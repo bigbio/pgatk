@@ -14,8 +14,8 @@ this_dir, this_filename = os.path.split(__file__)
                                             'the tool will attempt to shuffle them. James.Wright@sanger.ac.uk 2015')
 @click.option('-c', '--config_file', help='Configuration file for the protein database decoy generation',
               default=this_dir + '/../config/protein_decoy.yaml')
-@click.option('-o', '--output', help='Output file for decoy database', default="protein-decoy.fa")
-@click.option('-i', '--input', help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
+@click.option('-o', '--output_database', help='Output file for decoy database', default="protein-decoy.fa")
+@click.option('-i', '--input_database', help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
 @click.option('-s', '--cleavage_sites', default='KR',
               help='A list of amino acids at which to cleave during digestion. Default = KR')
 @click.option('-a', '--anti_cleavage_sites',
@@ -37,7 +37,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-m', '--memory_save',
               help='Slower but uses less memory (does not store decoy peptide list). Default=false')
 @click.pass_context
-def generate_database(ctx, config_file: str, output: str, input : str, cleavage_sites : str, anti_cleavage_sites: str, cleavage_position: str,
+def generate_database(ctx, config_file: str, output_database: str, input_database : str, cleavage_sites : str, anti_cleavage_sites: str, cleavage_position: str,
                       min_peptide_length: int,
                       max_iterations :int, do_not_shuffle :bool, do_not_switch: bool, decoy_prefix: str, temp_file: str, no_isobaric: bool, memory_save: bool):
   if config_file is None:
@@ -47,11 +47,11 @@ def generate_database(ctx, config_file: str, output: str, input : str, cleavage_
 
   pipeline_arguments = {}
 
-  if output is not None:
-    pipeline_arguments[ProteinDBService.CONFIG_PROTEINDB_OUTPUT] = output
+  if output_database is not None:
+    pipeline_arguments[ProteinDBService.CONFIG_PROTEINDB_OUTPUT] = output_database
 
   if input is not None:
-    pipeline_arguments[ProteinDBService.CONFIG_INPUT_FILE] = input
+    pipeline_arguments[ProteinDBService.CONFIG_INPUT_FILE] = input_database
 
   if cleavage_position is not None:
     pipeline_arguments[ProteinDBService.CONFIG_CLEAVAGE_SITES] = cleavage_sites
