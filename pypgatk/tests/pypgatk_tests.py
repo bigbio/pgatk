@@ -52,6 +52,7 @@ def dnaseq_to_proteindb():
                             '--output_proteindb', 'testdata/proteindb_from_CDSs_DNAseq.fa'])
     assert result.exit_code == 0
 
+
 def dnaseq_ncrnas_to_proteindb():
     """
     Test generation of proteinDB from short noncoding RNAs using dnaseq-to-proteindb tool
@@ -67,6 +68,7 @@ def dnaseq_ncrnas_to_proteindb():
                             'lncRNA,retained_intron,Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                             '--skip_including_all_cds'])
     assert result.exit_code == 0
+
 
 def dnaseq_lncrnas_to_proteindb():
     """
@@ -146,7 +148,7 @@ def cbioportal_to_proteindb():
                             '--input_cds', 'testdata/test_cbioportal_genes.fa',
                             '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
                             '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
-                            '--filter_column', 'Tumor_Sample_Barcode'
+                            '--filter_column', 'CANCER_TYPE'
                             '--split_by_filter_column', '--accepted_values', 'all'])
     assert result.exit_code == 0
 
@@ -166,6 +168,7 @@ def cosmic_to_proteindb():
                             '--split_by_filter_column', '--accepted_values', 'all'])
     assert result.exit_code == 0
 
+
 def generate_decoy_database():
     """
         Test generation proteinDB from altORFs using dnaseq-to-proteindb tool
@@ -176,6 +179,7 @@ def generate_decoy_database():
                            ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
                             '--input', 'testdata/test_db.fa', '--output', 'testdata/output_decoy.fa'])
     assert result.exit_code == 0
+
 
 def download_ensembl_data():
     """
@@ -190,15 +194,16 @@ def download_ensembl_data():
 
 
 def download_ensembl_data_37():
-  """
-      Test downloading ensembl data for species with taxonomy identifier = 9606
-      :return:
-      """
-  runner = CliRunner()
-  result = runner.invoke(cli,
-                         ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
-                          '--taxonomy', '9606', '--output_directory', 'testdata', '--grch37'])
-  assert result.exit_code == 0
+    """
+        Test downloading ensembl data for species with taxonomy identifier = 9606
+        :return:
+        """
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
+                            '--taxonomy', '9606', '--output_directory', 'testdata', '--grch37'])
+    assert result.exit_code == 0
+
 
 def download_cbioportal_data():
     """
@@ -213,12 +218,11 @@ def download_cbioportal_data():
 
 
 def check_ensembl_database():
-  runner = CliRunner()
-  result = runner.invoke(cli,
-                         ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
-                          '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output', 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
-  assert result.exit_code == 0
-
+    runner = CliRunner()
+    result = runner.invoke(cli,
+                           ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
+                            '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output', 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
+    assert result.exit_code == 0
 
 
 if __name__ == '__main__':

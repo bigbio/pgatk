@@ -4,7 +4,7 @@ cbioportal_data_downloader:
   cbioportal_api:
     base_url: https://www.cbioportal.org/webservice.do
     cancer_studies: cmd=getCancerStudies
-  cbioportal_download_url: http://download.cbioportal.org
+  cbioportal_download_url: https://cbioportal-datahub.s3.amazonaws.com
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
@@ -13,7 +13,7 @@ cbioportal_data_downloader:
   multithreading: True
 proteindb:
    filter_info:
-      filter_column: 'Tumor_Sample_Barcode'
+      filter_column: 'CANCER_TYPE'
       accepted_values: 'all'
       split_by_filter_column: False
       clinical_sample_file: ''
