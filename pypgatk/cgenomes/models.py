@@ -1,5 +1,4 @@
 
-
 class SNP(object):
 
     def __init__(self, gene=None, mrna=None, dna_mut=None, aa_mut=None, type=None):

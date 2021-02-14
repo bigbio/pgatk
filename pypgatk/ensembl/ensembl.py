@@ -188,12 +188,13 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def check_overlap(var_start, var_end, features_info=None):
     """
-        This function returns true when the variant overlaps any of the features
-        :param var_start: Start location
-        :param var_end: End location
-        :param features_info: Feature information (default = [[0, 1, 'type']])
-        :return:
-        """
+    This function returns true when the variant overlaps any of the features
+    :param var_start: Start location
+    :param var_end: End location
+    :param features_info: Feature information (default = [[0, 1, 'type']])
+    :return:
+    """
+
     if features_info is None:
       features_info = [[0, 1, 'type']]
     if var_start == -1:
