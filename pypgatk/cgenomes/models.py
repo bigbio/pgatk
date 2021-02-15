@@ -5,7 +5,6 @@ class SNP(object):
         """
         Default constructor of SNP
         :param gene:
-        :param mRNA:
         :param dna_mut:
         :param aa_mut:
         :param type:

@@ -8,9 +8,7 @@
 """
 
 import sys
-import os
 import getopt
-import numpy as np
 import re
 from Bio import SeqIO
 

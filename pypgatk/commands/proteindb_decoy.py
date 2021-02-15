@@ -15,7 +15,8 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-c', '--config_file', help='Configuration file for the protein database decoy generation',
               default=this_dir + '/../config/protein_decoy.yaml')
 @click.option('-o', '--output_database', help='Output file for decoy database', default="protein-decoy.fa")
-@click.option('-i', '--input_database', help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
+@click.option('-i', '--input_database',
+              help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
 @click.option('-s', '--cleavage_sites', default='KR',
               help='A list of amino acids at which to cleave during digestion. Default = KR')
 @click.option('-a', '--anti_cleavage_sites',
@@ -37,9 +38,11 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-m', '--memory_save',
               help='Slower but uses less memory (does not store decoy peptide list). Default=false')
 @click.pass_context
-def generate_database(ctx, config_file: str, output_database: str, input_database : str, cleavage_sites : str, anti_cleavage_sites: str, cleavage_position: str,
+def generate_database(ctx, config_file: str, output_database: str, input_database: str, cleavage_sites: str,
+                      anti_cleavage_sites: str, cleavage_position: str,
                       min_peptide_length: int,
-                      max_iterations :int, do_not_shuffle :bool, do_not_switch: bool, decoy_prefix: str, temp_file: str, no_isobaric: bool, memory_save: bool):
+                      max_iterations: int, do_not_shuffle: bool, do_not_switch: bool, decoy_prefix: str, temp_file: str,
+                      no_isobaric: bool, memory_save: bool):
   if config_file is None:
     msg = "The config file for the pipeline is missing, please provide one "
     logging.error(msg)

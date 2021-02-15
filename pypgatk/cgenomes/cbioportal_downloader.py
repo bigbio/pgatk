@@ -6,7 +6,7 @@ from requests import get
 
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file, clear_cache
-from pypgatk.toolbox.rest import call_api, call_api_raw
+from pypgatk.toolbox.rest import call_api_raw
 
 
 class CbioPortalDownloadService(ParameterConfiguration):

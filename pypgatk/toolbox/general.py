@@ -8,7 +8,7 @@ import os
 import json
 import shutil
 import subprocess
-from urllib import error, request
+from urllib import request
 from urllib.error import URLError, ContentTooShortError
 import yaml
 
