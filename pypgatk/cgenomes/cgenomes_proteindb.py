@@ -187,7 +187,7 @@ class CancerGenomesService(ParameterConfiguration):
       line_counter += 1
       row = line.strip().split("\t")
       # filter out mutations from unspecified groups
-      if filter_col:
+      if filter_col is not None:
         if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
           continue
 
@@ -221,7 +221,7 @@ class CancerGenomesService(ParameterConfiguration):
           output.write(entry)
           mutation_dic[header] = 1
 
-        if self._split_by_filter_column and filter_col:
+        if self._split_by_filter_column and filter_col is not None:
           try:
             groups_mutations_dict[row[filter_col]][header] = entry
           except KeyError:
@@ -262,8 +262,10 @@ class CancerGenomesService(ParameterConfiguration):
           # check for header and re-assign columns
           if 'SAMPLE_ID' in sl and filter_column in sl:
             filter_column_col, sample_id_col = self.get_sample_headers(sl, filter_column)
-          if filter_column_col and sample_id_col:
+          if filter_column_col is not None and sample_id_col is not None:
             sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
+          else:
+            print("No column was for {}, {} in {}".format(filter_column, 'SAMPLE_ID', local_clinical_sample_file))
     return sample_value
 
   @staticmethod
@@ -299,6 +301,7 @@ class CancerGenomesService(ParameterConfiguration):
     if self._accepted_values != ['all'] or self._split_by_filter_column:
       if self._local_clinical_sample_file:
         sample_groups_dict = self.get_value_per_sample(self._local_clinical_sample_file, self._filter_column)
+        print('sample_groups_dict', self._local_clinical_sample_file, self._filter_column)
         if sample_groups_dict == {}:
           return
       else:
@@ -353,7 +356,7 @@ class CancerGenomesService(ParameterConfiguration):
         try:
           seq = seq_dic[enst]
         except KeyError:
-          print("%s not found:" % enst)
+          print("No matching recored for gene ({}) from row {} in FASTA file:".format(enst, row))
           continue
 
         if ":" in pos:
