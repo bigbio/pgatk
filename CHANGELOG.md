@@ -1,5 +1,7 @@
 # Changelog
 
+## [v0.0.13](https://github.com/bigbio/py-pgatk/tree/v0.0.13) (2021-02-15)
+
 ## [v0.0.12](https://github.com/bigbio/py-pgatk/tree/v0.0.12) (2021-02-11)
 
 ## [v0.0.11](https://github.com/bigbio/py-pgatk/tree/v0.0.11) (2021-02-07)
