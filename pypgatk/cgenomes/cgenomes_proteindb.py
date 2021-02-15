@@ -265,7 +265,7 @@ class CancerGenomesService(ParameterConfiguration):
           if filter_column_col is not None and sample_id_col is not None:
             sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
           else:
-            print("No column was for {}, {} in {}".format(filter_column, 'SAMPLE_ID', local_clinical_sample_file))
+            print("No column was found for {}, {} in {}".format(filter_column, 'SAMPLE_ID', local_clinical_sample_file))
     return sample_value
 
   @staticmethod
