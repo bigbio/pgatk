@@ -249,7 +249,7 @@ class CancerGenomesService(ParameterConfiguration):
         print('SAMPLE_ID was not found in the header row:', header_line)
         return None, None
     return filter_col, sample_id_col
-    
+
   def get_value_per_sample(self, local_clinical_sample_file, filter_column):
     sample_value = {}
     if local_clinical_sample_file:
@@ -265,14 +265,14 @@ class CancerGenomesService(ParameterConfiguration):
               if filter_column_col and sample_id_col:
                   sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ','_')
     return sample_value
-    
+
   @staticmethod
   def get_mut_header_cols(header_cols, row):
     for col in header_cols.keys():
         header_cols[col] = row.index(col)
-            
+
     return header_cols
-    
+
   def cbioportal_to_proteindb(self):
     """cBioportal studies have a data_clinical_sample.txt file
     that shows the Primary Tumor Site per Sample Identifier
@@ -282,7 +282,7 @@ class CancerGenomesService(ParameterConfiguration):
     sample_groups_dict = {}
     group_mutations_dict = {}
     seq_dic = {}
-        
+
     fafile = SeqIO.parse(self._local_complete_genes, "fasta")
     for record in fafile:
         newacc = record.id.split(".")[0]
@@ -294,7 +294,7 @@ class CancerGenomesService(ParameterConfiguration):
     nucleotide = ["A", "T", "C", "G"]
     mutclass = ["Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
                 "Nonsense_Mutation"]
-    
+
     # check if sample id and clinical files are given, if not and not filter is required then exit
     if self._accepted_values!=['all'] or self._split_by_filter_column:
         if self._local_clinical_sample_file:
@@ -304,8 +304,8 @@ class CancerGenomesService(ParameterConfiguration):
         else:
             print('No clinical sample file is given therefore no filter could be applied.')
             return
-    
-    with open(self._local_mutation_file, "r") as mutfile, open(self._local_output_file, "w") as output: 
+
+    with open(self._local_mutation_file, "r") as mutfile, open(self._local_output_file, "w") as output:
         for i,line in enumerate(mutfile):
             row = line.strip().split("\t")
             if row[0]=='#':
@@ -314,7 +314,7 @@ class CancerGenomesService(ParameterConfiguration):
             #check for header in the mutations file and get column indices
             if set(header_cols.keys()).issubset(set(row)):
                 header_cols = self.get_mut_header_cols(header_cols, row)
-            
+
             #check if any is none in header_cols then continue
             if None in header_cols.values():
                 print("Incorrect header column is given")
@@ -332,7 +332,7 @@ class CancerGenomesService(ParameterConfiguration):
                     print("No sampleID was found in (line {}): {}".format(i, row))
             if group not in self._accepted_values and self._accepted_values != ['all']:
                 continue
-            
+
             gene = row[0]
             try:
                 pos = row[header_cols["HGVSc"]]
@@ -348,7 +348,7 @@ class CancerGenomesService(ParameterConfiguration):
                 continue
             if varclass not in mutclass:
                 continue
-            
+
             try:
                 seq = seq_dic[enst]
             except KeyError:
