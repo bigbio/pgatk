@@ -195,9 +195,6 @@ class ProteinDBService(ParameterConfiguration):
     # Counter for number of decoy sequences
     dcount = 0
 
-    # empty protein sequence
-    seq = ''
-
     # Open FASTA file using first cmd line argument
     fasta = SeqIO.parse(self._input_fasta, 'fasta')
 

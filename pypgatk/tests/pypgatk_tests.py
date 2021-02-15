@@ -148,7 +148,7 @@ def cbioportal_to_proteindb():
                           '--input_cds', 'testdata/test_cbioportal_genes.fa',
                           '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
                           '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
-                          '--filter_column', 'Tumor_Sample_Barcode'
+                          '--filter_column', 'CANCER_TYPE'
                                              '--split_by_filter_column', '--accepted_values', 'all'])
   assert result.exit_code == 0
 
@@ -195,9 +195,9 @@ def download_ensembl_data():
 
 def download_ensembl_data_37():
   """
-      Test downloading ensembl data for species with taxonomy identifier = 9606
-      :return:
-      """
+        Test downloading ensembl data for species with taxonomy identifier = 9606
+        :return:
+        """
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',

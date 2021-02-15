@@ -636,11 +636,11 @@ class EnsemblDataService(ParameterConfiguration):
           seq_list = seq.split("*")
           codon_index = 1
           for codon in seq_list:
-            new_desc_string = new_desc_string + ' codon ' + str(codon_index)
+            codon_description = new_desc_string + ' codon ' + str(codon_index)
             protein_id = record.id + '_codon_' + str(codon_index)
             seq = codon
             if len(seq) > num_aa:
-              proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
+              proteins = self.add_protein_to_map(seq, codon_description, protein_id, proteins, output_handle)
             codon_index = codon_index + 1
         else:
           cut = seq.index('*')

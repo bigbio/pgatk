@@ -237,55 +237,47 @@ class CancerGenomesService(ParameterConfiguration):
     output.close()
 
   @staticmethod
-  def get_sample_headers(header_line):
+  def get_sample_headers(header_line, filter_coumn):
     try:
-      tissue_type_col = header_line.index('CANCER_TYPE')
+      filter_col = header_line.index(filter_coumn)
     except ValueError:
-      print('CANCER_TYPE was not found in the header row:', header_line)
+      print(filter_coumn, ' was not found in the header row:', header_line)
       return None, None
     try:
       sample_id_col = header_line.index('SAMPLE_ID')
     except ValueError:
       print('SAMPLE_ID was not found in the header row:', header_line)
       return None, None
-    return tissue_type_col, sample_id_col
+    return filter_col, sample_id_col
 
-  def get_tissue_type_per_sample(self, local_clinical_sample_file):
-    sample_tissue_type = {}
+  def get_value_per_sample(self, local_clinical_sample_file, filter_column):
+    sample_value = {}
     if local_clinical_sample_file:
       with open(local_clinical_sample_file, 'r') as clin_fn:
-        tissue_type_col, sample_id_col = None, None
+        filter_column_col, sample_id_col = None, None
         for line in clin_fn.readlines():
           if line.startswith('#'):
             continue
           sl = line.strip().split('\t')
           # check for header and re-assign columns
-          if 'SAMPLE_ID' in sl and 'CANCER_TYPE' in sl:
-            tissue_type_col, sample_id_col = self.get_sample_headers(sl)
-          if tissue_type_col and sample_id_col:
-            sample_tissue_type[sl[sample_id_col]] = sl[tissue_type_col].strip().replace(' ', '_')
-    return sample_tissue_type
+          if 'SAMPLE_ID' in sl and filter_column in sl:
+            filter_column_col, sample_id_col = self.get_sample_headers(sl, filter_column)
+          if filter_column_col and sample_id_col:
+            sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
+    return sample_value
 
   @staticmethod
-  def get_mut_header_cols(header_cols, row, filter_column, accepted_values, split_by_filter_column):
+  def get_mut_header_cols(header_cols, row):
     for col in header_cols.keys():
       header_cols[col] = row.index(col)
-
-    # check if (filter_column) tissue type should be considered
-    if accepted_values != ['all'] or split_by_filter_column:
-      try:
-        header_cols[filter_column] = row.index(filter_column)
-      except ValueError:
-        print("{} was not found in the header {} of mutations file".format(filter_column, row))
-        header_cols[filter_column] = None
 
     return header_cols
 
   def cbioportal_to_proteindb(self):
     """cBioportal studies have a data_clinical_sample.txt file
-        that shows the Primary Tumor Site per Sample Identifier
-        it matches the the (filter_column) Tumor_Sample_Barcode column in the mutations file.
-        """
+    that shows the Primary Tumor Site per Sample Identifier
+    The sample ID in the clinical file matches Tumor_Sample_Barcode column in the mutations file.
+    """
     regex = re.compile('[^a-zA-Z]')
     sample_groups_dict = {}
     group_mutations_dict = {}
@@ -298,19 +290,19 @@ class CancerGenomesService(ParameterConfiguration):
         seq_dic[newacc] = record.seq
 
     header_cols = {"HGVSc": None, "Transcript_ID": None, "Variant_Classification": None,
-                   "Variant_Type": None, "HGVSp_Short": None}
+                   "Variant_Type": None, "HGVSp_Short": None, 'Tumor_Sample_Barcode': None}
     nucleotide = ["A", "T", "C", "G"]
     mutclass = ["Frame_Shift_Del", "Frame_Shift_Ins", "In_Frame_Del", "In_Frame_Ins", "Missense_Mutation",
                 "Nonsense_Mutation"]
 
-    # check if sample id and clinical files are given, if not and tissue type is required then exit
+    # check if sample id and clinical files are given, if not and not filter is required then exit
     if self._accepted_values != ['all'] or self._split_by_filter_column:
       if self._local_clinical_sample_file:
-        sample_groups_dict = self.get_tissue_type_per_sample(self._local_clinical_sample_file)
+        sample_groups_dict = self.get_value_per_sample(self._local_clinical_sample_file, self._filter_column)
         if sample_groups_dict == {}:
           return
       else:
-        print('No clinical sample file is given therefore no tissue type can be detected.')
+        print('No clinical sample file is given therefore no filter could be applied.')
         return
 
     with open(self._local_mutation_file, "r") as mutfile, open(self._local_output_file, "w") as output:
@@ -319,23 +311,23 @@ class CancerGenomesService(ParameterConfiguration):
         if row[0] == '#':
           print("skipping line ({}): {}".format(i, row))
           continue
-        # check for header in the mutations file and get column indecis
+        # check for header in the mutations file and get column indices
         if set(header_cols.keys()).issubset(set(row)):
-          header_cols = self.get_mut_header_cols(header_cols, row, self._filter_column, self._accepted_values,
-                                                 self._split_by_filter_column)
+          header_cols = self.get_mut_header_cols(header_cols, row)
+
         # check if any is none in header_cols then continue
         if None in header_cols.values():
           print("Incorrect header column is given")
           continue
-        # get tissue type and check it
+        # get filter value and check it
         group = None
         if self._accepted_values != ['all'] or self._split_by_filter_column:
           try:
-            group = sample_groups_dict[row[header_cols[self._filter_column]]]
+            group = sample_groups_dict[row[header_cols['Tumor_Sample_Barcode']]]
           except KeyError:
             if self._accepted_values != ['all'] or self._split_by_filter_column:
               print("No clinical info was found for sample {}. Skipping (line {}): {}".format(
-                row[header_cols[self._filter_column]], i, line))
+                row[header_cols['Tumor_Sample_Barcode']], i, line))
               continue
           except IndexError:
             print("No sampleID was found in (line {}): {}".format(i, row))
