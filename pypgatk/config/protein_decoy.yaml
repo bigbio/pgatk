@@ -6,6 +6,7 @@ proteindb_decoy:
   min_peptide_length: 5
   max_iterations: 100
   do_not_shuffle: False
+  keep_target_hits: False
   do_not_switch: False
   decoy_prefix: DECOY_
   temp_file: tmp.fa
