@@ -27,18 +27,25 @@
 import random
 import os
 from Bio import SeqIO
+from pyteomics.fasta import decoy_sequence
+from pyteomics.parser import cleave
 
+from pypgatk.proteomics.models import Enzymes, PYGPATK_ENZYMES
+from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
-class ProteinDBService(ParameterConfiguration):
+class ProteinDBDecoyService(ParameterConfiguration):
   CONFIG_KEY_PROTEINDB_DECOY = 'proteindb_decoy'
   CONFIG_PROTEINDB_OUTPUT = 'output'
   CONFIG_INPUT_FILE = 'input'
-  CONFIG_CLEAVAGE_SITES = 'cleavage_sites'
+  CONFIG_DECOY_METHOD='method'
+  CONFIG_ENZYME = 'enzyme'
   CONFIG_CLEAVAGE_POSITION = 'cleavage_position'
+  CONFIG_MAX_MISSED_CLEAVAGES = 'max_missed_cleavages'
   CONFIG_ANTI_CLEAVAGE_SITES = 'anti_cleavage_sites'
-  CONFIG_PEPTIDE_LENGTH = 'min_peptide_length'
+  CONFIG_MIN_PEPTIDE_LENGTH = 'min_peptide_length'
+  CONFIG_PEPTIDE_LENGTH_MAX = 'max_peptide_length'
   CONFIG_MAX_ITERATIONS = 'max_iterations'
   CONFIG_DO_NOT_SUFFLE = 'do_not_shuffle'
   CONFIG_DO_NOT_SWITCH = 'do_not_switch'
@@ -54,8 +61,8 @@ class ProteinDBService(ParameterConfiguration):
         :param pipeline_arguments pipelines arguments
         """
 
-    super(ProteinDBService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
-                                           pipeline_arguments)
+    super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
+                                                pipeline_arguments)
 
     self._temp_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_TEMP_FILE]
     if self.CONFIG_TEMP_FILE in self.get_pipeline_parameters():
@@ -71,10 +78,9 @@ class ProteinDBService(ParameterConfiguration):
     if self.CONFIG_MEMORY_SAVE in self.get_pipeline_parameters():
       self._memory_save = self.get_pipeline_parameters()[self.CONFIG_MEMORY_SAVE]
 
-    self._cleavage_sites = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_CLEAVAGE_SITES]
-    if self.CONFIG_CLEAVAGE_SITES in self.get_pipeline_parameters():
-      self._cleavage_sites = self.get_pipeline_parameters()[self.CONFIG_CLEAVAGE_SITES]
+    self._enzyme = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_ENZYME]
+    if self.CONFIG_ENZYME in self.get_pipeline_parameters():
+      self._enzyme = self.get_pipeline_parameters()[self.CONFIG_ENZYME]
 
     self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
       self.CONFIG_DECOY_PREFIX]
@@ -91,10 +97,10 @@ class ProteinDBService(ParameterConfiguration):
     if self.CONFIG_ANTI_CLEAVAGE_SITES in self.get_pipeline_parameters():
       self._anti_cleavage_sites = self.get_pipeline_parameters()[self.CONFIG_ANTI_CLEAVAGE_SITES]
 
-    self._peptide_length = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_PEPTIDE_LENGTH]
-    if self.CONFIG_PEPTIDE_LENGTH in self.get_pipeline_parameters():
-      self._peptide_length = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_LENGTH]
+    self._min_peptide_length = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+      self.CONFIG_MIN_PEPTIDE_LENGTH]
+    if self.CONFIG_MIN_PEPTIDE_LENGTH in self.get_pipeline_parameters():
+      self._min_peptide_length = self.get_pipeline_parameters()[self.CONFIG_MIN_PEPTIDE_LENGTH]
 
     self._max_iterations = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
       self.CONFIG_MAX_ITERATIONS]
@@ -116,16 +122,24 @@ class ProteinDBService(ParameterConfiguration):
     if self.CONFIG_DO_NOT_SUFFLE in self.get_pipeline_parameters():
       self._no_suffle = self.get_pipeline_parameters()[self.CONFIG_DO_NOT_SUFFLE]
 
+    self._method = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_DECOY_METHOD]
+    if self.CONFIG_DECOY_METHOD in self.get_pipeline_parameters():
+      self._method = self.get_pipeline_parameters()[self.CONFIG_DECOY_METHOD]
+
+    self._max_peptide_length  = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_PEPTIDE_LENGTH_MAX]
+    if self.CONFIG_PEPTIDE_LENGTH_MAX in self.get_pipeline_parameters():
+      self._max_peptide_length = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_LENGTH_MAX]
+
   @staticmethod
-  def digest(protein, sites, pos, no, min_peptide_length):
+  def decoypyrat_digest(protein, sites, pos, no, min_peptide_length):
     """
-        Return a list of cleaved peptides with minimum length in protein sequence.
-        :param protein = sequence
-        :param sites = string of amino acid cleavage sites
-        :param pos = n or c for n-terminal or c-terminal cleavage
-        :param no = amino acids following site that would prevent cleavage ie proline
-        :param min_peptide_length = minimum length of peptides returned
-        """
+    Return a list of cleaved peptides with minimum length in protein sequence.
+    :param protein = sequence
+    :param sites = string of amino acid cleavage sites
+    :param pos = n or c for n-terminal or c-terminal cleavage
+    :param no = amino acids following site that would prevent cleavage ie proline
+    :param min_peptide_length = minimum length of peptides returned
+    """
 
     # for each possible cleavage site insert a comma with before or after depending on pos
     for s in sites:
@@ -182,11 +196,75 @@ class ProteinDBService(ParameterConfiguration):
     # return new peptide
     return ''.join(l) + s
 
+  def protein_database_decoy(self, method ='reverse'):
+    """
+    Reverse protein sequences and attach them to the output fasta file
+    :return:
+    """
+    fasta = SeqIO.parse(self._input_fasta, 'fasta')
+    with open(self._output_file, "wt") as output_file:
+      for record in fasta:
+        seq = str(record.seq)
+        decoy_seq = decoy_sequence(seq, mode=method)
+
+        output_file.write('>' + record.id + "\t" + record.description + '\n')
+        output_file.write(str(record.seq) + '\n')
+        output_file.write('>' + self._decoy_prefix + record.id + '\n')
+        output_file.write(decoy_seq + '\n')
+
+    output_file.close()
+
+  def print_target_decoy_composition(self, min_length: int = 0, max_length: int = 100):
+    """
+    Print the number of target peptides vs decoy peptides in a Fasta database
+    :return:
+    """
+
+    fasta = SeqIO.parse(self._output_file, 'fasta')
+    target_peptides = {}
+    decoy_peptides = {}
+    pep_count_in_both = 0
+    for record in fasta:
+      peptides = cleave(sequence = str(record.seq), rule = '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))', missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length, max_acids=max_length)
+      for peptide in peptides:
+         if self._decoy_prefix in record.id:
+           decoy_peptides[peptide] = 'decoy'
+           if peptide in target_peptides:
+             target_peptides.pop(peptide)
+             pep_count_in_both += 1
+         else:
+           if peptide not in decoy_peptides:
+             target_peptides[peptide] = 'target'
+    print('Number of target peptides: {} and Decoy Peptides: {}'.format(len(target_peptides), len(decoy_peptides)))
+    target_percentage = (len(target_peptides)/(len(target_peptides)+len(decoy_peptides)))*100
+    print('% Target peptides {:.1f}'.format(target_percentage))
+    decoy_percentage = (len(decoy_peptides) / (len(target_peptides) + len(decoy_peptides))) * 100
+    print('% Decoy peptides {:.1f}'.format(decoy_percentage))
+    duplicate_percentage = (pep_count_in_both/(len(target_peptides) + len(decoy_peptides))) * 100
+    print('Number of peptides in Target and Decoy {}, Percentage {:.1f}'.format(pep_count_in_both, duplicate_percentage))
+
+
   def decoy_database(self):
     """
-        Create a decoy database from a proteomics database
-        :return:
-        """
+    This method is used to pick the rigth decoy method to generate the decoys.
+    :return:
+    """
+    if self._method == 'protein-reverse':
+      self.protein_database_decoy(method='reverse')
+    elif self._method == 'protein-shuffle':
+      self.protein_database_decoy(method='shuffle')
+    elif self._method == 'decoypyrat':
+      self.generate_decoypyrat_database()
+    else:
+      raise AppException("The following method {} is not supported by the library".format(self._method))
+
+  def generate_decoypyrat_database(self):
+    """
+    Create a decoy database from a proteomics database this method is presented in manuscript:
+    J Proteomics Bioinform. 2016 Jun 27; 9(6): 176–180. PMCID: PMC4941923
+    DecoyPyrat: Fast Non-redundant Hybrid Decoy Sequence Generation for Large Scale Proteomics
+    :return:
+    """
 
     # Create empty sets to add all target and decoy peptides
     upeps = set()
@@ -210,17 +288,16 @@ class ProteinDBService(ParameterConfiguration):
           seq = seq.replace('I', 'L')
 
         # digest sequence add peptides to set
-        upeps.update(ProteinDBService.digest(seq, self._cleavage_sites, self._cleavage_position,
-                                             self._anti_cleavage_sites, self._peptide_length))
+        upeps.update(ProteinDBDecoyService.decoypyrat_digest(seq, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'], self._cleavage_position, self._anti_cleavage_sites, self._min_peptide_length))
 
         # reverse and switch protein sequence
-        decoyseq = ProteinDBService.revswitch(seq, self._no_switch, self._cleavage_sites)
+        decoyseq = ProteinDBDecoyService.revswitch(seq, self._no_switch, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
 
         # do not store decoy peptide set in reduced memory mode
         if not self._memory_save:
           # update decoy peptide set
-          dpeps.update(ProteinDBService.digest(decoyseq, self._cleavage_sites, self._cleavage_position,
-                                               self._anti_cleavage_sites, self._peptide_length))
+          dpeps.update(ProteinDBDecoyService.decoypyrat_digest(decoyseq, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'], self._cleavage_position,
+                                                               self._anti_cleavage_sites, self._min_peptide_length))
 
         # write decoy protein accession and sequence to file
         outfa.write('>' + self._decoy_prefix + record.id + '\n')
@@ -239,8 +316,8 @@ class ProteinDBService(ParameterConfiguration):
           # if line is not accession
           if line[0] != '>':
             # digest protein
-            for p in ProteinDBService.digest(line.rstrip(), self._cleavage_sites, self._cleavage_position,
-                                             self._anti_cleavage_sites, self._peptide_length):
+            for p in ProteinDBDecoyService.decoypyrat_digest(line.rstrip(), PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'], self._cleavage_position,
+                                                             self._anti_cleavage_sites, self._min_peptide_length):
               # check if in target peptides if true then add to nonDecoys
               if p in upeps:
                 nonDecoys.add(p)
@@ -273,7 +350,7 @@ class ProteinDBService(ParameterConfiguration):
           i += 1
 
           # shuffle peptide
-          aPep = ProteinDBService.shuffle(dPep)
+          aPep = ProteinDBDecoyService.shuffle(dPep)
 
           # check if shuffling has an effect if not end iterations
           if aPep == dPep:
@@ -294,8 +371,21 @@ class ProteinDBService(ParameterConfiguration):
       # Free up memory by clearing large sets of peptides
       upeps.clear()
       dpeps.clear()
+
+
+
       # open second decoy file
       with open(self._output_file, "wt") as fout:
+
+        # Attach the target sequences to the database
+        fasta = SeqIO.parse(self._input_fasta, 'fasta')
+        for record in fasta:
+          seq = str(record.seq)
+          id  = record.id
+          description = record.description
+          fout.write('>'+ id + '\t' + description + '\n')
+          fout.write(seq + '\n')
+
         # open original decoy file
         with open(self._temp_file, "rt") as fin:
           # loop each line of original decoy fasta
@@ -303,9 +393,9 @@ class ProteinDBService(ParameterConfiguration):
             # if line is not accession replace peptides in dictionary with alternatives
             if line[0] != '>':
               # digest decoy sequence
-              for p in ProteinDBService.digest(line.rstrip(), self._cleavage_sites,
-                                               self._cleavage_position, self._anti_cleavage_sites,
-                                               self._peptide_length):
+              for p in ProteinDBDecoyService.decoypyrat_digest(line.rstrip(), PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'],
+                                                               self._cleavage_position, self._anti_cleavage_sites,
+                                                               self._min_peptide_length):
                 # store decoy peptide for final count
                 dpeps.add(p)
 
