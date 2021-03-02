@@ -8,80 +8,40 @@ class Enzymes:
   def __init__(self):
 
     self.enzymes = {
-
-      'Trypsin':{
-        'name': 'Trypsin',
-        'expasy rule': '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))',
-        'cleavage rule': '(?<=[KR])(?!P)',
-        'accession':'MS:1001251',
-        'cleavage sites': '[KR]'
-      },
-      'Trypsin/P': {
-        'name': 'Trypsin/P',
-        'expasy rule': '(?<=[KR])',
-        'cleavage rule': '(?<=[KR])',
-        'accession': 'MS:1001313',
-      },
-      'Arg-C': {
-        'name': 'Arg-C',
-        'cleavage rule': 'R',
-        'accession': 'MS:1001303',
-        'cleavage sites':'R'
-      },
-      'Asp-N': {
-        'name': 'Asp-N',
-        'cleavage rule': '\w(?=D)',
-        'accession': 'MS:1001303',
-        'cleavage sites':'D'
-      },
-      'Chymotrypsin':{
-          'name':'Chymotrypsin',
-          'cleavage rule': '([FY](?=[^P]))|(W(?=[^MP]))',
-          'accession':'MS:1001306',
-          'cleavage sites': 'FYW'
-
-        },
+      'Trypsin': {'cleavage rule': '(?<=[KRX])(?!P)', 'PSIID': 'MS:1001251', 'cleavage sites':'KR'},
+      'Arg-C': {'cleavage rule': '(?<=[RX])(?!P)', 'PSIID':'MS:1001303', 'cleavage sites':'R'},
+      'Arg-C/P':{'cleavage rule':'(?<=[RX])','PSIID':'', 'cleavage sites': 'R'},
+      'Asp-N':{'cleavage rule': '(?=[DBX])', 'PSIID':'MS:1001304', 'cleavage sites':'DB'},
+      'Asp-N/B': {'cleavage rule':'(?=[DX])', 'PSIID':'', 'cleavage sites':'D'},
+      'Asp-N_ambic':{'cleavage rule':'(?=[DBEZX])', 'PSIID':'MS:1001305', 'cleavage sites':'DBEZ'},
+      'Chymotrypsin':{'cleavage rule':'(?<=[FYWLJX])(?!P)', 'PSIID':'MS:1001306', 'cleavage sites':'FYWLJ'},
+      'Chymotrypsin/P':{'cleavage rule':'(?<=[FYWLJX])', 'PSIID':'', 'cleavage sites':'FYWLJ'},
+      'CNBr':{'cleavage rule':'(?<=[MX])','PSIID':'MS:1001307', 'cleavage sites':'M'},
+      'Formic_acid':{'cleavage rule':'((?<=[DBX]))|((?=[DBX]))', 'PSIID':'MS:1001308','cleavage sites':'DB'},
+      'Lys-C': {'cleavage rule':'(?<=[KX])(?!P)','PSIID':'MS:1001309','cleavage sites':'K'},
+      'Lys-N':{'cleavage rule':'(?=[KX])','PSIID':'', 'cleavage sites':'K'},
+      'Lys-C/P':{'cleavage rule':'(?<=[KX])','PSIID':'MS:1001310', 'cleavage sites':'K'},
+      'PepsinA':{'cleavage rule':'(?<=[FLJX])','PSIID':'MS:1001311', 'cleavage sites':'FLJ'},
+      'TrypChymo':{'cleavage rule':'(?<=[FYWLJKRX])(?!P)', 'PSIID':'MS:1001312','cleavage sites':'FYWLJKR'},
+      'Trypsin/P':{'cleavage rule':'(?<=[KRX])','PSIID':'MS:1001313','cleavege sites':'KR'},
+      'V8-DE':{'cleavage rule':'(?<=[DBEZX])(?!P)','PSIID':'MS:1001314', 'cleavege sites':'DBEZX'},
+      'V8-E':{'cleavage rule':'(?<=[EZX])(?!P)', 'PSIID':'MS:1001315', 'cleavage sites':'EZX'},
+      'leukocyte elastase':{'cleavage rule':'(?<=[ALIJVX])(?!P)', 'PSIID':'MS:1001915', 'cleavage sites':'ALIJVX'},
+      'proline endopeptidase':{'cleavage rule':'(?<=[HKRX][PX])(?!P)', 'PSIID':'MS:1001916','cleavage sites':'HKRX'},
+      'glutamyl endopeptidase':{'cleavage rule':'(?<=[DBEZX])','PSIID':'MS:1001917','cleavage sites':'DBEZX'},
+      'alphaLP': {'cleavage rule':'(?<=[TASVX])','PSIID':'', 'cleavage sites':'TASVX'},
+      '2-iodobenzoate':{'cleavage rule':'(?<=[WX])','PSIID':'MS:1001918', 'cleavage sites':'WX'},
+      'iodosobenzoate':{'cleavage rule':'(?<=W)','PSIID':'', 'cleavage sites':'W'},
+      'staphylococcal protease/D':{'cleavage rule':'(?<=[EZX])','PSIID':'', 'cleavage sites':'EZX'},
+      'proline-endopeptidase/HKR':{'cleavage rule':'(?<=[PX])','PSIID':'', 'cleavage sites':'PX'},
+      'Glu-C+P':{'cleavage rule':'(?<=[DBEZX])(?!P)','PSIID':'','cleavage sites':'DBEZX'},
+      'PepsinA + P':{'cleavage rule':'(?<=[FLJX])(?!P)','PSIID':'','cleavage sites':'FLJX'},
+      'cyanogen-bromide':{'cleavage rule':'(?<=[MX])','PSIID':'','cleavage sites':'MX'},
+      'Clostripain/P':{'cleavage rule':'(?<=[RX])','PSIID':'', 'cleavage sites':'RX'},
+      'elastase-trypsin-chymotrypsin':{'cleavage rule':'(?<=[ALIVKRWFYX])(?!P)','PSIID':'', 'cleavage sites':'ALIVKRWFYX'},
+      'unspecific cleavage':{'cleavage rule':'(?<=[A-Z])','PSIID':'MS:1001956','cleavage sites':''}
     }
 
 
 
 PYGPATK_ENZYMES = Enzymes()
-
-
-
-#         'asp-n': '\w(?=D)',
-#         'bnps-skatole': 'W',
-#         'caspase 1': '(?<=[FWYL]\w[HAT])D(?=[^PEDQKR])',
-#         'caspase 2': '(?<=DVA)D(?=[^PEDQKR])',
-#         'caspase 3': '(?<=DMQ)D(?=[^PEDQKR])',
-#         'caspase 4': '(?<=LEV)D(?=[^PEDQKR])',
-#         'caspase 5': '(?<=[LW]EH)D',
-#         'caspase 6': '(?<=VE[HI])D(?=[^PEDQKR])',
-#         'caspase 7': '(?<=DEV)D(?=[^PEDQKR])',
-#         'caspase 8': '(?<=[IL]ET)D(?=[^PEDQKR])',
-#         'caspase 9': '(?<=LEH)D',
-#         'caspase 10': '(?<=IEA)D',
-#         'chymotrypsin low specificity': '([FY](?=[^P]))|(W(?=[^MP]))',
-#         'chymotrypsin high specificity':
-#           '([FLY](?=[^P]))|(W(?=[^MP]))|(M(?=[^PY]))|(H(?=[^DMPW]))',
-#         'clostripain': 'R',
-#         'cnbr': 'M',
-#         'enterokinase': '(?<=[DN][DN][DN])K',
-#         'factor xa': '(?<=[AFGILTVM][DE]G)R',
-#         'formic acid': 'D',
-#         'glutamyl endopeptidase': 'E',
-#         'granzyme b': '(?<=IEP)D',
-#         'hydroxylamine': 'N(?=G)',
-#         'iodosobezoic acid': 'W',
-#         'lysc': 'K',
-#         'ntcb': '\w(?=C)',
-#         'pepsin ph1.3': '((?<=[^HKR][^P])[^R](?=[FLWY][^P]))|'
-#                         '((?<=[^HKR][^P])[FLWY](?=\w[^P]))',
-#         'pepsin ph2.0': '((?<=[^HKR][^P])[^R](?=[FL][^P]))|'
-#                         '((?<=[^HKR][^P])[FL](?=\w[^P]))',
-#         'proline endopeptidase': '(?<=[HKR])P(?=[^P])',
-#         'proteinase k': '[AEFILTVWY]',
-#         'staphylococcal peptidase i': '(?<=[^E])E',
-#         'thermolysin': '[^DE](?=[AFILMV])',
-#         'thrombin': '((?<=G)R(?=G))|'
-#                     '((?<=[AFGILTVM][AFGILTVWA]P)R(?=[^DE][^DE]))',

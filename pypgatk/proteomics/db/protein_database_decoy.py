@@ -186,7 +186,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
     decoy_peptides = {}
     pep_count_in_both = 0
     for record in fasta:
-      peptides = cleave(sequence = str(record.seq), rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['clavage rule'], missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length)
+      peptides = cleave(sequence = str(record.seq), rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length)
       for peptide in peptides:
          if self._decoy_prefix in record.id:
            decoy_peptides[peptide] = 'decoy'
