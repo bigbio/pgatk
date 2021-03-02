@@ -130,6 +130,11 @@ class ProteinDBDecoyService(ParameterConfiguration):
     if self.CONFIG_PEPTIDE_LENGTH_MAX in self.get_pipeline_parameters():
       self._max_peptide_length = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_LENGTH_MAX]
 
+    self._max_missed_cleavages = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
+      self.CONFIG_MAX_MISSED_CLEAVAGES]
+    if self.CONFIG_MAX_MISSED_CLEAVAGES in self.get_pipeline_parameters():
+      self._max_missed_cleavages = self.get_pipeline_parameters()[self.CONFIG_MAX_MISSED_CLEAVAGES]
+
   @staticmethod
   def decoypyrat_digest(protein, sites, pos, no, min_peptide_length):
     """
@@ -185,8 +190,8 @@ class ProteinDBDecoyService(ParameterConfiguration):
   @staticmethod
   def shuffle(peptide):
     """
-        shuffle peptide without moving c-terminal amino acid cleavage site
-        """
+    shuffle peptide without moving c-terminal amino acid cleavage site
+    """
 
     # extract terminal aa
     s = peptide[-1]
@@ -225,7 +230,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
     decoy_peptides = {}
     pep_count_in_both = 0
     for record in fasta:
-      peptides = cleave(sequence = str(record.seq), rule = '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))', missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length, max_acids=max_length)
+      peptides = cleave(sequence = str(record.seq), rule = '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))', missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length)
       for peptide in peptides:
          if self._decoy_prefix in record.id:
            decoy_peptides[peptide] = 'decoy'
