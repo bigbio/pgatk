@@ -11,9 +11,16 @@ class Enzymes:
 
       'Trypsin':{
         'name': 'Trypsin',
-        'cleavage rule': '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))',
+        'expasy rule': '([KR](?=[^P]))|((?<=W)K(?=P))|((?<=M)R(?=P))',
+        'cleavage rule': '(?<=[KR])(?!P)',
         'accession':'MS:1001251',
-        'cleavage sites':'KR'
+        'cleavage sites': '[KR]'
+      },
+      'Trypsin/P': {
+        'name': 'Trypsin/P',
+        'expasy rule': '(?<=[KR])',
+        'cleavage rule': '(?<=[KR])',
+        'accession': 'MS:1001313',
       },
       'Arg-C': {
         'name': 'Arg-C',
