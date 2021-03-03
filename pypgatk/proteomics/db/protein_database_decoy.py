@@ -30,11 +30,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
   CONFIG_KEEP_TARGET_HITS = 'keep_target_hits'
 
   def __init__(self, config_file, pipeline_arguments):
-    """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
 
     super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                 pipeline_arguments)

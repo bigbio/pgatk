@@ -1,6 +1,3 @@
-import re
-from collections import deque
-from itertools import chain
 
 
 class Enzymes:
