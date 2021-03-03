@@ -101,4 +101,4 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
 
   proteindb_decoy = ProteinDBDecoyService(config_file, pipeline_arguments)
   proteindb_decoy.decoy_database()
-  proteindb_decoy.print_target_decoy_composition(min_length=min_peptide_length , max_length = max_peptide_length)
+  proteindb_decoy.print_target_decoy_composition()

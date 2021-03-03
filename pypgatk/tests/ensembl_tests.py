@@ -2,7 +2,7 @@ import unittest
 
 from pyteomics.parser import cleave
 
-from pypgatk.proteomics.models import Enzymes, PYGPATK_ENZYMES
+from pypgatk.proteomics.models import PYGPATK_ENZYMES
 
 
 class MyTestCase(unittest.TestCase):
