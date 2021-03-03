@@ -4,7 +4,7 @@ from Bio import SeqIO
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
-from pypgatk.proteomics.models import PYGPATK_ENZYMES
+from pypgatk.proteomics.models import PYGPATK_ENZYMES, PYGPATK_ALPHABET
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -120,6 +120,9 @@ class ProteinDBDecoyService(ParameterConfiguration):
     """
     Return a reversed protein sequence with cleavage residues switched with preceding residue. This method is used by
     DecoyPyrat.
+    :param protein: protein to be switch
+    :param noswitch: switch peptides within a reverse protein
+    :param sites: the aa sites whete the peptides with be switch
     :return protein
     """
     # reverse protein sequence with a reverse splice convert to list
@@ -156,7 +159,14 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
   def protein_database_decoy(self, method ='reverse'):
     """
-    Reverse protein sequences and attach them to the output fasta file
+    The protein decoy function will generate the decoy with two default methods:
+     - Reverse: Reverse protein sequence. Reversed databases may overestimate the false positive rate because:
+          * Palindromic portions of the sequence could be repeated
+          * Homologous portions may be retained across reversing the database
+          * The deltas in masses between fragment series between reversed peptides
+            are the same - looking into whether this affects correlations
+     - Shuffle: Randomize the protein sequences. Shuffling will essentially produce proteins with the same amino acid
+       distribution as the original proteins, but with a very low chance of the original patterns being present.
     :param method the method used to compute the decoy
     :return:
     """
@@ -173,6 +183,28 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
     output_file.close()
 
+  def count_aa_in_dictionary(self, aa_dict: dict, sequence: str):
+    """
+    This function increase the count of each aminiacid in dictionary aa_dict if present in sequence
+    :param aa_dict: dictionary
+    :param sequence: protein sequence
+    :return:
+    """
+    for aa in aa_dict:
+      aa_dict[aa] = sequence.count(aa)
+    return aa_dict
+
+  def print_aa_composition_rate(self, target_aa_composition, decoy_aa_composition):
+    """
+    Print the distribution of aminoacid Target/Decoy
+    :param target_aa_composition:
+    :param decoy_aa_composition:
+    :return:
+    """
+    for aa in target_aa_composition:
+      if(target_aa_composition[aa] > 0 and decoy_aa_composition[aa] > 0):
+        print("Aminoacid composition rate for {} (Target/Decoy) = {:.1f} ".format(aa, target_aa_composition[aa]/decoy_aa_composition[aa]))
+
   def print_target_decoy_composition(self, min_length: int = 0, max_length: int = 100):
     """
     Print the number of target peptides vs decoy peptides in a Fasta database
@@ -180,6 +212,10 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :param max_length the maximum length of a peptide
     :return:
     """
+    target_aa_composition = { i : 0 for i in [aa for aa in PYGPATK_ALPHABET]}
+    decoy_aa_composition = { i : 0 for i in [aa for aa in PYGPATK_ALPHABET]}
+    target_sequence = ''
+    decoy_sequence  = ''
 
     fasta = SeqIO.parse(self._output_file, 'fasta')
     target_peptides = {}
@@ -187,6 +223,10 @@ class ProteinDBDecoyService(ParameterConfiguration):
     pep_count_in_both = 0
     for record in fasta:
       peptides = cleave(sequence = str(record.seq), rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=self._max_missed_cleavages, min_length = self._min_peptide_length)
+      if self._decoy_prefix in record.id:
+        decoy_sequence = decoy_sequence + str(record.seq)
+      else:
+        target_sequence = target_sequence + str(record.seq)
       for peptide in peptides:
          if self._decoy_prefix in record.id:
            decoy_peptides[peptide] = 'decoy'
@@ -204,6 +244,9 @@ class ProteinDBDecoyService(ParameterConfiguration):
     print('% Decoy peptides {:.1f}'.format(decoy_percentage))
     duplicate_percentage = (pep_count_in_both/(len(target_peptides) + len(decoy_peptides))) * 100
     print('Number of peptides in Target and Decoy {}, Percentage {:.1f}'.format(pep_count_in_both, duplicate_percentage))
+    target_aa_composition = self.count_aa_in_dictionary(target_aa_composition, target_sequence)
+    decoy_aa_composition  = self.count_aa_in_dictionary(decoy_aa_composition, decoy_sequence)
+    self.print_aa_composition_rate(target_aa_composition, decoy_aa_composition)
 
   def generate_decoypyrat_database(self):
     """

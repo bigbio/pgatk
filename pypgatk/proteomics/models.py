@@ -42,6 +42,7 @@ class Enzymes:
       'unspecific cleavage':{'cleavage rule':'(?<=[A-Z])','PSIID':'MS:1001956','cleavage sites':''}
     }
 
-
+# Constants
 
 PYGPATK_ENZYMES = Enzymes()
+PYGPATK_ALPHABET = "ACDEFGHIKLMNPQRSTVWYBJOUXZ"
