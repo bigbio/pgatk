@@ -382,7 +382,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         seq = seq.replace('I', 'L')
 
         # digest sequence add peptides to set
-        upeps.update(cleave(sequence = seq, rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0, min_length=self._min_peptide_length))
+        upeps.update(cleave(sequence = seq, rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=self._max_missed_cleavages, min_length=self._min_peptide_length))
 
     # open orary decoy FASTA file
     with open(self._output_file, 'w') as outfa:
@@ -410,7 +410,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
           # reverse and switch protein sequence
           decoyseq = self.revswitch(seq, self._no_switch, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
 
-          decoy_peps = cleave(sequence = decoyseq, rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0, min_length=self._min_peptide_length)
+          decoy_peps = cleave(sequence = decoyseq, rule = PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0, min_length=0)
 
           # if any of the digested peptides are found in the targets (upeps) then shuffle
           checked_decoy_peps = []
