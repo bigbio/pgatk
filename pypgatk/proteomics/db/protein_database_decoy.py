@@ -4,7 +4,6 @@ from Bio import SeqIO
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
-from pypgatk.proteomics.db.protein_database_markov import markov_decoy_maker, write_locus, read_fasta_file
 from pypgatk.proteomics.models import PYGPATK_ENZYMES, PYGPATK_ALPHABET
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration
@@ -432,7 +431,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
         # digest sequence add peptides to the target set
         upeps.update(
-          cleave(sequence=seq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], 
+          cleave(sequence=seq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                  missed_cleavages=self._max_missed_cleavages,
                  min_length=self._min_peptide_length))
 
