@@ -4,6 +4,7 @@ from Bio import SeqIO
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
+from pypgatk.proteomics.db.protein_database_markov import markov_decoy_maker, write_locus, read_fasta_file
 from pypgatk.proteomics.models import PYGPATK_ENZYMES, PYGPATK_ALPHABET
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration
@@ -515,6 +516,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
             format(len(noAlternative)))
       print('Total number of amino acids in target and decoy databases: ',
             len(''.join(targets)), len(''.join(decoys)))
+
 
   def decoy_database(self):
     """
