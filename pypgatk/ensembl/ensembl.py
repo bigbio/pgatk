@@ -513,7 +513,7 @@ class EnsemblDataService(ParameterConfiguration):
       self._annotation_field_name = 'transcriptOverlaps'
       self._transcript_index = 0
       self._consequence_index = None
-      
+
     db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
     transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
@@ -660,7 +660,8 @@ class EnsemblDataService(ParameterConfiguration):
                                                    transcript_id_v]),
                                   desc=feature_biotype,
                                   seqs=alt_orfs,
-                                  prots_fn=prots_fn)
+                                  prots_fn=prots_fn,
+                                  seqs_filter=ref_orfs)
 
                 if self._report_reference_seq:
                   self.write_output(seq_id=transcript_id_v,
@@ -742,13 +743,14 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
   @staticmethod
-  def write_output(seq_id, desc, seqs, prots_fn):
+  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter = []):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
     :param desc: Sequence Description
     :param seqs: Sequence
     :param prots_fn:
+    :param seqs_filter: filter orfs/seqs found in this list, used for alt_orfs
     :return:
     """
     write_i = False
@@ -756,6 +758,8 @@ class EnsemblDataService(ParameterConfiguration):
       write_i = True
 
     for i, orf in enumerate(seqs):
+      if orf in seqs_filter:
+          continue
       if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
         prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
       else:
