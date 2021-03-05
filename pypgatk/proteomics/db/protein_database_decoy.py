@@ -1,6 +1,7 @@
 import random
 import os
 from Bio import SeqIO
+from Bio.SeqIO.FastaIO import FastaTwoLineParser
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
@@ -263,37 +264,39 @@ class ProteinDBDecoyService(ParameterConfiguration):
     dcount = 0
 
     # Open FASTA file using first cmd line argument
-    fasta = SeqIO.parse(self._input_fasta, 'fasta')
+    # fasta = SeqIO.parse(self._input_fasta, 'fasta')
 
-    # open temporary decoy FASTA file
-    with open(self._temp_file, 'w') as outfa:
+    with open(self._input_fasta) as handle:
+      # open temporary decoy FASTA file
+      with open(self._temp_file, 'w') as outfa:
 
-      # loop each seq in the file
-      for record in fasta:
-        seq = str(record.seq)
-        dcount += 1
-        # make sequence isobaric (check args for switch off)
-        if not self._isobaric:
-          seq = seq.replace('I', 'L')
+        # loop each seq in the file
+        for description, seq in FastaTwoLineParser(handle):
+          # seq = str(record.seq)
+          dcount += 1
+          # make sequence isobaric (check args for switch off)
+          if not self._isobaric:
+            seq = seq.replace('I', 'L')
 
-        # digest sequence add peptides to set
-        upeps.update(
-          cleave(sequence=seq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0,
-                 min_length=self._min_peptide_length))
-
-        # reverse and switch protein sequence
-        decoyseq = self.revswitch(seq, self._no_switch, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
-
-        # do not store decoy peptide set in reduced memory mode
-        if not self._memory_save:
-          # update decoy peptide set
-          dpeps.update(
-            cleave(sequence=decoyseq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0,
+          # digest sequence add peptides to set
+          upeps.update(
+            cleave(sequence=seq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0,
                    min_length=self._min_peptide_length))
 
-        # write decoy protein accession and sequence to file
-        outfa.write('>' + self._decoy_prefix + record.id + ' ' + record.description + '\n')
-        outfa.write(decoyseq + '\n')
+          # reverse and switch protein sequence
+          decoyseq = self.revswitch(seq, self._no_switch, PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
+
+          # do not store decoy peptide set in reduced memory mode
+          if not self._memory_save:
+            # update decoy peptide set
+            dpeps.update(
+              cleave(sequence=decoyseq, rule=PYGPATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'], missed_cleavages=0,
+                     min_length=self._min_peptide_length))
+
+          # write decoy protein accession and sequence to file
+          outfa.write('>' + self._decoy_prefix + description + '\n')
+          outfa.write(decoyseq + '\n')
+
 
     # Summarise the numbers of target and decoy peptides and their intersection
     nonDecoys = set()
@@ -368,13 +371,11 @@ class ProteinDBDecoyService(ParameterConfiguration):
       with open(self._output_file, "wt") as fout:
 
         # Attach the target sequences to the database
-        fasta = SeqIO.parse(self._input_fasta, 'fasta')
-        for record in fasta:
-          seq = str(record.seq)
-          id_protein = record.id
-          description = record.description
-          fout.write('>' + id_protein + ' ' + description + '\n')
-          fout.write(seq + '\n')
+        # fasta = SeqIO.parse(self._input_fasta, 'fasta')
+        with open(self._input_fasta) as handle:
+          for description, seq in FastaTwoLineParser(handle):
+            fout.write('>' + description + '\n')
+            fout.write(seq + '\n')
 
         # open original decoy file
         with open(self._temp_file, "rt") as fin:
