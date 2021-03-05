@@ -30,12 +30,15 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
 @click.option('-sd', '--skip_cdna', help='Skip the cDNA file download', is_flag=True)
 @click.option('-sn', '--skip_ncrna', help='Skip the ncRNA file download', is_flag=True)
+@click.option('-sn', '--skip_dna', help='Skip the DNA (reference genome assembly) file download', is_flag=True)
 @click.option('-sv', '--skip_vcf', help='Skip the VCF variant file', is_flag=True)
 @click.option('-en', '--ensembl_name',
               help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
 @click.option('--grch37', help='Download a previous version GRCh37 of ensembl genomes', is_flag=True)
-def ensembl_downloader(config_file, output_directory, folder_prefix_release, taxonomy, list_taxonomies,
-                       skip_gtf, skip_protein, skip_cds, skip_cdna, skip_ncrna, skip_vcf, ensembl_name, grch37=False):
+def ensembl_downloader(config_file, output_directory, folder_prefix_release, 
+                       taxonomy, list_taxonomies, skip_gtf, skip_protein, 
+                       skip_cds, skip_cdna, skip_ncrna, skip_dna, skip_vcf, 
+                       ensembl_name, grch37=False):
   """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
   if config_file is None:
@@ -71,6 +74,10 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release, tax
     pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = True
   else:
     pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_NCRNA] = False
+  if skip_dna is not None and skip_dna:
+    pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_DNA] = True
+  else:
+    pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_DNA] = False
   if skip_cdna is not None and skip_cdna:
     pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_CDNA] = True
   else:
