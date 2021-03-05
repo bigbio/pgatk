@@ -15,7 +15,7 @@ this_dir, this_filename = os.path.split(__file__)
               default=this_dir + '/../config/protein_decoy.yaml')
 @click.option('-out', '--output_database', help='Output file for decoy database', default="protein-decoy.fa")
 @click.option('-in', '--input_database', help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
-@click.option('-m', '--method', type=click.Choice(['protein-reverse', 'protein-shuffle', 'decoypyrat', 'pgdbdeep', 'markov'], case_sensitive=False),
+@click.option('-m', '--method', type=click.Choice(['protein-reverse', 'protein-shuffle', 'decoypyrat', 'pgdbdeep'], case_sensitive=False),
               help='The method that would be used to generate the decoys:\n'
                    'protein-reverse: reverse protein sequences\n'
                    'protein-shuffle: shuffle protein sequences\n'
