@@ -11,12 +11,13 @@ def vcf_to_proteindb():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
-                          '--vep_annotated_vcf', 'testdata/test.vcf',
+                          '--vcf', 'testdata/test.vcf',
                           '--input_fasta', 'testdata/test.fa',
                           '--gene_annotations_gtf', 'testdata/test.gtf',
                           '--var_prefix', 'ensvar',
                           '--af_field', 'MAF',
-                          '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa'])
+                          '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
+                          'annotation_field_name', 'CSQ'])
   assert result.exit_code == 0
 
 
@@ -28,7 +29,7 @@ def vcf_gnomad_to_proteindb():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
-                          '--vep_annotated_vcf', 'testdata/test_gnomad.vcf',
+                          '--vcf', 'testdata/test_gnomad.vcf',
                           '--input_fasta', 'testdata/test_gencode.fa',
                           '--gene_annotations_gtf', 'testdata/test_gencode.gtf',
                           '--output_proteindb', 'testdata/proteindb_from_gnomad_VCF.fa',

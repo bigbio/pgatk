@@ -8,11 +8,11 @@ from pypgatk.ensembl.ensembl import EnsemblDataService
 this_dir, this_filename = os.path.split(__file__)
 
 
-@click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants from ENSEMBL VEP VCF files")
+@click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants VCF files")
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
               default=this_dir + '/../config/ensembl_config.yaml')
 @click.option('-f', '--input_fasta', help='Path to the transcript sequence')
-@click.option('-v', '--vep_annotated_vcf', help='Path to the vep annotated VCF file')
+@click.option('-v', '--vcf', help='Path to the VCF file')
 @click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
 @click.option('-t', '--translation_table', default=1, type=int, help="Translation table (Default 1) ")
 @click.option('-m', '--mito_translation_table', default=2, type=int, help='Mito_trans_table (default 2)')
@@ -21,7 +21,9 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-o', '--output_proteindb', default="peptide-database.fa",
               help="Output file name, exits if already exists")
 @click.option('--annotation_field_name', default="CSQ",
-              help="Annotation field name found in the INFO column, e.g CSQ or vep")
+              help='''Annotation field name found in the INFO column, 
+              e.g CSQ or vep; if empty it will identify overlapping transcripts
+              from the given GTF file and no aa consequence will be considered''')
 @click.option('--af_field', default="",
               help="field name in the VCF INFO column to use for filtering on AF, (Default None)")
 @click.option('--af_threshold', default=0.01, help='Minium AF threshold for considering common variants')
@@ -47,13 +49,13 @@ this_dir, this_filename = os.path.split(__file__)
               is_flag=True)
 @click.option('--accepted_filters', default='', help="Accepted filters for variant parsing")
 @click.pass_context
-def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_annotations_gtf, translation_table,
+def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_index, consequence_index, exclude_biotypes,
                      exclude_consequences, skip_including_all_cds, include_biotypes, include_consequences, biotype_str,
                      ignore_filters, accepted_filters):
-  if input_fasta is None or vep_annotated_vcf is None or gene_annotations_gtf is None:
+  if input_fasta is None or vcf is None or gene_annotations_gtf is None:
     print_help()
 
   pipeline_arguments = {EnsemblDataService.MITO_TRANSLATION_TABLE: mito_translation_table,
@@ -75,4 +77,4 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vep_annotated_vcf, gene_anno
                         EnsemblDataService.ACCEPTED_FILTERS: accepted_filters}
 
   ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-  ensembl_data_service.vcf_to_proteindb(vep_annotated_vcf, input_fasta, gene_annotations_gtf)
+  ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf)

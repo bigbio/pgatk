@@ -496,9 +496,12 @@ class EnsemblDataService(ParameterConfiguration):
 
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
-        Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
-        It only considers variants within potential coding regions of the transcript
-        (CDSs & stop codons for protein-coding genes, exons for non-protein coding genes).
+        Generate proteins for variants by modifying sequences of affected transcripts.
+        In case of already annotated variants it only considers variants within 
+        potential coding regions of the transcript (CDSs & stop codons for protein-coding genes, 
+        exons for non-protein coding genes)
+        In case of not annotated variants, it considers all variants overlapping 
+        transcripts from the selected biotypes.
         :param vcf_file:
         :param input_fasta:
         :param gene_annotations_gtf:
