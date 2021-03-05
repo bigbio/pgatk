@@ -315,7 +315,7 @@ class EnsemblDataService(ParameterConfiguration):
     for f in features:
       f_type = f.featuretype
       coding_features.append([f.start, f.end, f_type])
-    return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
+    return feature.chrom, feature.strand, coding_features
 
   @staticmethod
   def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
@@ -457,7 +457,7 @@ class EnsemblDataService(ParameterConfiguration):
     with open(annotated_vcf+'_all.bed', 'r') as an:
       for line in an.readlines():
         sl = line.strip().split('\t')
-        if sl[record_type_index].strip()!='transcript':
+        if sl[record_type_index].strip()!='CDS':
           continue
         transcript_id = 'NO_OVERLAP'
 
@@ -607,7 +607,7 @@ class EnsemblDataService(ParameterConfiguration):
               msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
 
-          chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
+          chrom, strand, features_info = self.get_features(db, transcript_id_v,
                                                                             self._biotype_str,
                                                                             feature_types)
           if chrom is None:  # the record info was not found
@@ -619,13 +619,6 @@ class EnsemblDataService(ParameterConfiguration):
                self._include_consequences != ['all'])):
               continue
 
-          # only include features that have the specified biotypes or they have CDSs info
-          if 'CDS' in feature_types and not self._skip_including_all_cds:
-            pass
-          elif (feature_biotype in self._exclude_biotypes or
-                (feature_biotype not in self._include_biotypes and
-                 self._include_biotypes != ['all'])):
-            continue
           for alt in record.ALT:  # in cases of multiple alternative alleles consider all
             if alt is None:
               continue
@@ -658,14 +651,14 @@ class EnsemblDataService(ParameterConfiguration):
                                                    '.'.join([str(record.CHROM), str(record.POS),
                                                              str(record.REF), str(alt)]),
                                                    transcript_id_v]),
-                                  desc=feature_biotype,
+                                  desc='',
                                   seqs=alt_orfs,
                                   prots_fn=prots_fn,
                                   seqs_filter=ref_orfs)
 
                 if self._report_reference_seq:
                   self.write_output(seq_id=transcript_id_v,
-                                    desc=feature_biotype,
+                                    desc='',
                                     seqs=ref_orfs,
                                     prots_fn=prots_fn)
 
@@ -760,10 +753,12 @@ class EnsemblDataService(ParameterConfiguration):
     for i, orf in enumerate(seqs):
       if orf in seqs_filter:
           continue
+      if desc:
+          desc = " "+desc
       if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-        prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+        prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
       else:
-        prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
+        prots_fn.write('>{}{}\n{}\n'.format(seq_id, desc, orf))
 
 
 if __name__ == '__main__':

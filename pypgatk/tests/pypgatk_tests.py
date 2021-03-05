@@ -51,7 +51,6 @@ def vcf_gnomad_to_proteindb():
                           '--af_field', 'controls_AF',
                           '--var_prefix', 'gnomvar',
                           '--transcript_index', 6,
-                          '--biotype_str', 'transcript_type',
                           '--annotation_field_name', 'vep'])
   assert result.exit_code == 0
 
