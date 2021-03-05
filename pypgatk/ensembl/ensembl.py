@@ -1,8 +1,9 @@
+import os
 import gffutils
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
-
+from pybedtools import BedTool
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
@@ -439,6 +440,58 @@ class EnsemblDataService(ParameterConfiguration):
   def get_key(fasta_header):
     return fasta_header.split('|')[0].split(' ')[0]
 
+  @staticmethod
+  def annoate_vcf(vcf_file, gtf_file, 
+                  vcf_info_field_index = 7, record_type_index = 2,
+                  gene_info_index=8, gene_info_sep=';', 
+                  transcript_str='transcript_id', transcript_info_sep=' ', 
+                  annotation_str='transcriptOverlaps'):
+    """
+    intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
+    """
+    annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
+    
+    BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf+'_all.bed')
+    
+    muts_dict = {}
+    with open(annotated_vcf+'_all.bed', 'r') as an:
+      for line in an.readlines():
+        sl = line.strip().split('\t')
+        if sl[record_type_index].strip()!='transcript':
+          continue
+        transcript_id = 'NO_OVERLAP'
+
+        gene_info = sl[gene_info_index].split(gene_info_sep)
+        for info in gene_info: #extract transcript id from the gtf info column
+          if info.strip().startswith(transcript_str):
+            transcript_id = info.strip().split(transcript_info_sep)[1].strip('"')
+            continue
+            
+        if transcript_id=='NO_OVERLAP':
+          continue
+            
+        #write the mutation line as a key and set the overlapping transcriptID as its value(s)
+        try: 
+          muts_dict['\t'.join(sl[gene_info_index+1:-1])].append(transcript_id)
+        except KeyError:
+          muts_dict['\t'.join(sl[gene_info_index+1:-1])]= [transcript_id]
+
+    with open(annotated_vcf+'_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v: 
+      #write vcf headers to the output file
+      for line in v.readlines():
+        if line.startswith('#'):
+          ann.write(line)
+        else:
+          #write the mutations and their overlapping transcript to output file
+          try:
+            sl = line.strip().split('\t')
+            sl[vcf_info_field_index] = sl[vcf_info_field_index].strip() +  ';{}={}'.format(annotation_str, ','.join(set(muts_dict[line.strip()])))
+            ann.write('\t'.join(sl) + '\n')
+          except KeyError:
+            ann.write(line)
+        
+    return annotated_vcf+'_annotated.vcf'
+
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
         Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
@@ -450,6 +503,12 @@ class EnsemblDataService(ParameterConfiguration):
         :return:
         """
 
+    if not self._annotation_field_name:
+      vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
+      self._annotation_field_name = 'transcriptOverlaps'
+      self._transcript_index = 0
+      self._consequence_index = None
+      
     db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
     transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
@@ -483,21 +542,30 @@ class EnsemblDataService(ParameterConfiguration):
             continue
 
         trans_table = self._translation_table
-        consequences = []
         if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
           trans_table = self._mito_translation_table
 
+        consequences = []
         processed_transcript_allele = []
+        try:
+          transcript_records = record.INFO[self._annotation_field_name]
+        except KeyError:#no overlapping feature was found
+          msg = "skipped record {}, no annotation feature was found".format(record)
+          self.get_logger().debug(msg)
+          continue
 
-        for transcript_record in record.INFO[self._annotation_field_name]:
+        for transcript_record in transcript_records:
           transcript_info = transcript_record.split('|')
           try:
             consequence = transcript_info[self._consequence_index]
+            consequences.append(consequence)
           except IndexError:
             msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
             self.get_logger().debug(msg)
             continue
-          consequences.append(consequence)
+          except TypeError:
+              pass
+
           try:
             transcript_id = transcript_info[self._transcript_index]
           except IndexError:
@@ -540,10 +608,11 @@ class EnsemblDataService(ParameterConfiguration):
           if chrom is None:  # the record info was not found
             continue
           # skip transcripts with unwanted consequences
-          if (consequence in self._exclude_consequences or
-            (consequence not in self._include_consequences and
-             self._include_consequences != ['all'])):
-            continue
+          if self._consequence_index is not None:
+            if (consequence in self._exclude_consequences or
+              (consequence not in self._include_consequences and
+               self._include_consequences != ['all'])):
+              continue
 
           # only include features that have the specified biotypes or they have CDSs info
           if 'CDS' in feature_types and not self._skip_including_all_cds:
@@ -584,7 +653,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                    '.'.join([str(record.CHROM), str(record.POS),
                                                              str(record.REF), str(alt)]),
                                                    transcript_id_v]),
-                                  desc=feature_biotype + ":" + consequence,
+                                  desc=feature_biotype,
                                   seqs=alt_orfs,
                                   prots_fn=prots_fn)
 
