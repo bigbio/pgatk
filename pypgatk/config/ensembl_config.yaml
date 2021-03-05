@@ -5,7 +5,7 @@ ensembl_translation:
     mito_translation_table: 2
     var_prefix: "var"
     report_ref_seq: False
-    annotation_field_name: ''
+    annotation_field_name: 'CSQ'
     af_field: ''
     af_threshold: 0.01
     transcript_index: 3
