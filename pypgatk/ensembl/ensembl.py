@@ -441,16 +441,16 @@ class EnsemblDataService(ParameterConfiguration):
     return fasta_header.split('|')[0].split(' ')[0]
 
   @staticmethod
-  def annoate_vcf(vcf_file, gtf_file, 
+  def annoate_vcf(vcf_file, gtf_file,
                   vcf_info_field_index = 7, record_type_index = 2,
-                  gene_info_index=8, gene_info_sep=';', 
-                  transcript_str='transcript_id', transcript_info_sep=' ', 
+                  gene_info_index=8, gene_info_sep=';',
+                  transcript_str='transcript_id', transcript_info_sep=' ',
                   annotation_str='transcriptOverlaps'):
     """
     intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
     """
     annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
-    
+
     BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf+'_all.bed')
     
     muts_dict = {}
@@ -469,14 +469,14 @@ class EnsemblDataService(ParameterConfiguration):
             
         if transcript_id=='NO_OVERLAP':
           continue
-            
+
         #write the mutation line as a key and set the overlapping transcriptID as its value(s)
-        try: 
+        try:
           muts_dict['\t'.join(sl[gene_info_index+1:-1])].append(transcript_id)
         except KeyError:
           muts_dict['\t'.join(sl[gene_info_index+1:-1])]= [transcript_id]
 
-    with open(annotated_vcf+'_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v: 
+    with open(annotated_vcf+'_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v:
       #write vcf headers to the output file
       for line in v.readlines():
         if line.startswith('#'):
@@ -485,7 +485,9 @@ class EnsemblDataService(ParameterConfiguration):
           #write the mutations and their overlapping transcript to output file
           try:
             sl = line.strip().split('\t')
-            sl[vcf_info_field_index] = sl[vcf_info_field_index].strip() +  ';{}={}'.format(annotation_str, ','.join(set(muts_dict[line.strip()])))
+            sl[vcf_info_field_index] = '{};{}={}'.format(
+                sl[vcf_info_field_index].strip(), annotation_str,
+                ','.join(set(muts_dict[line.strip()])))
             ann.write('\t'.join(sl) + '\n')
           except KeyError:
             ann.write(line)
