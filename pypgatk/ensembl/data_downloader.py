@@ -400,7 +400,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     try:
       if grch37:
         species['assembly'] = 'GRCh37'
-      file_name = '{}.{}.dna.primary_assembly.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+      file_name = '{}.{}.dna_sm.toplevel.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                              species['assembly'])
       file_url = '{}/release-{}/fasta/{}/dna/{}'.format(
         self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
