@@ -172,7 +172,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         seq = str(record.seq)
         decoy_seq = decoy_sequence(seq, mode=method)
 
-        output_file.write('>' + record.id + "\t" + record.description + '\n')
+        output_file.write('>' + record.id + " " + record.description + '\n')
         output_file.write(str(record.seq) + '\n')
         output_file.write('>' + self._decoy_prefix + record.id + '\n')
         output_file.write(decoy_seq + '\n')
@@ -373,7 +373,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
           seq = str(record.seq)
           id_protein = record.id
           description = record.description
-          fout.write('>' + id_protein + '\t' + description + '\n')
+          fout.write('>' + id_protein + ' ' + description + '\n')
           fout.write(seq + '\n')
 
         # open original decoy file
@@ -449,7 +449,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         seq = str(record.seq)
         id_protein = record.id
         description = record.description
-        outfa.write('>' + id_protein + '\t' + description + '\n')
+        outfa.write('>' + id_protein + ' ' + description + '\n')
         outfa.write(seq + '\n')
 
         for seq in protseq.split('*'):
