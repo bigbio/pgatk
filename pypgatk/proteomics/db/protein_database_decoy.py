@@ -292,7 +292,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
                    min_length=self._min_peptide_length))
 
         # write decoy protein accession and sequence to file
-        outfa.write('>' + self._decoy_prefix + record.id + '\n')
+        outfa.write('>' + self._decoy_prefix + record.id + ' ' + record.description + '\n')
         outfa.write(decoyseq + '\n')
 
     # Summarise the numbers of target and decoy peptides and their intersection
@@ -507,7 +507,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
           if checked_decoy_peps:
             revprotseq.append(''.join(checked_decoy_peps))
 
-        outfa.write('>{}\n{}\n'.format(self._decoy_prefix + str(record.id), '*'.join(revprotseq)))
+        outfa.write('>{}\n{}\n'.format(self._decoy_prefix + str(record.id) + ' ' + record.description, '*'.join(revprotseq)))
         decoys.append('*'.join(revprotseq))
 
       with open(self._output_file.replace('.fa', '') + '_noAlternative.fa', 'w') as noAlternative_outfa:
