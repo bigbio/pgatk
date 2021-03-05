@@ -20,6 +20,21 @@ def vcf_to_proteindb():
                           'annotation_field_name', 'CSQ'])
   assert result.exit_code == 0
 
+def vcf_to_proteindb_notannotated():
+  """
+    Test the default behaviour of the vcf-to-proteindb tool using not-annotated vcf
+    :return:
+    """
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                          '--vcf', 'testdata/test.vcf',
+                          '--input_fasta', 'testdata/test.fa',
+                          '--gene_annotations_gtf', 'testdata/test.gtf',
+                          '--var_prefix', 'varsample',
+                          '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
+                          'annotation_field_name', "''"])
+  assert result.exit_code == 0
 
 def vcf_gnomad_to_proteindb():
   """
@@ -229,6 +244,7 @@ def check_ensembl_database():
 
 if __name__ == '__main__':
   vcf_to_proteindb()
+  vcf_to_proteindb_notannotated()
   vcf_gnomad_to_proteindb()
   dnaseq_to_proteindb()
   dnaseq_ncrnas_to_proteindb()
