@@ -15,8 +15,8 @@ from pypgatk.toolbox.rest import call_api
 
 class EnsemblDataDownloadService(ParameterConfiguration):
   """
-    This Service is in charge of grabbing data (download) from Ensembl to a local repository
-    """
+  This Service is in charge of grabbing data (download) from Ensembl to a local repository
+  """
 
   CONFIG_KEY_DATA_DOWNLOADER = 'ensembl_data_downloader'
   CONFIG_OUTPUT_DIRECTORY = 'output_directory'
@@ -51,10 +51,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def __init__(self, config_file, pipeline_arguments):
     """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
+    Init the class with the specific parameters.
+    :param config_file configuration file
+    :param pipeline_arguments pipelines arguments
+    """
     super(EnsemblDataDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                      pipeline_arguments)
 
@@ -83,9 +83,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_species_from_rest(self):
     """
-        Get the list of species from ENSEMBL rest API.
-        :return:
-        """
+    Get the list of species from ENSEMBL rest API.
+    :return:
+    """
     server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
       self.CONFIG_ENSEMBL_API_SERVER]
     endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
@@ -207,9 +207,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_cds_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -232,9 +232,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_cdna_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -259,9 +259,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_ncrna_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -287,9 +287,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_pep_files(self, species: dict, grch37=False) -> list:
     """
-      Get the peptide files for a specific species object.
-      :return: List of files names.
-      """
+    Get the peptide files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       # TODO: Would be better to check by API the assembly version
@@ -315,11 +315,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_gtf_files(self, species: dict, grch37=False) -> list:
     """
-      This method retrieve the gtf files for a specific specie object
-      :param grch37: if the GrCh37 genome assembly is desired enable to true
-      :param species: species to download the file.
-      :return:
-      """
+    This method retrieve the gtf files for a specific specie object
+    :param grch37: if the GrCh37 genome assembly is desired enable to true
+    :param species: species to download the file.
+    :return:
+    """
     files = []
     try:
       if grch37:
@@ -344,10 +344,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_vcf_files(self, species: dict) -> list:
     """
-      This method retrieve the vcf file for a specific specie object
-      :param species:
-      :return:
-      """
+    This method retrieve the vcf file for a specific specie object
+    :param species:
+    :return:
+    """
     files = []
     try:
       file_name = '{}_incl_consequences.vcf.gz'.format(species['name'])
@@ -391,11 +391,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_genome_assembly_files(self, species: dict, grch37=False) -> list:
     """
-      This method retrieve the genome assembly files for a specific specie object
-      :param grch37: if the GrCh37 genome assembly is desired enable to true
-      :param species: species to download the file.
-      :return:
-      """
+    This method retrieve the genome assembly files for a specific specie object
+    :param grch37: if the GrCh37 genome assembly is desired enable to true
+    :param species: species to download the file.
+    :return:
+    """
     files = []
     try:
       if grch37:
