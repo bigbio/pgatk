@@ -739,7 +739,7 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
   @staticmethod
-  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter = []):
+  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter= None):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
@@ -749,6 +749,8 @@ class EnsemblDataService(ParameterConfiguration):
     :param seqs_filter: filter orfs/seqs found in this list, used for alt_orfs
     :return:
     """
+    if seqs_filter is None:
+      seqs_filter = []
     write_i = False
     if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
       write_i = True

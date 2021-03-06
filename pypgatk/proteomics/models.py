@@ -2,6 +2,9 @@
 class Enzymes:
 
   def __init__(self):
+    """
+    Creates the Enzymes model.
+    """
 
     self.enzymes = {
       'Trypsin': {'cleavage rule': '(?<=[KRX])(?!P)', 'PSIID': 'MS:1001251', 'cleavage sites' :'KR'},

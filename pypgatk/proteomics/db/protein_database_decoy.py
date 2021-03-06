@@ -1,7 +1,7 @@
 import random
 import os
 from Bio import SeqIO
-from Bio.SeqIO.FastaIO import FastaTwoLineParser, SimpleFastaParser
+from Bio.SeqIO.FastaIO import SimpleFastaParser
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
@@ -31,6 +31,11 @@ class ProteinDBDecoyService(ParameterConfiguration):
   CONFIG_KEEP_TARGET_HITS = 'keep_target_hits'
 
   def __init__(self, config_file, pipeline_arguments):
+    """
+    Creates the ProteinDBDecoyService pipelines Class
+    :param config_file: config file
+    :param pipeline_arguments: arguments
+    """
 
     super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                 pipeline_arguments)
@@ -122,7 +127,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :param sites: the aa sites whete the peptides with be switch
     :return protein
     """
-    # reverse protein sequence with a reverse splice convert to list
+
     revseq = list(protein[::-1])
 
     if not noswitch:
