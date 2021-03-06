@@ -21,7 +21,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-o', '--output_proteindb', default="peptide-database.fa",
               help="Output file name, exits if already exists")
 @click.option('--annotation_field_name', default="CSQ",
-              help='''Annotation field name found in the INFO column, 
+              help='''Annotation field name found in the INFO column,
               e.g CSQ or vep; if empty it will identify overlapping transcripts
               from the given GTF file and no aa consequence will be considered''')
 @click.option('--af_field', default="",
