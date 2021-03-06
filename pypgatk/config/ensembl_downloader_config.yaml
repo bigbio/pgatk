@@ -6,6 +6,7 @@ ensembl_data_downloader:
   skip_cds: False
   skip_cdna: False
   skip_ncrna: False
+  skip_dna: False
   skip_vcf: False
   ensembl_ftp:
     base_url: ftp://ftp.ensembl.org/pub

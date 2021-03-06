@@ -1,8 +1,9 @@
+import os
 import gffutils
 import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
-
+from pybedtools import BedTool
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
@@ -36,10 +37,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def __init__(self, config_file, pipeline_arguments):
     """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
+    Init the class with the specific parameters.
+    :param config_file configuration file
+    :param pipeline_arguments pipelines arguments
+    """
     super(EnsemblDataService, self).__init__(self.CONFIG_KEY_DATA, config_file,
                                              pipeline_arguments)
 
@@ -155,10 +156,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def three_frame_translation(self, input_fasta):
     """
-        This function translate a transcriptome into a 3'frame translation protein sequence database
-        :param input_fasta: fasta input file
-        :return:
-        """
+    This function translate a transcriptome into a 3'frame translation protein sequence database
+    :param input_fasta: fasta input file
+    :return:
+    """
 
     input_handle = open(input_fasta, 'r')
     output_handle = open(self._proteindb_output, 'w')
@@ -270,11 +271,11 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def parse_gtf(gene_annotations_gtf, gtf_db_file):
     """
-        Convert GTF file into a FeatureDB
-        :param gene_annotations_gtf:
-        :param gtf_db_file:
-        :return:
-        """
+    Convert GTF file into a FeatureDB
+    :param gene_annotations_gtf:
+    :param gtf_db_file:
+    :return:
+    """
     try:
       gffutils.create_db(gene_annotations_gtf, gtf_db_file, merge_strategy="create_unique",
                          keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
@@ -289,14 +290,15 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def get_features(db, feature_id, biotype_str, feature_types=None):
     """
-        Get chr, genomic positions, strand and biotype for feature_id
-        also genomic positions for all its elements (exons/cds&start_codon)
-        :param db:
-        :param feature_id:
-        :param biotype_str:
-        :param feature_types:
-        :return:
-        """
+    Get chr, genomic positions, strand and biotype for feature_id
+    also genomic positions for all its elements (exons/cds&start_codon)
+    :param db:
+    :param feature_id:
+    :param biotype_str:
+    :param feature_types:
+    :return:
+    """
+
     if feature_types is None:
       feature_types = ['exon']
     try:
@@ -314,18 +316,18 @@ class EnsemblDataService(ParameterConfiguration):
     for f in features:
       f_type = f.featuretype
       coding_features.append([f.start, f.end, f_type])
-    return feature.chrom, feature.strand, coding_features, feature.attributes[biotype_str][0]
+    return feature.chrom, feature.strand, coding_features
 
   @staticmethod
   def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
     """
-        Translate the coding_ref and the coding_alt into ORFs
-        :param ref_seq:
-        :param alt_seq:
-        :param translation_table:
-        :param num_orfs:
-        :return:
-        """
+    Translate the coding_ref and the coding_alt into ORFs
+    :param ref_seq:
+    :param alt_seq:
+    :param translation_table:
+    :param num_orfs:
+    :return:
+    """
 
     ref_orfs = []
     alt_orfs = []
@@ -337,7 +339,9 @@ class EnsemblDataService(ParameterConfiguration):
 
   @staticmethod
   def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool):
-    """translate the coding_ref into ORFs"""
+    """
+    translate the coding_ref into ORFs
+    """
 
     ref_orfs = []
     for n in range(0, num_orfs):
@@ -351,10 +355,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def dnaseq_to_proteindb(self, input_fasta):
     """
-        translates DNA sequences to protein sequences
-        :param input_fasta:
-        :return:
-        """
+    translates DNA sequences to protein sequences
+    :param input_fasta: input fasta file
+    :return:
+    """
 
     seq_dict = SeqIO.index(input_fasta, "fasta")
 
@@ -439,16 +443,79 @@ class EnsemblDataService(ParameterConfiguration):
   def get_key(fasta_header):
     return fasta_header.split('|')[0].split(' ')[0]
 
+  @staticmethod
+  def annoate_vcf(vcf_file, gtf_file,
+                  vcf_info_field_index = 7, record_type_index = 2,
+                  gene_info_index=8, gene_info_sep=';',
+                  transcript_str='transcript_id', transcript_info_sep=' ',
+                  annotation_str='transcriptOverlaps'):
+    """
+    intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
+    """
+    annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
+
+    BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf+'_all.bed')
+
+    muts_dict = {}
+    with open(annotated_vcf+'_all.bed', 'r') as an:
+      for line in an.readlines():
+        sl = line.strip().split('\t')
+        if sl[record_type_index].strip()!='CDS':
+          continue
+        transcript_id = 'NO_OVERLAP'
+
+        gene_info = sl[gene_info_index].split(gene_info_sep)
+        for info in gene_info: #extract transcript id from the gtf info column
+          if info.strip().startswith(transcript_str):
+            transcript_id = info.strip().split(transcript_info_sep)[1].strip('"')
+            continue
+
+        if transcript_id=='NO_OVERLAP':
+          continue
+
+        #write the mutation line as a key and set the overlapping transcriptID as its value(s)
+        try:
+          muts_dict['\t'.join(sl[gene_info_index+1:-1])].append(transcript_id)
+        except KeyError:
+          muts_dict['\t'.join(sl[gene_info_index+1:-1])]= [transcript_id]
+
+    with open(annotated_vcf+'_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v:
+      #write vcf headers to the output file
+      for line in v.readlines():
+        if line.startswith('#'):
+          ann.write(line)
+        else:
+          #write the mutations and their overlapping transcript to output file
+          try:
+            sl = line.strip().split('\t')
+            sl[vcf_info_field_index] = '{};{}={}'.format(
+                sl[vcf_info_field_index].strip(), annotation_str,
+                ','.join(set(muts_dict[line.strip()])))
+            ann.write('\t'.join(sl) + '\n')
+          except KeyError:
+            ann.write(line)
+
+    return annotated_vcf+'_annotated.vcf'
+
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
-        Generate peps for variants by modifying sequences of affected transcripts (VCF - VEP annotated).
-        It only considers variants within potential coding regions of the transcript
-        (CDSs & stop codons for protein-coding genes, exons for non-protein coding genes).
-        :param vcf_file:
-        :param input_fasta:
-        :param gene_annotations_gtf:
-        :return:
-        """
+    Generate proteins for variants by modifying sequences of affected transcripts.
+    In case of already annotated variants it only considers variants within
+    potential coding regions of the transcript (CDSs & stop codons for protein-coding genes,
+    exons for non-protein coding genes)
+    In case of not annotated variants, it considers all variants overlapping
+    transcripts from the selected biotypes.
+    :param vcf_file:
+    :param input_fasta:
+    :param gene_annotations_gtf:
+    :return:
+    """
+
+    if not self._annotation_field_name:
+      vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
+      self._annotation_field_name = 'transcriptOverlaps'
+      self._transcript_index = 0
+      self._consequence_index = None
 
     db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
 
@@ -483,21 +550,30 @@ class EnsemblDataService(ParameterConfiguration):
             continue
 
         trans_table = self._translation_table
-        consequences = []
         if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
           trans_table = self._mito_translation_table
 
+        consequences = []
         processed_transcript_allele = []
+        try:
+          transcript_records = record.INFO[self._annotation_field_name]
+        except KeyError:#no overlapping feature was found
+          msg = "skipped record {}, no annotation feature was found".format(record)
+          self.get_logger().debug(msg)
+          continue
 
-        for transcript_record in record.INFO[self._annotation_field_name]:
+        for transcript_record in transcript_records:
           transcript_info = transcript_record.split('|')
           try:
             consequence = transcript_info[self._consequence_index]
+            consequences.append(consequence)
           except IndexError:
             msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
             self.get_logger().debug(msg)
             continue
-          consequences.append(consequence)
+          except TypeError:
+              pass
+
           try:
             transcript_id = transcript_info[self._transcript_index]
           except IndexError:
@@ -534,24 +610,18 @@ class EnsemblDataService(ParameterConfiguration):
               msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
 
-          chrom, strand, features_info, feature_biotype = self.get_features(db, transcript_id_v,
+          chrom, strand, features_info = self.get_features(db, transcript_id_v,
                                                                             self._biotype_str,
                                                                             feature_types)
           if chrom is None:  # the record info was not found
             continue
           # skip transcripts with unwanted consequences
-          if (consequence in self._exclude_consequences or
-            (consequence not in self._include_consequences and
-             self._include_consequences != ['all'])):
-            continue
+          if self._consequence_index is not None:
+            if (consequence in self._exclude_consequences or
+              (consequence not in self._include_consequences and
+               self._include_consequences != ['all'])):
+              continue
 
-          # only include features that have the specified biotypes or they have CDSs info
-          if 'CDS' in feature_types and not self._skip_including_all_cds:
-            pass
-          elif (feature_biotype in self._exclude_biotypes or
-                (feature_biotype not in self._include_biotypes and
-                 self._include_biotypes != ['all'])):
-            continue
           for alt in record.ALT:  # in cases of multiple alternative alleles consider all
             if alt is None:
               continue
@@ -584,13 +654,14 @@ class EnsemblDataService(ParameterConfiguration):
                                                    '.'.join([str(record.CHROM), str(record.POS),
                                                              str(record.REF), str(alt)]),
                                                    transcript_id_v]),
-                                  desc=feature_biotype + ":" + consequence,
+                                  desc='',
                                   seqs=alt_orfs,
-                                  prots_fn=prots_fn)
+                                  prots_fn=prots_fn,
+                                  seqs_filter=ref_orfs)
 
                 if self._report_reference_seq:
                   self.write_output(seq_id=transcript_id_v,
-                                    desc=feature_biotype,
+                                    desc='',
                                     seqs=ref_orfs,
                                     prots_fn=prots_fn)
 
@@ -668,24 +739,31 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
   @staticmethod
-  def write_output(seq_id, desc, seqs, prots_fn):
+  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter= None):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
     :param desc: Sequence Description
     :param seqs: Sequence
     :param prots_fn:
+    :param seqs_filter: filter orfs/seqs found in this list, used for alt_orfs
     :return:
     """
+    if seqs_filter is None:
+      seqs_filter = []
     write_i = False
     if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
       write_i = True
 
     for i, orf in enumerate(seqs):
+      if orf in seqs_filter:
+          continue
+      if desc:
+          desc = " "+desc
       if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-        prots_fn.write('>{} {}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+        prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
       else:
-        prots_fn.write('>{} {}\n{}\n'.format(seq_id, desc, orf))
+        prots_fn.write('>{}{}\n{}\n'.format(seq_id, desc, orf))
 
 
 if __name__ == '__main__':

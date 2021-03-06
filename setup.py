@@ -51,7 +51,8 @@ setup(name='pypgatk',
         'typed-ast==1.3.5',
         'urllib3==1.24.2',
         'wrapt==1.11.1',
-        'ratelimit'
+        'ratelimit',
+        'pybedtools'
       ],
       scripts=['pypgatk/pypgatk_cli.py'],
       packages=find_packages(),

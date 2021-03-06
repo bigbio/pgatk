@@ -15,8 +15,8 @@ from pypgatk.toolbox.rest import call_api
 
 class EnsemblDataDownloadService(ParameterConfiguration):
   """
-    This Service is in charge of grabbing data (download) from Ensembl to a local repository
-    """
+  This Service is in charge of grabbing data (download) from Ensembl to a local repository
+  """
 
   CONFIG_KEY_DATA_DOWNLOADER = 'ensembl_data_downloader'
   CONFIG_OUTPUT_DIRECTORY = 'output_directory'
@@ -46,14 +46,15 @@ class EnsemblDataDownloadService(ParameterConfiguration):
   CONFIG_KEY_SKIP_CDS = 'skip_cds'
   CONFIG_KEY_SKIP_CDNA = 'skip_cdna'
   CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
+  CONFIG_KEY_SKIP_DNA = 'skip_DNA'
   CONFIG_KEY_SKIP_VCF = 'skip_vcf'
 
   def __init__(self, config_file, pipeline_arguments):
     """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
+    Init the class with the specific parameters.
+    :param config_file configuration file
+    :param pipeline_arguments pipelines arguments
+    """
     super(EnsemblDataDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                      pipeline_arguments)
 
@@ -82,9 +83,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_species_from_rest(self):
     """
-        Get the list of species from ENSEMBL rest API.
-        :return:
-        """
+    Get the list of species from ENSEMBL rest API.
+    :return:
+    """
     server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
       self.CONFIG_ENSEMBL_API_SERVER]
     endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_ENSEMBL_API][
@@ -95,10 +96,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def download_database_by_species(self, grch37=False):
     """
-        This method takes a list of Taxonomies from the commandline parameters and download the Protein fasta files
-        and the gtf files.
-        :return:
-        """
+    This method takes a list of Taxonomies from the commandline parameters
+    and download the Protein fasta files and the gtf files.
+    :return:
+    """
     self.get_species_from_rest()
     species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
     species_list = species_parameters.split(",")
@@ -131,6 +132,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
               ncrna_files = self.get_ncrna_files(species, grch37)
               files.extend(ncrna_files)
+            if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_DNA]:
+              dna_files = self.get_genome_assembly_files(species, grch37)
+              files.extend(dna_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
@@ -159,6 +163,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
               ncrna_files = self.get_ncrna_files(species)
               files.extend(ncrna_files)
+            if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_DNA]:
+              dna_files = self.get_genome_assembly_files(species)
+              files.extend(dna_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
@@ -185,6 +192,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
           ncrna_files = self.get_ncrna_files(species, grch37)
           files.extend(ncrna_files)
+        if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_DNA]:
+          dna_files = self.get_genome_assembly_files(species, grch37)
+          files.extend(dna_files)
         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
           vcf_files = self.get_vcf_files(species)
           files.extend(vcf_files)
@@ -197,9 +207,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_cds_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -222,9 +232,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_cdna_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -249,9 +259,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_ncrna_files(self, species: dict, grch37=False) -> list:
     """
-        Get the cds files for a specific species object.
-        :return: List of files names.
-        """
+    Get the cds files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       if grch37:
@@ -277,9 +287,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_pep_files(self, species: dict, grch37=False) -> list:
     """
-      Get the peptide files for a specific species object.
-      :return: List of files names.
-      """
+    Get the peptide files for a specific species object.
+    :return: List of files names.
+    """
     files = []
     try:
       # TODO: Would be better to check by API the assembly version
@@ -305,11 +315,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_gtf_files(self, species: dict, grch37=False) -> list:
     """
-      This method retrieve the gtf files for a specific specie object
-      :param grch37: if the GrCh37 genome assembly is desired enable to true
-      :param species: species to download the file.
-      :return:
-      """
+    This method retrieve the gtf files for a specific specie object
+    :param grch37: if the GrCh37 genome assembly is desired enable to true
+    :param species: species to download the file.
+    :return:
+    """
     files = []
     try:
       if grch37:
@@ -334,10 +344,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def get_vcf_files(self, species: dict) -> list:
     """
-      This method retrieve the vcf file for a specific specie object
-      :param species:
-      :return:
-      """
+    This method retrieve the vcf file for a specific specie object
+    :param species:
+    :return:
+    """
     files = []
     try:
       file_name = '{}_incl_consequences.vcf.gz'.format(species['name'])
@@ -376,5 +386,34 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     except KeyError:
       self.get_logger().debug("No valid info is available species: ", species)
+
+    return files
+
+  def get_genome_assembly_files(self, species: dict, grch37=False) -> list:
+    """
+    This method retrieve the genome assembly files for a specific specie object
+    :param grch37: if the GrCh37 genome assembly is desired enable to true
+    :param species: species to download the file.
+    :return:
+    """
+    files = []
+    try:
+      if grch37:
+        species['assembly'] = 'GRCh37'
+      file_name = '{}.{}.dna_sm.toplevel.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
+                                             species['assembly'])
+      file_url = '{}/release-{}/fasta/{}/dna/{}'.format(
+        self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+          self.CONFIG_KEY_BASE_URL],
+        species['release'], species['name'], file_name)
+      if grch37:
+        file_url = '{}/grch37/release-{}/fasta/{}/dna/{}'.format(
+          self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
+            self.CONFIG_KEY_BASE_URL],
+          species['release'], species['name'], file_name)
+      files.append(
+        download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
+    except KeyError:
+      print("No valid info is available species: ", species)
 
     return files

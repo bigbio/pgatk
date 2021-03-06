@@ -11,14 +11,30 @@ def vcf_to_proteindb():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
-                          '--vep_annotated_vcf', 'testdata/test.vcf',
+                          '--vcf', 'testdata/test.vcf',
                           '--input_fasta', 'testdata/test.fa',
                           '--gene_annotations_gtf', 'testdata/test.gtf',
                           '--var_prefix', 'ensvar',
                           '--af_field', 'MAF',
-                          '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa'])
+                          '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
+                          '--annotation_field_name', 'CSQ'])
   assert result.exit_code == 0
 
+def vcf_to_proteindb_notannotated():
+  """
+    Test the default behaviour of the vcf-to-proteindb tool using not-annotated vcf
+    :return:
+    """
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                          '--vcf', 'testdata/test.vcf',
+                          '--input_fasta', 'testdata/test.fa',
+                          '--gene_annotations_gtf', 'testdata/test.gtf',
+                          '--var_prefix', 'varsample',
+                          '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
+                          '--annotation_field_name', "''"])
+  assert result.exit_code == 0
 
 def vcf_gnomad_to_proteindb():
   """
@@ -28,14 +44,13 @@ def vcf_gnomad_to_proteindb():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
-                          '--vep_annotated_vcf', 'testdata/test_gnomad.vcf',
+                          '--vcf', 'testdata/test_gnomad.vcf',
                           '--input_fasta', 'testdata/test_gencode.fa',
                           '--gene_annotations_gtf', 'testdata/test_gencode.gtf',
                           '--output_proteindb', 'testdata/proteindb_from_gnomad_VCF.fa',
                           '--af_field', 'controls_AF',
                           '--var_prefix', 'gnomvar',
                           '--transcript_index', 6,
-                          '--biotype_str', 'transcript_type',
                           '--annotation_field_name', 'vep'])
   assert result.exit_code == 0
 
@@ -177,7 +192,7 @@ def generate_decoy_database():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
-                          '--input_database', 'testdata/test_db.fa', '--output_database', 'testdata/output_decoy.fa'])
+                          '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method', 'protein-reverse'])
   assert result.exit_code == 0
 
 
@@ -228,6 +243,7 @@ def check_ensembl_database():
 
 if __name__ == '__main__':
   vcf_to_proteindb()
+  vcf_to_proteindb_notannotated()
   vcf_gnomad_to_proteindb()
   dnaseq_to_proteindb()
   dnaseq_ncrnas_to_proteindb()

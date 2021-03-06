@@ -33,4 +33,5 @@ wrapt==1.11.1
 ratelimit==2.2.1
 pyteomics
 pyspark
+pybedtools
 

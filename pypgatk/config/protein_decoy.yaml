@@ -1,11 +1,15 @@
 proteindb_decoy:
   output: protein-decoy.fa
-  cleavage_sites: KR
+  method: protein-reverse
+  enzyme: Trypsin
   cleavage_position: c
   anti_cleavage_sites: ''
-  min_peptide_length: 5
+  min_peptide_length: 6
+  max_peptide_length: 100
+  max_missed_cleavages: 0
   max_iterations: 100
   do_not_shuffle: False
+  keep_target_hits: False
   do_not_switch: False
   decoy_prefix: DECOY_
   temp_file: tmp.fa

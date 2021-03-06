@@ -40,6 +40,7 @@ cli.add_command(dnase_to_proteindb_cmd.dnaseq_to_proteindb)
 cli.add_command(proteindb_decoy_cmd.generate_database)
 
 
+
 def main():
     cli()
 

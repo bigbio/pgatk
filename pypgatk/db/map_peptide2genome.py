@@ -55,8 +55,7 @@ def get_pep_cor(exon_object_list, n1,
   pep_chr_end = 0
   pep_start_exon = 0
   pep_end_exon = 0
-  for i in range(len(exon_object_list)):
-    exon = exon_object_list[i]
+  for i, exon in enumerate(exon_object_list):
     if exon.trans_end >= n1 >= exon.trans_start:
       pep_chr = exon.chr
       pep_strand = exon.strand
@@ -147,18 +146,17 @@ IDlist_input.close()
 print("number of unique ENSP IDs in ID table", len(id_dic))
 
 pep_dic = {}
-input = open(input_file,
-             'r')  # peptide table with two columns, peptide sequence in first column, protein ID in second column
+input_stream = open(input_file, 'r')  # peptide table with two columns, peptide sequence in first column, protein ID in second column
 
-input.readline()
-for line in input:
+input_stream.readline()
+for line in input_stream:
   row = line.strip().split("\t")
   pep = re.sub("[\W\d]", "", row[pep_col - 1].strip())
   acc = row[prot_col - 1].split(";")[0]  # in case there are multiple IDs
   if pep not in pep_dic:
     pep_dic[pep] = acc
 
-input.close()
+input_stream.close()
 
 output = open(output_file, 'w')
 
