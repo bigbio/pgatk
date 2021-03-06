@@ -55,8 +55,7 @@ def get_pep_cor(exon_object_list, n1,
   pep_chr_end = 0
   pep_start_exon = 0
   pep_end_exon = 0
-  for i in range(len(exon_object_list)):
-    exon = exon_object_list[i]
+  for i, exon in enumerate(exon_object_list):
     if exon.trans_end >= n1 >= exon.trans_start:
       pep_chr = exon.chr
       pep_strand = exon.strand
