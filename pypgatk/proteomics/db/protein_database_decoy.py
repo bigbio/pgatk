@@ -11,6 +11,7 @@ from pypgatk.toolbox.general import ParameterConfiguration
 
 
 class ProteinDBDecoyService(ParameterConfiguration):
+  """Constructor ProteinDBDecoyService"""
   CONFIG_KEY_PROTEINDB_DECOY = 'proteindb_decoy'
   CONFIG_PROTEINDB_OUTPUT = 'output'
   CONFIG_INPUT_FILE = 'input'
@@ -121,7 +122,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :param sites: the aa sites whete the peptides with be switch
     :return protein
     """
-
     revseq = list(protein[::-1])
 
     if not noswitch:
