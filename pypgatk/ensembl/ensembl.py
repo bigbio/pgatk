@@ -37,10 +37,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def __init__(self, config_file, pipeline_arguments):
     """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
+    Init the class with the specific parameters.
+    :param config_file configuration file
+    :param pipeline_arguments pipelines arguments
+    """
     super(EnsemblDataService, self).__init__(self.CONFIG_KEY_DATA, config_file,
                                              pipeline_arguments)
 
@@ -156,10 +156,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def three_frame_translation(self, input_fasta):
     """
-        This function translate a transcriptome into a 3'frame translation protein sequence database
-        :param input_fasta: fasta input file
-        :return:
-        """
+    This function translate a transcriptome into a 3'frame translation protein sequence database
+    :param input_fasta: fasta input file
+    :return:
+    """
 
     input_handle = open(input_fasta, 'r')
     output_handle = open(self._proteindb_output, 'w')
@@ -271,11 +271,11 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def parse_gtf(gene_annotations_gtf, gtf_db_file):
     """
-        Convert GTF file into a FeatureDB
-        :param gene_annotations_gtf:
-        :param gtf_db_file:
-        :return:
-        """
+    Convert GTF file into a FeatureDB
+    :param gene_annotations_gtf:
+    :param gtf_db_file:
+    :return:
+    """
     try:
       gffutils.create_db(gene_annotations_gtf, gtf_db_file, merge_strategy="create_unique",
                          keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
@@ -290,14 +290,15 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def get_features(db, feature_id, biotype_str, feature_types=None):
     """
-        Get chr, genomic positions, strand and biotype for feature_id
-        also genomic positions for all its elements (exons/cds&start_codon)
-        :param db:
-        :param feature_id:
-        :param biotype_str:
-        :param feature_types:
-        :return:
-        """
+    Get chr, genomic positions, strand and biotype for feature_id
+    also genomic positions for all its elements (exons/cds&start_codon)
+    :param db:
+    :param feature_id:
+    :param biotype_str:
+    :param feature_types:
+    :return:
+    """
+
     if feature_types is None:
       feature_types = ['exon']
     try:
@@ -320,13 +321,13 @@ class EnsemblDataService(ParameterConfiguration):
   @staticmethod
   def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
     """
-        Translate the coding_ref and the coding_alt into ORFs
-        :param ref_seq:
-        :param alt_seq:
-        :param translation_table:
-        :param num_orfs:
-        :return:
-        """
+    Translate the coding_ref and the coding_alt into ORFs
+    :param ref_seq:
+    :param alt_seq:
+    :param translation_table:
+    :param num_orfs:
+    :return:
+    """
 
     ref_orfs = []
     alt_orfs = []
@@ -338,7 +339,9 @@ class EnsemblDataService(ParameterConfiguration):
 
   @staticmethod
   def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool):
-    """translate the coding_ref into ORFs"""
+    """
+    translate the coding_ref into ORFs
+    """
 
     ref_orfs = []
     for n in range(0, num_orfs):
@@ -352,10 +355,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   def dnaseq_to_proteindb(self, input_fasta):
     """
-        translates DNA sequences to protein sequences
-        :param input_fasta:
-        :return:
-        """
+    translates DNA sequences to protein sequences
+    :param input_fasta: input fasta file
+    :return:
+    """
 
     seq_dict = SeqIO.index(input_fasta, "fasta")
 
