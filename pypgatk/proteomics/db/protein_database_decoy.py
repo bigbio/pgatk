@@ -302,7 +302,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
           outfa.write('>' + self._decoy_prefix + description + '\n')
           outfa.write(decoyseq + '\n')
 
-
     # Summarise the numbers of target and decoy peptides and their intersection
     nonDecoys = set()
     print("proteins:" + str(dcount))
@@ -515,7 +514,8 @@ class ProteinDBDecoyService(ParameterConfiguration):
           if checked_decoy_peps:
             revprotseq.append(''.join(checked_decoy_peps))
 
-        outfa.write('>{}\n{}\n'.format(self._decoy_prefix + str(record.id) + ' ' + record.description, '*'.join(revprotseq)))
+        outfa.write(
+          '>{}\n{}\n'.format(self._decoy_prefix + str(record.id) + ' ' + record.description, '*'.join(revprotseq)))
         decoys.append('*'.join(revprotseq))
 
       with open(self._output_file.replace('.fa', '') + '_noAlternative.fa', 'w') as noAlternative_outfa:
@@ -524,7 +524,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
             format(len(noAlternative)))
       print('Total number of amino acids in target and decoy databases: ',
             len(''.join(targets)), len(''.join(decoys)))
-
 
   def decoy_database(self):
     """
