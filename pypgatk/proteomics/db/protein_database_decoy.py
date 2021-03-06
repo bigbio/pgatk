@@ -32,7 +32,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
   def __init__(self, config_file, pipeline_arguments):
     """
-    Creates the ProteinDBDecoyService pipelines Class
+    Creates the ProteinDBDecoyService pipelines
     :param config_file: config file
     :param pipeline_arguments: arguments
     """
