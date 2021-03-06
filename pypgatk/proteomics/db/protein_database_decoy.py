@@ -1,7 +1,7 @@
 import random
 import os
 from Bio import SeqIO
-from Bio.SeqIO.FastaIO import FastaTwoLineParser
+from Bio.SeqIO.FastaIO import FastaTwoLineParser, SimpleFastaParser
 from pyteomics.fasta import decoy_sequence
 from pyteomics.parser import cleave
 
@@ -271,8 +271,9 @@ class ProteinDBDecoyService(ParameterConfiguration):
       with open(self._temp_file, 'w') as outfa:
 
         # loop each seq in the file
-        for description, seq in FastaTwoLineParser(handle):
-          # seq = str(record.seq)
+        for value in SimpleFastaParser(handle):
+          seq = value[1]
+          description = value[0]
           dcount += 1
           # make sequence isobaric (check args for switch off)
           if not self._isobaric:
@@ -373,7 +374,9 @@ class ProteinDBDecoyService(ParameterConfiguration):
         # Attach the target sequences to the database
         # fasta = SeqIO.parse(self._input_fasta, 'fasta')
         with open(self._input_fasta) as handle:
-          for description, seq in FastaTwoLineParser(handle):
+          for value in SimpleFastaParser(handle):
+            description = value[0]
+            seq = value[1]
             fout.write('>' + description + '\n')
             fout.write(seq + '\n')
 

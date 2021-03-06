@@ -452,7 +452,7 @@ class EnsemblDataService(ParameterConfiguration):
     annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
 
     BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf+'_all.bed')
-    
+
     muts_dict = {}
     with open(annotated_vcf+'_all.bed', 'r') as an:
       for line in an.readlines():
@@ -466,7 +466,7 @@ class EnsemblDataService(ParameterConfiguration):
           if info.strip().startswith(transcript_str):
             transcript_id = info.strip().split(transcript_info_sep)[1].strip('"')
             continue
-            
+
         if transcript_id=='NO_OVERLAP':
           continue
 
@@ -491,22 +491,22 @@ class EnsemblDataService(ParameterConfiguration):
             ann.write('\t'.join(sl) + '\n')
           except KeyError:
             ann.write(line)
-        
+
     return annotated_vcf+'_annotated.vcf'
 
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
-        Generate proteins for variants by modifying sequences of affected transcripts.
-        In case of already annotated variants it only considers variants within 
-        potential coding regions of the transcript (CDSs & stop codons for protein-coding genes, 
-        exons for non-protein coding genes)
-        In case of not annotated variants, it considers all variants overlapping 
-        transcripts from the selected biotypes.
-        :param vcf_file:
-        :param input_fasta:
-        :param gene_annotations_gtf:
-        :return:
-        """
+    Generate proteins for variants by modifying sequences of affected transcripts.
+    In case of already annotated variants it only considers variants within
+    potential coding regions of the transcript (CDSs & stop codons for protein-coding genes,
+    exons for non-protein coding genes)
+    In case of not annotated variants, it considers all variants overlapping
+    transcripts from the selected biotypes.
+    :param vcf_file:
+    :param input_fasta:
+    :param gene_annotations_gtf:
+    :return:
+    """
 
     if not self._annotation_field_name:
       vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)

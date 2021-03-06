@@ -96,10 +96,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
   def download_database_by_species(self, grch37=False):
     """
-        This method takes a list of Taxonomies from the commandline parameters 
-        and download the Protein fasta files and the gtf files.
-        :return:
-        """
+    This method takes a list of Taxonomies from the commandline parameters
+    and download the Protein fasta files and the gtf files.
+    :return:
+    """
     self.get_species_from_rest()
     species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
     species_list = species_parameters.split(",")
@@ -138,7 +138,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
-            
+
             total_files.extend(files)
             self.get_logger().debug("Files downloaded -- " + ",".join(files))
             total_files.extend(files)
@@ -169,7 +169,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
-            
+
             total_files.extend(files)
             self.get_logger().debug("Files downloaded -- " + ",".join(files))
             total_files.extend(files)
