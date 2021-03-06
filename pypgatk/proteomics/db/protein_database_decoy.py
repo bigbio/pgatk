@@ -36,7 +36,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :param config_file: config file
     :param pipeline_arguments: arguments
     """
-
     super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                 pipeline_arguments)
 
