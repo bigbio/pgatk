@@ -30,7 +30,7 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
 @click.option('-sd', '--skip_cdna', help='Skip the cDNA file download', is_flag=True)
 @click.option('-sn', '--skip_ncrna', help='Skip the ncRNA file download', is_flag=True)
-@click.option('-sn', '--skip_dna', help='Skip the DNA (reference genome assembly) file download', is_flag=True)
+@click.option('-sd', '--skip_dna', help='Skip the DNA (reference genome assembly) file download', is_flag=True)
 @click.option('-sv', '--skip_vcf', help='Skip the VCF variant file', is_flag=True)
 @click.option('-en', '--ensembl_name',
               help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)', default='')
