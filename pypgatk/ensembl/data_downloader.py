@@ -8,7 +8,6 @@ Some of the use cases for this module:
 
 # App imports
 from json import loads
-import os
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pypgatk.toolbox.rest import call_api
 
