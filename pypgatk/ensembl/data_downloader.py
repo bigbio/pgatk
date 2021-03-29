@@ -8,7 +8,7 @@ Some of the use cases for this module:
 
 # App imports
 from json import loads
-
+import os
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pypgatk.toolbox.rest import call_api
 
@@ -139,15 +139,15 @@ class EnsemblDataDownloadService(ParameterConfiguration):
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
 
-            total_files.extend(files)
-            self.get_logger().debug("Files downloaded -- " + ",".join(files))
+            self.get_logger().debug("Files downloaded -- " + ",".join(
+                [x for x in files if x]))
             total_files.extend(files)
     elif species_name_parameters is not None and len(species_name_parameters) > 0:
       for species_name in species_name_parameters:
         for species in self._ensembl_species:
           if species_name == species[self.CONFIG_REST_API_NAME]:
             self.get_logger().debug(
-              "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_NAME])
+              "Downloading the data for the specie --" + species[self.CONFIG_REST_API_NAME])
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
               prot_files = self.get_pep_files(species)
               files.extend(prot_files)
@@ -170,13 +170,13 @@ class EnsemblDataDownloadService(ParameterConfiguration):
               vcf_files = self.get_vcf_files(species)
               files.extend(vcf_files)
 
-            total_files.extend(files)
-            self.get_logger().debug("Files downloaded -- " + ",".join(files))
+            self.get_logger().debug("Files downloaded -- " + ",".join(
+                [x for x in files if x]))
             total_files.extend(files)
     else:
       for species in self._ensembl_species:
         self.get_logger().debug(
-          "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
+          "Downloading the data for the specie --" + species[self.CONFIG_REST_API_TAXON_ID])
         if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_PROTEIN]:
           prot_files = self.get_pep_files(species, grch37)
           files.extend(prot_files)
@@ -199,8 +199,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
           vcf_files = self.get_vcf_files(species)
           files.extend(vcf_files)
 
-        total_files.extend(files)
-        self.get_logger().debug("Files downloaded -- " + ",".join(files))
+        self.get_logger().debug("Files downloaded -- " + ",".join(
+            [x for x in files if x]))
         total_files.extend(files)
 
     return total_files

@@ -173,6 +173,7 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
         extracted_file = downloaded_file.replace('.gz','')
         with open(extracted_file, 'w') as outfile:
           outfile.write(gzip.decompress(open(downloaded_file, 'rb').read()).decode('utf-8'))
+          os.remove(downloaded_file)
           downloaded_file = extracted_file
           log.debug("File extracted-- " + downloaded_file)
       break
@@ -183,7 +184,7 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
       remaining_download_tries = remaining_download_tries - 1
       downloaded_file = None
       continue
-    except (Exception, gzip.BadGzipFile) as error:
+    except Exception as error:
       remaining_download_tries = remaining_download_tries - 1
       log.error("Error code: " + str(error))
       downloaded_file = None
