@@ -1,6 +1,6 @@
 import base64
 import json
-
+import gzip
 import requests
 
 from pypgatk.toolbox.exceptions import AppConfigException
@@ -126,6 +126,13 @@ class CosmicDownloadService(ParameterConfiguration):
           f.write(response.content)
           msg = "Download Finish for file '{}'".format(local_file)
           self.get_logger().debug(msg)
+        if local_file.endswith('.gz'):
+          extracted_file = local_file.replace('.gz','')
+          with open(extracted_file, 'w') as outfile:
+            outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))
+            local_file = extracted_file
+            msg = "Extracted file '{}'".format(local_file)
+            self.get_logger().debug(msg)
     else:
       msg = "Error downloading the COSMIC data, error code {} , error message '{}'".format(response.status_code,
                                                                                            local_file)
