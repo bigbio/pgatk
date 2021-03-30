@@ -255,6 +255,6 @@ if __name__ == '__main__':
   generate_decoy_database()
   cosmic_to_proteindb()
   download_ensembl_data()
-  download_ensembl_data_37()
+  #download_ensembl_data_37() #skip to reduce space usage
   download_cbioportal_data()
   check_ensembl_database()

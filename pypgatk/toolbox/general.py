@@ -11,6 +11,7 @@ import subprocess
 from urllib import request
 from urllib.error import URLError, ContentTooShortError
 import yaml
+import gzip
 
 # Logging defaults
 from requests import HTTPError
@@ -168,8 +169,15 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
     try:
       downloaded_file, error_code = request.urlretrieve(file_url, file_name)
       log.debug("File downloaded -- " + downloaded_file)
+      if downloaded_file.endswith('.gz'):
+        extracted_file = downloaded_file.replace('.gz','')
+        with open(extracted_file, 'w') as outfile:
+          outfile.write(gzip.decompress(open(downloaded_file, 'rb').read()).decode('utf-8'))
+          os.remove(downloaded_file)
+          downloaded_file = extracted_file
+          log.debug("File extracted-- " + downloaded_file)
       break
-    except (HTTPError, URLError, ContentTooShortError) as error:
+    except (HTTPError, URLError, ContentTooShortError, ) as error:
       logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(
         REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
       log.error("Error code: " + str(error))
