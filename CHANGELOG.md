@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.0.18](https://github.com/bigbio/py-pgatk/tree/v0.0.18) (2021-03-30)
+
+**Fixed bugs:**
+
+- Downloading all the cBioPortal experiments failing  [\#20](https://github.com/bigbio/py-pgatk/issues/20)
+
 ## [v0.0.17](https://github.com/bigbio/py-pgatk/tree/v0.0.17) (2021-03-12)
 
 ## [v0.0.16](https://github.com/bigbio/py-pgatk/tree/v0.0.16) (2021-03-06)
