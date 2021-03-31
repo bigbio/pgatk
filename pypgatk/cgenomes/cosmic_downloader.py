@@ -130,7 +130,10 @@ class CosmicDownloadService(ParameterConfiguration):
         if local_file.endswith('.gz'):
           extracted_file = local_file.replace('.gz','')
           with open(extracted_file, 'w') as outfile:
-            outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))
+            try:
+              outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))
+            except UnicodeDecodeError:
+              outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('ISO-8859–1'))
             os.remove(local_file)
             local_file = extracted_file
             msg = "Extracted file '{}'".format(local_file)
