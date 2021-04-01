@@ -310,7 +310,7 @@ class EnsemblDataService(ParameterConfiguration):
         print("""Feature {} found in fasta file but not in gtf file. Check that the fasta file and the gtf files match.
                         A common issue is when the fasta file have chromosome patches but not the gtf""".format(
           feature_id))
-        return None, None, None, None
+        return None, None, None
     coding_features = []
     features = db.children(feature, featuretype=feature_types, order_by='end')
     for f in features:
@@ -610,9 +610,10 @@ class EnsemblDataService(ParameterConfiguration):
               msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
 
-          chrom, strand, features_info = self.get_features(db, transcript_id_v,
-                                                                            self._biotype_str,
-                                                                            feature_types)
+          chrom, strand, features_info = self.get_features(db, 
+                                                           transcript_id_v,
+                                                           self._biotype_str,
+                                                           feature_types)
           if chrom is None:  # the record info was not found
             continue
           # skip transcripts with unwanted consequences
