@@ -1,18 +1,15 @@
 package org.bigbio.pgatk.pepgenome;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
-import org.apache.log4j.Logger;
 import org.bigbio.pgatk.pepgenome.common.Assembly;
 import org.bigbio.pgatk.pepgenome.common.SparkConfig;
 import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
-import org.bigbio.pgatk.pepgenome.io.GTFParser;
-import org.bigbio.pgatk.pepgenome.io.GenomeFastaParser;
-import org.bigbio.pgatk.pepgenome.io.MzTabInputPeptideFileParser;
-import org.bigbio.pgatk.pepgenome.io.TabInputPeptideFileParser;
+import org.bigbio.pgatk.pepgenome.io.*;
 import org.bigbio.pgatk.pepgenome.io.custom.PeptideAtlasPeptideParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
@@ -22,14 +19,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.stream.Stream;
 
-
+@Slf4j
 public class PepGenomeTool {
-
-    private static final org.apache.log4j.Logger log = Logger.getLogger(PepGenomeTool.class);
 
     public enum INPUT_FILE_FORMAT {
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
         MZTAB("mztab", "mzTab file format (.mztab)", MzTabInputPeptideFileParser.class),
+        PRIDE("pridejson", "Pride Json file format (.json)", PrideJsonFileParser.class),
         PEPTIDEATLAS("peptideatlas", "PeptideAtlas PeptideBuild (.tsv)", PeptideAtlasPeptideParser.class),
         MZIDENML("mzid", "MzIndetML file format (.mzid)", MzTabInputPeptideFileParser.class);
 
@@ -98,20 +94,45 @@ public class PepGenomeTool {
         long startTime = System.nanoTime();
 
         Options options = new Options();
-        options.addOption(Option.builder(ARG_FASTA).hasArg(true).desc("Filepath for file containing protein sequences in FASTA format").build())
-                .addOption(Option.builder(ARG_GTF).hasArg(true).desc("Filepath for file containing genome annotation in GTF format").build())
-                .addOption(Option.builder(ARG_IN).hasArg(true).desc("Comma(,) separated file paths for files containing peptide identifications (Contents of the file can tab separated format. i.e., File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant; or mzTab, and mzIdentML)").build())
-                .addOption(Option.builder(ARG_MERGE).hasArg(true).desc("Set 'true' to merge mappings from all files from input (default 'false')").build())
-                .addOption(Option.builder(ARG_FORMAT).hasArg(true).desc("Select the output formats from gtf, gct, bed, ptmbed, all or combinations thereof separated by ',' (default all)").build())
-                .addOption(Option.builder(ARG_SOURCE).hasArg(true).desc("Please give a source name which will be used in the second column in the output gtf file (default: PoGo)").build())
-                .addOption(Option.builder(ARG_MM).hasArg(true).desc("Allowed mismatches (0, 1 or 2; default: 0)").build())
-                .addOption(Option.builder(ARG_MMMODE).hasArg(true).desc("Mismatch mode (true or false): if true mismatching with two mismatches will only allow 1 mismatch every kmersize (default: 5) positions. (default: false)").build())
-                .addOption(Option.builder(ARG_GENOME_FASTA).hasArg(true).desc("Filepath for file containing genome sequence in FASTA format used to extract chromosome names and order and differenciate between assembly and scaffolds. If not set chromosome and scaffold names and order is extracted from GTF input.").build())
-                .addOption(Option.builder(ARG_CHR).hasArg(true).desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
-                .addOption(Option.builder(ARG_INMEMORY).hasArg(true).desc("Compute the kmer algorithm in memory or using database algorithm (default 0, database 1)").build())
-                .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true).desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
-                .addOption(Option.builder(ARG_SPARK_MASTER).hasArg(true).desc("Spark master String. i.e., to run locally use: local[*]").build())
-                .addOption(Option.builder(ARG_HELP).hasArg(false).desc("Print this help & exit").build());
+        options.addOption(Option.builder(ARG_FASTA).hasArg(true)
+                .desc("Filepath for file containing protein sequences in FASTA format").build())
+                .addOption(Option.builder(ARG_GTF).hasArg(true)
+                        .desc("Filepath for file containing genome annotation in GTF format").build())
+                .addOption(Option.builder(ARG_IN).hasArg(true)
+                        .desc("Comma(,) separated file paths for files containing peptide identifications " +
+                                "(Contents of the file can tab separated format. i.e., " +
+                                "File format: four columns: SampleName\t\tPeptideSequence\t\tPSMs\tQuant; " +
+                                "or mzTab, and mzIdentML)").build())
+                .addOption(Option.builder(ARG_MERGE).hasArg(true)
+                        .desc("Set 'true' to merge mappings from all files from input (default 'false')").build())
+                .addOption(Option.builder(ARG_FORMAT).hasArg(true)
+                        .desc("Select the output formats from gtf, gct, bed, ptmbed, all or combinations" +
+                                " thereof separated by ',' (default all)").build())
+                .addOption(Option.builder(ARG_SOURCE).hasArg(true)
+                        .desc("Please give a source name which will be used in the second column" +
+                                " in the output gtf file (default: PoGo)").build())
+                .addOption(Option.builder(ARG_MM).hasArg(true)
+                        .desc("Allowed mismatches (0, 1 or 2; default: 0)").build())
+                .addOption(Option.builder(ARG_MMMODE).hasArg(true)
+                        .desc("Mismatch mode (true or false): if true mismatching with two mismatches will" +
+                                " only allow 1 mismatch every kmersize (default: 5) positions." +
+                                " (default: false)").build())
+                .addOption(Option.builder(ARG_GENOME_FASTA).hasArg(true)
+                        .desc("Filepath for file containing genome sequence in FASTA format " +
+                                "used to extract chromosome names and order and differenciate between" +
+                                " assembly and scaffolds. If not set chromosome and scaffold names and" +
+                                " order is extracted from GTF input.").build())
+                .addOption(Option.builder(ARG_CHR).hasArg(true)
+                        .desc("Export chr prefix Allowed 0, 1  (default: 0)").build())
+                .addOption(Option.builder(ARG_INMEMORY).hasArg(true)
+                        .desc("Compute the kmer algorithm in memory or using database" +
+                                " algorithm (default 0, database 1)").build())
+                .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true)
+                        .desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
+                .addOption(Option.builder(ARG_SPARK_MASTER).hasArg(true)
+                        .desc("Spark master String. i.e., to run locally use: local[*]").build())
+                .addOption(Option.builder(ARG_HELP).hasArg(false)
+                        .desc("Print this help & exit").build());
 
         CommandLineParser parser = new DefaultParser();
         CommandLine cmd = null;
@@ -172,10 +193,11 @@ public class PepGenomeTool {
         }
 
         String[] peptideInputFilePaths = Utils.tokenize(peptideInputFilePathsParam, ",", true);
-        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid"};
+        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid", ".json"};
         if (Stream.of(peptideInputFilePaths)
                 .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith)).count() != peptideInputFilePaths.length) {
-            log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv or .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
+            log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv, .json or" +
+                    " .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
@@ -325,6 +347,8 @@ public class PepGenomeTool {
                     new MzTabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
                 else if (fileFormat == INPUT_FILE_FORMAT.PEPTIDEATLAS)
                     new PeptideAtlasPeptideParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                else if(fileFormat == INPUT_FILE_FORMAT.PRIDE)
+                    new PrideJsonFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
                 else
                     new TabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
 

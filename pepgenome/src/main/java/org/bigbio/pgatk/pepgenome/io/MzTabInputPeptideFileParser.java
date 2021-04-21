@@ -1,5 +1,6 @@
 package org.bigbio.pgatk.pepgenome.io;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.log4j.Logger;
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 import org.bigbio.pgatk.pepgenome.common.PeptideEntry;
@@ -25,9 +26,9 @@ import java.util.Map;
  *
  * @author ypriverol on 03/10/2018.
  */
-public class MzTabInputPeptideFileParser implements PeptideInputReader{
 
-    private static final org.apache.log4j.Logger log = Logger.getLogger(MzTabInputPeptideFileParser.class);
+@Slf4j
+public class MzTabInputPeptideFileParser implements PeptideInputReader{
 
 
     /**
