@@ -331,13 +331,11 @@ The output of the tool is a protein fasta file and it is written in the followin
 .. _vcf-to-proteindb:
 
 
-Annotated Variants (VCF) to Protein Sequences
+Variants (VCF) to Protein Sequences
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Variant Calling Format (VCFv4.1) is a text file representing genomic variants. 
-Variant calling methods generate a VCF file that can be used as input to VEP for variant annotation. 
-VEP reports the trasncripts that are affected by each variant along with the consequences of the effect. 
 
-The ``vcf_to_proteindb`` COMMAND takes a VEP-annotated VCF and translates the genomic variants in the VCF that affect protein-coding transcripts. It also allows for other variants to be translated by selecting the desired biotypes and consequences.
+The ``vcf_to_proteindb`` COMMAND takes a VCF file and a GTF (Gene annotations) file to translates the genomic variants in the VCF that affect protein-coding transcripts.
 
 Command Options
 ^^^^^^^^^^^^^^^
@@ -350,35 +348,30 @@ Command Options
 
       Required parameters:
         -c, --config_file TEXT      Configuration for VCF conversion parameters
-        --vep_annotated_vcf         VCF file containing the annotated genomic variants
-        --gene_annotations_gtf        Gene models in the GTF format that is used with VEP
-        --input_fasta         Fasta sequences for the transripts in the GTF file used to annotated the VCF
-        --output_proteindb          Output file to write the resulting variant protein sequences
+        -v, --vcf         			VCF file containing the genomic variants
+        -g, --gene_annotations_gtf  Gene models in the GTF format that will be used to extract protein-coding transcripts
+        -f, --input_fasta         	Fasta sequences for the transripts in the GTF file used to annotated the VCF
+        -o, --output_proteindb      Output file to write the resulting variant protein sequences
       
       Options:
         --translation_table INTEGER     Translation table (Default 1). Please see <https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi> for identifiers of translation tables.
         --mito_translation_table INTEGER	Mito_trans_table (default 2), also from <https://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi> 
-        --var_prefix TEXT 	String to add before the variant peptides
-        --report_ref_seq	In addition to variant peptides, also report the reference peptide from the transcript overlapping the variant 
-        --output_proteindb TEXT	Output file name, exits if already exists
-        --annotation_field_name TEXT	Annotation Field name found in the INFO column, e.g CSQ or vep
+        --var_prefix TEXT 	String to add as prefix for the variant peptides
+        --report_ref_seq	In addition to variant peptides, also report the reference peptide from the transcripts overlapping the variant 
+        --annotation_field_name TEXT	Annotation Field name found in the INFO column, e.g CSQ or vep, set to empty if the VCF is not annotated (default is CSQ)
         --af_field TEXT	Field name in the VCF INFO column that shows the variant allele frequency (VAF, default is none).
         --af_threshold FLOAT      Minium allele frequency threshold for considering the variants
-        --transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field (separated by |) (default is 3)
-        --consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field (separated by |) (default is 1)
-        --exclude_biotypes TEXT         Variants affecting gene/transcripts in these biotypes will not be considered for translation (affected by include_biotypes). 
-        --exclude_consequences TEXT     Variants with these consequences will not be considered for translation (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
+        --transcript_index INTEGER	Index of transcript ID in the annotated columns in the VCF INFO field that is when the VCF file is alerady annotated, affected by --annotation_field_name (separated by |) (default is 3)
+        --consequence_index INTEGER	Index of consequence in the annotated columns in the VCF INFO field that is when the VCF file is alerady annotated, affected by --annotation_field_name (separated by |) (default is 1)
+        --include_consequences TEXT	Consider variants that have one of these consequences, affected by --annotation_field_name  (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
+        --exclude_consequences TEXT     Variants with these consequences will not be considered for translation, affected by --annotation_field_name  (default: downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant)
         --skip_including_all_cds	By default any affected transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the specified biotypes
-        --include_biotypes TEXT	Translate affected transcripts that have one of these biotypes
-        --include_consequences TEXT	Consider variants that have one of these consequences (default is all) (for the list of consequences see: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html.
-        --biotype_str TEXT	String used to identify gene/transcript biotype in the gtf file (default transcript_biotype).
         --ignore_filters	Enabling this option causes all variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER field is PASS, None, .) or if the filters are subset of the accepted_filters (default is False)
         --accepted_filters TEXT	Accepted filters for variant parsing
         -h, --helP		Show this message and exit.
 
-The file input of the tool ``--vcf_annotated_vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
+The file input of the tool ``--vcf`` is a VCF file that can be provided by the user or obtained from ENSEMBL using :ref:`ensembl_downloader <ensembl-downloader>`, see :ref:`an example here <ensembl-downloader_example>`. 
 The ``gene_annotations_gtf`` file can also be obtained with the :ref:`ensembl_downloader <ensembl-downloader>`. 
-The GTF file should match the one used for the variant annotation in VEP. 
 
 The ``--input_fasta`` file contains the ``CDS`` and DNA sequences for all genes present in the GTF file. 
 This file can be generated from the GTF file using the `gffread <http://ccb.jhu.edu/software/stringtie/gff.shtml#gffread>`_ tool as follows::
@@ -392,38 +385,35 @@ The output of the tool is a protein fasta file and is written in the following p
 
 **Examples**
 
-- Translate human *missense* variants from ENSEMBL VCFs that have a minimum *AF 5%* and affect any *protein_coding* gene or *lincRNAs*::
+- Translate human *missense* variants from ENSEMBL VCFs that have a minimum *AF 5%*::
 
     python pypgatk_cli.py vcf-to-proteindb 
-        --vep_annotated_vcf homo_sapiens_incl_consequences.vcf 
+        --vcf homo_sapiens_incl_consequences.vcf 
         --input_fasta transcripts.fa
         --gene_annotations_gtf genes.gtf
-        --include_biotypes lncRNA,protein_coding 
         --include_consequences missense_variant
         --af_field MAF
         --af_threshold 0.05
         --output_proteindb var_peptides.fa
 
 .. note:: 
-	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes. In order to also include lincRNAs we use the ``--include_biotypes`` option that accepts multiple entries separated by comma. The biotypes can be any of the ENSEMBL gene/transcript biotypes: https://www.ensembl.org/info/genome/genebuild/biotypes.html. 
-	- The choice of using gene or transcript biotype can be specified using the ``--biotype_str option``. 
-	- Also, by default all consequences are accepted except those given with ``--exclude_biotypes``. See the list consequences of consequences generated by VEP: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
+	- By default  vcf-to-proteindb considers transcript that have a coding sequence that includes all protein_coding genes.  
+	- by default all consequences are accepted except those given with ``--exclude_biotypes``. See the list consequences of consequences generated by VEP: https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html
 
-- Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples and affect any protein coding gene::
+- Translate human *missense* variants or *inframe_insertion* from gnoMAD VCFs that have a minmum 1% allele frquency in control samples::
 
     python pypgatk_cli.py vcf-to-proteindb 
-       --vep_annotated_vcf gnmad_genome.vcf 
+       --vcf gnmad_genome.vcf 
        --input_fasta gencode.fa
        --gene_annotations_gtf gencode.gtf
        --include_consequences missense_variant,frameshift_insert 
        --annotation_field_name vep
        --af_threshold 0.01
        --af_field control_af 
-       --biotype_str transcript_type
        --transcript_index 6
 
 .. hint:: 
-	- By default  ``vcf-to-proteindb`` considers transcript that have a coding sequence which includes all *protein_coding* transcripts and since the required biotype is protein coding transcripts thereore there is no need to specify any biotypes.  
+	- ``vcf-to-proteindb`` considers transcript that have a coding sequence which includes all *protein_coding* transcripts.  
 	- The provided VCF file has some specific properties: the annotation field is specified with the string *vep* hence the ``--annotation_field_name parameter``,  the transcriptat the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many many sub-populations and sub-groups, in this case the goal is to use only variants that are common within control samples therefroe the ``--af_field`` is set to ``control_af``. 
 	- Since gnomAD uses GENCODE gene annotations for annotation the variants we need to change the default ``biotype_str`` from *transcript_biotype* to *transcript_type* (as written in the GTF file).
 
@@ -438,9 +428,16 @@ The output of the tool is a protein fasta file and is written in the following p
 		--transcript_index (from the annotation field in the VCF INFO field)
 			
 		--consequence_index (from the annotation field in the VCF INFO field)
-			
-		--biotype_str (from the GTF INFO field)
 
+- Translate human variants from a custom VCF that is obtained from sequencing of a sample::
+
+    python pypgatk_cli.py vcf-to-proteindb 
+       --vcf sample.vcf 
+       --input_fasta transcripts.fa
+       --gene_annotations_gtf genes.gtf
+       --annotation_field_name ''
+       --output_proteindb var_peptides.fa
+	
 
 .. _dnaseq-to-proteindb:
 
@@ -523,6 +520,17 @@ Command Options
         --var_prefix altorf_
         --include_biotypes altORFs
         --skip_including_all_cds
+	
+- Generate protein sequences (six-frame translation) from a Genome assembly::	
+	
+    python pypgatk.py dnaseq-to-proteindb 
+        --config_file config/ensembl_config.yaml 
+        --input_fasta testdata/genome.fa 
+        --output_proteindb testdata/proteindb_genome.fa
+        --biotype_str ''
+        --num_orfs 3 
+        --num_orfs_complement 3
+        
 
 .. _generate-decoy:
 
