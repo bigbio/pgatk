@@ -67,6 +67,30 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
         return 0;
     }
 
+    public boolean isGeneUnique() {
+        return geneUnique;
+    }
+
+    public boolean isTranscriptUnique() {
+        return transcriptUnique;
+    }
+
+    public TreeSet<PeptideCoordinates> getPepCoordinates() {
+        return pepCoordinates;
+    }
+
+    public GeneEntry getAssociatedGene() {
+        return associatedGene;
+    }
+
+    public Set<String> getTranscriptIds() {
+        return transcriptIds;
+    }
+
+    public Set<String> getExonIds() {
+        return exonIds;
+    }
+
     public PeptideEntry(GeneEntry associatedgene) {
         this.pSequence = "";
         this.numTranscripts = 0;

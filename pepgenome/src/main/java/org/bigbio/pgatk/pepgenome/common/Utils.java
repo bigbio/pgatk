@@ -1,13 +1,13 @@
 package org.bigbio.pgatk.pepgenome.common;
 
 
+import io.github.bigbio.pgatk.io.pride.ExonInfo;
+import io.github.bigbio.pgatk.io.pride.GeneCoordinates;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class Utils {
 
@@ -255,6 +255,49 @@ public class Utils {
         return coordinates_to_bed_string(coords, name, 1000, true);
     }
 
+    public static List<GeneCoordinates> coordinates_info(PeptideEntry peptide, String pSequence, boolean noptm, boolean chrincluded){
+
+        Set<GeneCoordinates> summaryCoordinates = new HashSet<>();
+
+        for (PeptideCoordinates coord : peptide.getPepCoordinates()) {
+            //os.write(Utils.coordinates_to_bed_string(coord.get_transcript_coordinates(), pSequence).getBytes());
+            //std::cout << coordinates_to_bed_string((*it)->get_transcript_coordinates(), pSequence) << std::endl;
+
+            ArrayList<GenomeCoordinates> exon_coordinates = coord.get_exon_coordinates();
+            int exon_count = 0;
+            List<ExonInfo> exonInfoList = new ArrayList<>();
+            for (GenomeCoordinates exon_coordinate : exon_coordinates) {
+                exon_count += 1;
+
+                int exon_start = exon_coordinate.getStart() - coord.get_transcript_coordinates().getStart();
+                int exon_length = exon_coordinate.getEnd() - exon_coordinate.getStart() + 1;
+                exonInfoList.add(ExonInfo
+                        .builder()
+                        .exonStarts(exon_start)
+                        .exonLengths(exon_length)
+                        .exonCount(exon_count)
+                        .exonAccession(exon_coordinate.getExonid())
+                        .build());
+            }
+
+            GeneCoordinates coords = GeneCoordinates.builder()
+                    .start(coord.get_transcript_coordinates().start -1)
+                    .end(coord.get_transcript_coordinates().end)
+                    .chromosome(coord2StrCommon(coord.get_transcript_coordinates(), chrincluded, new StringBuilder("")).toString())
+                    .transcriptAccession(coord.get_transcript_coordinates().getTranscriptid())
+                    .geneUnique(peptide.isGeneUnique())
+                    .transcriptUnique(peptide.isTranscriptUnique())
+                    .exonInfoList(exonInfoList)
+                    .geneAccession(peptide.getAssociatedGene().get_id())
+                    .geneName(peptide.getAssociatedGene().get_name())
+                    .geneType(peptide.getAssociatedGene().get_type())
+                    .strand(coord.get_transcript_coordinates().getStrand().toString())
+                    .build();
+            summaryCoordinates.add(coords);
+        }
+        return new ArrayList<>(summaryCoordinates);
+    }
+
     public static String coordinates_to_bed_string(GenomeCoordinates coords, String name, boolean chrincluded) {
         return coordinates_to_bed_string(coords, name, 1000, chrincluded);
     }
@@ -263,7 +306,10 @@ public class Utils {
     public static String coordinates_to_bed_string(GenomeCoordinates coords, String name, int score, boolean chrincluded) {
         StringBuilder ss = new StringBuilder();
         ss = coord2StrCommon(coords, chrincluded, ss);
-        ss.append("\t").append((coords.start - 1)).append("\t").append(coords.end).append("\t").append(name).append("\t").append(score).append("\t").append(EnumStringMapper.enumToString(coords.getStrand(), false)).append("\t").append((coords.start - 1)).append("\t").append(coords.start - 1).append("\t");
+        ss.append("\t").append((coords.start - 1)).append("\t")
+                .append(coords.end).append("\t").append(name).append("\t")
+                .append(score).append("\t").append(EnumStringMapper.enumToString(coords.getStrand(), false)).append("\t").append((coords.start - 1)).append("\t")
+                .append(coords.start - 1).append("\t");
         return ss.toString();
     }
 

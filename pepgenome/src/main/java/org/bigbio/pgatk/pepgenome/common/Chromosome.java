@@ -60,11 +60,7 @@ public class Chromosome implements Serializable {
 
 
     public int getValue() {
-    	if(getChrToInt().containsKey(name)) {
-    		return getChrToInt().get(name);
-    	} else {
-    		return -1;
-    	}
+      return getChrToInt().getOrDefault(name, -1);
     }
     
     public String getName() {
@@ -80,19 +76,11 @@ public class Chromosome implements Serializable {
     }
 
     public static String forValue(int value) {
-    	if(getIntToChr().containsKey(value)) {
-    		return getIntToChr().get(value);
-    	} else {
-    		return "NA";
-    	}
+      return getIntToChr().getOrDefault(value, "NA");
     }
     
     public static int forName(String name) {
-    	if(getChrToInt().containsKey(name)) {
-    		return getChrToInt().get(name);
-    	} else {
-    		return -1;
-    	}
+      return getChrToInt().getOrDefault(name, -1);
     }
     
     public static void addChr(String name) {
