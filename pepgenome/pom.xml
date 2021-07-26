@@ -68,6 +68,10 @@
                 <groupId>com.compomics</groupId>
                 <artifactId>mascotdatfile</artifactId>
               </exclusion>
+              <exclusion>
+                <groupId>de.proteinms.xtandemparser</groupId>
+                <artifactId>xtandem-parser</artifactId>
+              </exclusion>
             </exclusions>
         </dependency>
 
