@@ -189,15 +189,6 @@ public class PepGenomeTool {
             usePeptideFilter = true;
         }
 
-        SparkConfig sparkConfig = SparkConfig.getInstance();
-        sparkConfig.setMaster(null);
-        if (cmd.hasOption(ARG_SPARK_MASTER)) {
-            String master = cmd.getOptionValue(ARG_SPARK_MASTER);
-            if (master != null) {
-                sparkConfig.setMaster(master);
-            }
-        }
-
         String fastaFilePath = cmd.getOptionValue(ARG_FASTA);
         String peptideInputFilePathsParam = cmd.getOptionValue(ARG_IN);
         String fastaGenomeFilePath = cmd.getOptionValue(ARG_GENOME_FASTA);
