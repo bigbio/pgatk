@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 // GFF3 Parser
-@Slf4j
 public class GFF3Parser extends GenomeAnnotationParser {
 
     public static GFF3Parser instance;
