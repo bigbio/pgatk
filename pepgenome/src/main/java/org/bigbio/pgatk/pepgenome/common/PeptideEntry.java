@@ -35,6 +35,10 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     //is the peptide unique to one transcript?
     private boolean transcriptUnique;
 
+    // ||Peptide filter mode||
+    //is the peptide a variant?
+    private boolean variant;
+
     //set of coordinates.
     private TreeSet<PeptideCoordinates> pepCoordinates = new TreeSet<>(new PeptidecoordsPCompare());
 
@@ -67,14 +71,15 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
         return 0;
     }
 
-    public PeptideEntry(GeneEntry associatedgene) {
+    public PeptideEntry(GeneEntry associatedGene, boolean isVariant) {
         this.pSequence = "";
         this.numTranscripts = 0;
         this.geneUnique = true;
         this.transcriptUnique = true;
         this.startCoord = 0;
         this.endCoord = 0;
-        this.associatedGene = associatedgene;
+        this.associatedGene = associatedGene;
+        this.variant = isVariant;
     }
 
     //generates a map that holds all PTMs in the given sequence.
@@ -236,12 +241,19 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
             }
             String colour = "128,128,128";
 
+
             if (!noptm) {
                 if (geneUnique && !transcriptUnique) {
                     colour = "0,0,0";
                 } else if (geneUnique && transcriptUnique) {
                     colour = "204,0,0";
                 }
+            }
+
+            if (variant) {
+                colour = "0,255,255";
+                //System.out.println("Variant marked");
+                //System.out.println("Sequence: "+pSequence);
             }
 
             os.write((colour + "\t" + exon_count + "\t" + exon_lengths + "\t" + exon_starts + "\n").getBytes());
@@ -477,7 +489,7 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     }
 
     //adds a peptide. this function is used if this specific peptide has not yet been found. it will also find the peptides genomic coordinates.
-    public final void add_peptide(CoordinateWrapper coordwrapper, String sequence, String ptmSequence, String tag, int sigPSMs, TranscriptsT transcripts, int genes, FileOutputStream ofstream, double quant) {
+    public final void add_peptide(CoordinateWrapper coordwrapper, String sequence, String ptmSequence, String tag, int sigPSMs, TranscriptsT transcripts, int genes, FileOutputStream ofstream, double quant, boolean isVariant) {
         if (pSequence.isEmpty()) {
             pSequence = sequence;
         }
@@ -490,6 +502,13 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
         }
         if (transcripts.getM_entries().size() > 1) {
             transcriptUnique = false;
+        }
+
+        // ||Peptide filter mode||
+        if (isVariant) {
+            variant = true;
+        } else {
+            variant = false;
         }
 
         add_tags(tag, sigPSMs, quant);
@@ -529,11 +548,12 @@ public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
     }
 
     //adds a peptide. this function is used if a peptide has appeared before.
-    public final void add_peptide(String ptmsequence, String tag, int sigPSMs, double quant) {
+    public final void add_peptide(String ptmsequence, String tag, int sigPSMs, double quant, boolean isVariant) {
         if (!pSequence.equals(ptmsequence)) {
             add_ptm(ptmsequence);
         }
         add_tags(tag, sigPSMs, quant);
+        variant = isVariant;
     }
 
     private String transcriptids_to_string() {

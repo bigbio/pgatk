@@ -3,11 +3,11 @@ package org.bigbio.pgatk.pepgenome.kmer.inmemory;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.bigbio.pgatk.pepgenome.PossibleKeyGenerator;
-import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
-import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.PositionMismatchT;
+import org.bigbio.pgatk.pepgenome.common.ProteinEntry;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
 import org.bigbio.pgatk.pepgenome.common.Utils;
+import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerEntry;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.KmerEntry;
@@ -34,6 +34,16 @@ public class KmerTreeMap implements IKmerMap, Serializable {
 
     private ProteinMatcher proteinMatcher;
 
+    public boolean getIsVariant() {
+        return isVariant;
+    }
+
+    public void setIsVariant(boolean isVariant) {
+        this.isVariant = isVariant;
+    }
+
+    private boolean isVariant;
+
     public KmerTreeMap() {
 
         this.m_key_gen = new PossibleKeyGenerator(this);
@@ -42,8 +52,6 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         } else {
             proteinMatcher = new MatcherNormal();
         }
-
-
 
     }
 
@@ -70,11 +78,66 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         }
     }
 
+    // ||Pep filter||
+    //searches for all matches (imperfect matching, set via PEPTIDE_MAPPER) and returns a map that contains all finds.
+    public final Map<String, TranscriptsT> find_peptide(String peptide_string, String targetTranscriptID, int allowedMismatches) {
+        //this function generates a gene_id_map.
+        //this map will map a gene_id to all related transcript ids and all the peptides and their
+        //position in the protein sequence
+
+        if (!m_gene_id_map.isEmpty()) {
+            m_gene_id_map.clear();
+        }
+        int set_key_returned = m_key_gen.set_original_key(peptide_string, allowedMismatches);
+        int backwards_multiplier = 0;
+
+        String curr_key;
+        ArrayList<Integer> mismatches = new ArrayList<>();
+
+        int peptide_length = peptide_string.length();
+
+        if (set_key_returned >= 0) {
+            while ((curr_key = m_key_gen.get_next_key()) != null) {
+                IKmerEntry[] kmerEntries = m_kmers.get(curr_key);
+                if (kmerEntries != null) {
+                    for (IKmerEntry entry : kmerEntries) {
+
+                        if (targetTranscriptID.contains(entry.m_p_protein().get_transcript_id()) || targetTranscriptID.contentEquals("all"))  {
+                            if (set_key_returned == 0) {
+
+                                if (proteinMatcher.match(peptide_string, entry, mismatches, peptide_length, allowedMismatches)) {
+                                    insert_into_gene_id_map(entry, mismatches);
+                                }
+
+                            } else if (set_key_returned == 1) {
+                                //this mode is used when only allowed_mismatches + 1 keys are generated.
+                                //see PossibleKeyGenerator::set_original_key
+                                int offset = backwards_multiplier * GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH;
+                                if (proteinMatcher.match_backwards(peptide_string, entry, mismatches, peptide_length, offset, allowedMismatches)) {
+                                    insert_into_gene_id_map(entry, mismatches, offset);
+                                }
+                            }
+                            mismatches.clear();
+                        }
+                        else {
+                            continue;
+                        }
+
+
+                    }
+                }
+                backwards_multiplier++;
+            }
+        }
+        return m_gene_id_map;
+    }
+
+    // DEFAULT, ORIGINAL
     //searches for all matches (imperfect matching, set via PEPTIDE_MAPPER) and returns a map that contains all finds.
     public final Map<String, TranscriptsT> find_peptide(String peptide_string) {
         //this function generates a gene_id_map.
         //this map will map a gene_id to all related transcript ids and all the peptides and their
-        //position in the proteinsequence
+        //position in the protein sequence
 
         if (!m_gene_id_map.isEmpty()) {
             m_gene_id_map.clear();
@@ -96,6 +159,7 @@ public class KmerTreeMap implements IKmerMap, Serializable {
                         if (set_key_returned == 0) {
                             if (proteinMatcher.match(peptide_string, entry, mismatches, peptide_length)) {
                                 insert_into_gene_id_map(entry, mismatches);
+
                             }
                         } else if (set_key_returned == 1) {
                             //this mode is used when only allowed_mismatches + 1 keys are generated.
@@ -103,8 +167,10 @@ public class KmerTreeMap implements IKmerMap, Serializable {
                             int offset = backwards_multiplier * GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH;
                             if (proteinMatcher.match_backwards(peptide_string, entry, mismatches, peptide_length, offset)) {
                                 insert_into_gene_id_map(entry, mismatches, offset);
+
                             }
                         }
+
                         mismatches.clear();
                     }
                 }
@@ -119,6 +185,7 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         insert_into_gene_id_map(entry, mismatches, 0);
     }
 
+    // ||Pep filter||
     //inserts a found peptide into the current gene id map.
     public void insert_into_gene_id_map(IKmerEntry entry, ArrayList<Integer> mismatches, int offset) {
         //inserts a found position into the gene id map
@@ -134,6 +201,12 @@ public class KmerTreeMap implements IKmerMap, Serializable {
                 pos_in_protein,
                 (mismatches.size() > 0) ? pos_in_protein + mismatches.get(0) : -1,
                 (mismatches.size() > 1) ? pos_in_protein + mismatches.get(1) : -1));
+
+        if (!mismatches.isEmpty()) {
+            isVariant = true;
+        } else {
+            isVariant = false;
+        }
     }
 
     // returns true if a kmer (key) is in the digested proteins
@@ -146,18 +219,49 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         return m_kmers.size();
     }
 
-
     interface ProteinMatcher {
+        // ||Original||
         boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength);
-
+        // ||Pep filter||
+        boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int allowedMismatches);
+        // ||Original||
         boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset);
+        // ||Pep filter||
+        boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset, int allowedMismatches);
     }
 
     class MatcherNormal implements ProteinMatcher {
 
+        // ||Pep filter||
+        @Override
+        //the basic forward matching algorithm
+        public boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int allowedMismatches) {
+            //System.out.println("KmerTreeMap.ProteinMatcher.match EDITED used");
+            int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein();
+            if (peptideLength <= protein_length) {
+                String p_protein = Utils.getCppStyleSubStringByShift(kmerEntry.m_p_protein().get_sequence(), kmerEntry.m_pos_in_protein());
+                for (int i = 0; i < peptideLength; i++) {
+                    if (peptideString.charAt(i) != p_protein.charAt(i)) {
+                        mismatches.add(i);
+
+                        if (mismatches.size() > allowedMismatches) {
+                            return false;
+                        }
+                    }
+                }
+
+
+
+                return true;
+            }
+            return false;
+        }
+
+        // ||Original||
         @Override
         //the basic forward matching algorithm
         public boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength) {
+            //System.out.println("KmerTreeMap.ProteinMatcher.match ORIGINAL used");
             int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein();
             if (peptideLength <= protein_length) {
                 String p_protein = Utils.getCppStyleSubStringByShift(kmerEntry.m_p_protein().get_sequence(), kmerEntry.m_pos_in_protein());
@@ -174,9 +278,34 @@ public class KmerTreeMap implements IKmerMap, Serializable {
             return false;
         }
 
+        // ||Pep filter||
+        @Override
+        //backwards matching functionality. this is possible by using cstrings.
+        public boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset, int allowedMismatches) {
+            //System.out.println("KmerTreeMap.ProteinMatcher.match_backwards EDITED used");
+            if (kmerEntry.m_pos_in_protein() >= offset) {
+                int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein() + offset;
+                if (peptideLength <= protein_length) {
+                    String p_protein = Utils.getCppStyleSubStringByShift(kmerEntry.m_p_protein().get_sequence(), (kmerEntry.m_pos_in_protein() - offset));
+                    for (int i = 0; i < peptideLength; i++) {
+                        if (peptideString.charAt(i) != p_protein.charAt(i)) {
+                            mismatches.add(i);
+                            if (mismatches.size() > allowedMismatches) {
+                                return false;
+                            }
+                        }
+                    }
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // ||Original||
         @Override
         //backwards matching functionality. this is possible by using cstrings.
         public boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset) {
+            //System.out.println("KmerTreeMap.ProteinMatcher.match_backwards ORIGINAL used");
             if (kmerEntry.m_pos_in_protein() >= offset) {
                 int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein() + offset;
                 if (peptideLength <= protein_length) {
@@ -199,8 +328,19 @@ public class KmerTreeMap implements IKmerMap, Serializable {
     class MatcherOneInFiveMode implements ProteinMatcher {
 
         @Override
+        public boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int allowedMismatches) {
+            return false;
+        }
+
+        @Override
+        public boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset, int allowedMismatches) {
+            return false;
+        }
+
+        @Override
         //forward matching with one in five stop criterion
         public boolean match(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength) {
+
             int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein();
             if (peptideLength <= protein_length) {
                 String p_protein = Utils.getCppStyleSubStringByShift(kmerEntry.m_p_protein().get_sequence(), kmerEntry.m_pos_in_protein());
@@ -225,6 +365,7 @@ public class KmerTreeMap implements IKmerMap, Serializable {
         @Override
         //backwards matching functionality with one in five stop criterion.
         public boolean match_backwards(String peptideString, IKmerEntry kmerEntry, ArrayList<Integer> mismatches, int peptideLength, int offset) {
+
             if (kmerEntry.m_pos_in_protein() >= offset) {
                 int protein_length = kmerEntry.m_p_protein().get_sequence().length() - kmerEntry.m_pos_in_protein() + offset;
                 if (peptideLength <= protein_length) {

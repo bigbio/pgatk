@@ -1,5 +1,7 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import org.bigbio.pgatk.pepgenome.PepGenomeTool;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
@@ -9,19 +11,25 @@ public class ProteinEntry implements Serializable {
     private static final long serialVersionUID = -1732196455282495216L;
     //whole fasta header
     private String m_fasta_header;
-    //transcript number
+    //transcript id
     private String m_transcript_id;
-    //gene number
+    //gene id
     private String m_gene_id;
+    // Translation offset
+    private int m_translation_offset = 0;
     //the AA sequence.
     private String m_aa_sequence;
-    //regex pattern for gene ID
-    private static Pattern GENEPATTERN = Pattern.compile("gene:([^\\s\\.]*)[^\\s]*\\s");
-  //regex pattern for gene ID
-    private static Pattern TRANSCRIPTPATTERN = Pattern.compile("transcript:([^\\s\\.]*)[^\\s]*\\s");
 
-    //std::multimap <Coordinates (protein coordinates), GenomeCoordinates(corresponding genomic coordinates), Coordinates (passing this as third argument will use the Coordinates::operator() as comparator)>
-    //the first Coordinate are the coordinates of exons within the protein and the GenomeCoordinate is its corresponding location in the genome.
+    // Default regex patterns.
+    private static final Pattern originalGENEPATTERN = Pattern.compile("gene:([^\\s\\.]*)[^\\s]*\\s");
+    private static final Pattern originalTRANSCRIPTPATTERN = Pattern.compile("transcript:([^\\s\\.]*)[^\\s]*\\s");
+
+    // Exco regex patterns
+    private static final Pattern excoGENEPATTERN = Pattern.compile("geneID=([^\\s]*)[^\\s]*\\s");
+    private static final Pattern excoTRANSCRIPTPATTERN = Pattern.compile("transcriptID=([^\\s]*)[^\\s]*");
+    private static final Pattern excoOFFSETPATTERN = Pattern.compile(" offset=(\\d*) ");
+
+    //the first Coordinates are the coordinates of exons within the protein and the GenomeCoordinate is its corresponding location in the genome.
     private ArrayList<Tuple<Coordinates, GenomeCoordinates>> m_coordinates_map;
     //check if the coding sequence is dividable by 3bp and not offset due to incomplete transcript annotation.
     private int m_cds_annotation_correct;
@@ -33,6 +41,7 @@ public class ProteinEntry implements Serializable {
         this.m_aa_sequence = "";
         this.m_coordinates_map = new ArrayList<>();
         this.m_cds_annotation_correct = 0;
+        this.m_translation_offset = 0;
     }
 
     public ProteinEntry(String fastaHeader, String AAsequence) {
@@ -51,45 +60,99 @@ public class ProteinEntry implements Serializable {
     //sets all crucial values.
     private void init(String fastaHeader, String AAsequence) {
         if (fastaHeader.substring(0, 1).equals(">")) {
+
             m_fasta_header = fastaHeader;
-            m_transcript_id = extract_transcript_id_fasta(fastaHeader);
-            m_gene_id = extract_gene_id_fasta(fastaHeader);
             m_aa_sequence = AAsequence;
             m_coordinates_map = new ArrayList<>();
             m_cds_annotation_correct = 0;
+
+            m_gene_id = extract_gene_id_fasta(fastaHeader);
+            m_transcript_id = extract_transcript_id_fasta(fastaHeader);
+
+            if (PepGenomeTool.useExonCoords) {
+                // Exco mode
+                // Using exon coords in place of CDS, offset describes distance in nucleotides from exon start to translation start.
+                m_translation_offset = extract_offset_fasta(fastaHeader);
+
+            }
+            else {
+                // Not using exon coords in place of CDS - Using original format
+                m_translation_offset = 0;
+            }
+
+            // Put transcript ID and offset value into translation offset map in PepGenomeTool
+            PepGenomeTool.m_translation_offset_map.put(m_transcript_id, m_translation_offset);
+
         }
     }
 
-    //gets the transcriptId from a fasta header
-    private String extract_transcript_id_fasta(String str) {
-    	String value = "";
-    	Matcher transcriptMatcher = TRANSCRIPTPATTERN.matcher(str);
-    	if (transcriptMatcher.find()) {
-    		value = transcriptMatcher.group(1);
-    	} else {
-    		String[] split = str.split("\\|");
-    		if(split.length==8) {
-    			String[] dotsplit = split[1].split("\\.");
-    			value = dotsplit[0];
-    		}
-    	}
+    private String extract_gene_id_fasta(String str) {
+        String value = "";
+
+        Matcher geneMatcher;
+        if (PepGenomeTool.useExonCoords) {
+            geneMatcher= excoGENEPATTERN.matcher(str);
+        } else {
+            geneMatcher= originalGENEPATTERN.matcher(str);
+        }
+
+        if (geneMatcher.find()) {
+            value = geneMatcher.group(1);
+            //System.out.println("Gene extracted correctly: "+value);
+        }
+        else {
+
+            // From original method
+            String[] split = str.split("\\|");
+            if(split.length==8) {
+                String[] dotsplit = split[2].split("\\.");
+                value = dotsplit[0];
+            }
+        }
+
         return value;
     }
 
-    //gets the gene id from a fasta header
-    private String extract_gene_id_fasta(String str) {
-    	String value = "";
-    	Matcher geneMatcher = GENEPATTERN.matcher(str);
-    	if (geneMatcher.find()) {
-    		value = geneMatcher.group(1);
-    	} else {
-    		String[] split = str.split("\\|");
-    		if(split.length==8) {
-    			String[] dotsplit = split[2].split("\\.");
-    			value = dotsplit[0];
-    		}
-    	}
+    // Extracts the transcript Id from a fasta header
+    private String extract_transcript_id_fasta(String str) {
+        String value = "";
+
+        Matcher transcriptMatcher;
+        if (PepGenomeTool.useExonCoords) {
+            transcriptMatcher = excoTRANSCRIPTPATTERN.matcher(str);
+        } else {
+            transcriptMatcher = originalTRANSCRIPTPATTERN.matcher(str);
+
+            // From original method
+            String[] split = str.split("\\|");
+            if(split.length==8) {
+                String[] dotsplit = split[1].split("\\.");
+                value = dotsplit[0];
+            }
+        }
+
+        if (transcriptMatcher.find()) {
+            value = transcriptMatcher.group(1);
+            //System.out.println("Transcript extracted correctly"+value);
+        } else {
+            //System.out.println("Transcript not extracted correctly: "+value);
+        }
         return value;
+    }
+
+    // Extracts the translation start point offset from a fasta header
+    private Integer extract_offset_fasta(String str) {
+        String value = "0"; // Default if no offset given.
+        Matcher offsetMatcher = excoOFFSETPATTERN.matcher(str);
+        if (offsetMatcher.find()) {
+            value = offsetMatcher.group(1);
+            //System.out.println("Offset extracted correctly");
+            //System.out.println("Offset value: "+value);
+        }
+
+        m_translation_offset = Integer.parseInt(value);
+
+        return m_translation_offset;
     }
 
     //returns the transcript_id number of the current protein

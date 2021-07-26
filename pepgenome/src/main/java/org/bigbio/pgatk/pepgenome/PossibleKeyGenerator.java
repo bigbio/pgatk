@@ -10,28 +10,28 @@ import java.util.List;
 
 public class PossibleKeyGenerator implements Serializable {
     private static final long serialVersionUID = 809902192340291246L;
-    //string used to generate keys.
+    // string used to generate keys.
     private String m_key = "";
 
-    //are there any generated keys left?
+    // are there any generated keys left?
     private boolean m_keys_generated = false;
 
     // kmermap, to check if a certain key exists in there,
-    //otherwise the key will not be added to the generated keys.
+    // otherwise the key will not be added to the generated keys.
     private IKmerMap m_kmers;
 
-    //current set of generated keys.
+    // current set of generated keys.
     private List<String> m_keys = new ArrayList<>();
 
-    //iterator pointing to the current element in m_keys.
+    // iterator pointing to the current element in m_keys.
     private int m_curr_index;
 
     public PossibleKeyGenerator(IKmerMap k) {
         this.m_kmers = k;
     }
 
-    //returns
-    //-1: key is shorter than KMER_LENGTH
+    // returns
+    // -1: key is shorter than KMER_LENGTH
     // 0: key is shorter than (ALLOWED MISMATCHES + 1) * KMER_LENGTH
     // 1: key is >= KMER_LENGTH
     public final int set_original_key(String key) {
@@ -47,6 +47,35 @@ public class PossibleKeyGenerator implements Serializable {
             //if the key is longer this approach will also work. in the 2 mismatches case it generates 3 keys,
             //as opposed to the brute force key generation which will produce 3331 unique keys.
             for (int i = 0; i <= GenomeMapper.PEPTIDE_MAPPER.ALLOWED_MISMATCHES; i++) {
+                int start = i * GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH;
+                int end = ((start + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH) > key.length()) ? key.length() : (start + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH);
+                m_keys.add(key.substring(start, end));
+            }
+            m_keys_generated = true;
+            m_curr_index = 0;
+            return 1;
+        }
+        if (key.length() >= GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH) {
+            set_short_original_key(key.substring(0, GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH));
+            return 0;
+        }
+        return -1;
+    }
+
+    // ||Pep filter version of set_original_key to use Variant filter mode allowedMismatches rather than GenomeMapper.ALLOWED_MISMATCHES.||
+    public final int set_original_key(String key, int allowedMismatches) {
+        if (key.length() >= ((allowedMismatches + 1) * GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH)) {
+            //if key.length >= (allowed_mismatches+1)*kmer_lenght
+            //in this case there is no way there are more than allowed_mismatches in every kmer.
+            //one of those has to be matching perfectly:
+            //protein:  TESTTESTTEST allowed mismatches = 2
+            //key:	    TEXTTEXTTEST  length = 15, 2 mismatches on the protein
+            //mismatches +1 * kmerlength = 15 therefore this if will be used
+            //splitting the key into TEXT, TEXT, and TEST. the TEST does match the protein perfectly.
+            //therefore the peptide will be found. this uses the match_backwards function.
+            //if the key is longer this approach will also work. in the 2 mismatches case it generates 3 keys,
+            //as opposed to the brute force key generation which will produce 3331 unique keys.
+            for (int i = 0; i <= allowedMismatches; i++) {
                 int start = i * GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH;
                 int end = ((start + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH) > key.length()) ? key.length() : (start + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH);
                 m_keys.add(key.substring(start, end));

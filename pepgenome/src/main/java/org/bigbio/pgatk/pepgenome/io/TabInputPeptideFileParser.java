@@ -4,6 +4,7 @@ import org.apache.spark.sql.Dataset;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
+import org.bigbio.pgatk.pepgenome.PepGenomeTool;
 import org.bigbio.pgatk.pepgenome.common.PeptideEntry;
 import org.bigbio.pgatk.pepgenome.common.SparkConfig;
 import org.bigbio.pgatk.pepgenome.common.TranscriptsT;
@@ -29,10 +30,11 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
     public void read(String file, CoordinateWrapper coordwrapper, MappedPeptides mapping, String unmappedoutput, IKmerMap k) throws Exception {
         if (SparkConfig.getInstance().getMaster() != null) {
             sparkRead(file, coordwrapper, mapping, unmappedoutput, k);
+
         } else {
             normalRead(file, coordwrapper, mapping, unmappedoutput, k);
-        }
 
+        }
     }
 
     //read function. this reads the peptides input and sets the wheels in motion.
@@ -50,49 +52,82 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
         double quant;
         Map<String, TranscriptsT> gene_id_map;
 
+        // ||For use with peptide filter mode||
+        int allowedMismatches = 0;
+        String targetTranscriptIDs = "";
+
+
         String line;
         while ((line = reader.readLine()) != null) {
+
             if ((line.toLowerCase().startsWith("experiment")) || (line.toLowerCase().startsWith("sample"))) {
                 continue;
             }
+            // Tokenize peptide input
             ArrayList<String> tokens = new ArrayList<>(Arrays.asList(Utils.tokenize(line, "\t", false)));
             //using only the tokens needed.
+            // Extracts tissue
             tissue = tokens.get(0).trim();
+            // Extracts peptide string
             peptide_string = tokens.get(1).trim();
-            //std::cout << "Mapping following peptide: " << peptide_string << std::endl;
+            // Extracts PSMs
             String sigPsmStr = tokens.get(2).trim();
             if (sigPsmStr.length() == 0) {
                 sigPsmStr = "0";
             }
             sigPSMs = Integer.parseInt(sigPsmStr);
+            // Extracts Quant
             String quantStr = tokens.get(3).trim();
             if (quantStr.length() == 0) {
                 quantStr = "0";
             }
             quant = Double.parseDouble(quantStr);
 
-            //clearing the tokens list for the next iteration.
+            // If peptide filter mode is on, and the peptide line has six fields filled.
+            if (PepGenomeTool.usePeptideFilter && tokens.size()==6) {
+
+                // Extract Allowed Mismatches
+                allowedMismatches = Integer.parseInt(tokens.get(4).trim());
+
+                // Extract Target Trans ID - If left blank, map to all
+                targetTranscriptIDs = tokens.get(5).trim();
+                if (targetTranscriptIDs.equals("")) {
+                    targetTranscriptIDs = "all";
+                }
+
+            }
+
+            // Clearing the tokens list for the next iteration.
             tokens.clear();
 
             if (sigPSMs > 0) {
-                //the matching will only use the amino acids.
+                // Remove PTMs from the iso sequence, only using amino acids
                 iso_seq_without_ptms = Utils.make_iso_sequence(Utils.remove_ptms(peptide_string));
 
                 if (!coordwrapper.isPeptidePresent(iso_seq_without_ptms)) {
-                    //the gene_id_map.find_peptide function will match the peptide.
-                    gene_id_map = k.find_peptide(iso_seq_without_ptms);
+                    // Match peptide, produce gene id map using KmerTreeMap/KmerSortedMap
+                    if (PepGenomeTool.usePeptideFilter) {
+                        // Using peptide filter mode
+                        gene_id_map = k.find_peptide(iso_seq_without_ptms, targetTranscriptIDs, allowedMismatches);
+                    } else {
+                        // Default
+                        gene_id_map = k.find_peptide(iso_seq_without_ptms);
+                    }
+
+                    // Note: k.getIsVariant: Extract variant status (check whether peptide contains mismatches)||
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
-                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
+
+                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it, k.getIsVariant());
                     }
                     if (gene_id_map.isEmpty()) {
                         ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
                     }
                 } else {
-                    //if the peptide already exists its genomic coordinates dont have to be recalculated.
-                    //only the tags and PTMs have to be added
+                    // if the peptide already exists its genomic coordinates dont have to be recalculated.
+                    // only the tags and PTMs have to be added
                     ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(iso_seq_without_ptms);
                     for (PeptideEntry aRefVec : refVec) {
-                        aRefVec.add_peptide(peptide_string, tissue, sigPSMs, quant);
+                        aRefVec.add_peptide(peptide_string, tissue, sigPSMs, quant, k.getIsVariant());
                     }
                 }
             }
@@ -143,7 +178,7 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
                     //the gene_id_map.find_peptide function will match the peptide.
                     Map<String, TranscriptsT> gene_id_map = k.find_peptide(iso_seq_without_ptms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
-                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
+                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it, k.getIsVariant());
                     }
                     if (gene_id_map.isEmpty()) {
                         ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
@@ -153,7 +188,7 @@ public class TabInputPeptideFileParser implements PeptideInputReader, Serializab
                     //only the tags and PTMs have to be added
                     ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(iso_seq_without_ptms);
                     for (PeptideEntry aRefVec : refVec) {
-                        aRefVec.add_peptide(peptide_string, tissue, sigPSMs, quant);
+                        aRefVec.add_peptide(peptide_string, tissue, sigPSMs, quant, k.getIsVariant());
                     }
                 }
             }

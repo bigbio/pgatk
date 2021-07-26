@@ -75,7 +75,7 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
                     //the gene_id_map.find_peptide function will match the peptide.
                     gene_id_map = k.find_peptide(iso_seq_without_ptms);
                     for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
-                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
+                        mapping.add_peptide(coordwrapper, peptide_string, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it, k.getIsVariant());
                     }
                     if (gene_id_map.isEmpty()){
                         ofs.write(("No-Gene" + "\t" + peptide_string + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
@@ -85,7 +85,7 @@ public class PeptideAtlasPeptideParser implements PeptideInputReader {
                     //only the tags and PTMs have to be added
                     ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(iso_seq_without_ptms);
                     for (PeptideEntry aRefVec : refVec) {
-                        aRefVec.add_peptide(peptide_string, file, sigPSMs, quant);
+                        aRefVec.add_peptide(peptide_string, file, sigPSMs, quant, k.getIsVariant());
                     }
                 }
             }

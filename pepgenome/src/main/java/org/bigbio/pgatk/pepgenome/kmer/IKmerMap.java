@@ -34,6 +34,18 @@ public interface IKmerMap {
     Map<String, TranscriptsT> find_peptide(String peptide_string);
 
     /**
+     * 2021 Expansion - Variant peptide filter mode
+     * Searches for all matches (imperfect matching, set via PEPTIDE_MAPPER) and returns a map that contains all finds.
+     * @param peptide_string Peptide String to search
+     * @return Transcript map
+     */
+    Map<String, TranscriptsT> find_peptide(String peptide_string, String targetGeneID, int allowedMismatches);
+
+    // ||Peptide filter mode||
+    boolean getIsVariant();
+    void setIsVariant(boolean isVariant);
+
+    /**
      * Inserts a found peptide into the current gene id map.
      * @param entry Entry
      * @param mismatches Number of missmatches
