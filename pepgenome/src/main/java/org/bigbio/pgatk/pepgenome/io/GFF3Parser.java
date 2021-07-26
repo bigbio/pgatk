@@ -4,7 +4,7 @@ import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 import org.bigbio.pgatk.pepgenome.PepGenomeTool;
 import org.bigbio.pgatk.pepgenome.common.*;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
-import org.mortbay.log.Log;
+
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,10 +13,16 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 // GFF3 Parser
+@Slf4j
 public class GFF3Parser extends GenomeAnnotationParser {
 
     public static GFF3Parser instance;
+
+    private static Logger log = LoggerFactory.getLogger(GFF3Parser.class);
 
     private GFF3Parser() {
     }
@@ -85,7 +91,7 @@ public class GFF3Parser extends GenomeAnnotationParser {
                 }
                 proteinEntry = coordwrapper.lookup_entry(transcriptId);
                 if (proteinEntry == null) {
-                    Log.info("ERROR: No entry for transcript ID: " + transcriptId);
+                    log.info("ERROR: No entry for transcript ID: " + transcriptId);
                     continue;
                 }
 
