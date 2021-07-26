@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.*;
 import org.apache.commons.io.FilenameUtils;
 import org.bigbio.pgatk.pepgenome.common.Assembly;
-import org.bigbio.pgatk.pepgenome.common.SparkConfig;
 import org.bigbio.pgatk.pepgenome.common.Utils;
 import org.bigbio.pgatk.pepgenome.common.constants.GenomeMapper;
 import org.bigbio.pgatk.pepgenome.common.maps.MappedPeptides;
@@ -30,7 +29,7 @@ public class PepGenomeTool {
     public enum INPUT_FILE_FORMAT {
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
         MZTAB("mztab", "mzTab file format (.mztab)", MzTabInputPeptideFileParser.class),
-        PRIDE("pridejson", "Pride Json file format (.json)", PrideJsonFileParser.class),
+        PRIDE("pavro", "Peptide binary avro file", PeptideAvroFileParser.class),
         PEPTIDEATLAS("peptideatlas", "PeptideAtlas PeptideBuild (.tsv)", PeptideAtlasPeptideParser.class),
         MZIDENML("mzid", "MzIndetML file format (.mzid)", MzTabInputPeptideFileParser.class);
 
@@ -82,7 +81,6 @@ public class PepGenomeTool {
     private static final String ARG_HELP = "h";
     private static final String ARG_INMEMORY = "inm";
     private static final String ARG_INPUT_FORMAT = "inf";
-    private static final String ARG_SPARK_MASTER = "spark_master";
     private static final String ARG_GENOME_FASTA = "genome";
 
     //DEFAULT values
@@ -146,9 +144,7 @@ public class PepGenomeTool {
                         .desc("Compute the kmer algorithm in memory or using database" +
                                 " algorithm (default 0, database 1)").build())
                 .addOption(Option.builder(ARG_INPUT_FORMAT).hasArg(true)
-                        .desc("Format of the input file (mztab, mzid, or tsv). (default tsv) ").build())
-                .addOption(Option.builder(ARG_SPARK_MASTER).hasArg(true)
-                        .desc("Spark master String. i.e., to run locally use: local[*]").build())
+                        .desc("Format of the input file (mztab, mzid, pavro, or tsv). (default tsv) ").build())
                 .addOption(Option.builder(ARG_HELP).hasArg(false)
                         .desc("Print this help & exit").build());
 
@@ -240,10 +236,10 @@ public class PepGenomeTool {
         }
 
         String[] peptideInputFilePaths = Utils.tokenize(peptideInputFilePathsParam, ",", true);
-        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid", ".json"};
+        String[] validpeptideInputFileExts = {".txt", ".tsv", ".pogo", ".mztab", ".mzid", ".avro"};
         if (Stream.of(peptideInputFilePaths)
                 .filter(filePath -> Stream.of(validpeptideInputFileExts).anyMatch(filePath::endsWith)).count() != peptideInputFilePaths.length) {
-            log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv, .json or" +
+            log.info(" *** Please provide valid input for -in. Allowed file extensions are .mztab, .mzid, .txt, .tsv, .avro or" +
                     " .pogo (e.g. filename.txt or filename1.txt,filename2.txt) ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
@@ -401,9 +397,9 @@ public class PepGenomeTool {
                     new MzTabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
                 else if (fileFormat == INPUT_FILE_FORMAT.PEPTIDEATLAS)
                     new PeptideAtlasPeptideParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
-                else if(fileFormat == INPUT_FILE_FORMAT.PRIDE)
-                    new PrideJsonFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
-                else
+                else if(fileFormat == INPUT_FILE_FORMAT.PRIDE){
+                    new PeptideAvroFileParser(final_peptide_path_results + "_gene_coordinates.avro").read(peptideInputFilePath,  coordinate_wrapper, mapped_peptides, path6, kmer_map);
+                }else
                     new TabInputPeptideFileParser().read(peptideInputFilePath, coordinate_wrapper, mapped_peptides, path6, kmer_map);
 
                 log.info("Results done! (" + peptideInputFilePath + ")");
@@ -497,7 +493,6 @@ public class PepGenomeTool {
             System.err.println(e.getMessage());
             e.printStackTrace();
         }
-
         log.info("DONE..");
         long endTime = System.nanoTime();
         long totalTime = (long) ((endTime - startTime) / 1000000000.0);

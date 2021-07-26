@@ -40,13 +40,17 @@ public class PepGenomeToolTest {
     @Before
     public void setUp() throws Exception {
 
-        fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/Testfile_small.txt")).toURI()).getAbsolutePath();
-        fileFasta = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/minimal_gencode.v25.pc_translations.fa")).toURI()).getAbsolutePath();
-        File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz")).toURI());
+        fileIn = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/Testfile_small.txt")).toURI())
+          .getAbsolutePath();
+        fileFasta = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/minimal_gencode.v25.pc_translations.fa"))
+          .toURI()).getAbsolutePath();
+        File inputGZfile = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/gencode.v25.annotation.gtf.gz"))
+          .toURI());
 
         fileGTF = TestUtils.unGzip(inputGZfile).getAbsolutePath();
 
-        fileCPogo = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/cpogo/Testfile_small.bed")).toURI()).getAbsolutePath();
+        fileCPogo = new File(Objects.requireNonNull(PepGenomeToolTest.class.getClassLoader().getResource("small/cpogo/Testfile_small.bed")).toURI())
+          .getAbsolutePath();
 
     }
 
@@ -89,7 +93,7 @@ public class PepGenomeToolTest {
             Assert.assertTrue(found);
         }
 
-        deleteAfterTest();
+//        deleteAfterTest();
         log.info(" ");
 
     }
@@ -135,101 +139,7 @@ public class PepGenomeToolTest {
             Assert.assertTrue(found);
         }
 
-        deleteAfterTest();
-        log.info(" ");
-
-    }
-
-    @Test
-    public void mainInMemorySparkMode() throws IOException {
-        log.info("InMemoryTest-SparkMode");
-        List<String> argList = new ArrayList<>();
-
-        argList.add("-in");
-        argList.add(fileIn);
-        argList.add("-fasta");
-        argList.add(fileFasta);
-        argList.add("-gtf");
-        argList.add(fileGTF);
-        argList.add("-spark_master");
-        argList.add("local[*]");
-
-        String[] args = new String[argList.size()];
-        argList.toArray(args);
-        PepGenomeTool.main(args);
-
-        File outputBed = new File(fileIn.replace(".txt", ".bed"));
-        File cPogoBed = new File(fileCPogo);
-
-        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
-        Assert.assertEquals(29, bedLines.size());
-
-
-        List<List<String>> cPogoLines = TestUtils.getBedLines(cPogoBed);
-        Assert.assertEquals(bedLines.size(), cPogoLines.size());
-
-        for (List<String> bedLine1 : bedLines) {
-            boolean found = false;
-            for (List<String> cbedLine : cPogoLines) {
-                if (bedLine1.get(3).equalsIgnoreCase(cbedLine.get(3))) {
-                    found = compareBedLines(bedLine1, cbedLine);
-                    log.info(bedLine1.get(3) + " -- " + found);
-                    if (found)
-                        break;
-                }
-            }
-            Assert.assertTrue(found);
-        }
-
-        deleteAfterTest();
-        log.info(" ");
-
-    }
-
-    @Test
-    public void mainInDBSparkMode() throws IOException {
-        log.info("InDBTest-SparkMode");
-        List<String> argList = new ArrayList<>();
-
-        argList.add("-in");
-        argList.add(fileIn);
-        argList.add("-fasta");
-        argList.add(fileFasta);
-        argList.add("-gtf");
-        argList.add(fileGTF);
-        argList.add("-inm");
-        argList.add("1");
-        argList.add("-spark_master");
-        argList.add("local[*]");
-
-        String[] args = new String[argList.size()];
-        argList.toArray(args);
-        PepGenomeTool.main(args);
-
-        File outputBed = new File(fileIn.replace(".txt", ".bed"));
-        File cPogoBed = new File(fileCPogo);
-
-        List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
-        Assert.assertEquals(29, bedLines.size());
-
-
-        List<List<String>> cPogoLines = TestUtils.getBedLines(cPogoBed);
-        Assert.assertEquals(bedLines.size(), cPogoLines.size());
-
-        for (List<String> bedLine1 : bedLines) {
-            boolean found = false;
-            for (List<String> cbedLine : cPogoLines) {
-                if (bedLine1.get(3).equalsIgnoreCase(cbedLine.get(3))) {
-                    found = compareBedLines(bedLine1, cbedLine);
-                    log.info(bedLine1.get(3) + " -- " + found);
-                    if (found)
-                        break;
-                }
-            }
-            Assert.assertTrue(found);
-        }
-
-        deleteAfterTest();
+//        deleteAfterTest();
         log.info(" ");
 
     }

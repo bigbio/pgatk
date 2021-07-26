@@ -67,7 +67,7 @@ public class PepGeonomeMzTabTest  {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(4577, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
@@ -100,7 +100,7 @@ public class PepGeonomeMzTabTest  {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(4577, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }

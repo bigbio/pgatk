@@ -112,7 +112,7 @@ public class PeptideAtlasMapper {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(109869, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
@@ -141,7 +141,7 @@ public class PeptideAtlasMapper {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(0, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
@@ -172,7 +172,7 @@ public class PeptideAtlasMapper {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(7, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
@@ -203,7 +203,7 @@ public class PeptideAtlasMapper {
         List<List<String>> bedLines = TestUtils.getBedLines(outputBed);
         Assert.assertEquals(3, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
@@ -270,7 +270,7 @@ public class PeptideAtlasMapper {
         
         Assert.assertEquals(2, bedLines.size());
 
-        deleteOnExits();
+//        deleteOnExits();
         log.info(" ");
 
     }
