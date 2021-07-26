@@ -35,7 +35,7 @@
         <common-cli.version>1.4</common-cli.version>
         <commons-lang3.version>3.8</commons-lang3.version>
         <junit.version>4.13.1</junit.version>
-        <jmzidentml.version>1.2.9</jmzidentml.version>
+        <jmzidentml.version>1.2.11</jmzidentml.version>
         <jmztab.version>3.0.5</jmztab.version>
     </properties>
 
