@@ -1,5 +1,6 @@
 package org.bigbio.pgatk.pepgenome.common;
 
+import lombok.Data;
 import org.bigbio.pgatk.pepgenome.CoordinateWrapper;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,6 +20,7 @@ import java.util.*;
  * @author ypriverol
  */
 
+@Data
 public class PeptideEntry implements Comparable<PeptideEntry>, Serializable {
 
     private static final long serialVersionUID = -3518477125981077637L;

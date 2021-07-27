@@ -78,11 +78,12 @@ public class PeptideAvroFileParser implements PeptideInputReader, Serializable {
           //the gene_id_map.find_peptide function will match the peptide.
           gene_id_map = k.find_peptide(isoSeqWithoutPtms);
           for (Map.Entry<String, TranscriptsT> it : gene_id_map.entrySet()) {
-            mapping.add_peptide(coordwrapper, peptideString, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it);
+            mapping.add_peptide(coordwrapper, peptideString, tissue, sigPSMs, gene_id_map.size(), ofs, quant, it, k.getIsVariant());
           }
 
           if (gene_id_map.isEmpty()){
-            ofs.write(("No-Gene" + "\t" + peptideString + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant + "\n").getBytes());
+            ofs.write(("No-Gene" + "\t" + peptideString + "\t" + "No-Transcript" + "\t" + "No-genes" + "\t" + tissue + "\t" + sigPSMs + "\t" + quant +
+              "\n").getBytes());
           }
 
           Optional<PeptideEntry> peptide = coordwrapper.get_existing_peptides_at(peptideString) != null && coordwrapper.get_existing_peptides_at(peptideString).size() >0 ?
@@ -114,7 +115,7 @@ public class PeptideAvroFileParser implements PeptideInputReader, Serializable {
           //only the tags and PTMs have to be added
           ArrayList<PeptideEntry> refVec = coordwrapper.get_existing_peptides_at(isoSeqWithoutPtms);
           for (PeptideEntry aRefVec : refVec) {
-            aRefVec.add_peptide(peptideString, file, sigPSMs, quant);
+            aRefVec.add_peptide(peptideString, file, sigPSMs, quant, k.getIsVariant());
           }
         }
         writer.write(spectrum);
