@@ -29,7 +29,6 @@ public class GenomeFastaParser  implements Serializable {
 			GenomeMapper.PEPTIDE_MAPPER.CHR_FROM_GENOME_FASTA = true;
 			br.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

@@ -13,13 +13,18 @@ import org.bigbio.pgatk.pepgenome.io.custom.PeptideAtlasPeptideParser;
 import org.bigbio.pgatk.pepgenome.kmer.IKmerMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerSortedMap;
 import org.bigbio.pgatk.pepgenome.kmer.inmemory.KmerTreeMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.stream.Stream;
 
 @Slf4j
 public class PepGenomeTool {
+
+    private static Logger log = LoggerFactory.getLogger(PepGenomeTool.class);
 
     public enum INPUT_FILE_FORMAT {
         TAB("tab", "Tab delimited input (.pogo, .tsv, .txt)", TabInputPeptideFileParser.class),
@@ -62,6 +67,10 @@ public class PepGenomeTool {
     //-----------------input args--------------------------
     private static final String ARG_FASTA = "fasta";
     private static final String ARG_GTF = "gtf";
+    private static final String ARG_GFF = "gff"; // Addition - GFF3 (only) accepted
+    private static final String ARG_ANN = "ann"; // Addition - Annotation, GTF or GFF accepted
+    private static final String ARG_EXON_COORDS = "exco"; // Addition - Use genomic coordinates of exons rather than CDS annotation features.  (Peptides unannotated).
+    private static final String ARG_PEPTIDE_FILTER = "variant_filter"; // Addition - Peptide Filter to mark variants.
     private static final String ARG_IN = "in";
     private static final String ARG_MERGE = "merge";
     private static final String ARG_FORMAT = "format";
@@ -84,6 +93,11 @@ public class PepGenomeTool {
     private static boolean chrincluded = false;
     private static boolean inMemory = true;
     private static INPUT_FILE_FORMAT fileFormat = INPUT_FILE_FORMAT.TAB;
+    public static boolean useExonCoords = false; // ||Exco mode||
+    public static boolean usePeptideFilter = false; // ||Peptide filter mode||
+
+    // Map of transcript IDs to CDS offsets for non-CDS-annotated use.
+    public static HashMap<String, Integer> m_translation_offset_map = new HashMap<>();
 
     public static void main(String[] args) {
 
@@ -96,6 +110,10 @@ public class PepGenomeTool {
                 .desc("Filepath for file containing protein sequences in FASTA format").build())
                 .addOption(Option.builder(ARG_GTF).hasArg(true)
                         .desc("Filepath for file containing genome annotation in GTF format").build())
+                .addOption(Option.builder(ARG_GFF).hasArg(true).desc("Filepath for file containing genome annotation in GFF3 format").build())
+                .addOption(Option.builder(ARG_ANN).hasArg(true).desc("Filepath for file containing genome annotation in GTF or GFF3 format").build())
+                .addOption(Option.builder(ARG_EXON_COORDS).hasArg(true).desc("Use exon coordinates rather than CDS (Unannotated peptides)").build())
+                .addOption(Option.builder(ARG_PEPTIDE_FILTER).hasArg(true).desc("Peptide filter mode.").build())
                 .addOption(Option.builder(ARG_IN).hasArg(true)
                         .desc("Comma(,) separated file paths for files containing peptide identifications " +
                                 "(Contents of the file can tab separated format. i.e., " +
@@ -142,8 +160,15 @@ public class PepGenomeTool {
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
         }
 
-        if (!cmd.hasOption(ARG_FASTA) || !cmd.hasOption(ARG_GTF) || !cmd.hasOption(ARG_IN)) {
-            log.info("*** Missing mandatory parameters: -fasta, -gtf and -in ***");
+        // Check for protein sequence input and peptide input.
+        if (!cmd.hasOption(ARG_FASTA) || !cmd.hasOption(ARG_IN)) {
+            log.info("*** Missing mandatory parameters: -fasta and/or -in ***");
+            Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
+        }
+
+        // Check for genome annotation input.  Can be ANN (GTF/GFF3), GTF or GFF3.
+        if (!cmd.hasOption(ARG_GTF) && !cmd.hasOption(ARG_ANN) && !cmd.hasOption(ARG_GFF)) {
+            log.info("*** Missing mandatory parameters: -gtf/-gff3/-ann ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_TOO_FEW_ARGS);
         }
 
@@ -154,10 +179,37 @@ public class PepGenomeTool {
             inMemory = false;
         }
 
+        // Exon coords argument check
+        if (cmd.hasOption(ARG_EXON_COORDS)) {
+            useExonCoords = true;
+        }
+
+        // Peptide filter argument check
+        if (cmd.hasOption(ARG_PEPTIDE_FILTER)) {
+            usePeptideFilter = true;
+        }
+
         String fastaFilePath = cmd.getOptionValue(ARG_FASTA);
-        String gtfFilePath = cmd.getOptionValue(ARG_GTF);
         String peptideInputFilePathsParam = cmd.getOptionValue(ARG_IN);
         String fastaGenomeFilePath = cmd.getOptionValue(ARG_GENOME_FASTA);
+
+        String annFilePath = "";
+        if (cmd.getOptionValue(ARG_GFF) != null && cmd.getOptionValue(ARG_GFF).endsWith(".gff3")) {
+            annFilePath = cmd.getOptionValue(ARG_GFF);
+
+        }
+        else if (cmd.getOptionValue(ARG_GTF) != null && cmd.getOptionValue(ARG_GTF).endsWith(".gtf")) {
+            annFilePath = cmd.getOptionValue(ARG_GTF);
+
+        }
+        else if (cmd.getOptionValue(ARG_ANN) != null && (cmd.getOptionValue(ARG_ANN).endsWith(".gff3") || cmd.getOptionValue(ARG_ANN).endsWith(".gtf"))) {
+            annFilePath = cmd.getOptionValue(ARG_ANN);
+        }
+        else {
+            log.info(" *** Annotation Input Error: Please provide valid input for -ann, -gtf or -gff. Allowed file extensions are .gtf or .gff3 ***");
+            log.info(" *** Note: -ann accepts both .gtf and .gff3 ***");
+            Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
+        }
 
         if (fastaFilePath == null || !(fastaFilePath.endsWith(".fasta") || fastaFilePath.endsWith(".fa"))) {
             log.info(" *** Please provide valid input for -fasta. The input filename has to end with .fa or .fasta *** ");
@@ -166,11 +218,6 @@ public class PepGenomeTool {
 
         if (fastaGenomeFilePath != null && !(fastaGenomeFilePath.endsWith(".fasta") || fastaGenomeFilePath.endsWith(".fa"))) {
             log.info(" *** Please provide valid input for -genome. The input filename has to end with .fa or .fasta *** ");
-            Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
-        }
-
-        if (gtfFilePath == null || !gtfFilePath.endsWith(".gtf")) {
-            log.info(" *** Please provide valid input for -gtf. The input filename has to end with .gtf  ***");
             Utils.printHelpAndExitProgram(options, true, GENOME_MAPPER_EXIT_INVALID_ARG);
         }
 
@@ -303,11 +350,18 @@ public class PepGenomeTool {
                 ((KmerSortedMap) kmer_map).sortKmer();
 
             log.info("KmerTreeMap done: " + kmer_map.size() + " unique " + GenomeMapper.PEPTIDE_MAPPER.KMER_LENGTH + "-mers created.");
-            log.info("reading GTF: " + gtfFilePath);
+            log.info("reading GTF: " + annFilePath);
 
             MappedPeptides mapped_peptides = new MappedPeptides();
-            Assembly assem = GTFParser.get_instance().read(gtfFilePath, coordinate_wrapper, mapped_peptides);
-            log.info("GTF done!");
+            // Check the file extension.  If GTF, run the GTFParser, else if GFF3, run the GFF3Parser.
+
+            Assembly assem = null;
+            if (annFilePath.endsWith(".gtf")) {
+                assem = GTFParser.get_instance().read(annFilePath, coordinate_wrapper, mapped_peptides);
+            } else if (annFilePath.endsWith(".gff3")) {
+                assem = GFF3Parser.get_instance().read(annFilePath, coordinate_wrapper, mapped_peptides);
+            }
+            log.info("Annotation (GTF/GFF3) done!");
 
             // Creating a post-fix for file name specifying mode of mapping using mismatches
             String filename_mm_postfix = "";

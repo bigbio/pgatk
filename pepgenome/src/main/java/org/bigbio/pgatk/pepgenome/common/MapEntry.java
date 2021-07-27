@@ -165,18 +165,18 @@ public class MapEntry implements Comparable<MapEntry>, Serializable {
      *
      */
 
-    public final int addPeptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry) {
+    public final int addPeptide(CoordinateWrapper coordwrapper, String sequence, String tag, int sigPSMs, int genes, FileOutputStream ofstream, double quant, Map.Entry<String, TranscriptsT> transcriptsEntry, boolean isVariant) {
         int added = 0;
         String sequenceWoPtm = Utils.remove_ptms(sequence);
 
         if (transcriptsEntry.getValue().getM_entries().size() > 0) {
             if (!peptideEntries.containsKey(sequenceWoPtm)) {
-                PeptideEntry newPeptide = new PeptideEntry(geneEntry);
+                PeptideEntry newPeptide = new PeptideEntry(geneEntry, isVariant);
                 peptideEntries.put(sequenceWoPtm, newPeptide);
                 coordwrapper.add_to_existing_peptides(sequenceWoPtm, newPeptide);
                 added = 1;
             }
-            peptideEntries.get(sequenceWoPtm).add_peptide(coordwrapper, sequenceWoPtm, sequence, tag, sigPSMs, transcriptsEntry.getValue(), genes, ofstream, quant);
+            peptideEntries.get(sequenceWoPtm).add_peptide(coordwrapper, sequenceWoPtm, sequence, tag, sigPSMs, transcriptsEntry.getValue(), genes, ofstream, quant, isVariant);
         }
         return added;
     }
