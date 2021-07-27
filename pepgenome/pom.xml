@@ -157,8 +157,9 @@
             <goal>repackage</goal>
           </goals>
           <configuration>
-            <classifier>spring-boot</classifier>
+            <classifier>bin</classifier>
             <mainClass>org.bigbio.pgatk.pepgenome.PepGenomeTool</mainClass>
+            <finalName>${project.artifactId}-${project.version}</finalName>
           </configuration>
         </execution>
       </executions>
