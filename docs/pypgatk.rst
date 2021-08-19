@@ -12,7 +12,7 @@ task arguments:
 .. code-block:: bash
    :linenos:
 
-   $: python pypgatk -h
+   $: pypgatk_cli.py -h
       Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
 
       This is the main tool that gives access to all commands and options provided by the pypgatk_cli
@@ -28,8 +28,9 @@ task arguments:
         vcf-to-proteindb         Command to translate genomic variatns to protein sequences
         cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
         cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
-        generate-decoy      	   Command to generate decoy database from a proteindb
-
+        generate-decoy      	 Command to generate decoy database from a proteindb
+        ensembl-check      	     Command to fix protein sequences to only contain amino acid sequences
+        
 
 .. _installation:
 
@@ -41,7 +42,7 @@ Clone the source code for pypgatk from source:
 .. code-block:: bash
    
    git clone https://github.com/bigbio/py-pgatk.git
- 
+
 
 ``pypgatk`` depends on several ``Python3`` packages that are listed in ``requirements.txt``, once in the downloaded directory install the dependencies using ``pip``:
 
@@ -66,7 +67,7 @@ The Data downloader is a set of COMMANDs to download data from different Genomic
 
 .. _ensembl-downloader:
 
-Downloading ENSEMBL Data.
+Downloading ENSEMBL Data
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Downloading data from `ENSEMBL <https://www.ensembl.org/info/data/ftp/index.html>`_ can be done using the command :ref:`ensembl_downloader <ensembl-downloader>`. 
@@ -78,6 +79,7 @@ The current tool enables downloading the following files for any taxonomy that i
 - CDNA sequences (FASTA)
 - Non-coding RNA sequences (FASTA)
 - Nucleotide Variation (VCF)
+- Genome assembly DNA sequences (FASTA)
 
 Command Options
 ^^^^^^^^^^^^^^^
@@ -98,12 +100,13 @@ Command Options
         -l, --list_taxonomies TEXT      List the available species from Ensembl, users can find the desired taxonomy identifier from this list.
         -fp, --folder_prefix_release    TEXT Output folder prefix to download the data
         -t, --taxonomy TEXT             Taxonomy identifiers (comma separated) that will be use to download the data from Ensembl
-		  -sv, --skip_vcf                 Skip the vcf file during the download
+		-sv, --skip_vcf                 Skip the vcf file during the download
         -sg, --skip_gtf                 Skip the gtf file during the download
         -sp, --skip_protein             Skip the protein fasta file during download
         -sc, --skip_cds                 Skip the CDS file download
-		  -sd, --skip_cdna              	 Skip the cDNA file download
-        -sn, --skip_ncrna               Skip the ncRNA file download
+		-sn, --skip_ncrna               Skip the ncRNA file download
+        -sdn, --skip_cdna              	Skip the cDNA file download
+        -sd, --skip_dna                 Skip the DNA file download
         -h, --help                      Show this message and exit.
 
 
