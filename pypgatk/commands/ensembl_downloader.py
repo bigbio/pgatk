@@ -25,10 +25,10 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('-l', '--list_taxonomies',
               help='Print the list of all the taxonomies in ENSEMBL (https://www.ensembl.org)', is_flag=True,
               default=False)
-@click.option('-sg', '--skip_gtf', help="Skip the gtf file during the download", is_flag=True)
+@click.option('-sg', '--skip_gtf', help="Skip the GTF file during the download", is_flag=True)
 @click.option('-sp', '--skip_protein', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
-@click.option('-sd', '--skip_cdna', help='Skip the cDNA file download', is_flag=True)
+@click.option('-sdn', '--skip_cdna', help='Skip the cDNA file download', is_flag=True)
 @click.option('-sn', '--skip_ncrna', help='Skip the ncRNA file download', is_flag=True)
 @click.option('-sd', '--skip_dna', help='Skip the DNA (reference genome assembly) file download', is_flag=True)
 @click.option('-sv', '--skip_vcf', help='Skip the VCF variant file', is_flag=True)

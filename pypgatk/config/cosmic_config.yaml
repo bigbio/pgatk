@@ -2,10 +2,10 @@ cosmic_data:
   output_directory: database_cosmic
   cosmic_server:
     cosmic_ftp: https://cancer.sanger.ac.uk
-    mutations_url: cosmic/file_download/GRCh38/cosmic/v88
+    mutations_url: cosmic/file_download/GRCh38/cosmic/v94
     all_cds_genes_file: All_COSMIC_Genes.fasta.gz
     mutations_file: CosmicMutantExport.tsv.gz
-    mutations_cellline_url: cosmic/file_download/GRCh38/cell_lines/v92
+    mutations_cellline_url: cosmic/file_download/GRCh38/cell_lines/v94
     mutations_cellline_file: CosmicCLP_MutantExport.tsv.gz
     all_celllines_genes_file: All_CellLines_Genes.fasta.gz
     cosmic_user: ''
