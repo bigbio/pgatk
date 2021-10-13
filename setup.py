@@ -49,7 +49,7 @@ setup(name='pypgatk',
         'simplejson==3.16.0',
         'six==1.12.0',
         'typed-ast==1.3.5',
-        'urllib3==1.24.2',
+        'urllib3==1.26.5',
         'wrapt==1.11.1',
         'ratelimit',
         'pybedtools'
