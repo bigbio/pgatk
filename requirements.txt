@@ -4,7 +4,7 @@ gffutils==0.10.1
 numpy==1.16.3
 PyVCF==0.6.8
 PyYAML==5.1
-requests==2.26.0
+requests==2.21.0
 simplejson==3.16.0
 ratelimit==2.2.1
 pyteomics==4.4.2
