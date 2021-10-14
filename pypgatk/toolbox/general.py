@@ -171,8 +171,9 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
       log.debug("File downloaded -- " + downloaded_file)
       if downloaded_file.endswith('.gz'):
         extracted_file = downloaded_file.replace('.gz','')
-        with open(extracted_file, 'w') as outfile:
-          outfile.write(gzip.decompress(open(downloaded_file, 'rb').read()).decode('utf-8'))
+        with open(extracted_file, 'wb') as outfile:
+          with gzip.open(downloaded_file, 'rb') as infile:
+            shutil.copyfileobj(infile, outfile)
           os.remove(downloaded_file)
           downloaded_file = extracted_file
           log.debug("File extracted-- " + downloaded_file)
