@@ -282,7 +282,7 @@ class EnsemblDataService(ParameterConfiguration):
                          verbose=True,
                          force=False)
     except Exception as e:  # already exists
-      print("Databae already exists" + str(e), gtf_db_file)
+      print("Database already exists" + str(e), gtf_db_file)
 
     db = gffutils.FeatureDB(gtf_db_file)
     return db
@@ -445,7 +445,7 @@ class EnsemblDataService(ParameterConfiguration):
 
   @staticmethod
   def annoate_vcf(vcf_file, gtf_file,
-                  vcf_info_field_index = 7, record_type_index = 2,
+                  vcf_info_field_index=7, record_type_index=2,
                   gene_info_index=8, gene_info_sep=';',
                   transcript_str='transcript_id', transcript_info_sep=' ',
                   annotation_str='transcriptOverlaps'):
@@ -454,48 +454,48 @@ class EnsemblDataService(ParameterConfiguration):
     """
     annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
 
-    BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf+'_all.bed')
+    BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf + '_all.bed')
 
     muts_dict = {}
-    with open(annotated_vcf+'_all.bed', 'r') as an:
+    with open(annotated_vcf + '_all.bed', 'r') as an:
       for line in an.readlines():
         sl = line.strip().split('\t')
-        if sl[record_type_index].strip()!='CDS':
+        if sl[record_type_index].strip() != 'CDS':
           continue
         transcript_id = 'NO_OVERLAP'
 
         gene_info = sl[gene_info_index].split(gene_info_sep)
-        for info in gene_info: #extract transcript id from the gtf info column
+        for info in gene_info:  # extract transcript id from the gtf info column
           if info.strip().startswith(transcript_str):
             transcript_id = info.strip().split(transcript_info_sep)[1].strip('"')
             continue
 
-        if transcript_id=='NO_OVERLAP':
+        if transcript_id == 'NO_OVERLAP':
           continue
 
-        #write the mutation line as a key and set the overlapping transcriptID as its value(s)
+        # write the mutation line as a key and set the overlapping transcriptID as its value(s)
         try:
-          muts_dict['\t'.join(sl[gene_info_index+1:-1])].append(transcript_id)
+          muts_dict['\t'.join(sl[gene_info_index + 1:-1])].append(transcript_id)
         except KeyError:
-          muts_dict['\t'.join(sl[gene_info_index+1:-1])]= [transcript_id]
+          muts_dict['\t'.join(sl[gene_info_index + 1:-1])] = [transcript_id]
 
-    with open(annotated_vcf+'_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v:
-      #write vcf headers to the output file
+    with open(annotated_vcf + '_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v:
+      # write vcf headers to the output file
       for line in v.readlines():
         if line.startswith('#'):
           ann.write(line)
         else:
-          #write the mutations and their overlapping transcript to output file
+          # write the mutations and their overlapping transcript to output file
           try:
             sl = line.strip().split('\t')
             sl[vcf_info_field_index] = '{};{}={}'.format(
-                sl[vcf_info_field_index].strip(), annotation_str,
-                ','.join(set(muts_dict[line.strip()])))
+              sl[vcf_info_field_index].strip(), annotation_str,
+              ','.join(set(muts_dict[line.strip()])))
             ann.write('\t'.join(sl) + '\n')
           except KeyError:
             ann.write(line)
 
-    return annotated_vcf+'_annotated.vcf'
+    return annotated_vcf + '_annotated.vcf'
 
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
@@ -525,146 +525,152 @@ class EnsemblDataService(ParameterConfiguration):
     with open(self._proteindb_output, 'w') as prots_fn:
       vcf_reader = vcf.Reader(open(vcf_file, 'r'))
 
-      for record in vcf_reader:
-        if record.ALT == [None] or record.REF == [None]:
-          msg = "Invalid VCF record, skipping: {}".format(record)
-          self.get_logger().debug(msg)
-          continue
-        if not self._ignore_filters:
-          if record.FILTER:  # if not PASS: None and empty means PASS
-            if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
-              continue
-
-        # only process variants above a given allele frequency threshold if the AF string is not empty
-        if self._af_field:
-          # get AF from the INFO field
-          try:
-            af = float(record.INFO[self._af_field])
-          except TypeError:
-            af = float(record.INFO[self._af_field][0])
-          except KeyError:
-            continue
-
-          # check if the AF passed the threshold
-          if af < self._af_threshold:
-            continue
-
-        trans_table = self._translation_table
-        if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
-          trans_table = self._mito_translation_table
-
-        consequences = []
-        processed_transcript_allele = []
-        try:
-          transcript_records = record.INFO[self._annotation_field_name]
-        except KeyError:#no overlapping feature was found
-          msg = "skipped record {}, no annotation feature was found".format(record)
-          self.get_logger().debug(msg)
-          continue
-
-        for transcript_record in transcript_records:
-          transcript_info = transcript_record.split('|')
-          try:
-            consequence = transcript_info[self._consequence_index]
-            consequences.append(consequence)
-          except IndexError:
-            msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
+      try:
+        for record in vcf_reader:
+          if record.ALT == [None] or record.REF == [None]:
+            msg = "Invalid VCF record, skipping: {}".format(record)
             self.get_logger().debug(msg)
             continue
-          except TypeError:
+          if not self._ignore_filters:
+            if record.FILTER:  # if not PASS: None and empty means PASS
+              if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
+                continue
+
+          # only process variants above a given allele frequency threshold if the AF string is not empty
+          if self._af_field:
+            # get AF from the INFO field
+            try:
+              af = float(record.INFO[self._af_field])
+            except TypeError:
+              af = float(record.INFO[self._af_field][0])
+            except KeyError:
+              continue
+
+            # check if the AF passed the threshold
+            if af < self._af_threshold:
+              continue
+
+          trans_table = self._translation_table
+          if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
+            trans_table = self._mito_translation_table
+
+          consequences = []
+          processed_transcript_allele = []
+          try:
+            transcript_records = record.INFO[self._annotation_field_name]
+          except KeyError:  # no overlapping feature was found
+            msg = "skipped record {}, no annotation feature was found".format(record)
+            self.get_logger().debug(msg)
+            continue
+
+          for transcript_record in transcript_records:
+            transcript_info = transcript_record.split('|')
+            try:
+              consequence = transcript_info[self._consequence_index]
+              consequences.append(consequence)
+            except IndexError:
+              msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
+              self.get_logger().debug(msg)
+              continue
+            except TypeError:
               pass
 
-          try:
-            transcript_id = transcript_info[self._transcript_index]
-          except IndexError:
-            msg = "Give a valid index for the Transcript ID in the INFO field for: {}".format(transcript_record)
-            self.get_logger().debug(msg)
-            continue
-          if transcript_id == "":
-            continue
-
-          try:
-            transcript_id_v = transcript_id_mapping[transcript_id]
-          except KeyError:
-            transcript_id_v = transcript_id
-
-          try:
-            row = transcripts_dict[transcript_id_v]
-            ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
-            desc = str(row.description)
-          except KeyError:
-            msg = "Transcript {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
-            self.get_logger().debug(msg)
-            continue
-
-          feature_types = ['exon']
-          # check if cds info exists in the fasta header otherwise translate all exons
-          cds_info = []
-          num_orfs = 3
-          if 'CDS=' in desc:
             try:
-              cds_info = [int(x) for x in desc.split(' ')[1].split('=')[1].split('-')]
-              feature_types = ['CDS', 'stop_codon']
-              num_orfs = 1
-            except (ValueError, IndexError):
-              msg = "Could not extra cds position from fasta header for: {}".format(desc)
+              transcript_id = transcript_info[self._transcript_index]
+            except IndexError:
+              msg = "Give a valid index for the Transcript ID in the INFO field for: {}".format(transcript_record)
               self.get_logger().debug(msg)
-
-          chrom, strand, features_info = self.get_features(db, 
-                                                           transcript_id_v,
-                                                           self._biotype_str,
-                                                           feature_types)
-          if chrom is None:  # the record info was not found
-            continue
-          # skip transcripts with unwanted consequences
-          if self._consequence_index is not None:
-            if (consequence in self._exclude_consequences or
-              (consequence not in self._include_consequences and
-               self._include_consequences != ['all'])):
               continue
-
-          for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-            if alt is None:
+            if transcript_id == "":
               continue
-            if transcript_id + str(record.REF) + str(
-              alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
-              continue
-
-            processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
-            # for non-CDSs, only consider the exon that actually overlaps the variant
 
             try:
-              overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
-            except TypeError:
-              msg = "Wrong VCF record in {}".format(record)
+              transcript_id_v = transcript_id_mapping[transcript_id]
+            except KeyError:
+              transcript_id_v = transcript_id
+
+            try:
+              row = transcripts_dict[transcript_id_v]
+              ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
+              desc = str(row.description)
+            except KeyError:
+              msg = "Transcript {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
               self.get_logger().debug(msg)
               continue
 
-            if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
-              overlap_flag):
-              coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
-                                                               Seq(str(alt)), int(record.POS), strand,
-                                                               features_info, cds_info)
-              if coding_alt_seq != "":
-                ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
-                                                       num_orfs)
-                record_id = ""
-                if record.ID:
-                  record_id = '_' + str(record.ID)
-                self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
-                                                   '.'.join([str(record.CHROM), str(record.POS),
-                                                             str(record.REF), str(alt)]),
-                                                   transcript_id_v]),
-                                  desc='',
-                                  seqs=alt_orfs,
-                                  prots_fn=prots_fn,
-                                  seqs_filter=ref_orfs)
+            feature_types = ['exon']
+            # check if cds info exists in the fasta header otherwise translate all exons
+            cds_info = []
+            num_orfs = 3
+            if 'CDS=' in desc:
+              try:
+                cds_info = [int(x) for x in desc.split(' ')[1].split('=')[1].split('-')]
+                feature_types = ['CDS', 'stop_codon']
+                num_orfs = 1
+              except (ValueError, IndexError):
+                msg = "Could not extra cds position from fasta header for: {}".format(desc)
+                self.get_logger().debug(msg)
 
-                if self._report_reference_seq:
-                  self.write_output(seq_id=transcript_id_v,
+            chrom, strand, features_info = self.get_features(db,
+                                                             transcript_id_v,
+                                                             self._biotype_str,
+                                                             feature_types)
+            if chrom is None:  # the record info was not found
+              continue
+            # skip transcripts with unwanted consequences
+            if self._consequence_index is not None:
+              if (consequence in self._exclude_consequences or
+                (consequence not in self._include_consequences and
+                 self._include_consequences != ['all'])):
+                continue
+
+            for alt in record.ALT:  # in cases of multiple alternative alleles consider all
+              if alt is None:
+                continue
+              if transcript_id + str(record.REF) + str(
+                alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                continue
+
+              processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
+              # for non-CDSs, only consider the exon that actually overlaps the variant
+
+              try:
+                overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
+              except TypeError:
+                msg = "Wrong VCF record in {}".format(record)
+                self.get_logger().debug(msg)
+                continue
+
+              if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
+                overlap_flag):
+                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
+                                                                 Seq(str(alt)), int(record.POS), strand,
+                                                                 features_info, cds_info)
+                if coding_alt_seq != "":
+                  ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
+                                                         num_orfs)
+                  record_id = ""
+                  if record.ID:
+                    record_id = '_' + str(record.ID)
+                  self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
+                                                     '.'.join([str(record.CHROM), str(record.POS),
+                                                               str(record.REF), str(alt)]),
+                                                     transcript_id_v]),
                                     desc='',
-                                    seqs=ref_orfs,
-                                    prots_fn=prots_fn)
+                                    seqs=alt_orfs,
+                                    prots_fn=prots_fn,
+                                    seqs_filter=ref_orfs)
+
+                  if self._report_reference_seq:
+                    self.write_output(seq_id=transcript_id_v,
+                                      desc='',
+                                      seqs=ref_orfs,
+                                      prots_fn=prots_fn)
+      except (ValueError, KeyError) as err:
+        msg = "Error reading value record in VCF - {}. Message {}".format(vcf_file, err)
+        print(msg)
+        self.get_logger().debug(msg)
+        raise
 
     return self._proteindb_output
 
@@ -740,7 +746,7 @@ class EnsemblDataService(ParameterConfiguration):
     print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
   @staticmethod
-  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter= None):
+  def write_output(seq_id, desc, seqs, prots_fn, seqs_filter=None):
     """
     write the orfs to the output file
     :param seq_id: Sequence Accession
@@ -758,9 +764,9 @@ class EnsemblDataService(ParameterConfiguration):
 
     for i, orf in enumerate(seqs):
       if orf in seqs_filter:
-          continue
+        continue
       if desc:
-          desc = " "+desc
+        desc = " " + desc
       if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
         prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
       else:

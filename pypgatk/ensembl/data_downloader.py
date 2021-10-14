@@ -140,7 +140,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
               files.extend(vcf_files)
 
             self.get_logger().debug("Files downloaded -- " + ",".join(
-                [x for x in files if x]))
+              [x for x in files if x]))
             total_files.extend(files)
     elif species_name_parameters is not None and len(species_name_parameters) > 0:
       for species_name in species_name_parameters:
@@ -171,7 +171,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
               files.extend(vcf_files)
 
             self.get_logger().debug("Files downloaded -- " + ",".join(
-                [x for x in files if x]))
+              [x for x in files if x]))
             total_files.extend(files)
     else:
       for species in self._ensembl_species:
@@ -200,7 +200,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
           files.extend(vcf_files)
 
         self.get_logger().debug("Files downloaded -- " + ",".join(
-            [x for x in files if x]))
+          [x for x in files if x]))
         total_files.extend(files)
 
     return total_files
@@ -402,7 +402,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
       if grch37:
         species['assembly'] = 'GRCh37'
       file_name = '{}.{}.dna_sm.toplevel.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
-                                             species['assembly'])
+                                                       species['assembly'])
       file_url = '{}/release-{}/fasta/{}/dna/{}'.format(
         self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
           self.CONFIG_KEY_BASE_URL],

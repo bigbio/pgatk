@@ -128,7 +128,7 @@ class CosmicDownloadService(ParameterConfiguration):
           msg = "Download Finish for file '{}'".format(local_file)
           self.get_logger().debug(msg)
         if local_file.endswith('.gz'):
-          extracted_file = local_file.replace('.gz','')
+          extracted_file = local_file.replace('.gz', '')
           with open(extracted_file, 'w') as outfile:
             try:
               outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))

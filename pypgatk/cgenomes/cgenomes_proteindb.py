@@ -68,7 +68,7 @@ class CancerGenomesService(ParameterConfiguration):
   def get_mut_pro_seq(snp, seq):
     nucleotide = ["A", "T", "C", "G"]
     mut_pro_seq = ""
-    if "?" not in snp.dna_mut and snp.aa_mut!='p.?':  # unambiguous DNA change known in CDS sequence
+    if "?" not in snp.dna_mut and snp.aa_mut != 'p.?':  # unambiguous DNA change known in CDS sequence
       positions = re.findall(r'\d+', snp.dna_mut)
       if ">" in snp.dna_mut and len(positions) == 1:  # Substitution
         tmplist = snp.dna_mut.split(">")

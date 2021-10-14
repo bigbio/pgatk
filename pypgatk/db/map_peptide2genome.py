@@ -146,7 +146,8 @@ IDlist_input.close()
 print("number of unique ENSP IDs in ID table", len(id_dic))
 
 pep_dic = {}
-input_stream = open(input_file, 'r')  # peptide table with two columns, peptide sequence in first column, protein ID in second column
+input_stream = open(input_file,
+                    'r')  # peptide table with two columns, peptide sequence in first column, protein ID in second column
 
 input_stream.readline()
 for line in input_stream:

@@ -20,6 +20,7 @@ def vcf_to_proteindb():
                           '--annotation_field_name', 'CSQ'])
   assert result.exit_code == 0
 
+
 def vcf_to_proteindb_notannotated():
   """
     Test the default behaviour of the vcf-to-proteindb tool using not-annotated vcf
@@ -35,6 +36,7 @@ def vcf_to_proteindb_notannotated():
                           '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
                           '--annotation_field_name', "''"])
   assert result.exit_code == 0
+
 
 def vcf_gnomad_to_proteindb():
   """
@@ -192,7 +194,8 @@ def generate_decoy_database():
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
-                          '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method', 'protein-reverse'])
+                          '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method',
+                          'protein-reverse'])
   assert result.exit_code == 0
 
 
@@ -255,6 +258,6 @@ if __name__ == '__main__':
   generate_decoy_database()
   cosmic_to_proteindb()
   download_ensembl_data()
-  #download_ensembl_data_37() #skip to reduce space usage
+  # download_ensembl_data_37() #skip to reduce space usage
   download_cbioportal_data()
   check_ensembl_database()
