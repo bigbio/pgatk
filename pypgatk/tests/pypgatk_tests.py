@@ -52,7 +52,6 @@ def vcf_gnomad_to_proteindb():
                           '--output_proteindb', 'testdata/proteindb_from_gnomad_VCF.fa',
                           '--af_field', 'controls_AF',
                           '--var_prefix', 'gnomvar',
-                          '--transcript_index', 6,
                           '--annotation_field_name', 'vep'])
   assert result.exit_code == 0
 
@@ -248,6 +247,7 @@ if __name__ == '__main__':
   vcf_to_proteindb()
   vcf_to_proteindb_notannotated()
   vcf_gnomad_to_proteindb()
+  '''
   dnaseq_to_proteindb()
   dnaseq_ncrnas_to_proteindb()
   dnaseq_lncrnas_to_proteindb()
@@ -261,3 +261,4 @@ if __name__ == '__main__':
   # download_ensembl_data_37() #skip to reduce space usage
   download_cbioportal_data()
   check_ensembl_database()
+  '''
