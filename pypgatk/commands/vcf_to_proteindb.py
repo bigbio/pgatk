@@ -27,10 +27,10 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('--af_field', default="",
               help="field name in the VCF INFO column to use for filtering on AF, (Default None)")
 @click.option('--af_threshold', default=0.01, help='Minium AF threshold for considering common variants')
-@click.option('--transcript_index', default=3, type=int,
-              help='Index of transcript ID in the annotated columns (separated by |)')
-@click.option('--consequence_index', default=1, type=int,
-              help='Index of consequence in the annotated columns (separated by |)')
+@click.option('--transcript_str', default='FEATURE', type=str,
+              help='String that is used for transcript ID in the VCF header INFO field')
+@click.option('--consequence_str', default='CONSEQUENCE', type=str,
+              help='String that is used for consequence in the VCF header INFO field')
 @click.option('--exclude_consequences',
               default='downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant',
               help="Excluded Consequences", show_default=True)
@@ -46,7 +46,7 @@ this_dir, this_filename = os.path.split(__file__)
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
-                     af_field, af_threshold, transcript_index, consequence_index,
+                     af_field, af_threshold, transcript_str, consequence_str,
                      exclude_consequences, skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
   if input_fasta is None or vcf is None or gene_annotations_gtf is None:
@@ -59,8 +59,8 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                         EnsemblDataService.PROTEIN_DB_OUTPUT: output_proteindb,
                         EnsemblDataService.ANNOTATION_FIELD_NAME: annotation_field_name,
                         EnsemblDataService.AF_FIELD: af_field, EnsemblDataService.AF_THRESHOLD: af_threshold,
-                        EnsemblDataService.TRANSCRIPT_INDEX: transcript_index,
-                        EnsemblDataService.CONSEQUENCE_INDEX: consequence_index,
+                        EnsemblDataService.TRANSCRIPT_STR: transcript_str,
+                        EnsemblDataService.CONSEQUENCE_STR: consequence_str,
                         EnsemblDataService.EXCLUDE_CONSEQUENCES: exclude_consequences,
                         EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
                         EnsemblDataService.INCLUDE_CONSEQUENCES: include_consequences,

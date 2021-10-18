@@ -68,7 +68,7 @@ class CancerGenomesService(ParameterConfiguration):
   def get_mut_pro_seq(snp, seq):
     nucleotide = ["A", "T", "C", "G"]
     mut_pro_seq = ""
-    if "?" not in snp.dna_mut:  # unambiguous DNA change known in CDS sequence
+    if "?" not in snp.dna_mut and snp.aa_mut != 'p.?':  # unambiguous DNA change known in CDS sequence
       positions = re.findall(r'\d+', snp.dna_mut)
       if ">" in snp.dna_mut and len(positions) == 1:  # Substitution
         tmplist = snp.dna_mut.split(">")
@@ -149,11 +149,11 @@ class CancerGenomesService(ParameterConfiguration):
 
   def cosmic_to_proteindb(self):
     """
-        This function translate the mutation file + COSMIC genes into a protein Fasta database. The
-        method write into the file system the output Fasta.
+        This function translates the mutation file + COSMIC genes into a protein Fasta database. The
+        method writes into the file system the output Fasta.
         :return:
         """
-    self.get_logger().debug("Starting reading the All cosmic genes")
+    self.get_logger().debug("Starting reading All cosmic genes")
     COSMIC_CDS_DB = {}
     for record in SeqIO.parse(self._local_complete_genes, 'fasta'):
       try:
@@ -161,7 +161,7 @@ class CancerGenomesService(ParameterConfiguration):
       except KeyError:
         COSMIC_CDS_DB[record.id] = [record]
 
-    cosmic_input = open(self._local_mutation_file, encoding="latin-1")  # CosmicMutantExport.tsv
+    cosmic_input = open(self._local_mutation_file, encoding="latin-1")
 
     header = cosmic_input.readline().split("\t")
     regex = re.compile('[^a-zA-Z]')

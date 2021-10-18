@@ -8,6 +8,7 @@ ensembl_data_downloader:
   skip_ncrna: False
   skip_dna: False
   skip_vcf: False
+  grch37: False
   ensembl_ftp:
     base_url: ftp://ftp.ensembl.org/pub
   rewrite_local_path_ensembl_repo: 'False'
