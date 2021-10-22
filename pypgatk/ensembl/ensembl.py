@@ -534,6 +534,7 @@ class EnsemblDataService(ParameterConfiguration):
     else:
       'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'    
       vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
+      vcf_reader = vcf.Reader(open(vcf_file, 'r'))
       self._annotation_field_name = 'transcriptOverlaps'
       transcript_index = 0
       consequence_index = None
@@ -548,11 +549,26 @@ class EnsemblDataService(ParameterConfiguration):
       try:
         for record in vcf_reader:
           trans = False
-          if record.ALT == [None] or record.REF == [None]:
+          if [x for x in str(record.REF) if x not in 'ACGT']:
             msg = "Invalid VCF record, skipping: {}".format(record)
             invalid_records['# variants with invalid record']+=1
             self.get_logger().debug(msg)
             continue
+            
+          alts = []
+          for alt in record.ALT:
+            if alt is None:
+              continue
+            elif [x for x in str(alt) if x not in 'ACGT']:
+              'check if all alt alleles are nucleotides'
+              continue
+            alts.append(alt)
+          if not alts:
+            msg = "Invalid VCF record, skipping: {}".format(record)
+            invalid_records['# variants with invalid record']+=1
+            self.get_logger().debug(msg)
+            continue
+
           if not self._ignore_filters:
             if record.FILTER:  # if not PASS: None and empty means PASS
               if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
@@ -653,16 +669,13 @@ class EnsemblDataService(ParameterConfiguration):
                  self._include_consequences != ['all'])):
                 continue
 
-            for alt in record.ALT:  # in cases of multiple alternative alleles consider all
-              if alt is None:
-                continue
+            for alt in alts:
               if transcript_id + str(record.REF) + str(
                 alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
                 continue
-
               processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
-              # for non-CDSs, only consider the exon that actually overlaps the variant
 
+              # for non-CDSs, only consider the exon that actually overlaps the variant
               try:
                 overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
               except TypeError:
