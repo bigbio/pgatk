@@ -32,6 +32,7 @@ setup(name='pypgatk',
         'pybedtools==0.8.2',
         'pyopenms'
       ],
+      python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
       packages=find_packages(),
       entry_points={
