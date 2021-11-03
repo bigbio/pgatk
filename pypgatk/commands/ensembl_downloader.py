@@ -1,18 +1,16 @@
 import logging
 import os
-
 import click
-
 from pypgatk.ensembl.data_downloader import EnsemblDataDownloadService
-from pypgatk.toolbox.exceptions import AppConfigException
 
-this_dir, this_filename = os.path.split(__file__)
+import pkgutil
+
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+default_config_text = pkgutil.get_data(__name__, "../config/ensembl_downloader_config.yaml").decode()
 
 
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
-@click.option('-c', '--config_file',
-              help='Configuration file for the ensembl data downloader pipeline',
-              default=this_dir + '/../config/ensembl_downloader_config.yaml')
+@click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
 @click.option('-o', '--output_directory',
               help='Output directory for the peptide databases',
               default="./database_ensembl/")
@@ -43,9 +41,11 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
   """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
   if config_file is None:
-    msg = "The config file for the pipeline is missing, please provide one "
-    logging.error(msg)
-    raise AppConfigException(msg)
+    config_data = read_yaml_from_text(default_config_text)
+    msg = "The default configuration file is used: {}".format("ensembl_downloader_config.yaml")
+    logging.info(msg)
+  else:
+    config_data = read_yaml_from_file(config_file)
 
   # Parse pipelines parameters.
   pipeline_arguments = {}
@@ -93,7 +93,7 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
   else:
     pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_GRCh37] = False
 
-  ensembl_download_service = EnsemblDataDownloadService(config_file, pipeline_arguments)
+  ensembl_download_service = EnsemblDataDownloadService(config_data, pipeline_arguments)
 
   logger = ensembl_download_service.get_logger_for("Main Pipeline Ensembl Downloader")
   logger.info("Pipeline STARTING ... ")

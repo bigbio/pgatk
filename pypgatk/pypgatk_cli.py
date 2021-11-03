@@ -25,8 +25,9 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 # Cli returns command line requests
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli():
-  """This is the main tool that give access to all commands and options provided by the pypgatk"""
-
+  """
+  This is the main tool that give access to all commands and options provided by the pypgatk
+  """
 
 cli.add_command(ensembl_downloader_cmd.ensembl_downloader)
 cli.add_command(ensembl_database_cmd.ensembl_check)

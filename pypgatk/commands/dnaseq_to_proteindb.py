@@ -1,16 +1,18 @@
 import os
 
 import click
+import logging
 
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
+import pkgutil
 
-this_dir, this_filename = os.path.split(__file__)
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
 
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
-@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
-              default=this_dir + '/../config/ensembl_config.yaml')
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
 @click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')
@@ -34,6 +36,14 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         output_proteindb, var_prefix,
                         skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
                         expression_thresh):
+
+  if config_file is None:
+    config_data = read_yaml_from_text(default_config_text)
+    msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
+    logging.info(msg)
+  else:
+    config_data = read_yaml_from_file(config_file)
+
   if input_fasta is None:
     print_help()
 
@@ -48,5 +58,5 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         EnsemblDataService.EXPRESSION_STR: expression_str,
                         EnsemblDataService.EXPRESSION_THRESH: expression_thresh}
 
-  ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
+  ensembl_data_service = EnsemblDataService(config_data, pipeline_arguments)
   ensembl_data_service.dnaseq_to_proteindb(input_fasta)

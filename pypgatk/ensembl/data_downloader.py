@@ -306,7 +306,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
           self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_ENSEMBL_FTP][
             self.CONFIG_KEY_BASE_URL],
           species['release'], species['name'], file_name)
-      print('here', grch37, file_url)
+      print('Downloading -- ', file_url)
       files.append(
         download_file(file_url, self.get_local_path_root_ensembl_repo() + '/' + file_name, self.get_logger()))
     except KeyError:

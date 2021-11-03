@@ -37,7 +37,7 @@ class ParameterConfiguration:
   _CONFIG_LOGGER_FORMATTER = 'formatters'
   _CONFIG_LOGGER_LEVEL = 'loglevel'
 
-  def __init__(self, root_config_name, yaml_configuration_file, pipeline_parameters):
+  def __init__(self, root_config_name, yaml_configuration, pipeline_parameters):
     """
         This function creates a parameter structure from a yaml config file and the pipeline paramters provdided
         in the commandline
@@ -47,9 +47,7 @@ class ParameterConfiguration:
 
     self._ROOT_CONFIG_NAME = root_config_name
 
-    self._configuration_file = yaml_configuration_file
-    with open(yaml_configuration_file, 'r') as f:
-      self._default_params = yaml.load(f.read(), Loader=yaml.FullLoader)
+    self._default_params = yaml_configuration
     self._pipeline_parameters = pipeline_parameters
 
     # Prepare Logging subsystem
@@ -114,7 +112,6 @@ class ParameterConfiguration:
     lg.setLevel(self._log_level)
     return lg
 
-
 def read_json(json_file="json_file_not_specified.json"):
   """
     Reads a json file and it returns its object representation, no extra checks
@@ -126,6 +123,24 @@ def read_json(json_file="json_file_not_specified.json"):
   with open(json_file) as jf:
     return json.load(jf)
 
+def read_yaml_from_file(yaml_file):
+  """
+  This function allows to read a yaml file with the configuration
+  :param yaml_file: yaml file.
+  :return: resturn the yaml data.
+  """
+  data = None
+  with open(yaml_file, 'r') as f:
+    data = yaml.load(f.read(), Loader=yaml.FullLoader)
+  return data
+
+def read_yaml_from_text(yaml_text):
+  """
+  Read the content of the yaml text into a data object
+  :param yaml_text: yaml text
+  :return:
+  """
+  return yaml.safe_load(yaml_text)
 
 def check_create_folders(folders: str):
   """

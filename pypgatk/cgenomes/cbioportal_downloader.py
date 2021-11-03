@@ -19,32 +19,31 @@ class CbioPortalDownloadService(ParameterConfiguration):
     CONFIG_LIST_STUDIES = "list_studies"
     CONFIG_MULTITHREADING = "multithreading"
 
-    def __init__(self, config_file, pipeline_arguments):
-        """
-        Init the class with the specific parameters.
-        :param config_file configuration file
-        :param pipeline_arguments pipelines arguments
-        """
-        super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
+    def __init__(self, config_data, pipeline_arguments):
+      """
+      Init the class with the specific parameters.
+      :param config_data configuration file
+      :param pipeline_arguments pipelines arguments
+      """
+
+      super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_data,
                                                         pipeline_arguments)
 
-        self._cbioportal_studies = []
-        if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
-            self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
-        else:
-            self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
-                self.CONFIG_OUTPUT_DIRECTORY]
+      self._cbioportal_studies = []
+      if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
+          self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
+      else:
+        self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_OUTPUT_DIRECTORY]
 
-        self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_STUDIES]
-        if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
-            self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
+      self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_STUDIES]
+      if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
+          self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
 
-        self._multithreading = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
-            self.CONFIG_MULTITHREADING]
-        if self.CONFIG_MULTITHREADING in self.get_pipeline_parameters():
-            self._multithreading = self.get_pipeline_parameters()[self.CONFIG_MULTITHREADING]
+      self._multithreading = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_MULTITHREADING]
+      if self.CONFIG_MULTITHREADING in self.get_pipeline_parameters():
+          self._multithreading = self.get_pipeline_parameters()[self.CONFIG_MULTITHREADING]
 
-        self.prepare_local_cbioportal_repository()
+      self.prepare_local_cbioportal_repository()
 
     def prepare_local_cbioportal_repository(self):
         self.get_logger().debug("Preparing local cbioportal repository, root folder - '{}'".format(
