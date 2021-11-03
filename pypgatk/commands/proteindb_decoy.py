@@ -1,6 +1,4 @@
 import logging
-import os
-
 import click
 
 from pypgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService

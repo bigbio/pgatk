@@ -1,5 +1,4 @@
 import logging
-import os
 import click
 from pypgatk.ensembl.data_downloader import EnsemblDataDownloadService
 

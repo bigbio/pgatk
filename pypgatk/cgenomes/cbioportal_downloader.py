@@ -2,8 +2,6 @@ import csv
 from concurrent.futures import as_completed
 from concurrent.futures.thread import ThreadPoolExecutor
 
-from requests import get
-
 from pypgatk.toolbox.exceptions import AppException
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file, clear_cache
 from pypgatk.toolbox.rest import call_api_raw

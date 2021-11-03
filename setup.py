@@ -37,6 +37,6 @@ setup(name='pypgatk',
       packages=find_packages(),
       entry_points={
         'console_scripts': [
-          'pypgatk_cli = pypgatk.pypgatk_cli:main'
+          'pypgatk = pypgatk.pypgatk_cli:main'
         ]},
       package_data={'pypgatk': ['config/*.yaml', 'config/*.json']}, zip_safe=False)

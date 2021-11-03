@@ -1,5 +1,3 @@
-import os
-
 import click
 import logging
 from pypgatk.commands.utils import print_help
