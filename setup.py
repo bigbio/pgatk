@@ -30,7 +30,7 @@ setup(name='pypgatk',
         'ratelimit==2.2.1',
         'pyteomics==4.4.2',
         'pybedtools==0.8.2',
-        'pyopenms'
+        'pyopenms==2.6.0'
       ],
       python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
