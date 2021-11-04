@@ -515,9 +515,9 @@ class EnsemblDataService(ParameterConfiguration):
     transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
     # handle cases where the transcript has version in the GTF but not in the VCF
     transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
-    
+
     vcf_reader = vcf.Reader(open(vcf_file, 'r'))
-    
+
     transcript_index, consequence_index = None, None
     if self._annotation_field_name:
       'try to extract index of transcript ID and consequence from the VCF metadata in the header'
@@ -532,7 +532,7 @@ class EnsemblDataService(ParameterConfiguration):
         msg = "Error: Unable to find FEATURE or CONSEQUENCE in metadata header {} of VCF file: {} ".format(features_metadata, vcf_file)
         self.get_logger().debug(msg)
     else:
-      'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'    
+      'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'
       vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
       vcf_reader = vcf.Reader(open(vcf_file, 'r'))
       self._annotation_field_name = 'transcriptOverlaps'
@@ -544,7 +544,7 @@ class EnsemblDataService(ParameterConfiguration):
                        '# variants not passing AF threshold': 0,
                        '# transcript IDs from VCF that are not found in the given FASTA file': 0,
                        '# variants successfully translated': 0}
-    
+
     with open(self._proteindb_output, 'w') as prots_fn:
       try:
         for record in vcf_reader:
@@ -554,7 +554,7 @@ class EnsemblDataService(ParameterConfiguration):
             invalid_records['# variants with invalid record']+=1
             self.get_logger().debug(msg)
             continue
-            
+
           alts = []
           for alt in record.ALT:
             if alt is None:
@@ -590,7 +590,7 @@ class EnsemblDataService(ParameterConfiguration):
             if af < self._af_threshold:
               invalid_records['# variants not passing AF threshold']+=1
               continue
-          
+
           trans_table = self._translation_table
           if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
             trans_table = self._mito_translation_table
@@ -617,7 +617,7 @@ class EnsemblDataService(ParameterConfiguration):
               continue
             except TypeError:
               pass
-            
+
             try:
               transcript_id = transcript_info[transcript_index]
             except IndexError:
@@ -627,7 +627,7 @@ class EnsemblDataService(ParameterConfiguration):
               continue
             if transcript_id == "":
               continue
-            
+
             try:
               transcript_id_v = transcript_id_mapping[transcript_id]
             except KeyError:
@@ -718,10 +718,10 @@ class EnsemblDataService(ParameterConfiguration):
         print(msg)
         self.get_logger().debug(msg)
         raise
-    
+
     msg = "Translation summary:\n {}".format('\n'.join([x+":"+str(invalid_records[x]) for x in invalid_records.keys()]))
     self.get_logger().debug(msg)
-                
+
     print(msg)
     return self._proteindb_output
 
