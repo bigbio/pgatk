@@ -40,7 +40,9 @@ class OpenmsDataService(ParameterConfiguration):
 
     # Iterate over PeptideIdentification
     filtered_peptide_ids = list(filter(lambda peptide: (len(peptide.getHits()[0].getSequence().toUnmodifiedString()) > self._min_peptide_length), peptide_ids))
-    idfilter.removeUnreferencedProteins(protein_ids, filtered_peptide_ids)
+
+    remove_peptides_without_reference = True
+    idfilter.removeUnreferencedProteins(protein_ids, filtered_peptide_ids, remove_peptides_without_reference)
 
     IdXMLFile().store(output_idxml, protein_ids, peptide_ids)
 

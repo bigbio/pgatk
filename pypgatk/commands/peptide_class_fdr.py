@@ -28,5 +28,6 @@ def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml):
 
   pipeline_arguments = {}
 
+
   openms_analyzer = OpenmsDataService(config_data, pipeline_arguments)
   openms_analyzer.filter_peptide_class_fdr(input_idxml, output_idxml)
