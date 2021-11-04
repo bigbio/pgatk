@@ -70,7 +70,7 @@ The pypgatk design combines multiple modules and tools into one framework. All t
 
 ```
 $: pypgatk_cli.py -h
-Usage: pypgatk_cli.py [OPTIONS] COMMAND [ARGS]...
+Usage: pypgatk [OPTIONS] COMMAND [ARGS]...
 
   This is the main tool that give access to all commands and options
   provided by the pypgatk
