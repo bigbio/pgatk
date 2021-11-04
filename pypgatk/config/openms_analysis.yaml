@@ -1,0 +1,10 @@
+openms_analysis:
+  min_peptide_length: 5
+  psm_pep_fdr_cutoff: 0.01
+  psm_peptide_class_fdr_cutoff: 0.01
+  decoy_prefix: DECOY_
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG
