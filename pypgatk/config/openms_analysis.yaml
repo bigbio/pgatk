@@ -1,7 +1,7 @@
 openms_analysis:
   min_peptide_length: 5
   psm_pep_fdr_cutoff: 0.01
-  psm_peptide_class_fdr_cutoff: 0.01
+  psm_pep_class_fdr_cutoff: 0.01
   decoy_prefix: DECOY_
   peptide_classes_prefix: 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs'
   logger:

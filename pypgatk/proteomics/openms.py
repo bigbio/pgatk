@@ -9,6 +9,7 @@ class OpenmsDataService(ParameterConfiguration):
   CONFIG_DECOY_PREFIX = 'decoy_prefix'
   CONFIG_PEPTIDE_CLASS_PREFIX = "peptide_classes_prefix"
   CONFIG_PEPTIDE_FDR_CUTOFF = "psm_pep_fdr_cutoff"
+  CONFIG_PEPTIDE_CLASS_FDR_CUTOFF = "psm_pep_class_fdr_cutoff"
 
   def __init__(self, config_file, pipeline_arguments):
     super(OpenmsDataService, self).__init__(self.CONFIG_KEY_OPENMS_ANALYSIS, config_file,
@@ -34,7 +35,17 @@ class OpenmsDataService(ParameterConfiguration):
     if self.CONFIG_PEPTIDE_FDR_CUTOFF in self.get_pipeline_parameters():
       self._psm_pep_fdr_cutoff = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_FDR_CUTOFF]
 
+    self._psm_pep_class_fdr_cutoff = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
+      self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF]
+    if self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF in self.get_pipeline_parameters():
+      self._psm_pep_fdr_cutoff = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF]
+
   def compute_global_fdr(self, peptide_ids):
+    """
+    Compute the global FDR and filter peptides
+    :param peptide_ids: list of peptide identifications
+    :return:  filtered peptides
+    """
 
     target_count = 0
     decoy_count = 0
@@ -104,9 +115,6 @@ class OpenmsDataService(ParameterConfiguration):
 
     remove_peptides_without_reference = True
     idfilter.updateProteinReferences(filtered_peptide_ids, protein_ids, remove_peptides_without_reference)
-
-
-
     IdXMLFile().store(output_idxml, protein_ids, filtered_peptide_ids)
 
 

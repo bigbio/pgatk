@@ -13,6 +13,9 @@ default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
 @click.option('-in', '--input_idxml', help='idxml from openms with peptides and proteins')
 @click.option('-out', '--output_idxml', help='idxml from openms with filtered peptides and proteins')
+@click.option('--min-peptide-length', help='minimum peptide length')
+@click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold", default=0.01)
+@click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold", default=0.01)
 @click.pass_context
 def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml):
 
