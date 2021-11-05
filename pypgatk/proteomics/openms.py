@@ -64,8 +64,9 @@ class OpenmsDataService(ParameterConfiguration):
     # Todo: Here would be interesting to know the score order isHigherScoreBetter
     peptide_hit_dict.sort(key=lambda x: x[0].getScore())
 
-    for peptide_hit in peptide_hit_dict:
-      accessions = [ev.getProteinAccession() for ev in peptide_hit[0].getPeptideEvidences()]
+    for peptide_tuple in peptide_hit_dict:
+      (psm, peptide_identificaion) = peptide_tuple
+      accessions = [ev.getProteinAccession() for ev in psm.getPeptideEvidences()]
 
       if any(self._decoy_prefix in s for s in accessions):
         decoy_count += 1
@@ -74,22 +75,40 @@ class OpenmsDataService(ParameterConfiguration):
 
       FDR = float(decoy_count) / float(target_count)
       if FDR < self._psm_pep_fdr_cutoff:
-        identifier = peptide_hit[1].getMetaValue("spectrum_reference")
+        identifier = peptide_identificaion.getMetaValue("spectrum_reference")
         print(identifier)
         if identifier not in peptides_filtered:
-          peptide_id = peptide_hit[1]
-          peptide_id.setHits([peptide_hit[0]])
+          peptide_id = peptide_identificaion
+          peptide_id.setHits([psm])
           peptides_filtered[identifier] = peptide_id
         else:
           peptide_id = peptides_filtered[identifier]
           hits = peptide_id.getHits()
-          hits.append(peptide_hit[0])
+          hits.append(psm)
           peptide_id.setHits(hits)
           peptides_filtered[identifier] = peptide_id
 
       print(FDR)
 
     return list(peptides_filtered.values())
+
+  def compute_class_fdr(self, peptide_ids):
+
+    # Here the Map contains Key=spectrum_reference (unique for each PeptideIdentification)
+    # Value is the PeptideIdentification
+
+    peptides_filtered = {}
+    peptide_hit_dict = []
+
+    for peptide in peptide_ids:
+      for peptide_hit in peptide.getHits():
+        peptide_hit_dict.append((peptide_hit, peptide))
+
+    # Todo: Here would be interesting to know the score order isHigherScoreBetter
+    peptide_hit_dict.sort(key=lambda x: x[0].getScore())
+
+    for peptide_hit in peptide_hit_dict:
+      accessions = [ev.getProteinAccession() for ev in peptide_hit[0].getPeptideEvidences()]
 
   def filter_peptide_class_fdr(self, input_idxml, output_idxml):
     """
