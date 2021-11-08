@@ -3,11 +3,22 @@ from click.testing import CliRunner
 from pypgatk.pypgatk_cli import cli
 
 
+
+def peptide_class_fdr():
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['peptide-class-fdr',
+                          '-in', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus.idxml',
+                          '-out', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
+                          '--peptide_groups_prefix', '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
+  assert result.exit_code == 0
+
+
 def vcf_to_proteindb():
   """
-    Test the default behaviour of the vcf-to-proteindb tool
-    :return:
-    """
+  Test the default behaviour of the vcf-to-proteindb tool
+  :return:
+  """
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
