@@ -216,7 +216,11 @@ class OpenmsDataService(ParameterConfiguration):
           FDR = decoy_count / target_count
           novel_targetcount = float(counts[2])
           gamma = poly.polyval(score, peptide_dict_models[peptide_class][0])
-          novelFDR = FDR * gamma * (target_count / novel_targetcount)
+          try:
+             novelFDR = FDR * gamma * (target_count / novel_targetcount)
+          except ZeroDivisionError:
+            novelFDR = 10000
+            # If the model raise an error because novel_targetcount = 0
           if novelFDR < self._psm_pep_class_fdr_cutoff and FDR < self._psm_pep_fdr_cutoff:
             pass_fdr = True
 

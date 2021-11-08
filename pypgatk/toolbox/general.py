@@ -157,10 +157,8 @@ def check_create_folders(folders: str):
       if not os.path.isdir(folder):
         raise ToolBoxException("'{}' is not a folder".format(folder))
 
-
 def clear_cache():
   request.urlcleanup()
-
 
 def download_file(file_url: str, file_name: str, log: logging) -> str:
   """
@@ -220,7 +218,6 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
   #     print("Failed to download the file: ", file_url)
   #     return None
 
-
 def check_create_folders_overwrite(folders):
   """
     Given a list of folders, this method will create them, overwriting them in case they exist
@@ -245,7 +242,6 @@ def check_create_folders_overwrite(folders):
       pass
   check_create_folders(folders)
 
-
 def create_latest_symlink(destination_path):
   """
     Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
@@ -256,7 +252,6 @@ def create_latest_symlink(destination_path):
     """
   symlink_path = os.path.join(os.path.dirname(destination_path), 'latest')
   os.symlink(destination_path, symlink_path)
-
 
 def create_latest_symlink_overwrite(destination_path):
   """
@@ -271,7 +266,6 @@ def create_latest_symlink_overwrite(destination_path):
   if os.path.islink(symlink_path):
     os.unlink(symlink_path)
   os.symlink(destination_path, symlink_path)
-
 
 def gunzip_files(files):
   """
@@ -318,6 +312,20 @@ def gunzip_files(files):
       files_with_error.append((file, "it IS NOT A FILE"))
   return files_with_error
 
+def parse_peptide_groups(peptide_groups_prefix):
+  peptide_groups = {}
+  for group in peptide_groups_prefix.split(";"):
+    lt = group.split(":")
+    class_group = lt[0].replace("{","")
+    classes = [x.replace("[","").replace("]","") for x in lt[1].split(",")]
+    peptide_groups[class_group] = classes
+  return peptide_groups
+
+def parse_peptide_classes(peptide_classes_prefix):
+  peptide_groups = {}
+  for class_peptide in peptide_classes_prefix.split(","):
+    peptide_groups[class_peptide] = [class_peptide]
+  return peptide_groups
 
 if __name__ == '__main__':
   print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")
