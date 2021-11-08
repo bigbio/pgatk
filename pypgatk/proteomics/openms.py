@@ -54,6 +54,13 @@ class OpenmsDataService(ParameterConfiguration):
       self._peptide_class_fdr_enable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_APPLY_CLASS_FDR]
 
   def is_peptide_group(self, peptide_group_members, accessions):
+    """
+    Get the True if the accessions of the peptide all belongs to the specific category.
+    :param peptide_group_members: all protein classes
+    :param accessions:  all protein accessions associated with the peptide.
+    :return: True if all protein accessions belows to one of these peptide_group_members.
+    """
+
     accession_group = 0
     for accession in accessions:
       for class_peptide in peptide_group_members:
@@ -117,9 +124,6 @@ class OpenmsDataService(ParameterConfiguration):
     :return:  filtered peptides
     """
 
-    target_count = 0
-    decoy_count = 0
-
     # Map list of peptides with hits to -> map(hit, peptide)
     peptide_hit_dict = []
 
@@ -172,7 +176,6 @@ class OpenmsDataService(ParameterConfiguration):
         score_dic[peptide_group][score] = [global_target_count, global_decoy_count, target, decoy]
 
     peptide_dict_models = {}
-    count = 0
     for peptide_class in score_dic:
       x = []
       y = []
