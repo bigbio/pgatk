@@ -31,12 +31,14 @@ def parse_peptide_groups(peptide_groups_prefix):
 @click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold", default=0.01)
 @click.option('--peptide_groups_prefix', help="Peptide class "
               "groups e.g. \"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}\"")
+@click.option("--enable_class_fdr", help="Enable Class-FDR over Global PSM FDR (default true)", default = True)
 @click.pass_context
-def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff, peptide_groups_prefix):
+def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff,
+                      peptide_groups_prefix, enable_class_fdr):
 
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
-    msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
+    msg = "The default configuration file is used: {}".format("openms_analysis.yaml")
     logging.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
@@ -60,6 +62,8 @@ def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml, min_peptide_l
     data = parse_peptide_groups(peptide_groups_prefix)
     pipeline_arguments[OpenmsDataService.CONFIG_PEPTIDE_GROUP_PREFIX] = data
 
+  if enable_class_fdr is not None:
+    pipeline_arguments[OpenmsDataService.CONFIG_PEPTIDE_APPLY_CLASS_FDR] = enable_class_fdr
 
   openms_analyzer = OpenmsDataService(config_data, pipeline_arguments)
   openms_analyzer.filter_peptide_class_fdr(input_idxml, output_idxml)

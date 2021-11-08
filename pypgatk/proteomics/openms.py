@@ -12,6 +12,7 @@ class OpenmsDataService(ParameterConfiguration):
   CONFIG_PEPTIDE_FDR_CUTOFF = "psm_pep_fdr_cutoff"
   CONFIG_PEPTIDE_CLASS_FDR_CUTOFF = "psm_pep_class_fdr_cutoff"
   CONFIG_PEPTIDE_GROUP_PREFIX = "peptide_groups_prefix"
+  CONFIG_PEPTIDE_APPLY_CLASS_FDR = "enable_class_fdr"
 
   def __init__(self, config_file, pipeline_arguments):
     super(OpenmsDataService, self).__init__(self.CONFIG_KEY_OPENMS_ANALYSIS, config_file,
@@ -46,6 +47,11 @@ class OpenmsDataService(ParameterConfiguration):
       self.CONFIG_PEPTIDE_GROUP_PREFIX]
     if self.CONFIG_PEPTIDE_GROUP_PREFIX in self.get_pipeline_parameters():
       self._peptide_groups_prefix = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_GROUP_PREFIX]
+
+    self._peptide_class_fdr_enable = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
+      self.CONFIG_PEPTIDE_APPLY_CLASS_FDR]
+    if self.CONFIG_PEPTIDE_APPLY_CLASS_FDR in self.get_pipeline_parameters():
+      self._peptide_class_fdr_enable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_APPLY_CLASS_FDR]
 
   def is_peptide_group(self, peptide_group_members, accessions):
     accession_group = 0
@@ -254,8 +260,11 @@ class OpenmsDataService(ParameterConfiguration):
              peptide_ids))
 
     print(len(filtered_peptide_ids))
-    # filtered_peptide_ids = self.compute_global_fdr(filtered_peptide_ids)
-    filtered_peptide_ids = self.compute_class_fdr(filtered_peptide_ids)
+    if self._peptide_class_fdr_enable:
+      filtered_peptide_ids = self.compute_class_fdr(filtered_peptide_ids)
+    else:
+      filtered_peptide_ids = self.compute_global_fdr(filtered_peptide_ids)
+
     print(len(filtered_peptide_ids))
 
     remove_peptides_without_reference = True
