@@ -8,6 +8,8 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
 
+log = logging.getLogger(__name__)
+
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('-c', '--config_file', help='Configuration for cbioportal to proteindb tool')
 @click.option('-in', '--input_mutation', help='Cbioportal mutation file')
@@ -28,7 +30,7 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file for cbioportal to proteindb is used: {}".format("cbioportal_config.yaml")
-    logging.log(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

@@ -1,7 +1,9 @@
-from pyopenms import *
+from pyopenms import IdXMLFile as idxml_parser
+from pyopenms import IDFilter
 
 from pypgatk.toolbox.general import ParameterConfiguration
 import numpy.polynomial.polynomial as poly
+import numpy as np
 
 
 class OpenmsDataService(ParameterConfiguration):
@@ -129,8 +131,6 @@ class OpenmsDataService(ParameterConfiguration):
 
     # Here the Map contains Key=spectrum_reference (unique for each PeptideIdentification)
     # Value is the PeptideIdentification
-    peptides_filtered = {}
-
     for peptide in peptide_ids:
       for peptide_hit in peptide.getHits():
         peptide_hit_dict.append((peptide_hit, peptide))
@@ -185,7 +185,8 @@ class OpenmsDataService(ParameterConfiguration):
         x.append(score)
         frac = float(decoy_dic[peptide_class][score][0] / decoy_dic[peptide_class][score][1])
         y.append(frac)
-        # Todo: In the original algorithm https://github.com/yafeng/proteogenomics_python/blob/4b1638aa75903225e9ae45892af4cb9f078d7421/BayesClassSpecificFDR.py#L88 the authors used a filter for the score between 6-10
+        # Todo: In the original algorithm the authors used a filter for the score between 6-10
+        #  https://github.com/yafeng/proteogenomics_python/blob/4b1638aa75903225e9ae45892af4cb9f078d7421/BayesClassSpecificFDR.py#L88
         # if 6 < score < 10:
         #   x_filter.append(score)
         #   y_filter.append(frac)
@@ -254,7 +255,7 @@ class OpenmsDataService(ParameterConfiguration):
     peptide_ids = []
 
     idfilter = IDFilter()
-    IdXMLFile().load(input_idxml, protein_ids, peptide_ids)
+    idxml_parser().load(input_idxml, protein_ids, peptide_ids)
     print(peptide_ids[0])
 
     # Iterate over PeptideIdentification
@@ -272,7 +273,7 @@ class OpenmsDataService(ParameterConfiguration):
 
     remove_peptides_without_reference = True
     idfilter.updateProteinReferences(filtered_peptide_ids, protein_ids, remove_peptides_without_reference)
-    IdXMLFile().store(output_idxml, protein_ids, filtered_peptide_ids)
+    idxml_parser().store(output_idxml, protein_ids, filtered_peptide_ids)
 
 
 
