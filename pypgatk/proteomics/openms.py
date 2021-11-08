@@ -91,7 +91,6 @@ class OpenmsDataService(ParameterConfiguration):
       FDR = float(decoy_count) / float(target_count)
       if FDR < self._psm_pep_fdr_cutoff:
         identifier = peptide_identification.getMetaValue("spectrum_reference")
-        print(identifier)
         if identifier not in peptides_filtered:
           peptide_id = peptide_identification
           peptide_id.setHits([psm])
@@ -102,8 +101,6 @@ class OpenmsDataService(ParameterConfiguration):
           hits.append(psm)
           peptide_id.setHits(hits)
           peptides_filtered[identifier] = peptide_id
-
-      print(FDR)
 
     return list(peptides_filtered.values())
 
@@ -144,8 +141,6 @@ class OpenmsDataService(ParameterConfiguration):
     global_decoy_count = 0
     global_target_count = 0
 
-    novpep_dic = {}
-
     for peptide_hit in peptide_hit_dict:
       (psm, peptide_identification) = peptide_hit
       accessions = [ev.getProteinAccession() for ev in psm.getPeptideEvidences()]
@@ -170,9 +165,6 @@ class OpenmsDataService(ParameterConfiguration):
         (target, decoy) = novel_target_decoy_count[peptide_group]
         score_dic[peptide_group][score] = [global_target_count, global_decoy_count, target, decoy]
 
-    print(score_dic)
-
-
     peptide_dict_models = {}
     count = 0
     for peptide_class in score_dic:
@@ -192,39 +184,52 @@ class OpenmsDataService(ParameterConfiguration):
         y_filter.append(frac)
       if len(x_filter) > 0 and len(y_filter) > 0:
         coefs = poly.polyfit(np.array(x_filter), np.array(y_filter), 1)
-        print("coefficients", coefs)
         fit = poly.polyval(x, coefs)
         peptide_dict_models[peptide_class] = (coefs, fit)
 
     peptides_filtered = {}
+    global_decoy_count = 0
+    global_target_count = 0
     for peptide_hit in peptide_hit_dict:
       (psm, peptide_identification) = peptide_hit
       accessions = [ev.getProteinAccession() for ev in psm.getPeptideEvidences()]
       score = -np.log10(float(psm.getScore()))
+      pass_fdr = False
+      canonical_peptide = True
       for peptide_class in peptide_dict_models:
         if self.is_peptide_group(self._peptide_groups_prefix[peptide_class], accessions):
+          canonical_peptide = False
           counts = score_dic[peptide_class][score]
-          global_target_count = float(counts[0])
-          global_decoy_count = float(counts[1])
-          FDR = global_decoy_count / global_target_count
+          target_count = float(counts[0])
+          decoy_count = float(counts[1])
+          FDR = decoy_count / target_count
           novel_targetcount = float(counts[2])
           gamma = poly.polyval(score, peptide_dict_models[peptide_class][0])
-          novelFDR = FDR * gamma * (global_target_count / novel_targetcount)
+          novelFDR = FDR * gamma * (target_count / novel_targetcount)
           if novelFDR < self._psm_pep_class_fdr_cutoff and FDR < self._psm_pep_fdr_cutoff:
-            identifier = peptide_identification.getMetaValue("spectrum_reference")
-            if identifier not in peptides_filtered:
-              peptide_id = peptide_identification
-              peptide_id.setHits([psm])
-              peptides_filtered[identifier] = peptide_id
-            else:
-              peptide_id = peptides_filtered[identifier]
-              hits = peptide_id.getHits()
-              hits.append(psm)
-              peptide_id.setHits(hits)
-              peptides_filtered[identifier] = peptide_id
-            count += 1
-            print("Peptide Class {}, Peptide Sequence: {}, Protein Accessions {}, NovelFDR {}, count {}".format(peptide_class, psm.getSequence().toUnmodifiedString(), accessions, novelFDR, count))
+            pass_fdr = True
 
+      if any(self._decoy_prefix in s for s in accessions):
+        global_decoy_count += 1
+      else:
+        global_target_count += 1
+
+      FDR = float(global_decoy_count) / float(global_target_count)
+      if FDR < self._psm_pep_fdr_cutoff and canonical_peptide:
+        pass_fdr = True
+
+      if pass_fdr:
+        identifier = peptide_identification.getMetaValue("spectrum_reference")
+        if identifier not in peptides_filtered:
+          peptide_id = peptide_identification
+          peptide_id.setHits([psm])
+          peptides_filtered[identifier] = peptide_id
+        else:
+          peptide_id = peptides_filtered[identifier]
+          hits = peptide_id.getHits()
+          hits.append(psm)
+          peptide_id.setHits(hits)
+          peptides_filtered[identifier] = peptide_id
 
     return list(peptides_filtered.values())
 
@@ -248,8 +253,10 @@ class OpenmsDataService(ParameterConfiguration):
       filter(lambda peptide: (len(peptide.getHits()[0].getSequence().toUnmodifiedString()) > self._min_peptide_length),
              peptide_ids))
 
+    print(len(filtered_peptide_ids))
     # filtered_peptide_ids = self.compute_global_fdr(filtered_peptide_ids)
     filtered_peptide_ids = self.compute_class_fdr(filtered_peptide_ids)
+    print(len(filtered_peptide_ids))
 
     remove_peptides_without_reference = True
     idfilter.updateProteinReferences(filtered_peptide_ids, protein_ids, remove_peptides_without_reference)
