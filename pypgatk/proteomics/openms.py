@@ -55,7 +55,8 @@ class OpenmsDataService(ParameterConfiguration):
     if self.CONFIG_PEPTIDE_APPLY_CLASS_FDR in self.get_pipeline_parameters():
       self._peptide_class_fdr_enable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_APPLY_CLASS_FDR]
 
-  def is_peptide_group(self, peptide_group_members, accessions):
+  @staticmethod
+  def is_peptide_group(peptide_group_members, accessions):
     """
     Get the True if the accessions of the peptide all belongs to the specific category.
     :param peptide_group_members: all protein classes

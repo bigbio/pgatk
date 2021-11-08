@@ -8,6 +8,8 @@ from pypgatk.proteomics.openms import OpenmsDataService
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
 
+log = logging.getLogger(__name__)
+
 def parse_peptide_groups(peptide_groups_prefix):
   peptide_groups = {}
   for group in peptide_groups_prefix.split(";"):
@@ -16,9 +18,6 @@ def parse_peptide_groups(peptide_groups_prefix):
     classes = [x.replace("[","").replace("]","") for x in lt[1].split(",")]
     peptide_groups[class_group] = classes
   return peptide_groups
-
-
-
 
 @click.command('peptide-class-fdr', short_help="Command to compute the Peptide class FDR")
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
@@ -37,7 +36,7 @@ def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml, min_peptide_l
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file is used: {}".format("openms_analysis.yaml")
-    logging.info(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

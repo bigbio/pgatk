@@ -3,12 +3,12 @@ import click
 
 from pypgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService
 from pypgatk.proteomics.models import PYGPATK_ENZYMES
-
 import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 default_config_text = pkgutil.get_data(__name__, "../config/protein_decoy.yaml").decode()
 
+log = logging.getLogger(__name__)
 
 @click.command('generate-decoy',
                short_help='Create decoy protein sequences using multiple methods DecoyPYrat, Reverse/Shuffled Proteins.')
@@ -60,7 +60,7 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file is used: {}".format("protein_decoy.yaml")
-    logging.info(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

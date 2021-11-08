@@ -8,6 +8,7 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
 
+log = logging.getLogger(__name__)
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
@@ -38,7 +39,7 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
-    logging.info(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

@@ -7,6 +7,7 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 default_config_text = pkgutil.get_data(__name__, "../config/ensembl_downloader_config.yaml").decode()
 
+log = logging.getLogger(__name__)
 
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
@@ -42,7 +43,7 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file is used: {}".format("ensembl_downloader_config.yaml")
-    logging.info(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

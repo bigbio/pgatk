@@ -8,6 +8,7 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
+log = logging.getLogger(__name__)
 
 @click.command('cbioportal-downloader', short_help='Command to download the the cbioportal studies')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
@@ -21,7 +22,7 @@ def cbioportal_downloader(ctx, config_file, output_directory, list_studies, down
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
     msg = "The default configuration file for cbioportal is used: {}".format("cbioportal_config.yaml")
-    logging.log(msg)
+    log.info(msg)
   else:
     config_data = read_yaml_from_file(config_file)
 

@@ -20,7 +20,6 @@ from pypgatk.toolbox.exceptions import ToolBoxException
 
 REMAINING_DOWNLOAD_TRIES = 4
 
-
 class ParameterConfiguration:
   """
     This class is a helper class for those submodules having to manage configuration files themselves, that are specific
@@ -131,7 +130,7 @@ def read_yaml_from_file(yaml_file):
   """
   data = None
   with open(yaml_file, 'r') as f:
-    data = yaml.load(f.read(), Loader=yaml.FullLoader)
+    data = yaml.safe_load(f.read())
   return data
 
 def read_yaml_from_text(yaml_text):
