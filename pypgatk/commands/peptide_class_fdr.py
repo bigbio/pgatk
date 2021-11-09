@@ -26,6 +26,30 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def peptide_class_fdr(ctx, config_file, input_idxml, output_idxml, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff,
                       peptide_groups_prefix, peptide_classes_prefix, enable_class_fdr):
+  """
+  The peptide_class_fdr allows to filter the peptide psm files (IdXML files) using two different FDR threshold types:
+   - Global FDR
+   - Global FDR + Peptide Class FDR
+  The peptide classes can be defined in two ways as simple class:
+   - "altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"
+  where each class represent only one kind of peptide source pseudo gene, ncRNA, etc. The second for of representing
+  peptide classes is using groups of classes:
+   - "{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"
+  in this case a class is a group of peptide sources for example: mutations with two difference sources as COSMIC
+  and cbiomut (CBioportal mutation) .
+
+  :param ctx:
+  :param config_file: Configuration file
+  :param input_idxml: Input idXML containing peptide identifications
+  :param output_idxml: Output idXML containing peptide identifications after filtering
+  :param min_peptide_length: Minimum peptide length
+  :param psm_pep_fdr_cutoff:  Global FDR cutoff
+  :param psm_pep_class_fdr_cutoff: Peptide class FDR cutoff
+  :param peptide_groups_prefix: Peptide groups prefix for the Peptide classes FDR
+  :param peptide_classes_prefix: Peptide classes
+  :param enable_class_fdr: Enable Peptide class FDR
+  :return:
+  """
 
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
