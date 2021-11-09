@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
 @click.option('--input_fasta', help='Path to sequences fasta')
 @click.option('--translation_table', default=1, type=int, help='Translation Table (default 1)')
-@click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 0)')
+@click.option('--num_orfs', default=3, type=int, help='Number of ORFs (default 3)')
 @click.option('--num_orfs_complement', default=0, type=int,
               help='Number of ORFs from the reverse side (default 0)')
 @click.option('--output_proteindb', default="peptide-database.fa", help="Output file name, exits if already exists")
