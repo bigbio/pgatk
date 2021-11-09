@@ -58,7 +58,7 @@ class OpenmsDataService(ParameterConfiguration):
   @staticmethod
   def is_peptide_group(peptide_group_members, accessions):
     """
-    Get the True if the accessions of the peptide all belongs to the specific category.
+    Given a group of classes and a list of accessions of a peptide. Returns True if all accessions match to exactly one class in the group.
     :param peptide_group_members: all protein classes
     :param accessions:  all protein accessions associated with the peptide.
     :return: True if all protein accessions belows to one of these peptide_group_members.
