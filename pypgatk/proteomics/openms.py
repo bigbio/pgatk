@@ -113,7 +113,8 @@ class OpenmsDataService(ParameterConfiguration):
 
     return df_psms
 
-  def _compute_global_fdr(self, df_psms: DataFrame):
+  @staticmethod
+  def _compute_global_fdr(df_psms: DataFrame):
     """
     Compute the global FDR and filter peptides
     :param df_psms: list of peptide identifications
