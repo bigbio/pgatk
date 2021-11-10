@@ -327,5 +327,20 @@ def parse_peptide_classes(peptide_classes_prefix):
     peptide_groups[class_peptide] = [class_peptide]
   return peptide_groups
 
+def is_peptide_group(peptide_group_members, accessions):
+  """
+  Given a group of classes and a list of accessions of a peptide. Returns True if all accessions match to exactly one class in the group.
+  :param peptide_group_members: all protein classes
+  :param accessions:  all protein accessions associated with the peptide.
+  :return: True if all protein accessions belows to one of these peptide_group_members.
+  """
+
+  accession_group = 0
+  for accession in accessions:
+    for class_peptide in peptide_group_members:
+      if class_peptide in accession:
+        accession_group += 1
+  return len(accessions) == accession_group
+
 if __name__ == '__main__':
   print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")
