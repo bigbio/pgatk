@@ -341,7 +341,7 @@ class OpenmsDataService(ParameterConfiguration):
       try:
         if all([i.is_integer() for i in df[col]]):
           df[col] = [int(x) for x in df[col]]
-      except:
+      except ValueError:
         continue
     return df
 
