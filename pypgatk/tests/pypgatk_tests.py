@@ -8,7 +8,7 @@ def peptide_class_group_fdr():
                          ['peptide-class-fdr',
                           '-in', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus.idxml',
                           '-out', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
-                          '--peptide_groups_prefix', '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
+                          '--peptide-groups-prefix', '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
   assert result.exit_code == 0
 
 def peptide_classes_fdr():
@@ -17,7 +17,7 @@ def peptide_classes_fdr():
                          ['peptide-class-fdr',
                           '-in', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus.idxml',
                           '-out', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
-                          '--peptide_classes_prefix', '"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"'])
+                          '--peptide-classes-prefix', '"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"'])
   assert result.exit_code == 0
 
 def vcf_to_proteindb():
