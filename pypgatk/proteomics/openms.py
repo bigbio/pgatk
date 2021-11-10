@@ -386,7 +386,7 @@ class OpenmsDataService(ParameterConfiguration):
           if not (
             "target_decoy" in k or "spectrum_reference" in k or "rank" in k or k in self._openms_exclude_columns):  # don't add them twice
             s = h.getMetaValue(k)
-            if type(s) == bytes:
+            if isinstance(s,bytes):
               s = s.decode()
             row.append(s)
         rows.append(row)
