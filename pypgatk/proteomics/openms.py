@@ -1,4 +1,3 @@
-from numpy import nan
 from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
 from pyopenms import IDFilter
@@ -154,8 +153,6 @@ class OpenmsDataService(ParameterConfiguration):
 
     global_decoy_count = 0
     global_target_count = 0
-
-    novpep_dic = {}
 
     # Get the order of the score
     orders = df_psms["is_higher_score_better"].unique()
