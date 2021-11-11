@@ -281,9 +281,10 @@ class OpenmsDataService(ParameterConfiguration):
     self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
 
   @staticmethod
-  def _get_psm_index(spectrum_reference: str, psm_index: int):
+  def _get_psm_index(ms_run: str, spectrum_reference: str, psm_index: int):
     """
     Get the psm index for each spectrum from idXML
+    :param ms_run: name of the file containing the spectrum
     :param spectrum_reference: spectrum reference from the PeptideIdentification in the idXML
     :param psm_index: Peptide Hits PSMs for each PeptideIdentification
     :return:
@@ -306,15 +307,31 @@ class OpenmsDataService(ParameterConfiguration):
 
     new_pep_ids = []
 
+    protein_dic = {}
+    for pro in prot_ids:
+      pro_acc = pro.getIdentifier()
+      ms_run = []
+      pro.getPrimaryMSRunPath(ms_run)
+      ms_run = [n.decode() for n in ms_run]
+      protein_dic[pro_acc] = "_".join(ms_run)
+
     for peptide_id in pep_ids:
       hits = peptide_id.getHits()
       psmid = 1
       specid = peptide_id.getMetaValue(self._psm_spectrum_reference)
+
+      pep_acc = peptide_id.getIdentifier()
+      if pep_acc not in protein_dic:
+        raise ValueError(
+          "The reference peptide in the PeptideIdentification {}--{} can't be found in the ProteinIdentifications".format(
+            pep_acc, specid))
+
+      ms_run_acc = protein_dic[pep_acc]
+
       new_hits = []
       for h in hits:
-        key = self._get_psm_index(specid, psmid)
+        key = self._get_psm_index(ms_run, specid, psmid)
         if key in df.index:
-          # h.setScore(map_id2qvalue[key])  # set class-specific q-value as main score (will be used for sorting)
           for col in new_columns:
             value = df.at[key, col]
             if value is not None:
@@ -322,7 +339,6 @@ class OpenmsDataService(ParameterConfiguration):
           new_hits.append(h)
         psmid += 1
       peptide_id.setHits(new_hits)
-      # peptide_id.setScoreType("q-value")
       new_pep_ids.append(peptide_id)
 
     remove_peptides_without_reference = True
@@ -352,6 +368,15 @@ class OpenmsDataService(ParameterConfiguration):
     pep_ids = []
     idxml_parser().load(input_file, prot_ids, pep_ids)
 
+    protein_dic = {}
+    for pro in prot_ids:
+      pro_acc = pro.getIdentifier()
+      ms_run = []
+      pro.getPrimaryMSRunPath(ms_run)
+      ms_run = [n.decode() for n in ms_run]
+      protein_dic[pro_acc] = "_".join(ms_run)
+      print("{} -- {}".format(pro_acc,"_".join(ms_run)))
+
     meta_value_keys = []
     rows = []
     all_columns = []
@@ -360,8 +385,13 @@ class OpenmsDataService(ParameterConfiguration):
       spectrum_id = peptide_id.getMetaValue(self._psm_spectrum_reference)
       scan_nr = spectrum_id[spectrum_id.rfind('=') + 1:]
       psm_index = 1
+      pep_acc = peptide_id.getIdentifier()
+      if pep_acc not in protein_dic:
+        raise ValueError("The reference peptide in the PeptideIdentification {}--{} can't be found in the ProteinIdentifications".format(pep_acc, spectrum_id))
+
+      ms_run_acc = protein_dic[pep_acc]
       hits = peptide_id.getHits()
-      order = peptide_id.isHigherScoreBetter();
+      order = peptide_id.isHigherScoreBetter()
 
       for h in hits:
         charge = h.getCharge()
@@ -379,7 +409,7 @@ class OpenmsDataService(ParameterConfiguration):
           meta_value_keys = [x.decode() for x in meta_value_keys if not ("target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
           all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide", "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
 
-        df_psm_index = self._get_psm_index(spectrum_id, psm_index)
+        df_psm_index = self._get_psm_index(ms_run_acc, spectrum_id, psm_index)
         row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence, str(len(unmodified_sequence)), accessions, score, order]
         # scores in meta values
         for k in meta_value_keys:
