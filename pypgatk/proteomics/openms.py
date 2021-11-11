@@ -342,7 +342,7 @@ class OpenmsDataService(ParameterConfiguration):
       try:
         if all([i.is_integer() for i in df[col]]):
           df[col] = [int(x) for x in df[col]]
-      except ValueError:
+      except AttributeError:
         continue
     return df
 
@@ -378,7 +378,6 @@ class OpenmsDataService(ParameterConfiguration):
           h.getKeys(meta_value_keys)
           meta_value_keys = [x.decode() for x in meta_value_keys if not ("target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
           all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide", "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
-          print(all_columns)
 
         df_psm_index = self._get_psm_index(spectrum_id, psm_index)
         row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence, str(len(unmodified_sequence)), accessions, score, order]
@@ -396,9 +395,9 @@ class OpenmsDataService(ParameterConfiguration):
 
     print(df.head())
 
-    print('Converting column types')
     df = self._str_to_int(df)
     df.set_index(self._psm_df_index, inplace=True)
+    df.head()
 
     return df
 
