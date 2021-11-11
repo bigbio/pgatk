@@ -397,7 +397,6 @@ class OpenmsDataService(ParameterConfiguration):
 
     df = self._str_to_int(df)
     df.set_index(self._psm_df_index, inplace=True)
-    df.head()
 
     return df
 
