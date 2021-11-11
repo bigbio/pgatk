@@ -246,7 +246,7 @@ class OpenmsDataService(ParameterConfiguration):
     df.set_index(self._psm_df_index)
 
     df_psms['class-specific-q-value'] = df['class-specific-q-value']
-    df_psms['class-specific-q-value'][df_psms['class-specific-q-value'].isnull()] = df_psms['q-value']
+    df_psms.loc[df_psms['class-specific-q-value'].isnull(), 'class-specific-q-value'] = df_psms['q-value']
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
     return df_psms
