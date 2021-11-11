@@ -289,7 +289,7 @@ class OpenmsDataService(ParameterConfiguration):
     :param psm_index: Peptide Hits PSMs for each PeptideIdentification
     :return:
     """
-    return spectrum_reference + "_" + str(psm_index)
+    return ms_run +"_" + spectrum_reference + "_" + str(psm_index)
 
   def _filter_write_idxml_with_df(self, df: DataFrame, new_columns: list, input_file: str, output_file: str):
     """
@@ -309,11 +309,11 @@ class OpenmsDataService(ParameterConfiguration):
 
     protein_dic = {}
     for pro in prot_ids:
-      pro_acc = pro.getIdentifier()
+      pro_run_id = pro.getIdentifier()
       ms_run = []
       pro.getPrimaryMSRunPath(ms_run)
       ms_run = [n.decode() for n in ms_run]
-      protein_dic[pro_acc] = "_".join(ms_run)
+      protein_dic[pro_run_id] = "_".join(ms_run)
 
     for peptide_id in pep_ids:
       hits = peptide_id.getHits()
@@ -330,7 +330,7 @@ class OpenmsDataService(ParameterConfiguration):
 
       new_hits = []
       for h in hits:
-        key = self._get_psm_index(ms_run, specid, psmid)
+        key = self._get_psm_index(ms_run_acc, specid, psmid)
         if key in df.index:
           for col in new_columns:
             value = df.at[key, col]
@@ -370,12 +370,12 @@ class OpenmsDataService(ParameterConfiguration):
 
     protein_dic = {}
     for pro in prot_ids:
-      pro_acc = pro.getIdentifier()
+      pro_run_id = pro.getIdentifier()
       ms_run = []
       pro.getPrimaryMSRunPath(ms_run)
       ms_run = [n.decode() for n in ms_run]
-      protein_dic[pro_acc] = "_".join(ms_run)
-      print("{} -- {}".format(pro_acc,"_".join(ms_run)))
+      protein_dic[pro_run_id] = "_".join(ms_run)
+      print("{} -- {}".format(pro_run_id,"_".join(ms_run)))
 
     meta_value_keys = []
     rows = []
