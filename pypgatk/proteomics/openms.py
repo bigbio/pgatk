@@ -107,7 +107,8 @@ class OpenmsDataService(ParameterConfiguration):
       currClass['class-specific-q-value'] = FDR[::-1].cummin()[::-1]
     df = pd.concat(ls)
 
-    df_psms['class-specific-q-value'] = df['class-specific-q-value']
+    #df_psms['class-specific-q-value'] = df['class-specific-q-value']
+    df_psms = df_psms.merge(df['class-specific-q-value'], left_index=True, right_index=True, how='left')
     df_psms.loc[df_psms['class-specific-q-value'].isnull(), 'class-specific-q-value'] = df_psms['q-value']
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
@@ -245,7 +246,7 @@ class OpenmsDataService(ParameterConfiguration):
     df = pd.DataFrame(d)
     df.set_index(self._psm_df_index)
 
-    df_psms['class-specific-q-value'] = df['class-specific-q-value']
+    df_psms = df_psms.merge(df['class-specific-q-value'], left_index=True, right_index=True, how='left')
     df_psms.loc[df_psms['class-specific-q-value'].isnull(), 'class-specific-q-value'] = df_psms['q-value']
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
@@ -262,21 +263,25 @@ class OpenmsDataService(ParameterConfiguration):
     self._new_columns = []
 
     df_psms = self._psm_idxml_todf(input_idxml)
-    print(df_psms.size)
+    self.get_logger().info("Number of PSM in the file {} : {}".format(input_idxml, len(df_psms.index)))
 
     df_psms = self._compute_global_fdr(df_psms)
 
+    self._peptide_class_fdr_disable = False
+    self._bayesian_class_fdr_disable = False
+
     if self._peptide_class_fdr_disable:
       df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
+      self.get_logger().info("Number of PSM after Global FDR filtering: {}".format(len(df_psms.index)))
     elif(self._bayesian_class_fdr_disable):
       df_psms = self._compute_class_fdr(df_psms)
       df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      self.get_logger().info("Number of PSM after Non-bayesian FDR filtering: {}".format(len(df_psms.index)))
     else:
       df_psms = self._compute_bayesian_class_fdr(df_psms)
-      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms[
-        'class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
-
-    print(df_psms.size)
+      df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
+      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      self.get_logger().info("Number of PSM after Bayesian FDR filtering: {}".format(len(df_psms.index)))
 
     self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
 
@@ -363,6 +368,11 @@ class OpenmsDataService(ParameterConfiguration):
     return df
 
   def _psm_idxml_todf(self, input_file: str):
+    """
+    This function converts an idXML file into a pandas dataframe
+    :param input_file: input idXML file
+    :return:
+    """
 
     prot_ids = []
     pep_ids = []
@@ -375,7 +385,6 @@ class OpenmsDataService(ParameterConfiguration):
       pro.getPrimaryMSRunPath(ms_run)
       ms_run = [n.decode() for n in ms_run]
       protein_dic[pro_run_id] = "_".join(ms_run)
-      print("{} -- {}".format(pro_run_id,"_".join(ms_run)))
 
     meta_value_keys = []
     rows = []
@@ -422,8 +431,6 @@ class OpenmsDataService(ParameterConfiguration):
         rows.append(row)
         psm_index += 1
     df = pd.DataFrame(rows, columns=all_columns)
-
-    print(df.head())
 
     df = self._str_to_int(df)
     df.set_index(self._psm_df_index, inplace=True)
