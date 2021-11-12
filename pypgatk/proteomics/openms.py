@@ -1,6 +1,4 @@
 import multiprocessing
-import concurrent.futures
-import tqdm
 
 from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
@@ -488,7 +486,8 @@ class OpenmsDataService(ParameterConfiguration):
     df.set_index(self._psm_df_index, inplace=True)
     return df
 
-  def _export_df_triqler(self, df_psms, output_file: str):
+  @staticmethod
+  def _export_df_triqler(df_psms, output_file: str):
     result_df = df_psms[["run","condition","charge","score","intensity","peptide","accessions"]]
     result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
     result_df.to_csv(output_file,sep='\t',index=False,header=True)
