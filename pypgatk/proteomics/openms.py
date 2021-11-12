@@ -487,7 +487,13 @@ class OpenmsDataService(ParameterConfiguration):
     return df
 
   @staticmethod
-  def _export_df_triqler(df_psms, output_file: str):
+  def _export_df_triqler(df_psms: DataFrame, output_file: str):
+    """
+    Export dataframe to triqler format
+    :param df_psms:  dataframe containing the psms
+    :param output_file: output triqler file
+    :return:
+    """
     result_df = df_psms[["run","condition","charge","score","intensity","peptide","accessions"]]
     result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
     result_df.to_csv(output_file,sep='\t',index=False,header=True)
