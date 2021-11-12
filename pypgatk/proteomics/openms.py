@@ -1,11 +1,17 @@
+import multiprocessing
+import concurrent.futures
+import tqdm
+
 from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
 from pyopenms import IDFilter
 
-from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group
+from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group, is_peptide_decoy
 import numpy.polynomial.polynomial as poly
 import numpy as np
 import pandas as pd
+
+num_processes = multiprocessing.cpu_count()
 
 
 class OpenmsDataService(ParameterConfiguration):
@@ -18,6 +24,7 @@ class OpenmsDataService(ParameterConfiguration):
   CONFIG_PEPTIDE_GROUP_PREFIX = "peptide_groups_prefix"
   CONFIG_PEPTIDE_DISABLE_CLASS_FDR = "disable_class_fdr"
   CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR = "disable_bayesian_class_fdr"
+  CONFIG_FILE_TYPE = "file_type"
 
   def __init__(self, config_file, pipeline_arguments):
 
@@ -51,6 +58,11 @@ class OpenmsDataService(ParameterConfiguration):
       self.CONFIG_PEPTIDE_CLASS_PREFIX]
     if self.CONFIG_PEPTIDE_CLASS_PREFIX in self.get_pipeline_parameters():
       self._peptide_class_prefix = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_CLASS_PREFIX]
+
+    self._file_type = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
+      self.CONFIG_FILE_TYPE]
+    if self.CONFIG_FILE_TYPE in self.get_pipeline_parameters():
+      self._file_type = self.get_pipeline_parameters()[self.CONFIG_FILE_TYPE]
 
     self._min_peptide_length = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
       self.CONFIG_MIN_PEPTIDE_LENGTH]
@@ -261,8 +273,13 @@ class OpenmsDataService(ParameterConfiguration):
     """
 
     self._new_columns = []
+    df_psms = None
+    if self._file_type == 'idxml':
+      df_psms = self._psm_idxml_todf(input_idxml)
+    elif (self._file_type == "triqler"):
+      df_psms = self._psms_triqler_todf(input_idxml)
 
-    df_psms = self._psm_idxml_todf(input_idxml)
+
     self.get_logger().info("Number of PSM in the file {} : {}".format(input_idxml, len(df_psms.index)))
 
     df_psms = self._compute_global_fdr(df_psms)
@@ -283,7 +300,10 @@ class OpenmsDataService(ParameterConfiguration):
       df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
       self.get_logger().info("Number of PSM after Bayesian FDR filtering: {}".format(len(df_psms.index)))
 
-    self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
+    if self._file_type == 'idxml':
+      self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
+    elif(self._file_type == "triqler"):
+      self._export_df_triqler(df_psms, output_idxml)
 
   @staticmethod
   def _get_psm_index(ms_run: str, spectrum_reference: str, psm_index: int):
@@ -436,6 +456,47 @@ class OpenmsDataService(ParameterConfiguration):
     df.set_index(self._psm_df_index, inplace=True)
 
     return df
+
+  def _psms_triqler_todf(self, input_file: str):
+    """
+    Parse triqler file .
+    :param input_file:
+    :return:
+    """
+    all_columns = [self._psm_df_index, "run","condition","charge",	"score","intensity","peptide","accessions","is_higher_score_better"]
+    rows = []
+    first_line = 0
+    with open(input_file, 'r') as source:
+      for line in source:
+        line = line.rstrip()
+        if first_line != 0:
+          a = line.split('\t')
+          a = ["_".join(a)] + a
+          a = a + [True]
+          rows.append(a)
+        first_line += 1
+
+    df = pd.DataFrame(rows, columns=all_columns)
+
+    print(len(df.index))
+    # with concurrent.futures.ProcessPoolExecutor(num_processes) as pool:
+    #   df['target'] = pd.DataFrame(pool.map(df['accessions'].map(lambda x: is_peptide_decoy(x, decoy_prefix))))  # With a progressbar
+    # print(len(df.index))
+    df["target"] = df['accessions'].map(lambda x: not (self._decoy_prefix in x))
+
+    df = self._str_to_int(df)
+    df.set_index(self._psm_df_index, inplace=True)
+    return df
+
+  def _export_df_triqler(self, df_psms, output_file: str):
+    result_df = df_psms[["run","condition","charge","score","intensity","peptide","accessions"]]
+    result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
+    result_df.to_csv(output_file,sep='\t',index=False,header=True)
+
+
+
+
+
 
 
 

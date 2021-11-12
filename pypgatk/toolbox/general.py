@@ -342,5 +342,8 @@ def is_peptide_group(peptide_group_members, accessions):
         accession_group += 1
   return len(accessions) == accession_group
 
+def is_peptide_decoy(accessions, prefix):
+  return  any(prefix in s for s in accessions)
+
 if __name__ == '__main__':
   print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")

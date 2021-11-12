@@ -5,6 +5,7 @@ openms_analysis:
   decoy_prefix: DECOY_
   disable_class_fdr: False
   disable_bayesian_class_fdr: False
+  file_type: idxml
   peptide_classes_prefix: 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs'
   peptide_groups_prefix:
     non_canonical:
