@@ -29,23 +29,24 @@ class OpenmsDataService(ParameterConfiguration):
     self._psm_df_index = "openms_psm_index"
     self._psm_spectrum_reference = "spectrum_reference"
     self._openms_exclude_columns = ['SpecId', 'Label', 'ScanNr', 'Peptide',
-            'Proteins', 'FDR', 'q-val', 'class-specific-q-value',
-            'Rank', "protein_references",
-            'CountSequenceIsTop', 'CountSequenceCharges', 'CountSequenceIsXL', 'CountSequenceIsPeptide', # tend to overfit
-            'NuXL:total_Morph', 'NuXL:total_HS', 'NuXL:total_MIC', # redundant
-            'A_136.062309999999997', 'A_330.060330000000022',
-            'C_112.051079999999999', 'C_306.04910000000001',
-            'G_152.057230000000004', 'G_346.055250000000001',
-            'U_113.035089999999997', 'U_307.033110000000022',
-            'NuXLScore_score',
-            'NuXL:z1 mass', 'NuXL:z2 mass', 'NuXL:z3 mass', 'NuXL:z4 mass',
-            "NuXL:NA", "NuXL:NT", "NuXL:localization_scores", "NuXL:best_localization",
-            'NuXL:best_localization_score', "CalcMass", "NuXL:Da difference",
-             'NuXL:XL_U', 'NuXL:XL_C', 'NuXL:XL_G','NuXL:XL_A'
-            ]
+                                    'Proteins', 'FDR', 'q-val', 'class-specific-q-value',
+                                    'Rank', "protein_references",
+                                    'CountSequenceIsTop', 'CountSequenceCharges', 'CountSequenceIsXL',
+                                    'CountSequenceIsPeptide',  # tend to overfit
+                                    'NuXL:total_Morph', 'NuXL:total_HS', 'NuXL:total_MIC',  # redundant
+                                    'A_136.062309999999997', 'A_330.060330000000022',
+                                    'C_112.051079999999999', 'C_306.04910000000001',
+                                    'G_152.057230000000004', 'G_346.055250000000001',
+                                    'U_113.035089999999997', 'U_307.033110000000022',
+                                    'NuXLScore_score',
+                                    'NuXL:z1 mass', 'NuXL:z2 mass', 'NuXL:z3 mass', 'NuXL:z4 mass',
+                                    "NuXL:NA", "NuXL:NT", "NuXL:localization_scores", "NuXL:best_localization",
+                                    'NuXL:best_localization_score', "CalcMass", "NuXL:Da difference",
+                                    'NuXL:XL_U', 'NuXL:XL_C', 'NuXL:XL_G', 'NuXL:XL_A'
+                                    ]
 
     super(OpenmsDataService, self).__init__(self.CONFIG_KEY_OPENMS_ANALYSIS, config_file,
-                                                pipeline_arguments)
+                                            pipeline_arguments)
 
     self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
       self.CONFIG_DECOY_PREFIX]
@@ -117,7 +118,7 @@ class OpenmsDataService(ParameterConfiguration):
       currClass['class-specific-q-value'] = FDR[::-1].cummin()[::-1]
     df = pd.concat(ls)
 
-    #df_psms['class-specific-q-value'] = df['class-specific-q-value']
+    # df_psms['class-specific-q-value'] = df['class-specific-q-value']
     df_psms = df_psms.merge(df['class-specific-q-value'], left_index=True, right_index=True, how='left')
     df_psms.loc[df_psms['class-specific-q-value'].isnull(), 'class-specific-q-value'] = df_psms['q-value']
     df_psms.sort_values("score", ascending=ascending, inplace=True)
@@ -174,7 +175,7 @@ class OpenmsDataService(ParameterConfiguration):
 
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
-    for psm_index, score_raw, accessions  in zip(df_psms.index, df_psms["score"], df_psms["accessions"]):
+    for psm_index, score_raw, accessions in zip(df_psms.index, df_psms["score"], df_psms["accessions"]):
       score = -np.log10(float(score_raw))
       if any(self._decoy_prefix in s for s in accessions):
         global_decoy_count += 1
@@ -223,7 +224,8 @@ class OpenmsDataService(ParameterConfiguration):
 
     psm_index_qvalue = []
     class_qvalue = []
-    for psm_index, score_raw, accessions, qvalue  in zip(df_psms.index, df_psms["score"], df_psms["accessions"], df_psms["q-value"]):
+    for psm_index, score_raw, accessions, qvalue in zip(df_psms.index, df_psms["score"], df_psms["accessions"],
+                                                        df_psms["q-value"]):
       score = -np.log10(float(score_raw))
       canonical_peptide = True
       for peptide_class in peptide_dict_models:
@@ -252,7 +254,7 @@ class OpenmsDataService(ParameterConfiguration):
         psm_index_qvalue.append(psm_index)
         class_qvalue.append(qvalue)
 
-    d = {self._psm_df_index:psm_index_qvalue,'class-specific-q-value':class_qvalue}
+    d = {self._psm_df_index: psm_index_qvalue, 'class-specific-q-value': class_qvalue}
     df = pd.DataFrame(d)
     df.set_index(self._psm_df_index)
 
@@ -277,7 +279,6 @@ class OpenmsDataService(ParameterConfiguration):
     elif (self._file_type == "triqler"):
       df_psms = self._psms_triqler_todf(input_idxml)
 
-
     self.get_logger().info("Number of PSM in the file {} : {}".format(input_idxml, len(df_psms.index)))
 
     df_psms = self._compute_global_fdr(df_psms)
@@ -288,19 +289,21 @@ class OpenmsDataService(ParameterConfiguration):
     if self._peptide_class_fdr_disable:
       df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
       self.get_logger().info("Number of PSM after Global FDR filtering: {}".format(len(df_psms.index)))
-    elif(self._bayesian_class_fdr_disable):
+    elif (self._bayesian_class_fdr_disable):
       df_psms = self._compute_class_fdr(df_psms)
-      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (
+        df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
       self.get_logger().info("Number of PSM after Non-bayesian FDR filtering: {}".format(len(df_psms.index)))
     else:
       df_psms = self._compute_bayesian_class_fdr(df_psms)
       df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
-      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (
+        df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
       self.get_logger().info("Number of PSM after Bayesian FDR filtering: {}".format(len(df_psms.index)))
 
     if self._file_type == 'idxml':
       self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
-    elif(self._file_type == "triqler"):
+    elif (self._file_type == "triqler"):
       self._export_df_triqler(df_psms, output_idxml)
 
   @staticmethod
@@ -312,7 +315,7 @@ class OpenmsDataService(ParameterConfiguration):
     :param psm_index: Peptide Hits PSMs for each PeptideIdentification
     :return:
     """
-    return ms_run +"_" + spectrum_reference + "_" + str(psm_index)
+    return ms_run + "_" + spectrum_reference + "_" + str(psm_index)
 
   def _filter_write_idxml_with_df(self, df: DataFrame, new_columns: list, input_file: str, output_file: str):
     """
@@ -414,7 +417,9 @@ class OpenmsDataService(ParameterConfiguration):
       psm_index = 1
       pep_acc = peptide_id.getIdentifier()
       if pep_acc not in protein_dic:
-        raise ValueError("The reference peptide in the PeptideIdentification {}--{} can't be found in the ProteinIdentifications".format(pep_acc, spectrum_id))
+        raise ValueError(
+          "The reference peptide in the PeptideIdentification {}--{} can't be found in the ProteinIdentifications".format(
+            pep_acc, spectrum_id))
 
       ms_run_acc = protein_dic[pep_acc]
       hits = peptide_id.getHits()
@@ -433,17 +438,20 @@ class OpenmsDataService(ParameterConfiguration):
 
         if len(meta_value_keys) == 0:
           h.getKeys(meta_value_keys)
-          meta_value_keys = [x.decode() for x in meta_value_keys if not ("target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
-          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide", "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
+          meta_value_keys = [x.decode() for x in meta_value_keys if not (
+            "target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
+          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide",
+                         "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
 
         df_psm_index = self._get_psm_index(ms_run_acc, spectrum_id, psm_index)
-        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence, str(len(unmodified_sequence)), accessions, score, order]
+        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence,
+               str(len(unmodified_sequence)), accessions, score, order]
         # scores in meta values
         for k in meta_value_keys:
           if not (
             "target_decoy" in k or "spectrum_reference" in k or "rank" in k or k in self._openms_exclude_columns):  # don't add them twice
             s = h.getMetaValue(k)
-            if isinstance(s,bytes):
+            if isinstance(s, bytes):
               s = s.decode()
             row.append(s)
         rows.append(row)
@@ -461,7 +469,8 @@ class OpenmsDataService(ParameterConfiguration):
     :param input_file:
     :return:
     """
-    all_columns = [self._psm_df_index, "run","condition","charge",	"score","intensity","peptide","accessions","is_higher_score_better"]
+    all_columns = [self._psm_df_index, "run", "condition", "charge", "score", "intensity", "peptide", "accessions",
+                   "is_higher_score_better"]
     rows = []
     first_line = 0
     with open(input_file, 'r') as source:
@@ -469,8 +478,7 @@ class OpenmsDataService(ParameterConfiguration):
         line = line.rstrip()
         if first_line != 0:
           a = line.split('\t')
-          a = ["_".join(a)] + a
-          a = a + [True]
+          a = ["_".join(a), *a, True]
           rows.append(a)
         first_line += 1
 
@@ -494,20 +502,6 @@ class OpenmsDataService(ParameterConfiguration):
     :param output_file: output triqler file
     :return:
     """
-    result_df = df_psms[["run","condition","charge","score","intensity","peptide","accessions"]]
+    result_df = df_psms[["run", "condition", "charge", "score", "intensity", "peptide", "accessions"]]
     result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
-    result_df.to_csv(output_file,sep='\t',index=False,header=True)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    result_df.to_csv(output_file, sep='\t', index=False, header=True)
