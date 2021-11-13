@@ -14,8 +14,8 @@ log = logging.getLogger(__name__)
 
 @click.command('peptide-class-fdr', short_help="Command to compute the Peptide class FDR")
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
-@click.option('-in', '--input', help='input file with the peptides and proteins')
-@click.option('-out', '--output', help='idxml from openms with filtered peptides and proteins')
+@click.option('-in', '--input-file', help='input file with the peptides and proteins')
+@click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins')
 @click.option("--file-type", type=click.Choice(['idxml', 'triqler']), default = 'idxml')
 @click.option('--min-peptide-length', help='minimum peptide length')
 @click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold", default=0.01)
@@ -26,7 +26,7 @@ log = logging.getLogger(__name__)
 @click.option("--disable-class-fdr", help="Disable Class-FDR, only compute Global FDR", is_flag = True)
 @click.option("--disable-bayesian-class-fdr", help="Disable Class-FDR bayesian method", is_flag=True)
 @click.pass_context
-def peptide_class_fdr(ctx, config_file, input, output, file_type, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff,
+def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff,
                       peptide_groups_prefix, peptide_classes_prefix, disable_class_fdr, disable_bayesian_class_fdr):
   """
   The peptide_class_fdr allows to filter the peptide psm files (IdXML files) using two different FDR threshold types:
@@ -42,8 +42,8 @@ def peptide_class_fdr(ctx, config_file, input, output, file_type, min_peptide_le
 
   :param ctx:
   :param config_file: Configuration file
-  :param input_idxml: Input idXML containing peptide identifications
-  :param output_idxml: Output idXML containing peptide identifications after filtering
+  :param input_file: Input idXML/Triqler containing peptide identifications
+  :param output_file: Output idXML/Triqler containing peptide identifications after filtering
   :param min_peptide_length: Minimum peptide length
   :param psm_pep_fdr_cutoff:  Global FDR cutoff
   :param psm_pep_class_fdr_cutoff: Peptide class FDR cutoff
@@ -60,7 +60,7 @@ def peptide_class_fdr(ctx, config_file, input, output, file_type, min_peptide_le
   else:
     config_data = read_yaml_from_file(config_file)
 
-  if input is None or output is None:
+  if input_file is None or output_file is None:
     print_help()
 
   pipeline_arguments = {}
@@ -95,4 +95,4 @@ def peptide_class_fdr(ctx, config_file, input, output, file_type, min_peptide_le
     pipeline_arguments[OpenmsDataService.CONFIG_FILE_TYPE] = file_type
 
   openms_analyzer = OpenmsDataService(config_data, pipeline_arguments)
-  openms_analyzer.filter_peptide_class_fdr(input, output)
+  openms_analyzer.filter_peptide_class_fdr(input_file, output_file)
