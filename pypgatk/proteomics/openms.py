@@ -4,7 +4,7 @@ from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
 from pyopenms import IDFilter
 
-from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group, is_peptide_decoy
+from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group
 import numpy.polynomial.polynomial as poly
 import numpy as np
 import pandas as pd
