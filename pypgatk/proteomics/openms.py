@@ -21,7 +21,7 @@ class OpenmsDataService(ParameterConfiguration):
   CONFIG_PEPTIDE_CLASS_FDR_CUTOFF = "psm_pep_class_fdr_cutoff"
   CONFIG_PEPTIDE_GROUP_PREFIX = "peptide_groups_prefix"
   CONFIG_PEPTIDE_DISABLE_CLASS_FDR = "disable_class_fdr"
-  CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR = "disable_bayesian_class_fdr"
+  CONFIG_PEPTIDE_ENABLE_BAYESIAN_FDR = "enable_bayesian_class_fdr"
   CONFIG_FILE_TYPE = "file_type"
 
   def __init__(self, config_file, pipeline_arguments):
@@ -88,14 +88,19 @@ class OpenmsDataService(ParameterConfiguration):
     if self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR in self.get_pipeline_parameters():
       self._peptide_class_fdr_disable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR]
 
-    self._bayesian_class_fdr_disable = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR]
-    if self.CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR in self.get_pipeline_parameters():
-      self._bayesian_class_fdr_disable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR]
+    self._bayesian_class_fdr_enable = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
+      self.CONFIG_PEPTIDE_ENABLE_BAYESIAN_FDR]
+    if self.CONFIG_PEPTIDE_ENABLE_BAYESIAN_FDR in self.get_pipeline_parameters():
+      self._bayesian_class_fdr_enable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_ENABLE_BAYESIAN_FDR]
 
   @staticmethod
   def _filter_by_group(accessions, peptide_classes):
     return is_peptide_group(peptide_classes, accessions)
+
+  @staticmethod
+  def _series_get_qvalue(arr_fdr: list):
+    s = pd.Series(arr_fdr)
+    return s[::-1].cummin()[::-1]
 
   def _compute_class_fdr(self, df_psms: DataFrame):
 
@@ -149,7 +154,11 @@ class OpenmsDataService(ParameterConfiguration):
 
   def _compute_bayesian_class_fdr(self, df_psms: DataFrame):
     """
-    Compute the global FDR and filter peptides
+    Compute the bayesian class FDR from manuscript (https://pubmed.ncbi.nlm.nih.gov/24200586/). From previous discussions
+    with @yanfeng is clear that the Bayesian FDR should be tested for different score systems. The original paper only use the
+    algorithm with MSGF+ and SpecEval score.
+    TODO: This algorithm should be only use for research purpose but not for production. The method to be use in production should be _compute_class_fdr
+
     :param df_psms: list of peptide identifications
     :return:  filtered peptides
     """
@@ -283,22 +292,19 @@ class OpenmsDataService(ParameterConfiguration):
 
     df_psms = self._compute_global_fdr(df_psms)
 
-    self._peptide_class_fdr_disable = False
-    self._bayesian_class_fdr_disable = False
-
     if self._peptide_class_fdr_disable:
       df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
       self.get_logger().info("Number of PSM after Global FDR filtering: {}".format(len(df_psms.index)))
-    elif (self._bayesian_class_fdr_disable):
+    elif (not self._bayesian_class_fdr_enable):
       df_psms = self._compute_class_fdr(df_psms)
       df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (
-        df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
       self.get_logger().info("Number of PSM after Non-bayesian FDR filtering: {}".format(len(df_psms.index)))
     else:
       df_psms = self._compute_bayesian_class_fdr(df_psms)
       df_psms = df_psms[df_psms['q-value'] < self._psm_pep_fdr_cutoff]
       df_psms = df_psms[((df_psms['q-value'] < self._psm_pep_fdr_cutoff) & (
-        df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
+      df_psms['class-specific-q-value'] < self._psm_pep_class_fdr_cutoff))]
       self.get_logger().info("Number of PSM after Bayesian FDR filtering: {}".format(len(df_psms.index)))
 
     if self._file_type == 'idxml':

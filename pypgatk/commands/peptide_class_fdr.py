@@ -24,10 +24,10 @@ log = logging.getLogger(__name__)
               "groups e.g. \"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}\"")
 @click.option('--peptide-classes-prefix', help='Peptides classes e.g. \"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs\"')
 @click.option("--disable-class-fdr", help="Disable Class-FDR, only compute Global FDR", is_flag = True)
-@click.option("--disable-bayesian-class-fdr", help="Disable Class-FDR bayesian method", is_flag=True)
+@click.option("--enable-bayesian-class-fdr", help="Disable Class-FDR bayesian method", is_flag=True)
 @click.pass_context
 def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_peptide_length, psm_pep_fdr_cutoff, psm_pep_class_fdr_cutoff,
-                      peptide_groups_prefix, peptide_classes_prefix, disable_class_fdr, disable_bayesian_class_fdr):
+                      peptide_groups_prefix, peptide_classes_prefix, disable_class_fdr, enable_bayesian_class_fdr):
   """
   The peptide_class_fdr allows to filter the peptide psm files (IdXML files) using two different FDR threshold types:
    - Global FDR
@@ -88,8 +88,8 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   if disable_class_fdr is not None:
     pipeline_arguments[OpenmsDataService.CONFIG_PEPTIDE_DISABLE_CLASS_FDR] = disable_class_fdr
 
-  if disable_bayesian_class_fdr is not None:
-    pipeline_arguments[OpenmsDataService.CONFIG_PEPTIDE_DISABLE_BAYESIAN_FDR] = disable_bayesian_class_fdr
+  if enable_bayesian_class_fdr is not None:
+    pipeline_arguments[OpenmsDataService.CONFIG_PEPTIDE_ENABLE_BAYESIAN_FDR] = enable_bayesian_class_fdr
 
   if file_type is not None:
     pipeline_arguments[OpenmsDataService.CONFIG_FILE_TYPE] = file_type
