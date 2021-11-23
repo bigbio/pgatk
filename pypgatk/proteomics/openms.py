@@ -285,8 +285,8 @@ class OpenmsDataService(ParameterConfiguration):
     df_psms = None
     if self._file_type == 'idxml':
       df_psms = self._psm_idxml_todf(input_idxml)
-    elif (self._file_type == "triqler"):
-      df_psms = self._psms_triqler_todf(input_idxml)
+    # elif (self._file_type == "triqler"):
+    #   df_psms = self._psms_triqler_todf(input_idxml)
 
     self.get_logger().info("Number of PSM in the file {} : {}".format(input_idxml, len(df_psms.index)))
 
