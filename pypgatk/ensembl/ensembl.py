@@ -1,9 +1,9 @@
 import os
 import gffutils
-import vcf
 from Bio import SeqIO
 from Bio.Seq import Seq
 from pybedtools import BedTool
+import pandas as pd
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
@@ -288,7 +288,7 @@ class EnsemblDataService(ParameterConfiguration):
     return db
 
   @staticmethod
-  def get_features(db, feature_id, biotype_str, feature_types=None):
+  def get_features(db, feature_id, feature_types=None):
     """
     Get chr, genomic positions, strand and biotype for feature_id
     also genomic positions for all its elements (exons/cds&start_codon)
@@ -424,7 +424,6 @@ class EnsemblDataService(ParameterConfiguration):
                                                self._include_biotypes == ['all'])):
           ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs,
                                        self._num_orfs_complement, to_stop=False)
-          print(self._header_var_prefix)
           self.write_output(seq_id=self._header_var_prefix + record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
 
         # also allow for direct translation of the CDS, when the cds info exists in the fasta header skip_including_all_cds is false
@@ -497,6 +496,39 @@ class EnsemblDataService(ParameterConfiguration):
 
     return annotated_vcf + '_annotated.vcf'
 
+  @staticmethod
+  def vcf_from_file(vcf_file): 
+    '''
+    Read a VCF file and return a dataframe for the records
+    as well as a list for the metadata
+    '''
+    
+    HEADERS = {
+    'CHROM': str,
+    'POS': int,
+    'ID': str,
+    'REF': str,
+    'ALT': str,
+    'QUAL': str,
+    'FILTER': str,
+    'INFO': str,
+    }
+    
+    metadata = []
+    data = []
+    with open(vcf_file, 'r') as vcf:
+      line = vcf.readline().strip()
+      while line:
+        if line.startswith('#'):
+          metadata.append(line)
+        else:
+          data.append(line.split('\t')[0:8])
+        line = vcf.readline().strip()
+
+    vcf_df = pd.DataFrame(data, columns=HEADERS)
+
+    return metadata, vcf_df
+    
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
     Generate proteins for variants by modifying sequences of affected transcripts.
@@ -515,101 +547,108 @@ class EnsemblDataService(ParameterConfiguration):
     transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
     # handle cases where the transcript has version in the GTF but not in the VCF
     transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
-    
-    vcf_reader = vcf.Reader(open(vcf_file, 'r'))
-    
-    transcript_index, consequence_index = None, None
+
+    transcript_index, consequence_index, biotype_index = None, None, None
     if self._annotation_field_name:
+      metadata, vcf_reader = self.vcf_from_file(vcf_file)
+      annotation_cols = []
+      try:
+        annotation_cols = [x for x in metadata if x.startswith('##INFO=<ID={}'.format(self._annotation_field_name))][0].upper().split('FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
+      except IndexError:
+        pass
+
       'try to extract index of transcript ID and consequence from the VCF metadata in the header'
       try:
-        features_metadata = vcf_reader.infos[self._annotation_field_name].desc.upper().split('FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
-        transcript_index = features_metadata.index(self._transcript_str.upper())
-        consequence_index = features_metadata.index(self._consequence_str.upper())
-      except KeyError:
-        msg = "Error: unable to extract annotation fields using {} as annotation field name from {}".format(self._annotation_field_name, vcf_file)
+        transcript_index = annotation_cols.index(self._transcript_str.upper())
+      except ValueError:
+        msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(self._transcript_str, self._consequence_str, annotation_cols, vcf_file)
         self.get_logger().debug(msg)
-      except IndexError:
-        msg = "Error: Unable to find FEATURE or CONSEQUENCE in metadata header {} of VCF file: {} ".format(features_metadata, vcf_file)
+
+      try:
+        consequence_index = annotation_cols.index(self._consequence_str.upper())
+        biotype_index = annotation_cols.index(self._biotype_str.upper())
+      except ValueError:
+        msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(self._transcript_str, self._consequence_str, annotation_cols, vcf_file)
         self.get_logger().debug(msg)
+        
     else:
       'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'    
       vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
-      vcf_reader = vcf.Reader(open(vcf_file, 'r'))
+      metadata, vcf_reader = self.vcf_from_file(vcf_file)
       self._annotation_field_name = 'transcriptOverlaps'
       transcript_index = 0
-      consequence_index = None
 
     invalid_records = {'# variants with invalid record': 0,
                        '# variants not passing Filter': 0,
                        '# variants not passing AF threshold': 0,
-                       '# transcript IDs from VCF that are not found in the given FASTA file': 0,
+                       '# feature IDs from VCF that are not found in the given FASTA file': 0,
                        '# variants successfully translated': 0}
     
     with open(self._proteindb_output, 'w') as prots_fn:
-      try:
-        for record in vcf_reader:
-          trans = False
-          if [x for x in str(record.REF) if x not in 'ACGT']:
-            msg = "Invalid VCF record, skipping: {}".format(record)
-            invalid_records['# variants with invalid record']+=1
-            self.get_logger().debug(msg)
+      for idx, record in vcf_reader.iterrows():
+        trans = False
+        if [x for x in str(record.REF) if x not in 'ACGT']:
+          msg = "Invalid VCF record, skipping: {}".format(record)
+          invalid_records['# variants with invalid record']+=1
+          self.get_logger().debug(msg)
+          continue
+
+        alts = []
+        for alt in record.ALT.split(','):
+          if alt is None:
             continue
-            
-          alts = []
-          for alt in record.ALT:
-            if alt is None:
-              continue
-            elif [x for x in str(alt) if x not in 'ACGT']:
-              'check if all alt alleles are nucleotides'
-              continue
-            alts.append(alt)
-          if not alts:
-            msg = "Invalid VCF record, skipping: {}".format(record)
-            invalid_records['# variants with invalid record']+=1
-            self.get_logger().debug(msg)
+          elif [x for x in str(alt) if x not in 'ACGT']:
+            'check if all alt alleles are nucleotides'
             continue
+          alts.append(alt)
+        if not alts:
+          msg = "Invalid VCF record, skipping: {}".format(record)
+          invalid_records['# variants with invalid record']+=1
+          self.get_logger().debug(msg)
+          continue
 
-          if not self._ignore_filters:
-            if record.FILTER:  # if not PASS: None and empty means PASS
-              if not (set(record.FILTER[0].split(',')) <= set(self._accepted_filters)):
-                invalid_records['# variants not passing Filter']+=1
-                continue
-
-          # only process variants above a given allele frequency threshold if the AF string is not empty
-          if self._af_field:
-            # get AF from the INFO field
-            try:
-              af = float(record.INFO[self._af_field])
-            except TypeError:
-              af = float(record.INFO[self._af_field][0])
-            except KeyError:
-              invalid_records['# variants with invalid record']+=1
+        self._accepted_filters = [x.upper() for x in self._accepted_filters]
+        if not self._ignore_filters and self._accepted_filters!=['ALL']:
+          if record.FILTER and record.FILTER!='.' and record.FILTER!='NA' and record.FILTER!='':  # if not PASS: None and empty means PASS
+            filters = set(record.FILTER.upper().split(','))
+            if ';' in record.FILTER and len(filters)<=1:
+              filters = set(record.FILTER.upper().split(';'))
+            if not filters <= set(self._accepted_filters):
+              invalid_records['# variants not passing Filter']+=1
               continue
-
-            # check if the AF passed the threshold
-            if af < self._af_threshold:
-              invalid_records['# variants not passing AF threshold']+=1
-              continue
-          
-          trans_table = self._translation_table
-          if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
-            trans_table = self._mito_translation_table
-
-          consequences = []
-          processed_transcript_allele = []
+        # only process variants above a given allele frequency threshold if the AF string is not empty
+        if self._af_field:
+          # get AF from the INFO field
           try:
-            transcript_records = record.INFO[self._annotation_field_name]
-          except KeyError:  # no overlapping feature was found
+            af = float([x.split('=')[1] for x in record.INFO.split(';') if x.startswith(self._af_field)][0])
+          except (ValueError, IndexError):
             invalid_records['# variants with invalid record']+=1
-            msg = "skipped record {}, no annotation feature was found".format(record)
-            self.get_logger().debug(msg)
             continue
 
-          for transcript_record in transcript_records:
-            transcript_info = transcript_record.split('|')
+          # check if the AF passed the threshold
+          if af < self._af_threshold:
+            invalid_records['# variants not passing AF threshold']+=1
+            continue
+
+        trans_table = self._translation_table
+        if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
+          trans_table = self._mito_translation_table
+
+        processed_transcript_allele = []
+        transcript_records = []
+        try:
+          transcript_records = [x.split('=')[1] for x in record.INFO.split(';') if x.startswith(self._annotation_field_name)][0]
+        except IndexError:  # no overlapping feature was found
+          invalid_records['# variants with invalid record']+=1
+          msg = "skipped record {}, no annotation feature was found".format(record)
+          self.get_logger().debug(msg)
+          continue
+
+        for transcript_record in transcript_records.split(','):
+          transcript_info = transcript_record.split('|')
+          if consequence_index:
             try:
               consequence = transcript_info[consequence_index]
-              consequences.append(consequence)
             except IndexError:
               invalid_records['# variants with invalid record']+=1
               msg = "Give a valid index for the consequence in the INFO field for: {}".format(transcript_record)
@@ -617,85 +656,101 @@ class EnsemblDataService(ParameterConfiguration):
               continue
             except TypeError:
               pass
-            
+          if biotype_index:
             try:
-              transcript_id = transcript_info[transcript_index]
+              biotype = transcript_info[biotype_index]
             except IndexError:
               invalid_records['# variants with invalid record']+=1
-              msg = "Give a valid index for the Transcript IDs in the INFO field for: {}".format(transcript_record)
+              msg = "Give a valid index for the biotype in the INFO field for: {}".format(transcript_record)
               self.get_logger().debug(msg)
               continue
-            if transcript_id == "":
-              continue
-            
-            try:
-              transcript_id_v = transcript_id_mapping[transcript_id]
-            except KeyError:
-              transcript_id_v = transcript_id
+            except TypeError:
+              pass
 
+          try:
+            transcript_id = transcript_info[transcript_index]
+          except IndexError:
+            invalid_records['# variants with invalid record']+=1
+            msg = "Give a valid index for the Transcript IDs in the INFO field for: {}".format(transcript_record)
+            self.get_logger().debug(msg)
+            continue
+          if transcript_id == "":
+            continue
+
+          try:
+            transcript_id_v = transcript_id_mapping[transcript_id]
+          except KeyError:
+            transcript_id_v = transcript_id
+
+          try:
+            row = transcripts_dict[transcript_id_v]
+            ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
+            desc = str(row.description)
+          except KeyError:
+            invalid_records['# feature IDs from VCF that are not found in the given FASTA file']+=1
+            msg = "Feature {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
+            self.get_logger().debug(msg)
+            continue
+
+          feature_types = ['exon']
+          # check if cds info exists in the fasta header otherwise translate all exons
+          cds_info = []
+          num_orfs = 3
+          if 'CDS=' in desc:
             try:
-              row = transcripts_dict[transcript_id_v]
-              ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
-              desc = str(row.description)
-            except KeyError:
-              invalid_records['# transcript IDs from VCF that are not found in the given FASTA file']+=1
-              msg = "Transcript {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
+              cds_info = [int(x) for x in desc.split(' ')[1].split('=')[1].split('-')]
+              feature_types = ['CDS', 'stop_codon']
+              num_orfs = 1
+            except (ValueError, IndexError):
+              msg = "Could not extra cds position from fasta header for: {}".format(desc)
               self.get_logger().debug(msg)
-              continue
 
-            feature_types = ['exon']
-            # check if cds info exists in the fasta header otherwise translate all exons
-            cds_info = []
-            num_orfs = 3
-            if 'CDS=' in desc:
-              try:
-                cds_info = [int(x) for x in desc.split(' ')[1].split('=')[1].split('-')]
-                feature_types = ['CDS', 'stop_codon']
-                num_orfs = 1
-              except (ValueError, IndexError):
-                msg = "Could not extra cds position from fasta header for: {}".format(desc)
-                self.get_logger().debug(msg)
-
-            chrom, strand, features_info = self.get_features(db,
+          chrom, strand, features_info = self.get_features(db,
                                                              transcript_id_v,
-                                                             self._biotype_str,
                                                              feature_types)
-            if chrom is None:  # the record info was not found
+          if chrom is None:  # the record info was not found
+            continue
+          # skip transcripts with unwanted consequences
+          if consequence_index:
+            if (consequence in self._exclude_consequences or
+              (consequence not in self._include_consequences and
+               self._include_consequences != ['all'])):
               continue
-            # skip transcripts with unwanted consequences
-            if consequence_index is not None:
-              if (consequence in self._exclude_consequences or
-                (consequence not in self._include_consequences and
-                 self._include_consequences != ['all'])):
-                continue
 
-            for alt in alts:
-              if transcript_id + str(record.REF) + str(
-                alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
-                continue
-              processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
+          # skip transcripts with unwanted biotypes
+          if biotype_index:
+            if (biotype in self._exclude_biotypes or
+              (biotype not in self._include_biotypes and
+               self._include_biotypes != ['all'])):
+              continue
 
-              # for non-CDSs, only consider the exon that actually overlaps the variant
-              try:
-                overlap_flag = self.check_overlap(record.POS, record.POS + len(alt), features_info)
-              except TypeError:
-                invalid_records['# variants with invalid record']+=1
-                msg = "Wrong VCF record in {}".format(record)
-                self.get_logger().debug(msg)
-                continue
+          for alt in alts:
+            if transcript_id + str(record.REF) + str(
+              alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+              continue
+            processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
 
-              if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
-                overlap_flag):
-                coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
+            # for non-CDSs, only consider the exon that actually overlaps the variant
+            try:
+              overlap_flag = self.check_overlap(int(record.POS), int(record.POS) + len(alt), features_info)
+            except TypeError:
+              invalid_records['# variants with invalid record']+=1
+              msg = "Wrong VCF record in {}".format(record)
+              self.get_logger().debug(msg)
+              continue
+
+            if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
+              overlap_flag):
+              coding_ref_seq, coding_alt_seq = self.get_altseq(ref_seq, Seq(str(record.REF)),
                                                                  Seq(str(alt)), int(record.POS), strand,
                                                                  features_info, cds_info)
-                if coding_alt_seq != "":
-                  ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
-                                                         num_orfs)
-                  record_id = ""
-                  if record.ID:
-                    record_id = '_' + str(record.ID)
-                  self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
+              if coding_alt_seq != "":
+                ref_orfs, alt_orfs = self.get_orfs_vcf(coding_ref_seq, coding_alt_seq, trans_table,
+                                                       num_orfs)
+                record_id = ""
+                if record.ID:
+                  record_id = '_' + str(record.ID)
+                self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
                                                      '.'.join([str(record.CHROM), str(record.POS),
                                                                str(record.REF), str(alt)]),
                                                      transcript_id_v]),
@@ -703,25 +758,19 @@ class EnsemblDataService(ParameterConfiguration):
                                     seqs=alt_orfs,
                                     prots_fn=prots_fn,
                                     seqs_filter=ref_orfs)
-                  trans = True
+                trans = True
 
-                  if self._report_reference_seq:
-                    self.write_output(seq_id=transcript_id_v,
+                if self._report_reference_seq:
+                  self.write_output(seq_id=transcript_id_v,
                                       desc='',
                                       seqs=ref_orfs,
                                       prots_fn=prots_fn)
-          if trans:
-            invalid_records['# variants successfully translated']+=1
+        if trans:
+          invalid_records['# variants successfully translated']+=1
 
-      except (ValueError, KeyError) as err:
-        msg = "Error reading value record in VCF - {}. Message {}".format(vcf_file, err)
-        print(msg)
-        self.get_logger().debug(msg)
-        raise
-    
     msg = "Translation summary:\n {}".format('\n'.join([x+":"+str(invalid_records[x]) for x in invalid_records.keys()]))
     self.get_logger().debug(msg)
-                
+
     print(msg)
     return self._proteindb_output
 
