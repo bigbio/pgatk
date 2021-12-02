@@ -2,7 +2,6 @@ biopython==1.73
 Click==7.0
 gffutils==0.10.1
 numpy
-PyVCF==0.6.8
 PyYAML==5.1.2
 requests==2.21.0
 simplejson==3.16.0
