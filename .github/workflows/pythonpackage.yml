@@ -27,6 +27,7 @@ jobs:
       uses: conda-incubator/setup-miniconda@v2.1.1
     - name: Install dependencies
       run: |
+        conda install --channel conda-forge --channel bioconda bedtools htslib
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
