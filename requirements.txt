@@ -7,6 +7,6 @@ requests==2.21.0
 simplejson==3.16.0
 ratelimit==2.2.1
 pyteomics==4.4.2
-pybedtools==0.8.2
+pybedtools
 pandas
 

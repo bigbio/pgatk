@@ -29,7 +29,7 @@ setup(name='pypgatk',
         'simplejson==3.16.0',
         'ratelimit==2.2.1',
         'pyteomics==4.4.2',
-        'pybedtools==0.8.2',
+        'pybedtools',
         'pyopenms'
       ],
       python_requires=">=3.6",
