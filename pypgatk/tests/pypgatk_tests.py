@@ -54,9 +54,10 @@ def vcf_to_proteindb_notannotated():
                           '--var_prefix', 'varsample',
                           '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
                           '--annotation_field_name', ""])
-  assert result.exit_code == 0
   if result.exit_code != 0:
     print(result)
+  assert result.exit_code == 0
+
 
 
 def vcf_gnomad_to_proteindb():
