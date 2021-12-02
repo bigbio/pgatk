@@ -11,9 +11,9 @@ ensembl_translation:
     exclude_biotypes: ''
     exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'
     skip_including_all_cds: False
-    include_biotypes: 'protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC'
+    include_biotypes: 'protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'
     include_consequences: 'all'
-    biotype_str: 'feature_biotype'
+    biotype_str: biotype
     transcript_str: 'FEATURE'
     consequence_str: 'CONSEQUENCE'
     num_orfs: 3
@@ -21,7 +21,7 @@ ensembl_translation:
     expression_str: ""
     expression_thresh: 5.0
     ignore_filters: False
-    accepted_filters: ''
+    accepted_filters: 'PASS'
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
