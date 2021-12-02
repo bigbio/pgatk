@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 @click.option('-in', '--input-file', help='input file with the peptides and proteins')
 @click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins')
 @click.option("--file-type", default = 'idxml')
-@click.option('--min-peptide-length', help='minimum peptide length')
+@click.option('--min-peptidopenmspeakpickere-length', help='minimum peptide length')
 @click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold", default=0.01)
 @click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold", default=0.01)
 @click.option('--peptide-groups-prefix', help="Peptide class "
