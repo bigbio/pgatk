@@ -30,6 +30,16 @@ log = logging.getLogger(__name__)
 @click.option('--af_threshold', default=0.01, help='Minium AF threshold for considering common variants')
 @click.option('--transcript_str', default='FEATURE', type=str,
               help='String that is used for transcript ID in the VCF header INFO field')
+
+@click.option('--biotype_str', default='BIOTYPE', type=str,
+              help='String that is used for biotype in the VCF header INFO field')
+@click.option('--exclude_biotypes',
+              default='',
+              help="Excluded Biotypes", show_default=True)
+@click.option('--include_biotypes', 
+              default='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA', 
+              help="included_biotypes, default all")
+
 @click.option('--consequence_str', default='CONSEQUENCE', type=str,
               help='String that is used for consequence in the VCF header INFO field')
 @click.option('--exclude_consequences',
@@ -42,13 +52,14 @@ log = logging.getLogger(__name__)
 @click.option('--ignore_filters',
               help="enabling this option causes or variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER column is PASS, None, .) or if the filters are subset of the accepted filters. (default is False)",
               is_flag=True)
-@click.option('--accepted_filters', default='', help="Accepted filters for variant parsing")
+@click.option('--accepted_filters', default='PASS', help="Accepted filters for variant parsing")
 @click.pass_context
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
-                     af_field, af_threshold, transcript_str, consequence_str,
-                     exclude_consequences, skip_including_all_cds, include_consequences,
+                     af_field, af_threshold, transcript_str, biotype_str, exclude_biotypes, 
+                     include_biotypes, consequence_str, exclude_consequences, 
+                     skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
 
   if config_file is None:
@@ -69,6 +80,9 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                         EnsemblDataService.ANNOTATION_FIELD_NAME: annotation_field_name,
                         EnsemblDataService.AF_FIELD: af_field, EnsemblDataService.AF_THRESHOLD: af_threshold,
                         EnsemblDataService.TRANSCRIPT_STR: transcript_str,
+                        EnsemblDataService.BIOTYPE_STR: biotype_str,
+                        EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
+                        EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
                         EnsemblDataService.CONSEQUENCE_STR: consequence_str,
                         EnsemblDataService.EXCLUDE_CONSEQUENCES: exclude_consequences,
                         EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,

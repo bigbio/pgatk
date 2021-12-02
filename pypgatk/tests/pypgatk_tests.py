@@ -34,7 +34,9 @@ def vcf_to_proteindb():
                           '--var_prefix', 'ensvar',
                           '--af_field', 'MAF',
                           '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
-                          '--annotation_field_name', 'CSQ'])
+                          '--annotation_field_name', 'CSQ',
+                          '--biotype_str', 'feature_type',
+                          '--include_biotypes', 'mRNA,ncRNA'])
   assert result.exit_code == 0
 
 
@@ -51,7 +53,7 @@ def vcf_to_proteindb_notannotated():
                           '--gene_annotations_gtf', 'testdata/test.gtf',
                           '--var_prefix', 'varsample',
                           '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
-                          '--annotation_field_name', "''"])
+                          '--annotation_field_name', ""])
   assert result.exit_code == 0
 
 
@@ -68,8 +70,9 @@ def vcf_gnomad_to_proteindb():
                           '--gene_annotations_gtf', 'testdata/test_gencode.gtf',
                           '--output_proteindb', 'testdata/proteindb_from_gnomad_VCF.fa',
                           '--af_field', 'controls_AF',
+                          '--af_threshold', '0.001',
                           '--var_prefix', 'gnomvar',
-                          '--annotation_field_name', 'vep'])
+                          '--annotation_field_name', 'vep',])
   assert result.exit_code == 0
 
 
