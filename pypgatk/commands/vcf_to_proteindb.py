@@ -1,16 +1,17 @@
-import os
-
 import click
-
+import logging
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
 
-this_dir, this_filename = os.path.split(__file__)
+import pkgutil
 
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
+
+log = logging.getLogger(__name__)
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants VCF files")
-@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
-              default=this_dir + '/../config/ensembl_config.yaml')
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
 @click.option('-f', '--input_fasta', help='Path to the transcript sequence')
 @click.option('-v', '--vcf', help='Path to the VCF file')
 @click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
@@ -60,6 +61,14 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      include_biotypes, consequence_str, exclude_consequences, 
                      skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
+
+  if config_file is None:
+    config_data = read_yaml_from_text(default_config_text)
+    msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
+    log.info(msg)
+  else:
+    config_data = read_yaml_from_file(config_file)
+
   if input_fasta is None or vcf is None or gene_annotations_gtf is None:
     print_help()
 
@@ -81,5 +90,5 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                         EnsemblDataService.IGNORE_FILTERS: ignore_filters,
                         EnsemblDataService.ACCEPTED_FILTERS: accepted_filters}
 
-  ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
+  ensembl_data_service = EnsemblDataService(config_data, pipeline_arguments)
   ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf)

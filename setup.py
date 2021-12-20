@@ -9,7 +9,7 @@ def readme():
 
 
 setup(name='pypgatk',
-      version='0.0.19',
+      version='0.0.20',
       description='Python tools for proteogenomics',
       url='http://github.com/bigbio/py-pgatk',
       long_description=readme(),
@@ -22,20 +22,21 @@ setup(name='pypgatk',
         'biopython==1.73',
         'Click==7.0',
         'gffutils==0.10.1',
-        'numpy==1.16.3',
-        'PyVCF==0.6.8',
+        'numpy',
+        'pandas',
         'PyYAML==5.1.2',
         'requests==2.21.0',
         'simplejson==3.16.0',
         'ratelimit==2.2.1',
         'pyteomics==4.4.2',
-        'pybedtools==0.8.2'
+        'pybedtools',
+        'pyopenms'
       ],
+      python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
       packages=find_packages(),
       entry_points={
         'console_scripts': [
-          'pypgatk_cli = pypgatk.pypgatk_cli:main'
+          'pypgatk = pypgatk.pypgatk_cli:main'
         ]},
-      package_data={'pypgatk': ['config/*.yaml', 'config/*.json']},
-      zip_safe=False)
+      package_data={'pypgatk': ['config/*.yaml', 'config/*.json']}, zip_safe=False)

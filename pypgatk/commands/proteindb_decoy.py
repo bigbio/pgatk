@@ -1,19 +1,18 @@
 import logging
-import os
-
 import click
 
 from pypgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService
 from pypgatk.proteomics.models import PYGPATK_ENZYMES
-from pypgatk.toolbox.exceptions import AppConfigException
+import pkgutil
 
-this_dir, this_filename = os.path.split(__file__)
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+default_config_text = pkgutil.get_data(__name__, "../config/protein_decoy.yaml").decode()
 
+log = logging.getLogger(__name__)
 
 @click.command('generate-decoy',
                short_help='Create decoy protein sequences using multiple methods DecoyPYrat, Reverse/Shuffled Proteins.')
-@click.option('-c', '--config_file', help='Configuration file for the protein database decoy generation',
-              default=this_dir + '/../config/protein_decoy.yaml')
+@click.option('-c', '--config_file', help='Configuration file for the protein database decoy generation')
 @click.option('-out', '--output_database', help='Output file for decoy database', default="protein-decoy.fa")
 @click.option('-in', '--input_database',
               help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
@@ -57,10 +56,13 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
                       max_missed_cleavages: int, min_peptide_length: int, max_peptide_length: int,
                       max_iterations: int, do_not_shuffle: bool, do_not_switch: bool, temp_file: str,
                       no_isobaric: bool, keep_target_hits: bool, memory_save: bool):
+
   if config_file is None:
-    msg = "The config file for the pipeline is missing, please provide one "
-    logging.error(msg)
-    raise AppConfigException(msg)
+    config_data = read_yaml_from_text(default_config_text)
+    msg = "The default configuration file is used: {}".format("protein_decoy.yaml")
+    log.info(msg)
+  else:
+    config_data = read_yaml_from_file(config_file)
 
   pipeline_arguments = {}
 
@@ -115,6 +117,6 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
   if memory_save is not None:
     pipeline_arguments[ProteinDBDecoyService.CONFIG_MEMORY_SAVE] = memory_save
 
-  proteindb_decoy = ProteinDBDecoyService(config_file, pipeline_arguments)
+  proteindb_decoy = ProteinDBDecoyService(config_data, pipeline_arguments)
   proteindb_decoy.decoy_database()
   proteindb_decoy.print_target_decoy_composition()

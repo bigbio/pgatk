@@ -497,12 +497,12 @@ class EnsemblDataService(ParameterConfiguration):
     return annotated_vcf + '_annotated.vcf'
 
   @staticmethod
-  def vcf_from_file(vcf_file): 
+  def vcf_from_file(vcf_file):
     '''
     Read a VCF file and return a dataframe for the records
     as well as a list for the metadata
     '''
-    
+
     HEADERS = {
     'CHROM': str,
     'POS': int,
@@ -513,7 +513,7 @@ class EnsemblDataService(ParameterConfiguration):
     'FILTER': str,
     'INFO': str,
     }
-    
+
     metadata = []
     data = []
     with open(vcf_file, 'r') as vcf:
@@ -528,7 +528,7 @@ class EnsemblDataService(ParameterConfiguration):
     vcf_df = pd.DataFrame(data, columns=HEADERS)
 
     return metadata, vcf_df
-    
+
   def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
     """
     Generate proteins for variants by modifying sequences of affected transcripts.
@@ -570,9 +570,9 @@ class EnsemblDataService(ParameterConfiguration):
       except ValueError:
         msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(self._transcript_str, self._consequence_str, annotation_cols, vcf_file)
         self.get_logger().debug(msg)
-        
+
     else:
-      'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'    
+      'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'
       vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
       metadata, vcf_reader = self.vcf_from_file(vcf_file)
       self._annotation_field_name = 'transcriptOverlaps'
@@ -583,7 +583,7 @@ class EnsemblDataService(ParameterConfiguration):
                        '# variants not passing AF threshold': 0,
                        '# feature IDs from VCF that are not found in the given FASTA file': 0,
                        '# variants successfully translated': 0}
-    
+
     with open(self._proteindb_output, 'w') as prots_fn:
       for idx, record in vcf_reader.iterrows():
         trans = False

@@ -2,12 +2,29 @@ from click.testing import CliRunner
 
 from pypgatk.pypgatk_cli import cli
 
+def peptide_class_group_fdr():
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['peptide-class-fdr',
+                          '-in', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus.idxml',
+                          '-out', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
+                          '--peptide-groups-prefix', '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
+  assert result.exit_code == 0
+
+def peptide_classes_fdr():
+  runner = CliRunner()
+  result = runner.invoke(cli,
+                         ['peptide-class-fdr',
+                          '-in', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus.idxml',
+                          '-out', 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
+                          '--peptide-classes-prefix', '"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"'])
+  assert result.exit_code == 0
 
 def vcf_to_proteindb():
   """
-    Test the default behaviour of the vcf-to-proteindb tool
-    :return:
-    """
+  Test the default behaviour of the vcf-to-proteindb tool
+  :return:
+  """
   runner = CliRunner()
   result = runner.invoke(cli,
                          ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
@@ -37,7 +54,10 @@ def vcf_to_proteindb_notannotated():
                           '--var_prefix', 'varsample',
                           '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
                           '--annotation_field_name', ""])
+  if result.exit_code != 0:
+    print(result)
   assert result.exit_code == 0
+
 
 
 def vcf_gnomad_to_proteindb():

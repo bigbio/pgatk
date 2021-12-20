@@ -20,7 +20,6 @@ from pypgatk.toolbox.exceptions import ToolBoxException
 
 REMAINING_DOWNLOAD_TRIES = 4
 
-
 class ParameterConfiguration:
   """
     This class is a helper class for those submodules having to manage configuration files themselves, that are specific
@@ -37,7 +36,7 @@ class ParameterConfiguration:
   _CONFIG_LOGGER_FORMATTER = 'formatters'
   _CONFIG_LOGGER_LEVEL = 'loglevel'
 
-  def __init__(self, root_config_name, yaml_configuration_file, pipeline_parameters):
+  def __init__(self, root_config_name, yaml_configuration, pipeline_parameters):
     """
         This function creates a parameter structure from a yaml config file and the pipeline paramters provdided
         in the commandline
@@ -47,9 +46,7 @@ class ParameterConfiguration:
 
     self._ROOT_CONFIG_NAME = root_config_name
 
-    self._configuration_file = yaml_configuration_file
-    with open(yaml_configuration_file, 'r') as f:
-      self._default_params = yaml.load(f.read(), Loader=yaml.FullLoader)
+    self._default_params = yaml_configuration
     self._pipeline_parameters = pipeline_parameters
 
     # Prepare Logging subsystem
@@ -114,7 +111,6 @@ class ParameterConfiguration:
     lg.setLevel(self._log_level)
     return lg
 
-
 def read_json(json_file="json_file_not_specified.json"):
   """
     Reads a json file and it returns its object representation, no extra checks
@@ -126,6 +122,24 @@ def read_json(json_file="json_file_not_specified.json"):
   with open(json_file) as jf:
     return json.load(jf)
 
+def read_yaml_from_file(yaml_file):
+  """
+  This function allows to read a yaml file with the configuration
+  :param yaml_file: yaml file.
+  :return: resturn the yaml data.
+  """
+  data = None
+  with open(yaml_file, 'r') as f:
+    data = yaml.safe_load(f.read())
+  return data
+
+def read_yaml_from_text(yaml_text):
+  """
+  Read the content of the yaml text into a data object
+  :param yaml_text: yaml text
+  :return:
+  """
+  return yaml.safe_load(yaml_text)
 
 def check_create_folders(folders: str):
   """
@@ -143,10 +157,8 @@ def check_create_folders(folders: str):
       if not os.path.isdir(folder):
         raise ToolBoxException("'{}' is not a folder".format(folder))
 
-
 def clear_cache():
   request.urlcleanup()
-
 
 def download_file(file_url: str, file_name: str, log: logging) -> str:
   """
@@ -206,7 +218,6 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
   #     print("Failed to download the file: ", file_url)
   #     return None
 
-
 def check_create_folders_overwrite(folders):
   """
     Given a list of folders, this method will create them, overwriting them in case they exist
@@ -231,7 +242,6 @@ def check_create_folders_overwrite(folders):
       pass
   check_create_folders(folders)
 
-
 def create_latest_symlink(destination_path):
   """
     Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
@@ -242,7 +252,6 @@ def create_latest_symlink(destination_path):
     """
   symlink_path = os.path.join(os.path.dirname(destination_path), 'latest')
   os.symlink(destination_path, symlink_path)
-
 
 def create_latest_symlink_overwrite(destination_path):
   """
@@ -257,7 +266,6 @@ def create_latest_symlink_overwrite(destination_path):
   if os.path.islink(symlink_path):
     os.unlink(symlink_path)
   os.symlink(destination_path, symlink_path)
-
 
 def gunzip_files(files):
   """
@@ -304,6 +312,38 @@ def gunzip_files(files):
       files_with_error.append((file, "it IS NOT A FILE"))
   return files_with_error
 
+def parse_peptide_groups(peptide_groups_prefix):
+  peptide_groups = {}
+  for group in peptide_groups_prefix.split(";"):
+    lt = group.split(":")
+    class_group = lt[0].replace("{","")
+    classes = [x.replace("[","").replace("]","") for x in lt[1].split(",")]
+    peptide_groups[class_group] = classes
+  return peptide_groups
+
+def parse_peptide_classes(peptide_classes_prefix):
+  peptide_groups = {}
+  for class_peptide in peptide_classes_prefix.split(","):
+    peptide_groups[class_peptide] = [class_peptide]
+  return peptide_groups
+
+def is_peptide_group(peptide_group_members, accessions):
+  """
+  Given a group of classes and a list of accessions of a peptide. Returns True if all accessions match to exactly one class in the group.
+  :param peptide_group_members: all protein classes
+  :param accessions:  all protein accessions associated with the peptide.
+  :return: True if all protein accessions belows to one of these peptide_group_members.
+  """
+
+  accession_group = 0
+  for accession in accessions:
+    for class_peptide in peptide_group_members:
+      if class_peptide in accession:
+        accession_group += 1
+  return len(accessions) == accession_group
+
+def is_peptide_decoy(accessions, prefix):
+  return  any(prefix in s for s in accessions)
 
 if __name__ == '__main__':
   print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")
