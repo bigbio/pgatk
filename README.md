@@ -106,5 +106,5 @@ The library provides multiple commands to download, translate and generate prote
 [https://pgatk.readthedocs.io/en/latest/pypgatk.html](https://pgatk.readthedocs.io/en/latest/pypgatk.html)
 
 ## Cite as
-Yasset Perez-Riverol, & Husen M. Umer. (2021, February 3). bigbio/pypgatk: Pre-release v0.0.9 (Version v0.0.9). Zenodo. [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.4499011.svg)](https://doi.org/10.5281/zenodo.4499011)
+Husen M Umer, Enrique Audain, Yafeng Zhu, Julianus Pfeuffer, Timo Sachsenberg, Janne Lehtiö, Rui M Branca, Yasset Perez-Riverol, Generation of ENSEMBL-based proteogenomics databases boosts the identification of non-canonical peptides, Bioinformatics, Volume 38, Issue 5, 1 March 2022, Pages 1470–1472, https://doi.org/10.1093/bioinformatics/btab838
 
