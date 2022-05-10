@@ -26,6 +26,7 @@ class EnsemblDataService(ParameterConfiguration):
   INCLUDE_BIOTYPES = "include_biotypes"
   INCLUDE_CONSEQUENCES = "include_consequences"
   BIOTYPE_STR = "biotype_str"
+  TRANSCRIPT_DESCRIPTION_SEP = "transcript_description_sep"
   SKIP_INCLUDING_ALL_CDSS = "skip_including_all_CDSs"
   CONFIG_KEY_DATA = "ensembl_translation"
   NUM_ORFS = "num_orfs"
@@ -123,6 +124,11 @@ class EnsemblDataService(ParameterConfiguration):
       self.BIOTYPE_STR]
     if self.BIOTYPE_STR in self.get_pipeline_parameters():
       self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
+
+    self._transcript_description_sep = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
+      self.TRANSCRIPT_DESCRIPTION_SEP]
+    if self.TRANSCRIPT_DESCRIPTION_SEP in self.get_pipeline_parameters():
+      self._transcript_description_sep = self.get_pipeline_parameters()[self.TRANSCRIPT_DESCRIPTION_SEP]
 
     self._num_orfs = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.NUM_ORFS]
     if self.NUM_ORFS in self.get_pipeline_parameters():
@@ -369,9 +375,7 @@ class EnsemblDataService(ParameterConfiguration):
         desc = str(seq_dict[record_id].description)
 
         key_values = {}  # extract key=value in the desc into a dict
-        sep = ' '
-        if '|' in desc:
-          sep = '|'
+        sep = self._transcript_description_sep
         for value in desc.split(sep):
           if value.split('=')[0] == 'cds' or value.split(':')[0] == 'cds':
             value.replace('cds', 'CDS')

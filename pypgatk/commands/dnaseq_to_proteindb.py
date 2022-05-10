@@ -26,6 +26,8 @@ log = logging.getLogger(__name__)
 @click.option('--exclude_biotypes', default='', help="Exclude Biotypes")
 @click.option('--biotype_str', default='transcript_biotype', type=str,
               help='String used to identify gene/transcript biotype in the gtf file.')
+@click.option('--transcript_description_sep', default=';', type=str,
+              help='Separator used to separate features in the fasta headers, usually either (space, / or semicolon).')
 @click.option('--expression_str', default="", type=str,
               help='String to be used for extracting expression value (TPM, FPKM, etc).')
 @click.option('--expression_thresh', default=5.0, type=float,
@@ -33,8 +35,8 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
                         output_proteindb, var_prefix,
-                        skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, expression_str,
-                        expression_thresh):
+                        skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, 
+                        transcript_description_sep, expression_str, expression_thresh):
 
   if config_file is None:
     config_data = read_yaml_from_text(default_config_text)
@@ -52,7 +54,9 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
                         EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
                         EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
-                        EnsemblDataService.BIOTYPE_STR: biotype_str, EnsemblDataService.NUM_ORFS: num_orfs,
+                        EnsemblDataService.BIOTYPE_STR: biotype_str, 
+                        EnsemblDataService.TRANSCRIPT_DESCRIPTION_SEP: transcript_description_sep,
+                        EnsemblDataService.NUM_ORFS: num_orfs,
                         EnsemblDataService.NUM_ORFS_COMPLEMENT: num_orfs_complement,
                         EnsemblDataService.EXPRESSION_STR: expression_str,
                         EnsemblDataService.EXPRESSION_THRESH: expression_thresh}
