@@ -376,6 +376,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         key_values = {}  # extract key=value in the desc into a dict
         sep = self._transcript_description_sep
+        desc = desc.replace(' ', sep)
         for value in desc.split(sep):
           if value.split('=')[0] == 'cds' or value.split(':')[0] == 'cds':
             value.replace('cds', 'CDS')

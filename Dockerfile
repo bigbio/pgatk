@@ -2,7 +2,7 @@ FROM biocontainers/biocontainers:debian-stretch-backports
 MAINTAINER Yasset Perez-Riverol <ypriverol@gmail.com>
 LABEL software="pypgatk" \
     container="pypgatk" \
-    software.version="0.0.5" \
+    software.version="0.0.20" \
     version="1"
 
 RUN apt-get update && apt-get install -y python3 && apt-get install -y python3-pip && apt-get install -y git
