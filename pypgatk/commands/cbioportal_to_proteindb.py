@@ -15,8 +15,8 @@ log = logging.getLogger(__name__)
 @click.option('-in', '--input_mutation', help='Cbioportal mutation file')
 @click.option('-fa', '--input_cds', help='CDS genes from ENSEMBL database')
 @click.option('-out', '--output_db', help='Protein database including all the mutations')
-@click.option('-f', '--filter_column', default='CANCER_TYPE', help='Column in the VCF file to be used for filtering or splitting mutations')
-@click.option('-a', '--accepted_values', default='all',
+@click.option('-f', '--filter_column', help='Column in the VCF file to be used for filtering or splitting mutations')
+@click.option('-a', '--accepted_values',
               help='Limit mutations to values (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered')
 @click.option('-s', '--split_by_filter_column',
               help='Use this flag to generate a proteinDB per group as specified in the filter_column, default is False',

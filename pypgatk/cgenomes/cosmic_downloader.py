@@ -30,6 +30,8 @@ class CosmicDownloadService(ParameterConfiguration):
         """
     super(CosmicDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file, pipeline_arguments)
 
+    self._local_path_cosmic = './database_cosmic/'
+
     if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
       self._local_path_cosmic = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
     else:

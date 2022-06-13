@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 @click.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
-@click.option('-o', '--output_directory', help='Output directory for the peptide databases', default="./database_cosmic/")
+@click.option('-o', '--output_directory', help='Output directory for the peptide databases')
 @click.option('-u', '--username',
               help="Username for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
 @click.option('-p', '--password',

@@ -12,7 +12,7 @@ log = logging.getLogger(__name__)
 
 @click.command('cbioportal-downloader', short_help='Command to download the the cbioportal studies')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
-@click.option('-o', '--output_directory', help='Output directory for the peptide databases',default="./database_cbioportal/")
+@click.option('-o', '--output_directory', help='Output directory for the peptide databases')
 @click.option('-l', '--list_studies', help='Print the list of all the studies in cBioPortal (https://www.cbioportal.org)', is_flag=True)
 @click.option('-d', '--download_study', help="Download a specific Study from cBioPortal -- (all to download all studies)")
 @click.option('-th', '--multithreading', help=' Enable multithreading to download multiple files ad the same time', is_flag=True)
