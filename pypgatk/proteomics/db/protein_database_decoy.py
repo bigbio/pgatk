@@ -33,6 +33,21 @@ class ProteinDBDecoyService(ParameterConfiguration):
   def __init__(self, config_file, pipeline_arguments):
     super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                 pipeline_arguments)
+    self._output_file = 'protein-decoy.fa'
+    self._temp_file = 'tmp.fa'
+    self._isobaric = False
+    self._memory_save = False
+    self._enzyme = 'Trypsin'
+    self._decoy_prefix = 'DECOY_'
+    self._cleavage_position = 'c'
+    self._anti_cleavage_sites = ''
+    self._min_peptide_length = 6
+    self._max_iterations = 100
+    self._no_switch = False
+    self._no_suffle = False
+    self._method = 'decoypyrat'
+    self._max_peptide_length = 100
+    self._max_missed_cleavages = 0
 
     self._temp_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_TEMP_FILE]
     if self.CONFIG_TEMP_FILE in self.get_pipeline_parameters():
