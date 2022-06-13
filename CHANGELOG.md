@@ -1,5 +1,20 @@
 # Changelog
 
+## [v0.0.20](https://github.com/bigbio/py-pgatk/tree/v0.0.20) (2022-05-10)
+
+**Implemented enhancements:**
+
+- Implementation of Class FDR [\#56](https://github.com/bigbio/py-pgatk/issues/56)
+- Cleaning the code [\#50](https://github.com/bigbio/py-pgatk/issues/50)
+
+**Fixed bugs:**
+
+- pyVCF reader deprecated only supported for py3.6  [\#55](https://github.com/bigbio/py-pgatk/issues/55)
+
+**Closed issues:**
+
+- Fasta input for vcf-to-proteindb [\#29](https://github.com/bigbio/py-pgatk/issues/29)
+
 ## [v0.0.19](https://github.com/bigbio/py-pgatk/tree/v0.0.19) (2021-03-31)
 
 ## [v0.0.18](https://github.com/bigbio/py-pgatk/tree/v0.0.18) (2021-03-30)
