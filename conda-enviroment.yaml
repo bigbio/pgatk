@@ -10,7 +10,6 @@ dependencies:
   - Click=7.0
   - gffutils=0.10.1
   - numpy=1.16.3
-  - bioconda::PyVCF=0.6.8
   - PyYAML=5.1.2
   - requests=2.21.0
   - simplejson=3.16.0
