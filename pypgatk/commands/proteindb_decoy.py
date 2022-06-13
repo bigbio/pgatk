@@ -6,7 +6,12 @@ from pypgatk.proteomics.models import PYGPATK_ENZYMES
 import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
-default_config_text = pkgutil.get_data(__name__, "../config/protein_decoy.yaml").decode()
+
+try:
+  default_config_text = pkgutil.get_data(__name__, "../config/protein_decoy.yaml").decode()
+except Exception:
+  default_config_text = pkgutil.get_data(__name__, "config/protein_decoy.yaml").decode()
+
 
 log = logging.getLogger(__name__)
 

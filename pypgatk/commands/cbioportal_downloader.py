@@ -7,7 +7,11 @@ import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
-default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
+try:
+    default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
+except Exception:
+    default_config_text = pkgutil.get_data(__name__, "config/cbioportal_config.yaml").decode()
+
 log = logging.getLogger(__name__)
 
 @click.command('cbioportal-downloader', short_help='Command to download the the cbioportal studies')

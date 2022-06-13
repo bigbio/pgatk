@@ -9,7 +9,7 @@ from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 try:
    default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
-except:
+except Exception:
     default_config_text = pkgutil.get_data(__name__, "config/ensembl_config.yaml").decode()
 
 log = logging.getLogger(__name__)
