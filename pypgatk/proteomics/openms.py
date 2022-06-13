@@ -47,6 +47,15 @@ class OpenmsDataService(ParameterConfiguration):
     super(OpenmsDataService, self).__init__(self.CONFIG_KEY_OPENMS_ANALYSIS, config_file,
                                             pipeline_arguments)
 
+    self._decoy_prefix = 'DECOY_'
+    self._peptide_class_prefix = 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs'
+    self._file_type = 'idxml'
+    self._min_peptide_length = 5
+    self._psm_pep_fdr_cutoff = 0.01
+    self._psm_pep_class_fdr_cutoff = 0.01
+    self._peptide_groups_prefix = {'non_canonical':['altorf','pseudo','ncRNA'],'mutations':['COSMIC','cbiomut'],'variants':['var_mut','var_rs']}
+    self._peptide_class_fdr_disable = False
+
     self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
       self.CONFIG_DECOY_PREFIX]
     if self.CONFIG_DECOY_PREFIX in self.get_pipeline_parameters():
