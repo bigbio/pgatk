@@ -70,6 +70,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
         This function will download a study from cBioPortal using the study ID
         :param download_study: Study to be download, if the study is empty or None, all the studies will be
         downloaded.
+        :param url_file_name: file tsv containing the urls to be downloaded.
         :return: None
         """
 

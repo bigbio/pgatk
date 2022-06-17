@@ -306,7 +306,7 @@ class OpenmsDataService(ParameterConfiguration):
 
     if self._file_type == 'idxml':
       self._filter_write_idxml_with_df(df_psms, self._new_columns, input_idxml, output_idxml)
-    elif (self._file_type == "triqler"):
+    elif self._file_type == "triqler":
       self._export_df_triqler(df_psms, output_idxml)
 
   @staticmethod

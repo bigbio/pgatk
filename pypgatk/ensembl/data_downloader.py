@@ -94,7 +94,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     self._ensembl_species = species_info['species']
     return self._ensembl_species
 
-  def download_database_by_species(self, grch37: str, url_file_name: str):
+  def download_database_by_species(self, grch37: bool, url_file_name: str):
     """
     This method takes a list of Taxonomies from the commandline parameters
     and download the Protein fasta files and the gtf files.
@@ -128,19 +128,19 @@ class EnsemblDataDownloadService(ParameterConfiguration):
               gtf_files = self.get_gtf_files(species, grch37)
               files.extend(gtf_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDS]:
-              cds_files = self.get_cds_files(species, grch37)
+              cds_files = self.get_cds_files(species = species, grch37 = grch37)
               files.extend(cds_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_CDNA]:
-              cdna_files = self.get_cdna_files(species, grch37)
+              cdna_files = self.get_cdna_files(species = species, grch37 = grch37)
               files.extend(cdna_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_NCRNA]:
-              ncrna_files = self.get_ncrna_files(species, grch37)
+              ncrna_files = self.get_ncrna_files(species = species, grch37 = grch37)
               files.extend(ncrna_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_DNA]:
-              dna_files = self.get_genome_assembly_files(species, grch37)
+              dna_files = self.get_genome_assembly_files(species = species, grch37 = grch37)
               files.extend(dna_files)
             if not self.get_pipeline_parameters()[self.CONFIG_KEY_SKIP_VCF]:
-              vcf_files = self.get_vcf_files(species)
+              vcf_files = self.get_vcf_files(species = species)
               files.extend(vcf_files)
 
             self.get_logger().debug("Files downloaded -- " + ",".join(
@@ -209,7 +209,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     return total_files
 
-  def get_cds_files(self, species: dict, grch37=False, url_file = None) -> list:
+  def get_cds_files(self, species: dict, grch37 = False, url_file = None) -> list:
     """
     Get the cds files for a specific species object.
     :return: List of files names.
@@ -397,7 +397,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     return files
 
-  def get_genome_assembly_files(self, species: dict, grch37=False, url_file = None) -> list:
+  def get_genome_assembly_files(self, species: dict, grch37 = False, url_file = None) -> list:
     """
     This method retrieve the genome assembly files for a specific specie object
     :param grch37: if the GrCh37 genome assembly is desired enable to true

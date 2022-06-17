@@ -51,6 +51,8 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :param psm_pep_class_fdr_cutoff: Peptide class FDR cutoff
   :param peptide_groups_prefix: Peptide groups prefix for the Peptide classes FDR
   :param peptide_classes_prefix: Peptide classes
+  :param file_type: File type to compute the FDR and class FDR.
+  :param disable_class_fdr: Do not compute class FDR and not filtering the PSMs
   :return:
   """
 

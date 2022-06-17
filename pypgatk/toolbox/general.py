@@ -8,6 +8,7 @@ import os
 import json
 import shutil
 import subprocess
+from typing import List
 from urllib import request
 from urllib.error import URLError, ContentTooShortError
 import yaml
@@ -141,7 +142,7 @@ def read_yaml_from_text(yaml_text):
   """
   return yaml.safe_load(yaml_text)
 
-def check_create_folders(folders: str):
+def check_create_folders(folders: List):
   """
     Check if folders exist, create them otherwise
     :param folders: list of folder paths to check

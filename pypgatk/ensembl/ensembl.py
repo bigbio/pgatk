@@ -503,10 +503,10 @@ class EnsemblDataService(ParameterConfiguration):
 
   @staticmethod
   def vcf_from_file(vcf_file):
-    '''
+    """
     Read a VCF file and return a dataframe for the records
     as well as a list for the metadata
-    '''
+    """
 
     HEADERS = {
       'CHROM': str,
