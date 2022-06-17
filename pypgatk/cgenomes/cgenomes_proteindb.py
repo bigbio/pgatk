@@ -26,6 +26,12 @@ class CancerGenomesService(ParameterConfiguration):
         """
     super(CancerGenomesService, self).__init__(self.CONFIG_COSMIC_DATA, config_file, pipeline_arguments)
 
+    self._filter_column = 'CANCER_TYPE'
+    self._accepted_values = 'all'
+    self._split_by_filter_column = False
+    self._local_clinical_sample_file = ''
+
+
     if self.CONFIG_CANCER_GENOMES_MUTATION_FILE in self.get_pipeline_parameters():
       self._local_mutation_file = self.get_pipeline_parameters()[self.CONFIG_CANCER_GENOMES_MUTATION_FILE]
 

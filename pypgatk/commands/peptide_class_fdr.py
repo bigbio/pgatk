@@ -8,7 +8,10 @@ from pypgatk.proteomics.openms import OpenmsDataService
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file, parse_peptide_classes, \
   parse_peptide_groups
 
-default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
+try:
+  default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
+except Exception:
+  default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
 
 log = logging.getLogger(__name__)
 
@@ -16,10 +19,10 @@ log = logging.getLogger(__name__)
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
 @click.option('-in', '--input-file', help='input file with the peptides and proteins')
 @click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins')
-@click.option("--file-type", default = 'idxml')
+@click.option("--file-type")
 @click.option('--min-peptide-length', help='minimum peptide length')
-@click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold", default=0.01)
-@click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold", default=0.01)
+@click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold")
+@click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold")
 @click.option('--peptide-groups-prefix', help="Peptide class "
               "groups e.g. \"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}\"")
 @click.option('--peptide-classes-prefix', help='Peptides classes e.g. \"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs\"')
@@ -48,6 +51,8 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :param psm_pep_class_fdr_cutoff: Peptide class FDR cutoff
   :param peptide_groups_prefix: Peptide groups prefix for the Peptide classes FDR
   :param peptide_classes_prefix: Peptide classes
+  :param file_type: File type to compute the FDR and class FDR.
+  :param disable_class_fdr: Do not compute class FDR and not filtering the PSMs
   :return:
   """
 

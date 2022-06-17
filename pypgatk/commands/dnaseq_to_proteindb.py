@@ -6,7 +6,11 @@ from pypgatk.ensembl.ensembl import EnsemblDataService
 import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
-default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
+
+try:
+   default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
+except Exception:
+    default_config_text = pkgutil.get_data(__name__, "config/ensembl_config.yaml").decode()
 
 log = logging.getLogger(__name__)
 
@@ -30,12 +34,12 @@ log = logging.getLogger(__name__)
               help='Separator used to separate features in the fasta headers, usually either (space, / or semicolon).')
 @click.option('--expression_str', default="", type=str,
               help='String to be used for extracting expression value (TPM, FPKM, etc).')
-@click.option('--expression_thresh', default=5.0, type=float,
+@click.option('--expression_thresh', type=float,
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
 def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
                         output_proteindb, var_prefix,
-                        skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str, 
+                        skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str,
                         transcript_description_sep, expression_str, expression_thresh):
 
   if config_file is None:
@@ -54,7 +58,7 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
                         EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
                         EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
-                        EnsemblDataService.BIOTYPE_STR: biotype_str, 
+                        EnsemblDataService.BIOTYPE_STR: biotype_str,
                         EnsemblDataService.TRANSCRIPT_DESCRIPTION_SEP: transcript_description_sep,
                         EnsemblDataService.NUM_ORFS: num_orfs,
                         EnsemblDataService.NUM_ORFS_COMPLEMENT: num_orfs_complement,

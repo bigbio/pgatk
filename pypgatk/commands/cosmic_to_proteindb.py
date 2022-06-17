@@ -6,6 +6,7 @@ from pypgatk.commands.utils import print_help
 import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+
 default_config_text = pkgutil.get_data(__name__, "../config/cosmic_config.yaml").decode()
 
 log = logging.getLogger(__name__)
@@ -17,9 +18,9 @@ log = logging.getLogger(__name__)
 @click.option('-fa', '--input_genes', help='All Cosmic genes')
 @click.option('-out', '--output_db',
               help='Protein database including all the mutations')
-@click.option('-f', '--filter_column', default='Primary site',
+@click.option('-f', '--filter_column',
               help='Column in the VCF file to be used for filtering or splitting mutations')
-@click.option('-a', '--accepted_values', default='all',
+@click.option('-a', '--accepted_values',
               help='Limit mutations to values (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered')
 @click.option('-s', '--split_by_filter_column',
               help='Use this flag to generate a proteinDB per group as specified in the filter_column, default is False',

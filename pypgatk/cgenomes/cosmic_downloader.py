@@ -30,6 +30,8 @@ class CosmicDownloadService(ParameterConfiguration):
         """
     super(CosmicDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file, pipeline_arguments)
 
+    self._local_path_cosmic = './database_cosmic/'
+
     if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
       self._local_path_cosmic = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
     else:
@@ -53,7 +55,7 @@ class CosmicDownloadService(ParameterConfiguration):
   def get_local_path_root_cosmic_repo(self):
     return self._local_path_cosmic
 
-  def download_mutation_file(self):
+  def download_mutation_file(self, url_file_name = None):
     """
         This function will download the mutations file from Cosmic Database.
         :return: None
@@ -99,12 +101,22 @@ class CosmicDownloadService(ParameterConfiguration):
     celllines_gene_url = "{}/{}/{}".format(server, cosmic_cellline_version, all_celllines_gene_file)
     mutation_cellline_url = "{}/{}/{}".format(server, cosmic_cellline_version, mutation_celline_file)
 
-    token = "Basic {}".format(self._cosmic_token)
-    self.download_file_cosmic(mutation_url, mutation_output_file, token)
-    self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
+    if url_file_name is None:
+      token = "Basic {}".format(self._cosmic_token)
+      self.download_file_cosmic(mutation_url, mutation_output_file, token)
+      self.download_file_cosmic(cds_gene_url, cds_genes_output_file, token)
 
-    self.download_file_cosmic(celllines_gene_url, cellines_genes_output_file, token)
-    self.download_file_cosmic(mutation_cellline_url, mutation_celline_output_file, token)
+      self.download_file_cosmic(celllines_gene_url, cellines_genes_output_file, token)
+      self.download_file_cosmic(mutation_cellline_url, mutation_celline_output_file, token)
+
+    else:
+      if url_file_name is not None:
+        with open(url_file_name, 'w') as url_file:
+          url_file.write("{}\t{}\n".format(mutation_url, mutation_output_file))
+          url_file.write("{}\t{}\n".format(cds_gene_url, cds_genes_output_file))
+          url_file.write("{}\t{}\n".format(celllines_gene_url, cellines_genes_output_file))
+          url_file.write("{}\t{}\n".format(mutation_cellline_url, mutation_celline_output_file))
+
 
   def download_file_cosmic(self, url, local_file, token):
     """
