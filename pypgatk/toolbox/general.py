@@ -160,13 +160,14 @@ def check_create_folders(folders: str):
 def clear_cache():
   request.urlcleanup()
 
-def download_file(file_url: str, file_name: str, log: logging) -> str:
+def download_file(file_url: str, file_name: str, log: logging, url_file = None) -> str:
   """
      Download file_url and move it to file_name, do nothing if file_name already exists.
 
     :param log: log to be use.
     :param file_url: file url to be download
     :param file_name: file name where the data will be downloaded
+    :param url_file: the url file is used to write the urls to be downloaded, if None, the function will download the file
     :return: name of the file if the file can be download.
     """
   if os.path.isfile(file_name):
@@ -174,6 +175,10 @@ def download_file(file_url: str, file_name: str, log: logging) -> str:
 
   if log is not None:
     log = logging
+
+  if url_file is not None:
+    url_file.write("{}\t{}\n".format(file_url, file_name))
+    return file_name
 
   remaining_download_tries = REMAINING_DOWNLOAD_TRIES
   downloaded_file = None
