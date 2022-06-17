@@ -42,4 +42,4 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password, ur
     pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
 
   cosmic_downloader_service = CosmicDownloadService(config_data, pipeline_arguments)
-  cosmic_downloader_service.download_mutation_file(url_file = url_file)
+  cosmic_downloader_service.download_mutation_file(url_file_name = url_file)
