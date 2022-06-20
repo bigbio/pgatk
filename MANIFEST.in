@@ -1,0 +1,5 @@
+ include *.md
+ include *.txt
+ include *.yaml
+ recursive-include pypgatk *.json
+ recursive-include pypgatk *.yaml
