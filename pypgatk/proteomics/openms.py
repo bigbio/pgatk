@@ -3,6 +3,8 @@ import multiprocessing
 from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
 from pyopenms import IDFilter
+from pyopenms import ModificationsDB
+import json
 
 from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group
 import numpy.polynomial.polynomial as poly
@@ -105,6 +107,27 @@ class OpenmsDataService(ParameterConfiguration):
     s = pd.Series(arr_fdr)
     return s[::-1].cummin()[::-1]
 
+  @staticmethod
+  def _get_msrescore_modification(modification):
+    specificity_index = modification.getTermSpecificity()
+    specificity_str = modification.getTermSpecificityName(specificity_index)
+
+    c_term = True
+    n_term = True
+    aa_mod = aa_mod = modification.getOrigin()
+    if specificity_str == 'none':
+      c_term = False
+      n_term = False
+    elif specificity_str == "Protein C-term" or  specificity_str == "C-term":
+      n_term = False
+      aa_mod = None
+    else:
+      c_term = False
+      aa_mod = None
+
+
+    return {"name": modification.getId(), "unimod_accession": modification.getUniModRecordId(), "mass_shift": modification.getDiffMonoMass(), "amino_acid": aa_mod, "n_term": n_term, "c_term": c_term}
+
   def _compute_class_fdr(self, df_psms: DataFrame):
 
     # Get the order of the score
@@ -132,6 +155,53 @@ class OpenmsDataService(ParameterConfiguration):
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
     return df_psms
+
+  def _generate_msrescore_file(self, input_xml: str, quant_method: str, decoy_pattern: str, output_json: str):
+    """
+     This function generates an msRescore configuration file for an idXML file.
+    :param input_xml: Input IdXML with the peptides and PTMs
+    :param output_json: Output json file
+    :return:
+    """
+
+    ox = ModificationsDB().getModification("Oxidation")
+
+    prot_ids = []
+    pep_ids = []
+    idxml_parser().load(input_xml, prot_ids, pep_ids)
+
+    # Get the Modification parameters
+    modifications = []
+    for protein_hit in prot_ids:
+      search_params = protein_hit.getSearchParameters()
+      print(" - Search params:", search_params)
+
+      if (search_params is not None and search_params.fixed_modifications is not None):
+        for mod in search_params.fixed_modifications:
+          ox = ModificationsDB().getModification(mod.decode())
+          modifications.append(self._get_msrescore_modification(ox))
+      if (search_params is not None and search_params.variable_modifications is not None):
+        for mod in search_params.variable_modifications:
+          ox = ModificationsDB().getModification(mod.decode())
+          modifications.append(self._get_msrescore_modification(ox))
+
+      fragment_error = search_params.fragment_mass_tolerance
+
+      model = 'HCD2021'
+      if quant_method == 'TMT':
+        model = 'TMT'
+
+    print(modifications)
+
+    config_msrescore = {}
+    config_msrescore["$schema"] = "https://raw.githubusercontent.com/compomics/ms2rescore/master/ms2rescore/package_data/config_schema.json"
+    config_msrescore["general"] = {"pipeline":"infer", "run_percolator":False, "id_decoy_pattern": decoy_pattern,  "log_level": "info"}
+    config_msrescore["ms2pip"]  = {"model": model, "frag_error": fragment_error, "modifications": modifications}
+    config_msrescore["idxml_to_rescore"] = {"modification_mapping":{ "ox":"Oxidation", "ac":"Acetyl", "cm":"Carbamidomethyl"}}
+
+    # Write the json output
+    with open(output_json, "w") as write_file:
+      json.dump(config_msrescore, write_file, indent=4)
 
   @staticmethod
   def _compute_global_fdr(df_psms: DataFrame):
