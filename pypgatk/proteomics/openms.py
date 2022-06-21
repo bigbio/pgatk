@@ -467,6 +467,33 @@ class OpenmsDataService(ParameterConfiguration):
         continue
     return df
 
+  def _get_ptm_str(self, psm):
+    """
+    This function converts a Peptide Hit in idXML into a PTM modification format as requested by DeepLC
+    see documentation of the PTMs (https://github.com/compomics/DeepLC#input-files)
+    :param psm: Peptide Hit
+    :return: modification string position and name of the PTM
+    """
+    sequence = psm.getSequence()
+    mod_str = ""
+    if(sequence.hasNTerminalModification()):
+       mod_str = mod_str + "0|" + sequence.getNTerminalModificationName()
+    if (sequence.hasCTerminalModification()):
+      if len(mod_str) > 0:
+        mod_str = mod_str + "|"
+        mod_str = mod_str + "1|" + sequence.getCTerminalModificationName()
+
+    i = 1
+    for aa in sequence:
+      mod = aa.getModificationName()
+      if(len(mod) > 0):
+        if len(mod_str) > 0:
+          mod_str = mod_str + "|"
+        mod_str = mod_str + str(i) + "|" + mod
+      i = i + 1
+
+    return mod_str
+
   def _psm_idxml_todf(self, input_file: str):
     """
     This function converts an idXML file into a pandas dataframe
@@ -514,16 +541,19 @@ class OpenmsDataService(ParameterConfiguration):
         unmodified_sequence = h.getSequence().toUnmodifiedString()
         accessions = [ev.getProteinAccession() for ev in h.getPeptideEvidences()]
         score = h.getScore()
+        rt = peptide_id.getRT()
+
+        ptm_str = self._get_ptm_str(psm = h)
 
         if len(meta_value_keys) == 0:
           h.getKeys(meta_value_keys)
           meta_value_keys = [x.decode() for x in meta_value_keys if not (
             "target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
-          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide",
+          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "rt", "peptide", "unmodified_peptide", "mod_str",
                          "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
 
         df_psm_index = self._get_psm_index(ms_run_acc, spectrum_id, psm_index)
-        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence,
+        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), rt, sequence, unmodified_sequence, ptm_str,
                str(len(unmodified_sequence)), accessions, score, order]
         # scores in meta values
         for k in meta_value_keys:
@@ -584,3 +614,31 @@ class OpenmsDataService(ParameterConfiguration):
     result_df = df_psms[["run", "condition", "charge", "score", "intensity", "peptide", "accessions"]]
     result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
     result_df.to_csv(output_file, sep='\t', index=False, header=True)
+
+  def _generate_deepLC_file(self, input_xml: str, output_deepLC: str, decoy_pattern: str,
+                                        peptide_class_prefix: str, novel_peptides: bool):
+    peptides = self._psm_idxml_todf(input_file = input_xml)
+    print(peptides.head())
+
+    # remove the decoy peptides
+    peptides = peptides.loc[peptides['target'] == 1]
+
+    if peptide_class_prefix is None:
+      peptide_class_prefix = self._peptide_class_prefix.split(",")
+    else:
+      peptide_class_prefix = peptide_class_prefix.split(",")
+
+    peptides = peptides[peptides['accessions'].apply(lambda x: not (any(self._decoy_prefix in s for s in x)))]
+
+    if novel_peptides:
+      peptides = peptides[peptides['accessions'].apply(lambda x: self._filter_by_group(x, peptide_class_prefix))]
+      peptides = peptides[["unmodified_peptide", "mod_str"]]
+      peptides = peptides.rename(columns={'unmodified_peptide': 'seq', 'mod_str': 'modifications'})
+    else:
+      peptides = peptides[peptides['accessions'].apply(lambda x: not self._filter_by_group(x, peptide_class_prefix))]
+      peptides = peptides[["unmodified_peptide", "mod_str", "rt"]]
+      peptides = peptides.rename(columns={'unmodified_peptide': 'seq', 'mod_str': 'modifications', 'rt': 'tr'})
+
+    peptides.to_csv(output_deepLC, sep=',', index=False, header=True)
+
+    print(peptides.head())
