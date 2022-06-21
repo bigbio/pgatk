@@ -7,12 +7,14 @@ import pkgutil
 from pypgatk.proteomics.openms import OpenmsDataService
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
+log = logging.getLogger(__name__)
 try:
   default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
-except Exception:
-  default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
-
-log = logging.getLogger(__name__)
+except ValueError:
+  try:
+    default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
+  except ValueError:
+    log.info("Configuration file not available !!")
 
 @click.command('msrescore-configuration', short_help="Command to generate the msrescore configuration file from idXML")
 @click.option('-c', '--config_file', help='Configuration to perform msrescore configuration file')
