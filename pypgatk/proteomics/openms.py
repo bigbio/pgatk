@@ -165,15 +165,12 @@ class OpenmsDataService(ParameterConfiguration):
     :return:
     """
 
-    ox = ModificationsDB().getModification("Oxidation")
-
     prot_ids = []
     pep_ids = []
     idxml_parser().load(input_xml, prot_ids, pep_ids)
 
     # Get the Modification parameters
     modifications = []
-    mapping_modifications = {}
     for protein_hit in prot_ids:
       search_params = protein_hit.getSearchParameters()
       print(" - Search params:", search_params)
