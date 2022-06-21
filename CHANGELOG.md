@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.0.21](https://github.com/bigbio/py-pgatk/tree/v0.0.21) (2022-06-17)
+
+**Implemented enhancements:**
+
+- gffread fasta generated file uses space and semicolon [\#59](https://github.com/bigbio/py-pgatk/issues/59)
+
+**Fixed bugs:**
+
+- Write urls for download into file instead of downloading  [\#61](https://github.com/bigbio/py-pgatk/issues/61)
+- changing values in the config files have no effect [\#58](https://github.com/bigbio/py-pgatk/issues/58)
+
 ## [v0.0.20](https://github.com/bigbio/py-pgatk/tree/v0.0.20) (2022-05-10)
 
 **Implemented enhancements:**
