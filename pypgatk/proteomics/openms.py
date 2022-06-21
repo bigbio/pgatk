@@ -467,7 +467,8 @@ class OpenmsDataService(ParameterConfiguration):
         continue
     return df
 
-  def _get_ptm_str(self, psm):
+  @staticmethod
+  def _get_ptm_str(psm):
     """
     This function converts a Peptide Hit in idXML into a PTM modification format as requested by DeepLC
     see documentation of the PTMs (https://github.com/compomics/DeepLC#input-files)
