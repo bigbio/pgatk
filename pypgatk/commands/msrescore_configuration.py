@@ -5,8 +5,7 @@ from pypgatk.commands.utils import print_help
 import pkgutil
 
 from pypgatk.proteomics.openms import OpenmsDataService
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file, parse_peptide_classes, \
-  parse_peptide_groups
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 try:
   default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
