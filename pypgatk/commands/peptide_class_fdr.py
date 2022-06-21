@@ -8,12 +8,16 @@ from pypgatk.proteomics.openms import OpenmsDataService
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file, parse_peptide_classes, \
   parse_peptide_groups
 
+log = logging.getLogger(__name__)
+
 try:
   default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
-except Exception:
-  default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
+except ValueError:
+  try:
+    default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
+  except ValueError:
+    log.info("Configuration file not available !!!")
 
-log = logging.getLogger(__name__)
 
 @click.command('peptide-class-fdr', short_help="Command to compute the Peptide class FDR")
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')

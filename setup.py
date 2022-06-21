@@ -9,7 +9,7 @@ def readme():
 
 
 setup(name='pypgatk',
-      version='0.0.21',
+      version='0.0.22',
       description='Python tools for proteogenomics',
       url='http://github.com/bigbio/py-pgatk',
       long_description=readme(),

@@ -9,4 +9,4 @@ ratelimit==2.2.1
 pyteomics==4.4.2
 pybedtools
 pandas
-
+pyopenms

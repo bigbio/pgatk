@@ -3,6 +3,8 @@ import multiprocessing
 from pandas import DataFrame
 from pyopenms import IdXMLFile as idxml_parser
 from pyopenms import IDFilter
+from pyopenms import ModificationsDB
+import json
 
 from pypgatk.toolbox.general import ParameterConfiguration, is_peptide_group
 import numpy.polynomial.polynomial as poly
@@ -105,6 +107,28 @@ class OpenmsDataService(ParameterConfiguration):
     s = pd.Series(arr_fdr)
     return s[::-1].cummin()[::-1]
 
+  @staticmethod
+  def _get_msrescore_modification(modification):
+    specificity_index = modification.getTermSpecificity()
+    specificity_str = modification.getTermSpecificityName(specificity_index)
+
+    c_term = True
+    n_term = True
+    aa_mod = modification.getOrigin()
+    if specificity_str == 'none':
+      c_term = False
+      n_term = False
+    elif specificity_str == "Protein C-term" or  specificity_str == "C-term":
+      n_term = False
+      aa_mod = None
+    else:
+      c_term = False
+      aa_mod = None
+
+    formula = str(modification.getDiffFormula())
+    return {"name": modification.getId(), "unimod_accession": modification.getUniModRecordId(), "mass_shift": modification.getDiffMonoMass(),
+            "atomic_composition": formula, "amino_acid": aa_mod, "n_term": n_term, "c_term": c_term}
+
   def _compute_class_fdr(self, df_psms: DataFrame):
 
     # Get the order of the score
@@ -132,6 +156,58 @@ class OpenmsDataService(ParameterConfiguration):
     df_psms.sort_values("score", ascending=ascending, inplace=True)
 
     return df_psms
+
+  def _generate_msrescore_file(self, input_xml: str, quant_method: str, decoy_pattern: str, output_json: str):
+    """
+     This function generates an msRescore configuration file for an idXML file.
+    :param input_xml: Input IdXML with the peptides and PTMs
+    :param output_json: Output json file
+    :return:
+    """
+
+    prot_ids = []
+    pep_ids = []
+    idxml_parser().load(input_xml, prot_ids, pep_ids)
+
+    # Get the Modification parameters
+    modifications = []
+    for protein_hit in prot_ids:
+      search_params = protein_hit.getSearchParameters()
+      print(" - Search params:", search_params)
+
+      if (search_params is not None and search_params.fixed_modifications is not None):
+        for mod in search_params.fixed_modifications:
+          ox = ModificationsDB().getModification(mod.decode())
+          modifications.append(self._get_msrescore_modification(ox))
+      if (search_params is not None and search_params.variable_modifications is not None):
+        for mod in search_params.variable_modifications:
+          ox = ModificationsDB().getModification(mod.decode())
+          modifications.append(self._get_msrescore_modification(ox))
+
+      fragment_error = search_params.fragment_mass_tolerance
+
+      model = 'HCD2021'
+      if quant_method == 'TMT':
+        model = 'TMT'
+
+    print(modifications)
+
+    mappings = []
+    for mod in modifications:
+      amino_acid = mod["amino_acid"]
+      if amino_acid is None:
+        amino_acid = "."
+      mappings.append({"amino_acid": amino_acid, "unimod_accession": mod["unimod_accession"], "name": mod["name"]})
+
+    config_msrescore = {}
+    config_msrescore["$schema"] = "https://raw.githubusercontent.com/compomics/ms2rescore/master/ms2rescore/package_data/config_schema.json"
+    config_msrescore["general"] = {"pipeline":"infer", "run_percolator":False, "id_decoy_pattern": decoy_pattern,  "log_level": "info"}
+    config_msrescore["ms2pip"]  = {"model": model, "frag_error": fragment_error, "modifications": modifications}
+    config_msrescore["idxml_to_rescore"] = {"modification_mapping": mappings}
+
+    # Write the json output
+    with open(output_json, "w") as write_file:
+      json.dump(config_msrescore, write_file, indent=4)
 
   @staticmethod
   def _compute_global_fdr(df_psms: DataFrame):
@@ -391,6 +467,34 @@ class OpenmsDataService(ParameterConfiguration):
         continue
     return df
 
+  @staticmethod
+  def _get_ptm_str(psm):
+    """
+    This function converts a Peptide Hit in idXML into a PTM modification format as requested by DeepLC
+    see documentation of the PTMs (https://github.com/compomics/DeepLC#input-files)
+    :param psm: Peptide Hit
+    :return: modification string position and name of the PTM
+    """
+    sequence = psm.getSequence()
+    mod_str = ""
+    if(sequence.hasNTerminalModification()):
+       mod_str = mod_str + "0|" + sequence.getNTerminalModificationName()
+    if (sequence.hasCTerminalModification()):
+      if len(mod_str) > 0:
+        mod_str = mod_str + "|"
+        mod_str = mod_str + "1|" + sequence.getCTerminalModificationName()
+
+    i = 1
+    for aa in sequence:
+      mod = aa.getModificationName()
+      if(len(mod) > 0):
+        if len(mod_str) > 0:
+          mod_str = mod_str + "|"
+        mod_str = mod_str + str(i) + "|" + mod
+      i = i + 1
+
+    return mod_str
+
   def _psm_idxml_todf(self, input_file: str):
     """
     This function converts an idXML file into a pandas dataframe
@@ -438,16 +542,19 @@ class OpenmsDataService(ParameterConfiguration):
         unmodified_sequence = h.getSequence().toUnmodifiedString()
         accessions = [ev.getProteinAccession() for ev in h.getPeptideEvidences()]
         score = h.getScore()
+        rt = peptide_id.getRT()
+
+        ptm_str = self._get_ptm_str(psm = h)
 
         if len(meta_value_keys) == 0:
           h.getKeys(meta_value_keys)
           meta_value_keys = [x.decode() for x in meta_value_keys if not (
             "target_decoy" in x.decode() or "spectrum_reference" in x.decode() or "rank" in x.decode() or x.decode() in self._openms_exclude_columns)]
-          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "peptide", "unmodified_peptide",
+          all_columns = [self._psm_df_index, "target", "scanNr", "charge", "mz", "rt", "peptide", "unmodified_peptide", "mod_str",
                          "peptide_length", "accessions", "score", "is_higher_score_better"] + meta_value_keys
 
         df_psm_index = self._get_psm_index(ms_run_acc, spectrum_id, psm_index)
-        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), sequence, unmodified_sequence,
+        row = [df_psm_index, label, scan_nr, charge, peptide_id.getMZ(), rt, sequence, unmodified_sequence, ptm_str,
                str(len(unmodified_sequence)), accessions, score, order]
         # scores in meta values
         for k in meta_value_keys:
@@ -508,3 +615,31 @@ class OpenmsDataService(ParameterConfiguration):
     result_df = df_psms[["run", "condition", "charge", "score", "intensity", "peptide", "accessions"]]
     result_df.rename(columns={"score": "searchScore", "accessions": "proteins"}, errors="raise")
     result_df.to_csv(output_file, sep='\t', index=False, header=True)
+
+  def _generate_deepLC_file(self, input_xml: str, output_deepLC: str, decoy_pattern: str,
+                                        peptide_class_prefix: str, novel_peptides: bool):
+    peptides = self._psm_idxml_todf(input_file = input_xml)
+    print(peptides.head())
+
+    # remove the decoy peptides
+    peptides = peptides.loc[peptides['target'] == 1]
+
+    if peptide_class_prefix is None:
+      peptide_class_prefix = self._peptide_class_prefix.split(",")
+    else:
+      peptide_class_prefix = peptide_class_prefix.split(",")
+
+    peptides = peptides[peptides['accessions'].apply(lambda x: not (any(self._decoy_prefix in s for s in x)))]
+
+    if novel_peptides:
+      peptides = peptides[peptides['accessions'].apply(lambda x: self._filter_by_group(x, peptide_class_prefix))]
+      peptides = peptides[["unmodified_peptide", "mod_str"]]
+      peptides = peptides.rename(columns={'unmodified_peptide': 'seq', 'mod_str': 'modifications'})
+    else:
+      peptides = peptides[peptides['accessions'].apply(lambda x: not self._filter_by_group(x, peptide_class_prefix))]
+      peptides = peptides[["unmodified_peptide", "mod_str", "rt"]]
+      peptides = peptides.rename(columns={'unmodified_peptide': 'seq', 'mod_str': 'modifications', 'rt': 'tr'})
+
+    peptides.to_csv(output_deepLC, sep=',', index=False, header=True)
+
+    print(peptides.head())

@@ -7,12 +7,16 @@ import pkgutil
 
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
+log = logging.getLogger(__name__)
+
 try:
     default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
 except Exception:
-    default_config_text = pkgutil.get_data(__name__, "config/cbioportal_config.yaml").decode()
+    try:
+        default_config_text = pkgutil.get_data(__name__, "config/cbioportal_config.yaml").decode()
+    except ValueError:
+        log.info("The config file is now available !! ")
 
-log = logging.getLogger(__name__)
 
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('-c', '--config_file', help='Configuration for cbioportal to proteindb tool')
