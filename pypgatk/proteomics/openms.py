@@ -114,7 +114,7 @@ class OpenmsDataService(ParameterConfiguration):
 
     c_term = True
     n_term = True
-    aa_mod = aa_mod = modification.getOrigin()
+    aa_mod = modification.getOrigin()
     if specificity_str == 'none':
       c_term = False
       n_term = False
@@ -125,8 +125,9 @@ class OpenmsDataService(ParameterConfiguration):
       c_term = False
       aa_mod = None
 
-
-    return {"name": modification.getId(), "unimod_accession": modification.getUniModRecordId(), "mass_shift": modification.getDiffMonoMass(), "amino_acid": aa_mod, "n_term": n_term, "c_term": c_term}
+    formula = str(modification.getDiffFormula())
+    return {"name": modification.getId(), "unimod_accession": modification.getUniModRecordId(), "mass_shift": modification.getDiffMonoMass(),
+            "atomic_composition": formula, "amino_acid": aa_mod, "n_term": n_term, "c_term": c_term}
 
   def _compute_class_fdr(self, df_psms: DataFrame):
 
@@ -172,6 +173,7 @@ class OpenmsDataService(ParameterConfiguration):
 
     # Get the Modification parameters
     modifications = []
+    mapping_modifications = {}
     for protein_hit in prot_ids:
       search_params = protein_hit.getSearchParameters()
       print(" - Search params:", search_params)
@@ -193,11 +195,18 @@ class OpenmsDataService(ParameterConfiguration):
 
     print(modifications)
 
+    mappings = []
+    for mod in modifications:
+      amino_acid = mod["amino_acid"]
+      if amino_acid is None:
+        amino_acid = "."
+      mappings.append({"amino_acid": amino_acid, "unimod_accession": mod["unimod_accession"], "name": mod["name"]})
+
     config_msrescore = {}
     config_msrescore["$schema"] = "https://raw.githubusercontent.com/compomics/ms2rescore/master/ms2rescore/package_data/config_schema.json"
     config_msrescore["general"] = {"pipeline":"infer", "run_percolator":False, "id_decoy_pattern": decoy_pattern,  "log_level": "info"}
     config_msrescore["ms2pip"]  = {"model": model, "frag_error": fragment_error, "modifications": modifications}
-    config_msrescore["idxml_to_rescore"] = {"modification_mapping":{ "ox":"Oxidation", "ac":"Acetyl", "cm":"Carbamidomethyl"}}
+    config_msrescore["idxml_to_rescore"] = {"modification_mapping": mappings}
 
     # Write the json output
     with open(output_json, "w") as write_file:
