@@ -45,120 +45,56 @@ class EnsemblDataService(ParameterConfiguration):
     super(EnsemblDataService, self).__init__(self.CONFIG_KEY_DATA, config_file,
                                              pipeline_arguments)
 
+    self._proteindb_output = 'peptide-database.fa'
     self._proteindb_output = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.PROTEIN_DB_OUTPUT]
     if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
       self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
+    elif self.CONFIG_KEY_DATA in self.get_default_parameters() and self.PROTEIN_DB_OUTPUT in self.get_default_parameters()[self.CONFIG_KEY_DATA]:
+      self._proteindb_output = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.PROTEIN_DB_OUTPUT]
 
-    self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.TRANSLATION_TABLE]
+    self._translation_table = 1
     if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
       self._translation_table = self.get_pipeline_parameters()[self.TRANSLATION_TABLE]
+    elif self.CONFIG_KEY_DATA in self.get_default_parameters() and self.TRANSLATION_TABLE in self.get_default_parameters()[self.CONFIG_KEY_DATA]:
+      self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.TRANSLATION_TABLE]
 
-    self._mito_translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.MITO_TRANSLATION_TABLE]
-    if self.MITO_TRANSLATION_TABLE in self.get_pipeline_parameters():
-      self._mito_translation_table = self.get_pipeline_parameters()[self.MITO_TRANSLATION_TABLE]
+    self._mito_translation_table = self.get_translation_properties(variable = self.MITO_TRANSLATION_TABLE, default_value=2)
+    self._header_var_prefix = self.get_translation_properties(variable = self.HEADER_VAR_PREFIX, default_value="var")
+    self._report_reference_seq = self.get_translation_properties(variable = self.REPORT_REFERENCE_SEQ, default_value=False)
+    self._annotation_field_name = self.get_translation_properties(variable = self.ANNOTATION_FIELD_NAME, default_value='CSQ')
+    self._transcript_str = self.get_translation_properties(variable = self.TRANSCRIPT_STR, default_value='FEATURE')
+    self._consequence_str = self.get_translation_properties(variable = self.CONSEQUENCE_STR, default_value='CONSEQUENCE')
+    self._af_field = self.get_translation_properties(variable = self.AF_FIELD, default_value='')
+    self._af_threshold = self.get_translation_properties(variable = self.AF_THRESHOLD, default_value=0.01)
 
-    self._header_var_prefix = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.HEADER_VAR_PREFIX]
-    if self.HEADER_VAR_PREFIX in self.get_pipeline_parameters():
-      self._header_var_prefix = self.get_pipeline_parameters()[self.HEADER_VAR_PREFIX]
+    self._exclude_biotypes = self.get_multiple_options(self.get_translation_properties(variable = self.EXCLUDE_BIOTYPES, default_value=''))
+    self._exclude_consequences = self.get_multiple_options(self.get_translation_properties(variable = self.EXCLUDE_CONSEQUENCES, default_value='downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'))
 
-    self._report_reference_seq = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.REPORT_REFERENCE_SEQ]
-    if self.REPORT_REFERENCE_SEQ in self.get_pipeline_parameters():
-      self._report_reference_seq = self.get_pipeline_parameters()[self.REPORT_REFERENCE_SEQ]
+    self._skip_including_all_cds = self.get_translation_properties(variable = self.SKIP_INCLUDING_ALL_CDS, default_value=False)
+    self._include_biotypes = self.get_multiple_options(self.get_translation_properties(variable = self.INCLUDE_BIOTYPES, default_value='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'))
 
-    self._annotation_field_name = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.ANNOTATION_FIELD_NAME]
-    if self.ANNOTATION_FIELD_NAME in self.get_pipeline_parameters():
-      self._annotation_field_name = self.get_pipeline_parameters()[self.ANNOTATION_FIELD_NAME]
+    self._include_consequences = self.get_multiple_options(self.get_translation_properties(variable = self.INCLUDE_CONSEQUENCES, default_value='all'))
+    self._biotype_str = self.get_translation_properties(variable = self.BIOTYPE_STR, default_value='biotype')
 
-    self._transcript_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.TRANSCRIPT_STR]
-    if self.TRANSCRIPT_STR in self.get_pipeline_parameters():
-      self._transcript_str = self.get_pipeline_parameters()[self.TRANSCRIPT_STR]
+    self._transcript_description_sep = self.get_translation_properties(variable = self.TRANSCRIPT_DESCRIPTION_SEP, default_value=';')
+    self._num_orfs = self.get_translation_properties(variable = self.NUM_ORFS, default_value=3)
+    self._num_orfs_complement = self.get_translation_properties(variable = self.NUM_ORFS_COMPLEMENT, default_value=0)
+    self._expression_str = self.get_translation_properties(variable = self.EXPRESSION_STR, default_value="")
+    self._expression_thresh = self.get_translation_properties(variable = self.EXPRESSION_THRESH, default_value=5.0)
 
-    self._consequence_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.CONSEQUENCE_STR]
-    if self.CONSEQUENCE_STR in self.get_pipeline_parameters():
-      self._consequence_str = self.get_pipeline_parameters()[self.CONSEQUENCE_STR]
+    self._ignore_filters = self.get_translation_properties(variable = self.IGNORE_FILTERS, default_value=False)
 
-    self._af_field = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.AF_FIELD]
-    if self.AF_FIELD in self.get_pipeline_parameters():
-      self._af_field = self.get_pipeline_parameters()[self.AF_FIELD]
+    self._accepted_filters = self.get_multiple_options(self.get_translation_properties(variable = self.ACCEPTED_FILTERS, default_value='PASS'))
 
-    self._af_threshold = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.AF_THRESHOLD]
-    if self.AF_THRESHOLD in self.get_pipeline_parameters():
-      self._af_threshold = self.get_pipeline_parameters()[self.AF_THRESHOLD]
-
-    self._exclude_biotypes = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_BIOTYPES])
-    if self.EXCLUDE_BIOTYPES in self.get_pipeline_parameters():
-      self._exclude_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.EXCLUDE_BIOTYPES])
-
-    self._exclude_consequences = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.EXCLUDE_CONSEQUENCES])
-    if self.EXCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-      self._exclude_consequences = self.get_multiple_options(
-        self.get_pipeline_parameters()[self.EXCLUDE_CONSEQUENCES])
-
-    self._skip_including_all_cds = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.SKIP_INCLUDING_ALL_CDS]
-    if self.SKIP_INCLUDING_ALL_CDS in self.get_pipeline_parameters():
-      self._skip_including_all_cds = self.get_pipeline_parameters()[self.SKIP_INCLUDING_ALL_CDS]
-
-    self._include_biotypes = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_BIOTYPES])
-    if self.INCLUDE_BIOTYPES in self.get_pipeline_parameters():
-      self._include_biotypes = self.get_multiple_options(self.get_pipeline_parameters()[self.INCLUDE_BIOTYPES])
-
-    self._include_consequences = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.INCLUDE_CONSEQUENCES])
-    if self.INCLUDE_CONSEQUENCES in self.get_pipeline_parameters():
-      self._include_consequences = self.get_multiple_options(
-        self.get_pipeline_parameters()[self.INCLUDE_CONSEQUENCES])
-
-    self._biotype_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.BIOTYPE_STR]
-    if self.BIOTYPE_STR in self.get_pipeline_parameters():
-      self._biotype_str = self.get_pipeline_parameters()[self.BIOTYPE_STR]
-
-    self._transcript_description_sep = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.TRANSCRIPT_DESCRIPTION_SEP]
-    if self.TRANSCRIPT_DESCRIPTION_SEP in self.get_pipeline_parameters():
-      self._transcript_description_sep = self.get_pipeline_parameters()[self.TRANSCRIPT_DESCRIPTION_SEP]
-
-    self._num_orfs = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.NUM_ORFS]
-    if self.NUM_ORFS in self.get_pipeline_parameters():
-      self._num_orfs = self.get_pipeline_parameters()[self.NUM_ORFS]
-
-    self._num_orfs_complement = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.NUM_ORFS_COMPLEMENT]
-    if self.NUM_ORFS_COMPLEMENT in self.get_pipeline_parameters():
-      self._num_orfs_complement = self.get_pipeline_parameters()[self.NUM_ORFS_COMPLEMENT]
-
-    self._expression_str = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.EXPRESSION_STR]
-    if self.EXPRESSION_STR in self.get_pipeline_parameters():
-      self._expression_str = self.get_pipeline_parameters()[self.EXPRESSION_STR]
-
-    self._expression_thresh = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.EXPRESSION_THRESH]
-    if self.EXPRESSION_THRESH in self.get_pipeline_parameters():
-      self._expression_thresh = self.get_pipeline_parameters()[self.EXPRESSION_THRESH]
-
-    self._ignore_filters = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][
-      self.IGNORE_FILTERS]
-    if self.IGNORE_FILTERS in self.get_pipeline_parameters():
-      self._ignore_filters = self.get_pipeline_parameters()[self.IGNORE_FILTERS]
-
-    self._accepted_filters = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][self.ACCEPTED_FILTERS])
-    if self.ACCEPTED_FILTERS in self.get_pipeline_parameters():
-      self._accepted_filters = self.get_multiple_options(
-        self.get_pipeline_parameters()[self.ACCEPTED_FILTERS])
+  def get_translation_properties(self, variable, default_value):
+    value_return = default_value
+    if variable in self.get_pipeline_parameters():
+      value_return = self.get_pipeline_parameters()[variable]
+    elif self.CONFIG_KEY_DATA in self.get_default_parameters() and \
+            self.CONFIG_KEY_VCF in self.get_default_parameters()[self.CONFIG_KEY_DATA] and \
+            variable in self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF]:
+      value_return = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][variable]
+    return value_return
 
   def three_frame_translation(self, input_fasta):
     """

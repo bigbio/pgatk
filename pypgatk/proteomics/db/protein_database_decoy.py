@@ -33,98 +33,31 @@ class ProteinDBDecoyService(ParameterConfiguration):
   def __init__(self, config_file, pipeline_arguments):
     super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                 pipeline_arguments)
-    self._output_file = 'protein-decoy.fa'
-    self._temp_file = 'tmp.fa'
-    self._isobaric = False
-    self._memory_save = False
-    self._enzyme = 'Trypsin'
-    self._decoy_prefix = 'DECOY_'
-    self._cleavage_position = 'c'
-    self._anti_cleavage_sites = ''
-    self._min_peptide_length = 6
-    self._max_iterations = 100
-    self._no_switch = False
-    self._no_suffle = False
-    self._method = 'decoypyrat'
-    self._max_peptide_length = 100
-    self._max_missed_cleavages = 0
-
-    self._temp_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_TEMP_FILE]
-    if self.CONFIG_TEMP_FILE in self.get_pipeline_parameters():
-      self._temp_file = self.get_pipeline_parameters()[self.CONFIG_TEMP_FILE]
-
     self._input_fasta = self.get_pipeline_parameters()[self.CONFIG_INPUT_FILE]
+    self._output_file = self.get_default_parameters_decoy(variable = self.CONFIG_PROTEINDB_OUTPUT, default_value='protein-decoy.fa')
+    self._temp_file = self.get_default_parameters_decoy(variable = self.CONFIG_TEMP_FILE, default_value='tmp.fa')
+    self._isobaric = self.get_default_parameters_decoy(variable = self.CONFIG_NO_ISOBARIC, default_value=False)
+    self._memory_save = self.get_default_parameters_decoy(variable = self.CONFIG_MEMORY_SAVE, default_value=False)
+    self._enzyme = self.get_default_parameters_decoy(variable = self.CONFIG_ENZYME, default_value='Trypsin')
+    self._decoy_prefix =  self.get_default_parameters_decoy(variable = self.CONFIG_DECOY_PREFIX, default_value='DECOY_')
+    self._cleavage_position = self.get_default_parameters_decoy(variable = self.CONFIG_CLEAVAGE_POSITION, default_value='c')
+    self._anti_cleavage_sites = self.get_default_parameters_decoy(variable = self.CONFIG_ANTI_CLEAVAGE_SITES, default_value='')
+    self._min_peptide_length = self.get_default_parameters_decoy(variable = self.CONFIG_MIN_PEPTIDE_LENGTH, default_value=6)
+    self._max_peptide_length = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_LENGTH_MAX, default_value=100)
+    self._max_iterations = self.get_default_parameters_decoy(variable = self.CONFIG_MAX_ITERATIONS, default_value=100)
+    self._no_switch = self.get_default_parameters_decoy(variable = self.CONFIG_DO_NOT_SWITCH, default_value=False)
+    self._no_suffle = self.get_default_parameters_decoy(variable = self.CONFIG_DO_NOT_SUFFLE, default_value=False)
+    self._method = self.get_default_parameters_decoy(variable = self.CONFIG_DECOY_METHOD, default_value='decoypyrat')
+    self._max_missed_cleavages = self.get_default_parameters_decoy(variable = self.CONFIG_MAX_MISSED_CLEAVAGES, default_value=0)
 
-    self._isobaric = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_NO_ISOBARIC]
-    if self.CONFIG_NO_ISOBARIC in self.get_pipeline_parameters():
-      self._isobaric = self.get_pipeline_parameters()[self.CONFIG_NO_ISOBARIC]
-
-    self._memory_save = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_MEMORY_SAVE]
-    if self.CONFIG_MEMORY_SAVE in self.get_pipeline_parameters():
-      self._memory_save = self.get_pipeline_parameters()[self.CONFIG_MEMORY_SAVE]
-
-    self._enzyme = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_ENZYME]
-    if self.CONFIG_ENZYME in self.get_pipeline_parameters():
-      self._enzyme = self.get_pipeline_parameters()[self.CONFIG_ENZYME]
-
-    self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_DECOY_PREFIX]
-    if self.CONFIG_DECOY_PREFIX in self.get_pipeline_parameters():
-      self._decoy_prefix = self.get_pipeline_parameters()[self.CONFIG_DECOY_PREFIX]
-
-    self._cleavage_position = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_CLEAVAGE_POSITION]
-    if self.CONFIG_CLEAVAGE_POSITION in self.get_pipeline_parameters():
-      self._cleavage_position = self.get_pipeline_parameters()[self.CONFIG_CLEAVAGE_POSITION]
-
-    self._anti_cleavage_sites = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_ANTI_CLEAVAGE_SITES]
-    if self.CONFIG_ANTI_CLEAVAGE_SITES in self.get_pipeline_parameters():
-      self._anti_cleavage_sites = self.get_pipeline_parameters()[self.CONFIG_ANTI_CLEAVAGE_SITES]
-
-    self._min_peptide_length = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_MIN_PEPTIDE_LENGTH]
-    if self.CONFIG_MIN_PEPTIDE_LENGTH in self.get_pipeline_parameters():
-      self._min_peptide_length = self.get_pipeline_parameters()[self.CONFIG_MIN_PEPTIDE_LENGTH]
-
-    self._max_iterations = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_MAX_ITERATIONS]
-    if self.CONFIG_MAX_ITERATIONS in self.get_pipeline_parameters():
-      self._max_iterations = self.get_pipeline_parameters()[self.CONFIG_MAX_ITERATIONS]
-
-    self._no_switch = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_DO_NOT_SWITCH]
-    if self.CONFIG_DO_NOT_SWITCH in self.get_pipeline_parameters():
-      self._no_switch = self.get_pipeline_parameters()[self.CONFIG_DO_NOT_SWITCH]
-
-    self._output_file = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_PROTEINDB_OUTPUT]
-    if self.CONFIG_PROTEINDB_OUTPUT in self.get_pipeline_parameters():
-      self._output_file = self.get_pipeline_parameters()[self.CONFIG_PROTEINDB_OUTPUT]
-
-    self._no_suffle = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_DO_NOT_SUFFLE]
-    if self.CONFIG_DO_NOT_SUFFLE in self.get_pipeline_parameters():
-      self._no_suffle = self.get_pipeline_parameters()[self.CONFIG_DO_NOT_SUFFLE]
-
-    self._method = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][self.CONFIG_DECOY_METHOD]
-    if self.CONFIG_DECOY_METHOD in self.get_pipeline_parameters():
-      self._method = self.get_pipeline_parameters()[self.CONFIG_DECOY_METHOD]
-
-    self._max_peptide_length = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_PEPTIDE_LENGTH_MAX]
-    if self.CONFIG_PEPTIDE_LENGTH_MAX in self.get_pipeline_parameters():
-      self._max_peptide_length = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_LENGTH_MAX]
-
-    self._max_missed_cleavages = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_MAX_MISSED_CLEAVAGES]
-    if self.CONFIG_MAX_MISSED_CLEAVAGES in self.get_pipeline_parameters():
-      self._max_missed_cleavages = self.get_pipeline_parameters()[self.CONFIG_MAX_MISSED_CLEAVAGES]
-
-    self._max_missed_cleavages = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][
-      self.CONFIG_KEEP_TARGET_HITS]
-    if self.CONFIG_KEEP_TARGET_HITS in self.get_pipeline_parameters():
-      self._keep_target_hits = self.get_pipeline_parameters()[self.CONFIG_KEEP_TARGET_HITS]
+  def get_default_parameters_decoy(self, variable: str, default_value):
+    value_return = default_value
+    if variable in self.get_pipeline_parameters():
+      value_return = self.get_pipeline_parameters()[variable]
+    elif self.CONFIG_KEY_PROTEINDB_DECOY in self.get_default_parameters() and \
+            variable in self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY]:
+      value_return = self.get_default_parameters()[self.CONFIG_KEY_PROTEINDB_DECOY][variable]
+    return value_return
 
   @staticmethod
   def revswitch(protein, noswitch, sites):

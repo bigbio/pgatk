@@ -8,15 +8,6 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 log = logging.getLogger(__name__)
-try:
-  default_config_text = pkgutil.get_data(__name__, "../config/protein_decoy.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/protein_decoy.yaml").decode()
-    except ValueError:
-        log.info("Configuration file not available !!! ")
-
-
 
 @click.command('generate-decoy',
                short_help='Create decoy protein sequences using multiple methods DecoyPYrat, Reverse/Shuffled Proteins.')
@@ -58,12 +49,8 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
                       max_missed_cleavages: int, min_peptide_length: int, max_peptide_length: int,
                       max_iterations: int, do_not_shuffle: bool, do_not_switch: bool, temp_file: str,
                       no_isobaric: bool, keep_target_hits: bool, memory_save: bool):
-
-  if config_file is None:
-    config_data = read_yaml_from_text(default_config_text)
-    msg = "The default configuration file is used: {}".format("protein_decoy.yaml")
-    log.info(msg)
-  else:
+  config_data = None
+  if config_file is not None:
     config_data = read_yaml_from_file(config_file)
 
   pipeline_arguments = {}

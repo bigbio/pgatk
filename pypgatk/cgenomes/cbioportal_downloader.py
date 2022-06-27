@@ -16,32 +16,72 @@ class CbioPortalDownloadService(ParameterConfiguration):
     CONFIG_CBIOPORTAL_API_CANCER_STUDIES = "cancer_studies"
     CONFIG_LIST_STUDIES = "list_studies"
     CONFIG_MULTITHREADING = "multithreading"
+    PROTEINDB = 'proteindb'
+    FILTER_INFO = 'filter_info'
+    FILTER_COLUMN = 'filter_column'
 
     def __init__(self, config_data, pipeline_arguments):
-      """
+        """
       Init the class with the specific parameters.
       :param config_data configuration file
       :param pipeline_arguments pipelines arguments
       """
 
-      super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_data,
+        super(CbioPortalDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_data,
                                                         pipeline_arguments)
 
-      self._cbioportal_studies = []
-      if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
-          self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
-      else:
-        self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_OUTPUT_DIRECTORY]
+        self._local_path_cbioportal = 'output_directory'
+        self._list_studies = []
+        self._multithreading = True
 
-      self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_LIST_STUDIES]
-      if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
-          self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
+        self._cbioportal_base_url = 'https://www.cbioportal.org/webservice.do'
+        self._cancer_studies_command = 'cmd=getCancerStudies'
 
-      self._multithreading = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_MULTITHREADING]
-      if self.CONFIG_MULTITHREADING in self.get_pipeline_parameters():
-          self._multithreading = self.get_pipeline_parameters()[self.CONFIG_MULTITHREADING]
+        self._cbioportal_download_url = 'https://cbioportal-datahub.s3.amazonaws.com'
 
-      self.prepare_local_cbioportal_repository()
+        if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
+            self._local_path_cbioportal = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
+        elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and \
+                self.CONFIG_OUTPUT_DIRECTORY in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]:
+            self._local_path_cbioportal = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_OUTPUT_DIRECTORY]
+
+        if self.CONFIG_LIST_STUDIES in self.get_pipeline_parameters():
+            self._list_studies = self.get_pipeline_parameters()[self.CONFIG_LIST_STUDIES]
+        elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and \
+                self.CONFIG_LIST_STUDIES in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]:
+            self._list_studies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_LIST_STUDIES]
+
+        if self.CONFIG_MULTITHREADING in self.get_pipeline_parameters():
+            self._multithreading = self.get_pipeline_parameters()[self.CONFIG_MULTITHREADING]
+        elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and \
+                self.CONFIG_MULTITHREADING in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]:
+            self._multithreading = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                self.CONFIG_MULTITHREADING]
+
+        if self.CONFIG_CBIOPORTAL_API_SERVER in self.get_pipeline_parameters():
+            self._cbioportal_base_url = self.get_pipeline_parameters()[self.CONFIG_CBIOPORTAL_API_SERVER]
+        elif (self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and
+              self.CONFIG_CBIOPORTAL_API in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]
+              and self.CONFIG_CBIOPORTAL_API_SERVER in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                  self.CONFIG_CBIOPORTAL_API]):
+            self._cbioportal_base_url = \
+            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+                self.CONFIG_CBIOPORTAL_API_SERVER]
+
+        if self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES in self.get_pipeline_parameters():
+            self._cancer_studies_command = self.get_pipeline_parameters()[self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
+        elif (self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and
+              self.CONFIG_CBIOPORTAL_API in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]
+              and self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+                  self.CONFIG_CBIOPORTAL_API]):
+            self._cancer_studies_command = \
+            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+                self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
+
+        self.prepare_local_cbioportal_repository()
+        self.get_cancer_studies()
 
     def prepare_local_cbioportal_repository(self):
         self.get_logger().debug("Preparing local cbioportal repository, root folder - '{}'".format(
@@ -53,19 +93,27 @@ class CbioPortalDownloadService(ParameterConfiguration):
     def get_local_path_root_cbioportal_repo(self):
         return self._local_path_cbioportal
 
+    def get_filter_options(self, variable, default_value):
+        return_value = default_value
+        if variable in self.get_default_parameters():
+            return_value = self.get_default_parameters()[variable]
+        elif self.PROTEINDB in self.get_default_parameters() and \
+                self.FILTER_INFO in self.get_default_parameters()[self.PROTEINDB] and \
+                variable in self.get_default_parameters()[self.PROTEINDB][self.FILTER_INFO]:
+            return_value = self.get_default_parameters()[self.PROTEINDB][self.FILTER_INFO][variable]
+        return  return_value
+
     def get_cancer_studies(self):
         """
         This method will print the list of all cancer studies for the user.
         :return:
         """
-        server = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
-            self.CONFIG_CBIOPORTAL_API_SERVER]
-        endpoint = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
-            self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
+        server = self._cbioportal_base_url
+        endpoint = self._cancer_studies_command
         self._cbioportal_studies = call_api_raw(server + "?" + endpoint).text
         return self._cbioportal_studies
 
-    def download_study(self, download_study, url_file_name = None):
+    def download_study(self, download_study, url_file_name=None):
         """
         This function will download a study from cBioPortal using the study ID
         :param download_study: Study to be download, if the study is empty or None, all the studies will be
@@ -79,7 +127,6 @@ class CbioPortalDownloadService(ParameterConfiguration):
         url_file = None
         if url_file_name is not None:
             url_file = open(url_file_name, 'w')
-
 
         if self._cbioportal_studies is None or len(self._cbioportal_studies) == 0:
             self.get_cancer_studies()
@@ -106,15 +153,15 @@ class CbioPortalDownloadService(ParameterConfiguration):
             else:
                 for row in csv_reader:
                     if line_count != 0:
-                        self.download_one_study(row[0], url_file = url_file)
+                        self.download_one_study(row[0], url_file=url_file)
                     line_count = line_count + 1
 
-    def download_one_study(self, download_study, url_file = None):
+    def download_one_study(self, download_study, url_file=None):
         file_name = '{}.tar.gz'.format(download_study)
-        file_url = '{}/{}'.format(
-            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_KEY_CBIOPORTAL_DOWNLOAD_URL],
-            file_name)
-        file_name = download_file(file_url = file_url, file_name = self.get_local_path_root_cbioportal_repo() + '/' + file_name, log = self.get_logger(), url_file = url_file)
+        file_url = '{}/{}'.format(self._cbioportal_download_url,file_name)
+        file_name = download_file(file_url=file_url,
+                                  file_name=self.get_local_path_root_cbioportal_repo() + '/' + file_name,
+                                  log=self.get_logger(), url_file=url_file)
         if file_name is not None:
             msg = "The following study '{}' has been downloaded. ".format(download_study)
         else:

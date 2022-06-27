@@ -10,15 +10,6 @@ from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file, pa
 
 log = logging.getLogger(__name__)
 
-try:
-  default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
-except ValueError:
-  try:
-    default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
-  except ValueError:
-    log.info("Configuration file not available !!!")
-
-
 @click.command('peptide-class-fdr', short_help="Command to compute the Peptide class FDR")
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
 @click.option('-in', '--input-file', help='input file with the peptides and proteins')
@@ -59,12 +50,8 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :param disable_class_fdr: Do not compute class FDR and not filtering the PSMs
   :return:
   """
-
-  if config_file is None:
-    config_data = read_yaml_from_text(default_config_text)
-    msg = "The default configuration file is used: {}".format("openms_analysis.yaml")
-    log.info(msg)
-  else:
+  config_data = None
+  if config_file is not None:
     config_data = read_yaml_from_file(config_file)
 
   if input_file is None or output_file is None:

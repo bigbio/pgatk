@@ -47,11 +47,18 @@ class ParameterConfiguration:
 
     self._ROOT_CONFIG_NAME = root_config_name
 
-    self._default_params = yaml_configuration
-    self._pipeline_parameters = pipeline_parameters
+    if pipeline_parameters is not None:
+       self._pipeline_parameters = pipeline_parameters
+    else:
+      self._pipeline_parameters = {}
+
+    if yaml_configuration is not None:
+      self._default_params = yaml_configuration
+    else:
+      self._default_params = {}
 
     # Prepare Logging subsystem
-    if self._ROOT_CONFIG_NAME in self._default_params:
+    if self._default_params is not None and self._ROOT_CONFIG_NAME in self._default_params:
       if self._CONFIG_LOGGER in self._default_params[self._ROOT_CONFIG_NAME]:
         if self._CONFIG_LOGGER_LEVEL in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
           self._log_level = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][

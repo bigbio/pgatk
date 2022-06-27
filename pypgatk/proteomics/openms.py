@@ -49,54 +49,23 @@ class OpenmsDataService(ParameterConfiguration):
     super(OpenmsDataService, self).__init__(self.CONFIG_KEY_OPENMS_ANALYSIS, config_file,
                                             pipeline_arguments)
 
-    self._decoy_prefix = 'DECOY_'
-    self._peptide_class_prefix = 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs'
-    self._file_type = 'idxml'
-    self._min_peptide_length = 5
-    self._psm_pep_fdr_cutoff = 0.01
-    self._psm_pep_class_fdr_cutoff = 0.01
-    self._peptide_groups_prefix = {'non_canonical':['altorf','pseudo','ncRNA'],'mutations':['COSMIC','cbiomut'],'variants':['var_mut','var_rs']}
-    self._peptide_class_fdr_disable = False
+    self._decoy_prefix = self.get_default_parameters_decoy(variable = self.CONFIG_DECOY_PREFIX, default_value= 'DECOY_')
+    self._peptide_class_prefix = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_CLASS_PREFIX, default_value= 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs')
+    self._file_type = self.get_default_parameters_decoy(variable = self.CONFIG_FILE_TYPE, default_value= 'idxml')
+    self._min_peptide_length = self.get_default_parameters_decoy(variable = self.CONFIG_MIN_PEPTIDE_LENGTH, default_value= 5)
+    self._psm_pep_fdr_cutoff = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_FDR_CUTOFF, default_value= 0.01)
+    self._psm_pep_class_fdr_cutoff = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF, default_value= 0.01)
+    self._peptide_groups_prefix = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_GROUP_PREFIX, default_value= {'non_canonical':['altorf','pseudo','ncRNA'],'mutations':['COSMIC','cbiomut'],'variants':['var_mut','var_rs']})
+    self._peptide_class_fdr_disable = self.get_default_parameters_decoy(variable = self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR, default_value= False)
 
-    self._decoy_prefix = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_DECOY_PREFIX]
-    if self.CONFIG_DECOY_PREFIX in self.get_pipeline_parameters():
-      self._decoy_prefix = self.get_pipeline_parameters()[self.CONFIG_DECOY_PREFIX]
-
-    self._peptide_class_prefix = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_CLASS_PREFIX]
-    if self.CONFIG_PEPTIDE_CLASS_PREFIX in self.get_pipeline_parameters():
-      self._peptide_class_prefix = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_CLASS_PREFIX]
-
-    self._file_type = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_FILE_TYPE]
-    if self.CONFIG_FILE_TYPE in self.get_pipeline_parameters():
-      self._file_type = self.get_pipeline_parameters()[self.CONFIG_FILE_TYPE]
-
-    self._min_peptide_length = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_MIN_PEPTIDE_LENGTH]
-    if self.CONFIG_MIN_PEPTIDE_LENGTH in self.get_pipeline_parameters():
-      self._min_peptide_length = self.get_pipeline_parameters()[self.CONFIG_MIN_PEPTIDE_LENGTH]
-
-    self._psm_pep_fdr_cutoff = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_FDR_CUTOFF]
-    if self.CONFIG_PEPTIDE_FDR_CUTOFF in self.get_pipeline_parameters():
-      self._psm_pep_fdr_cutoff = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_FDR_CUTOFF]
-
-    self._psm_pep_class_fdr_cutoff = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF]
-    if self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF in self.get_pipeline_parameters():
-      self._psm_pep_fdr_cutoff = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_CLASS_FDR_CUTOFF]
-
-    self._peptide_groups_prefix = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_GROUP_PREFIX]
-    if self.CONFIG_PEPTIDE_GROUP_PREFIX in self.get_pipeline_parameters():
-      self._peptide_groups_prefix = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_GROUP_PREFIX]
-
-    self._peptide_class_fdr_disable = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][
-      self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR]
-    if self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR in self.get_pipeline_parameters():
-      self._peptide_class_fdr_disable = self.get_pipeline_parameters()[self.CONFIG_PEPTIDE_DISABLE_CLASS_FDR]
+  def get_default_parameters_decoy(self, variable: str, default_value):
+    value_return = default_value
+    if variable in self.get_pipeline_parameters():
+      value_return = self.get_pipeline_parameters()[variable]
+    elif self.CONFIG_KEY_OPENMS_ANALYSIS in self.get_default_parameters() and \
+            variable in self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS]:
+      value_return = self.get_default_parameters()[self.CONFIG_KEY_OPENMS_ANALYSIS][variable]
+    return value_return
 
   @staticmethod
   def _filter_by_group(accessions, peptide_classes):

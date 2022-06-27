@@ -8,14 +8,6 @@ from pypgatk.proteomics.openms import OpenmsDataService
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 log = logging.getLogger(__name__)
-try:
-    default_config_text = pkgutil.get_data(__name__, "../config/openms_analysis.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/openms_analysis.yaml").decode()
-    except ValueError:
-        log.info("No configuration file available -- ")
-
 
 @click.command('generate-deeplc', short_help="Generate input for deepLC tool from idXML,mzTab or consensusXML")
 @click.option('-c', '--config_file', help='Configuration to perform deepLC configuration file')
@@ -30,11 +22,7 @@ except ValueError:
 @click.pass_context
 def generate_deeplc(ctx, config_file, input_file, output_file, decoy_prefix: str, peptide_classes_prefix: str,
                     novel_peptides: bool):
-    if config_file is None:
-        config_data = read_yaml_from_text(default_config_text)
-        msg = "The default configuration file is used: {}".format("openms_analysis.yaml")
-        log.info(msg)
-    else:
+    if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 
     if input_file is None or output_file is None:

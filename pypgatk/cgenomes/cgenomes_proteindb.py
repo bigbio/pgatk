@@ -8,7 +8,7 @@ from pypgatk.toolbox.general import ParameterConfiguration
 
 class CancerGenomesService(ParameterConfiguration):
   CONFIG_CANCER_GENOMES_MUTATION_FILE = 'mutation_file'
-  CONFIG_COMPLETE_GENES_FILE = "genes_file"
+  CONFIG_COMPLETE_GENES_FILE = "all_cds_genes_file"
   CONFIG_OUTPUT_FILE = "output_file"
   CONFIG_COSMIC_DATA = "cosmic_data"
   CONFIG_KEY_DATA = 'proteindb'
@@ -17,6 +17,7 @@ class CancerGenomesService(ParameterConfiguration):
   ACCEPTED_VALUES = "accepted_values"
   SPLIT_BY_FILTER_COLUMN = "split_by_filter_column"
   CLINICAL_SAMPLE_FILE = 'clinical_sample_file'
+  CONFIG_COSMIC_SERVER = 'cosmic_server'
 
   def __init__(self, config_file, pipeline_arguments):
     """
@@ -26,40 +27,43 @@ class CancerGenomesService(ParameterConfiguration):
         """
     super(CancerGenomesService, self).__init__(self.CONFIG_COSMIC_DATA, config_file, pipeline_arguments)
 
-    self._filter_column = 'CANCER_TYPE'
-    self._accepted_values = 'all'
-    self._split_by_filter_column = False
-    self._local_clinical_sample_file = ''
+    self._filter_column = self.get_mutations_default_options(variable = self.FILTER_COLUMN, default_value = 'CANCER_TYPE')
+    self._accepted_values = self.get_mutations_default_options(variable = self.ACCEPTED_VALUES, default_value = 'all')
+    self._split_by_filter_column = self.get_mutations_default_options(variable = self.SPLIT_BY_FILTER_COLUMN, default_value = False)
+    self._local_clinical_sample_file = self.get_mutations_default_options(variable = self.CLINICAL_SAMPLE_FILE, default_value = '')
 
-
+    self._local_mutation_file = 'CosmicMutantExport.tsv.gz'
     if self.CONFIG_CANCER_GENOMES_MUTATION_FILE in self.get_pipeline_parameters():
-      self._local_mutation_file = self.get_pipeline_parameters()[self.CONFIG_CANCER_GENOMES_MUTATION_FILE]
+       self._local_mutation_file = self.get_pipeline_parameters()[self.CONFIG_CANCER_GENOMES_MUTATION_FILE]
+    elif self.CONFIG_COSMIC_DATA in self.get_default_parameters() and \
+      self.CONFIG_COSMIC_SERVER in self.get_default_parameters()[self.CONFIG_COSMIC_DATA] and \
+            self.CONFIG_CANCER_GENOMES_MUTATION_FILE in self.get_default_parameters()[self.CONFIG_COSMIC_DATA][self.CONFIG_COSMIC_SERVER]:
+      self._local_mutation_file = self.get_default_parameters()[self.CONFIG_COSMIC_DATA][self.CONFIG_COSMIC_SERVER][self.CONFIG_CANCER_GENOMES_MUTATION_FILE]
 
+    self._local_complete_genes = 'All_COSMIC_Genes.fasta.gz'
     if self.CONFIG_COMPLETE_GENES_FILE in self.get_pipeline_parameters():
       self._local_complete_genes = self.get_pipeline_parameters()[self.CONFIG_COMPLETE_GENES_FILE]
+    elif self.CONFIG_COSMIC_DATA in self.get_default_parameters() and \
+            self.CONFIG_COSMIC_SERVER in self.get_default_parameters()[self.CONFIG_COSMIC_DATA] and \
+            self.CONFIG_COMPLETE_GENES_FILE in self.get_default_parameters()[self.CONFIG_COSMIC_DATA][
+      self.CONFIG_COSMIC_SERVER]:
+      self._local_complete_genes = self.get_default_parameters()[self.CONFIG_COSMIC_DATA][self.CONFIG_COSMIC_SERVER][
+        self.CONFIG_COMPLETE_GENES_FILE]
 
+    self._local_output_file = 'output_database.fasta'
     if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
       self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
 
-    self._filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][
-      self.FILTER_COLUMN]
-    if self.FILTER_COLUMN in self.get_pipeline_parameters():
-      self._filter_column = self.get_pipeline_parameters()[self.FILTER_COLUMN]
-
-    self._accepted_values = self.get_multiple_options(
-      self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][self.ACCEPTED_VALUES])
-    if self.ACCEPTED_VALUES in self.get_pipeline_parameters():
-      self._accepted_values = self.get_multiple_options(self.get_pipeline_parameters()[self.ACCEPTED_VALUES])
-
-    self._split_by_filter_column = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][
-      self.SPLIT_BY_FILTER_COLUMN]
-    if self.SPLIT_BY_FILTER_COLUMN in self.get_pipeline_parameters():
-      self._split_by_filter_column = self.get_pipeline_parameters()[self.SPLIT_BY_FILTER_COLUMN]
-
-    self._local_clinical_sample_file = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][
-      self.CLINICAL_SAMPLE_FILE]
-    if self.CLINICAL_SAMPLE_FILE in self.get_pipeline_parameters():
-      self._local_clinical_sample_file = self.get_pipeline_parameters()[self.CLINICAL_SAMPLE_FILE]
+  def get_mutations_default_options(self, variable: str, default_value):
+     return_value = default_value
+     if variable in self.get_pipeline_parameters():
+       return_value = self.get_pipeline_parameters()[variable]
+     elif self.CONFIG_KEY_DATA in self.get_default_parameters() \
+             and self.CONFIG_FILTER_INFO in self.get_default_parameters()[self.CONFIG_KEY_DATA] \
+             and variable in self.get_default_parameters()[
+       self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO]:
+       return_value = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_FILTER_INFO][variable]
+     return return_value
 
   @staticmethod
   def get_multiple_options(options_str: str):

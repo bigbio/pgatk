@@ -9,14 +9,6 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 log = logging.getLogger(__name__)
-try:
-    default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/ensembl_config.yaml").decode()
-    except ValueError:
-        log.info("Configuration file not available !!! ")
-
 
 @click.command('ensembl-check', short_help="Command to check ensembl database for stop codons, gaps")
 @click.option('-c', '--config_file',
@@ -30,11 +22,7 @@ except ValueError:
 @click.pass_context
 def ensembl_check(ctx, config_file, input_fasta, output, add_stop_codons, num_aa):
 
-  if config_file is None:
-    config_data = read_yaml_from_text(default_config_text)
-    msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
-    log.info(msg)
-  else:
+  if config_file is not None:
     config_data = read_yaml_from_file(config_file)
 
   if input_fasta is None:

@@ -8,13 +8,6 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 log = logging.getLogger(__name__)
-try:
-    default_config_text = pkgutil.get_data(__name__, "../config/cosmic_config.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/cosmic_config.yaml").decode()
-    except ValueError:
-        log.info("Configuration file not available !!!")
 
 @click.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
 @click.option('-c', '--config_file',
@@ -34,11 +27,8 @@ except ValueError:
 def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db,
                         filter_column, accepted_values, split_by_filter_column):
 
-  if config_file is None:
-    config_data = read_yaml_from_text(default_config_text)
-    msg = "The default configuration file is used: {}".format("cosmic_config.yaml")
-    log.info(msg)
-  else:
+  config_data = None
+  if config_file is not None:
     config_data = read_yaml_from_file(config_file)
 
   if input_mutation is None or input_genes is None or output_db is None:

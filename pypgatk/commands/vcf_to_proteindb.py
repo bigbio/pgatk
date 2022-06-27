@@ -8,13 +8,6 @@ import pkgutil
 from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
 
 log = logging.getLogger(__name__)
-try:
-    default_config_text = pkgutil.get_data(__name__, "../config/ensembl_config.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/ensembl_config.yaml").decode()
-    except ValueError:
-        log.info("Configuration file not available !!!")
 
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants VCF files")
@@ -66,11 +59,8 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      include_biotypes, consequence_str, exclude_consequences,
                      skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
-    if config_file is None:
-        config_data = read_yaml_from_text(default_config_text)
-        msg = "The default configuration file is used: {}".format("ensembl_config.yaml")
-        log.info(msg)
-    else:
+    config_data = None
+    if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 
     if input_fasta is None or vcf is None or gene_annotations_gtf is None:
