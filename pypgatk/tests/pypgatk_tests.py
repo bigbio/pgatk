@@ -16,7 +16,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
                                 '--peptide-groups-prefix',
                                 '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_peptide_classes_fdr(self):
         runner = CliRunner()
@@ -26,7 +26,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '-out',
                                 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
                                 '--peptide-classes-prefix', '"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_vcf_to_proteindb(self):
         """
@@ -45,7 +45,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--annotation_field_name', 'CSQ',
                                 '--biotype_str', 'feature_type',
                                 '--include_biotypes', 'mRNA,ncRNA'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_vcf_to_proteindb_notannotated(self):
         """
@@ -63,7 +63,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--annotation_field_name', ""])
         if result.exit_code != 0:
             print(result)
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_vcf_gnomad_to_proteindb(self):
         """
@@ -81,7 +81,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--af_threshold', '0.001',
                                 '--var_prefix', 'gnomvar',
                                 '--annotation_field_name', 'vep', ])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_to_proteindb(self):
         """
@@ -93,7 +93,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_CDSs_DNAseq.fa'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_ncrnas_to_proteindb(self):
         """
@@ -109,7 +109,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes',
                                 'lncRNA,retained_intron,Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                                 '--skip_including_all_cds'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_lncrnas_to_proteindb(self):
         """
@@ -125,7 +125,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes',
                                 'lncRNA,retained_intron',
                                 '--skip_including_all_cds'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_sncrnas_to_proteindb(self):
         """
@@ -141,7 +141,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes',
                                 'Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                                 '--skip_including_all_cds'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_pseudogenes_to_proteindb(self):
         """
@@ -157,7 +157,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes',
                                 'disrupted_domain, IGC_pseudogene, IGJ_pseudogene, IG_pseudogene, IGV_pseudogene, processed_pseudogene, transcribed_processed_pseudogene, transcribed_unitary_pseudogene, transcribed_unprocessed_pseudogene, translated_processed_pseudogene, TRJ_pseudogene, unprocessed_pseudogene',
                                 '--skip_including_all_cds'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_dnaseq_altorfs_to_proteindb(self):
         """
@@ -171,7 +171,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--output_proteindb', 'testdata/proteindb_from_altORFs_DNAseq.fa',
                                 '--var_prefix', 'altorf_',
                                 '--include_biotypes', 'altORFs', '--skip_including_all_cds'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_cbioportal_to_proteindb(self):
         """
@@ -187,7 +187,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
                                 '--filter_column', 'CANCER_TYPE'
                                                    '--split_by_filter_column', '--accepted_values', 'all'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_cosmic_to_proteindb(self):
         """
@@ -204,7 +204,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--split_by_filter_column', '--accepted_values', 'all'])
         if result.exit_code != 0:
             print(result.exception)
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_generate_decoy_database(self):
         """
@@ -216,7 +216,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['generate-decoy', '--config_file', 'config/protein_decoy.yaml',
                                 '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method',
                                 'protein-reverse'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_generate_decoy_database_noconfig(self):
         """
@@ -227,7 +227,7 @@ class PypgatkRunnerTests(unittest.TestCase):
         result = runner.invoke(cli,
                                ['generate-decoy', '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method',
                                 'protein-reverse'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_download_ensembl_data(self):
         """
@@ -238,7 +238,7 @@ class PypgatkRunnerTests(unittest.TestCase):
         result = runner.invoke(cli,
                                ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
                                 '--taxonomy', '9103', '--output_directory', 'testdata'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_download_ensembl_data_37(self):
         """
@@ -248,7 +248,7 @@ class PypgatkRunnerTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['ensembl-downloader', '--taxonomy', '9103', '--output_directory', 'testdata', '--grch37'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_download_cbioportal_data(self):
         """
@@ -259,7 +259,7 @@ class PypgatkRunnerTests(unittest.TestCase):
         result = runner.invoke(cli,
                                ['cbioportal-downloader', '--config_file', 'config/cbioportal_config.yaml',
                                 '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_download_cbioportal_data_noconfig(self):
         """
@@ -269,7 +269,7 @@ class PypgatkRunnerTests(unittest.TestCase):
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['cbioportal-downloader', '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
     def test_check_ensembl_database(self):
         runner = CliRunner()
@@ -277,7 +277,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output',
                                 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
-        assert result.exit_code == 0
+        self.assertEqual(result.exit_code, 0)
 
 
 
