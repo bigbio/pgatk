@@ -1,17 +1,18 @@
-import os
-
 import click
+import logging
 
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
 
-this_dir, this_filename = os.path.split(__file__)
+import pkgutil
 
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+
+log = logging.getLogger(__name__)
 
 @click.command('ensembl-check', short_help="Command to check ensembl database for stop codons, gaps")
 @click.option('-c', '--config_file',
-              help='Configuration to perform Ensembl database check',
-              default=this_dir + '/../config/ensembl_config.yaml')
+              help='Configuration to perform Ensembl database check')
 @click.option('-in', '--input_fasta', help='input_fasta file to perform the translation')
 @click.option('-out', '--output', help='Output File', default="peptide-database.fa")
 @click.option('-adds', '--add_stop_codons',
@@ -20,10 +21,14 @@ this_dir, this_filename = os.path.split(__file__)
               default=6)
 @click.pass_context
 def ensembl_check(ctx, config_file, input_fasta, output, add_stop_codons, num_aa):
+
+  if config_file is not None:
+    config_data = read_yaml_from_file(config_file)
+
   if input_fasta is None:
     print_help()
 
   pipeline_arguments = {EnsemblDataService.PROTEIN_DB_OUTPUT: output}
 
-  ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
+  ensembl_data_service = EnsemblDataService(config_data, pipeline_arguments)
   ensembl_data_service.check_proteindb(input_fasta, add_stop_codons, num_aa)

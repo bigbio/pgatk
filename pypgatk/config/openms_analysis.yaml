@@ -1,0 +1,24 @@
+openms_analysis:
+  min_peptide_length: 5
+  psm_pep_fdr_cutoff: 0.01
+  psm_pep_class_fdr_cutoff: 0.01
+  decoy_prefix: DECOY_
+  disable_class_fdr: False
+  file_type: idxml
+  peptide_classes_prefix: 'altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs'
+  peptide_groups_prefix:
+    non_canonical:
+        - altorf
+        - pseudo
+        - ncRNA
+    mutations:
+        - COSMIC
+        - cbiomut
+    variants:
+        - var_mut
+        - var_rs
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG

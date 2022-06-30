@@ -1,16 +1,17 @@
-import os
-
 import click
-
+import logging
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
 
-this_dir, this_filename = os.path.split(__file__)
+import pkgutil
+
+from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+
+log = logging.getLogger(__name__)
 
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants VCF files")
-@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files',
-              default=this_dir + '/../config/ensembl_config.yaml')
+@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
 @click.option('-f', '--input_fasta', help='Path to the transcript sequence')
 @click.option('-v', '--vcf', help='Path to the VCF file')
 @click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
@@ -29,16 +30,14 @@ this_dir, this_filename = os.path.split(__file__)
 @click.option('--af_threshold', default=0.01, help='Minium AF threshold for considering common variants')
 @click.option('--transcript_str', default='FEATURE', type=str,
               help='String that is used for transcript ID in the VCF header INFO field')
-
 @click.option('--biotype_str', default='BIOTYPE', type=str,
               help='String that is used for biotype in the VCF header INFO field')
 @click.option('--exclude_biotypes',
               default='',
               help="Excluded Biotypes", show_default=True)
-@click.option('--include_biotypes', 
-              default='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA', 
+@click.option('--include_biotypes',
+              default='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA',
               help="included_biotypes, default all")
-
 @click.option('--consequence_str', default='CONSEQUENCE', type=str,
               help='String that is used for consequence in the VCF header INFO field')
 @click.option('--exclude_consequences',
@@ -56,30 +55,34 @@ this_dir, this_filename = os.path.split(__file__)
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
                      var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
-                     af_field, af_threshold, transcript_str, biotype_str, exclude_biotypes, 
-                     include_biotypes, consequence_str, exclude_consequences, 
+                     af_field, af_threshold, transcript_str, biotype_str, exclude_biotypes,
+                     include_biotypes, consequence_str, exclude_consequences,
                      skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
-  if input_fasta is None or vcf is None or gene_annotations_gtf is None:
-    print_help()
+    config_data = None
+    if config_file is not None:
+        config_data = read_yaml_from_file(config_file)
 
-  pipeline_arguments = {EnsemblDataService.MITO_TRANSLATION_TABLE: mito_translation_table,
-                        EnsemblDataService.TRANSLATION_TABLE: translation_table,
-                        EnsemblDataService.HEADER_VAR_PREFIX: var_prefix,
-                        EnsemblDataService.REPORT_REFERENCE_SEQ: report_ref_seq,
-                        EnsemblDataService.PROTEIN_DB_OUTPUT: output_proteindb,
-                        EnsemblDataService.ANNOTATION_FIELD_NAME: annotation_field_name,
-                        EnsemblDataService.AF_FIELD: af_field, EnsemblDataService.AF_THRESHOLD: af_threshold,
-                        EnsemblDataService.TRANSCRIPT_STR: transcript_str,
-                        EnsemblDataService.BIOTYPE_STR: biotype_str,
-                        EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
-                        EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
-                        EnsemblDataService.CONSEQUENCE_STR: consequence_str,
-                        EnsemblDataService.EXCLUDE_CONSEQUENCES: exclude_consequences,
-                        EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
-                        EnsemblDataService.INCLUDE_CONSEQUENCES: include_consequences,
-                        EnsemblDataService.IGNORE_FILTERS: ignore_filters,
-                        EnsemblDataService.ACCEPTED_FILTERS: accepted_filters}
+    if input_fasta is None or vcf is None or gene_annotations_gtf is None:
+        print_help()
 
-  ensembl_data_service = EnsemblDataService(config_file, pipeline_arguments)
-  ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf)
+    pipeline_arguments = {EnsemblDataService.MITO_TRANSLATION_TABLE: mito_translation_table,
+                          EnsemblDataService.TRANSLATION_TABLE: translation_table,
+                          EnsemblDataService.HEADER_VAR_PREFIX: var_prefix,
+                          EnsemblDataService.REPORT_REFERENCE_SEQ: report_ref_seq,
+                          EnsemblDataService.PROTEIN_DB_OUTPUT: output_proteindb,
+                          EnsemblDataService.ANNOTATION_FIELD_NAME: annotation_field_name,
+                          EnsemblDataService.AF_FIELD: af_field, EnsemblDataService.AF_THRESHOLD: af_threshold,
+                          EnsemblDataService.TRANSCRIPT_STR: transcript_str,
+                          EnsemblDataService.BIOTYPE_STR: biotype_str,
+                          EnsemblDataService.EXCLUDE_BIOTYPES: exclude_biotypes,
+                          EnsemblDataService.INCLUDE_BIOTYPES: include_biotypes,
+                          EnsemblDataService.CONSEQUENCE_STR: consequence_str,
+                          EnsemblDataService.EXCLUDE_CONSEQUENCES: exclude_consequences,
+                          EnsemblDataService.SKIP_INCLUDING_ALL_CDS: skip_including_all_cds,
+                          EnsemblDataService.INCLUDE_CONSEQUENCES: include_consequences,
+                          EnsemblDataService.IGNORE_FILTERS: ignore_filters,
+                          EnsemblDataService.ACCEPTED_FILTERS: accepted_filters}
+
+    ensembl_data_service = EnsemblDataService(config_data, pipeline_arguments)
+    ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf)
