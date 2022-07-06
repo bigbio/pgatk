@@ -61,7 +61,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._mito_translation_table = self.get_translation_properties(variable=self.MITO_TRANSLATION_TABLE,
                                                                        default_value=2)
-        self._header_var_prefix = self.get_translation_properties(variable=self.HEADER_VAR_PREFIX, default_value="var")
+        self._header_var_prefix = self.get_translation_properties(variable=self.HEADER_VAR_PREFIX, default_value="var_")
         self._report_reference_seq = self.get_translation_properties(variable=self.REPORT_REFERENCE_SEQ,
                                                                      default_value=False)
         self._annotation_field_name = self.get_translation_properties(variable=self.ANNOTATION_FIELD_NAME,
