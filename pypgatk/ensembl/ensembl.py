@@ -46,7 +46,6 @@ class EnsemblDataService(ParameterConfiguration):
                                              pipeline_arguments)
 
     self._proteindb_output = 'peptide-database.fa'
-    self._proteindb_output = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.PROTEIN_DB_OUTPUT]
     if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
       self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
     elif self.CONFIG_KEY_DATA in self.get_default_parameters() and self.PROTEIN_DB_OUTPUT in self.get_default_parameters()[self.CONFIG_KEY_DATA]:
