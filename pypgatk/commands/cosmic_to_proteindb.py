@@ -34,12 +34,25 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
   if input_mutation is None or input_genes is None or output_db is None:
     print_help()
 
-  pipeline_arguments = {CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE: input_mutation,
-                        CancerGenomesService.CONFIG_COMPLETE_GENES_FILE: input_genes,
-                        CancerGenomesService.CONFIG_OUTPUT_FILE: output_db,
-                        CancerGenomesService.FILTER_COLUMN: filter_column,
-                        CancerGenomesService.ACCEPTED_VALUES: accepted_values,
-                        CancerGenomesService.SPLIT_BY_FILTER_COLUMN: split_by_filter_column}
+  pipeline_arguments = {}
+
+  if input_mutation is not None:
+      pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
+
+  if input_genes is not None:
+      pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_genes
+
+  if output_db is not None:
+      pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
+
+  if filter_column is not None:
+      pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = filter_column
+
+  if accepted_values is not None:
+      pipeline_arguments[CancerGenomesService.ACCEPTED_VALUES] = accepted_values
+
+  if split_by_filter_column is not None:
+      pipeline_arguments[CancerGenomesService.SPLIT_BY_FILTER_COLUMN] = split_by_filter_column
 
   cosmic_to_proteindb_service = CancerGenomesService(config_data, pipeline_arguments)
   cosmic_to_proteindb_service.cosmic_to_proteindb()

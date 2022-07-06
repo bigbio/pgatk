@@ -22,6 +22,8 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def generate_deeplc(ctx, config_file, input_file, output_file, decoy_prefix: str, peptide_classes_prefix: str,
                     novel_peptides: bool):
+
+    config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 

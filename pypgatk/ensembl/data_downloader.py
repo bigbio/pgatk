@@ -107,6 +107,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
           species_name = self.get_pipeline_parameters()[self.CONFIG_ENSEMBL_NAME]
           self._ensembl_names = species_name.split(",")
 
+        self._grch37 = self.get_data_download_parameters(variable=self.CONFIG_KEY_GRCh37, default_value=False)
+
 
         self.prepare_local_ensembl_repository()
 
@@ -149,12 +151,13 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         self._ensembl_species = species_info['species']
         return self._ensembl_species
 
-    def download_database_by_species(self, grch37: bool, url_file_name: str):
+    def download_database_by_species(self, url_file_name: str):
         """
     This method takes a list of Taxonomies from the commandline parameters
     and download the Protein fasta files and the gtf files.
     :return:
     """
+        grch37 = self._grch37
         self.get_species_from_rest()
 
         url_file = None

@@ -22,6 +22,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def ensembl_check(ctx, config_file, input_fasta, output, add_stop_codons, num_aa):
 
+  config_data = None
   if config_file is not None:
     config_data = read_yaml_from_file(config_file)
 
