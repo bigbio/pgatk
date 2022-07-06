@@ -236,7 +236,7 @@ class PypgatkRunnerTests(unittest.TestCase):
               """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml', '--skip_dna',
+                               ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
                                 '--taxonomy', '9103', '--output_directory', 'testdata'])
         self.assertEqual(result.exit_code, 0)
 
