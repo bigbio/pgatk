@@ -65,7 +65,9 @@ class EnsemblDataService(ParameterConfiguration):
     self._transcript_str = self.get_translation_properties(variable = self.TRANSCRIPT_STR, default_value='FEATURE')
     self._consequence_str = self.get_translation_properties(variable = self.CONSEQUENCE_STR, default_value='CONSEQUENCE')
     self._af_field = self.get_translation_properties(variable = self.AF_FIELD, default_value='')
+
     self._af_threshold = self.get_translation_properties(variable = self.AF_THRESHOLD, default_value=0.01)
+    self._af_threshold = float(self._af_threshold)
 
     self._exclude_biotypes = self.get_multiple_options(self.get_translation_properties(variable = self.EXCLUDE_BIOTYPES, default_value=''))
     self._exclude_consequences = self.get_multiple_options(self.get_translation_properties(variable = self.EXCLUDE_CONSEQUENCES, default_value='downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'))
