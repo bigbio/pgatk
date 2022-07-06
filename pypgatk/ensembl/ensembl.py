@@ -88,7 +88,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._include_consequences = self.get_multiple_options(
             self.get_translation_properties(variable=self.INCLUDE_CONSEQUENCES, default_value='all'))
-        self._biotype_str = self.get_translation_properties(variable=self.BIOTYPE_STR, default_value='biotype')
+        self._biotype_str = self.get_translation_properties(variable=self.BIOTYPE_STR, default_value='transcript_biotype')
 
         self._transcript_description_sep = self.get_translation_properties(variable=self.TRANSCRIPT_DESCRIPTION_SEP,
                                                                            default_value=';')
@@ -355,8 +355,7 @@ class EnsemblDataService(ParameterConfiguration):
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
                 elif self._biotype_str and (feature_biotype == "" or (feature_biotype in self._exclude_biotypes or
-                                                                      (
-                                                                              feature_biotype not in self._include_biotypes and self._include_biotypes != [
+                                                                      (feature_biotype not in self._include_biotypes and self._include_biotypes != [
                                                                           'all']))):
                     continue
 
