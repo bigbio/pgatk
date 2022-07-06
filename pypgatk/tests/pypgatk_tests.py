@@ -225,7 +225,8 @@ class PypgatkRunnerTests(unittest.TestCase):
               """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['generate-decoy', '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa', '--method',
+                               ['generate-decoy', '-in', 'testdata/test_db.fa', '-out', 'testdata/output_decoy.fa',
+                                '--method',
                                 'protein-reverse'])
         self.assertEqual(result.exit_code, 0)
 
@@ -236,7 +237,8 @@ class PypgatkRunnerTests(unittest.TestCase):
               """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml', '--skip_dna',
+                               ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
+                                '--skip_dna',
                                 '--taxonomy', '9103', '--output_directory', 'testdata'])
         self.assertEqual(result.exit_code, 0)
 
@@ -247,7 +249,8 @@ class PypgatkRunnerTests(unittest.TestCase):
               """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['ensembl-downloader', '--taxonomy', '9103', '--output_directory', 'testdata', '--grch37'])
+                               ['ensembl-downloader', '--taxonomy', '9103', '--output_directory', 'testdata',
+                                '--grch37'])
         self.assertEqual(result.exit_code, 0)
 
     def test_download_cbioportal_data(self):
@@ -268,7 +271,8 @@ class PypgatkRunnerTests(unittest.TestCase):
               """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['cbioportal-downloader', '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
+                               ['cbioportal-downloader', '--download_study', 'paac_jhu_2014', '--output_directory',
+                                'testdata'])
         self.assertEqual(result.exit_code, 0)
 
     def test_check_ensembl_database(self):
@@ -278,7 +282,6 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output',
                                 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
         self.assertEqual(result.exit_code, 0)
-
 
 
 if __name__ == '__main__':

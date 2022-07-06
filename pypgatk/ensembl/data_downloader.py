@@ -93,8 +93,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
         self._ensembl_names = []
         if self.CONFIG_ENSEMBL_NAME in self.get_pipeline_parameters():
-          species_name = self.get_pipeline_parameters()[self.CONFIG_ENSEMBL_NAME]
-          self._ensembl_names = species_name.split(",")
+            species_name = self.get_pipeline_parameters()[self.CONFIG_ENSEMBL_NAME]
+            self._ensembl_names = species_name.split(",")
 
         self._grch37 = self.get_data_download_parameters(variable=self.CONFIG_KEY_GRCh37, default_value=False)
 
@@ -262,9 +262,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 species['assembly'] = 'GRCh37'
             file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'], species['name'], file_name)
+            file_url = '{}/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'],
+                                                              species['name'], file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'], species['name'], file_name)
+                file_url = '{}/grch37/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'],
+                                                                         species['name'], file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                               log=self.get_logger(), url_file=url_file))
@@ -285,10 +287,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.cdna.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                       species['assembly'])
             file_url = '{}/release-{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp,
-                species['release'], species['name'], file_name)
+                                                               species['release'], species['name'], file_name)
             if grch37:
                 file_url = '{}/grch37/release-{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp,
-                    species['release'], species['name'], file_name)
+                                                                          species['release'], species['name'],
+                                                                          file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                               log=self.get_logger(), url_file=url_file))
@@ -310,10 +313,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                    species['assembly'])
             file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp,
-                species['release'], species['name'], file_name)
+                                                                species['release'], species['name'], file_name)
             if grch37:
                 file_url = '{}/grch37/release-{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp,
-                    species['release'], species['name'], file_name)
+                                                                           species['release'], species['name'],
+                                                                           file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                               log=self.get_logger(), url_file=url_file))
@@ -335,10 +339,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
             file_url = '{}/release-{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp,
-                species['release'], species['name'], file_name)
+                                                              species['release'], species['name'], file_name)
             if grch37:
                 file_url = '{}/grch37/release-{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp,
-                    species['release'], species['name'], file_name)
+                                                                         species['release'], species['name'], file_name)
             print('Downloading -- ', file_url)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -354,6 +358,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     This method retrieve the gtf files for a specific specie object
     :param grch37: if the GrCh37 genome assembly is desired enable to true
     :param species: species to download the file.
+    :param url_file: save the urls to a file for download
     :return:
     """
         files = []
@@ -363,9 +368,11 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 species['release'] = '87'
             file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
                                                  species['release'], )
-            file_url = '{}/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'], species['name'], file_name)
+            file_url = '{}/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'], species['name'],
+                                                        file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'], species['name'], file_name)
+                file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'],
+                                                                   species['name'], file_name)
             if url_file is None:
                 files.append(download_file(file_url=file_url,
                                            file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -383,12 +390,14 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         """
     This method retrieve the vcf file for a specific specie object
     :param species:
+    :param url_file: save the urls to a file for download
     :return:
     """
         files = []
         try:
             file_name = '{}_incl_consequences.vcf.gz'.format(species['name'])
-            file_url = '{}/release-{}/variation/vcf/{}/'.format(self._ensembl_base_ftp, species['release'], species['name'])
+            file_url = '{}/release-{}/variation/vcf/{}/'.format(self._ensembl_base_ftp, species['release'],
+                                                                species['name'])
 
             downloaded_file = download_file(file_url=file_url + file_name,
                                             file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -435,6 +444,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     This method retrieve the genome assembly files for a specific specie object
     :param grch37: if the GrCh37 genome assembly is desired enable to true
     :param species: species to download the file.
+    :param url_file: save the urls to a file for download
     :return:
     """
         files = []
@@ -444,10 +454,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             file_name = '{}.{}.dna_sm.toplevel.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                              species['assembly'])
             file_url = '{}/release-{}/fasta/{}/dna/{}'.format(self._ensembl_base_ftp,
-                species['release'], species['name'], file_name)
+                                                              species['release'], species['name'], file_name)
             if grch37:
                 file_url = '{}/grch37/release-{}/fasta/{}/dna/{}'.format(self._ensembl_base_ftp,
-                    species['release'], species['name'], file_name)
+                                                                         species['release'], species['name'], file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                               log=self.get_logger(), url_file=url_file))

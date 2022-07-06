@@ -67,18 +67,19 @@ class CbioPortalDownloadService(ParameterConfiguration):
               and self.CONFIG_CBIOPORTAL_API_SERVER in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                   self.CONFIG_CBIOPORTAL_API]):
             self._cbioportal_base_url = \
-            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
-                self.CONFIG_CBIOPORTAL_API_SERVER]
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+                    self.CONFIG_CBIOPORTAL_API_SERVER]
 
         if self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES in self.get_pipeline_parameters():
             self._cancer_studies_command = self.get_pipeline_parameters()[self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
         elif (self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() and
               self.CONFIG_CBIOPORTAL_API in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER]
-              and self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
+              and self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES in
+              self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                   self.CONFIG_CBIOPORTAL_API]):
             self._cancer_studies_command = \
-            self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
-                self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
+                self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_CBIOPORTAL_API][
+                    self.CONFIG_CBIOPORTAL_API_CANCER_STUDIES]
 
         self.prepare_local_cbioportal_repository()
         self.get_cancer_studies()
@@ -101,7 +102,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
                 self.FILTER_INFO in self.get_default_parameters()[self.PROTEINDB] and \
                 variable in self.get_default_parameters()[self.PROTEINDB][self.FILTER_INFO]:
             return_value = self.get_default_parameters()[self.PROTEINDB][self.FILTER_INFO][variable]
-        return  return_value
+        return return_value
 
     def get_cancer_studies(self):
         """
@@ -158,7 +159,7 @@ class CbioPortalDownloadService(ParameterConfiguration):
 
     def download_one_study(self, download_study, url_file=None):
         file_name = '{}.tar.gz'.format(download_study)
-        file_url = '{}/{}'.format(self._cbioportal_download_url,file_name)
+        file_url = '{}/{}'.format(self._cbioportal_download_url, file_name)
         file_name = download_file(file_url=file_url,
                                   file_name=self.get_local_path_root_cbioportal_repo() + '/' + file_name,
                                   log=self.get_logger(), url_file=url_file)

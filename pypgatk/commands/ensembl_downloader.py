@@ -37,7 +37,7 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, skip_gtf, s
         config_data = read_yaml_from_file(config_file)
 
     if taxonomy is None and ensembl_name is None:
-       print_help()
+        print_help()
 
     # Parse pipelines parameters.
     pipeline_arguments = {}
@@ -78,4 +78,3 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, skip_gtf, s
     ensembl_download_service = EnsemblDataDownloadService(config_data, pipeline_arguments)
 
     ensembl_download_service.download_database_by_species(url_file)
-
