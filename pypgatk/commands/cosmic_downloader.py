@@ -3,11 +3,11 @@ import logging
 import click
 
 from pypgatk.cgenomes.cosmic_downloader import CosmicDownloadService
-import pkgutil
 
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('cosmic-downloader', short_help='Command to download the cosmic mutation database')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
@@ -20,18 +20,18 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def cosmic_downloader(ctx, config_file, output_directory, username, password, url_file):
 
-  config_data = None
-  if config_file is not None:
-    config_data = read_yaml_from_file(config_file)
+    config_data = None
+    if config_file is not None:
+        config_data = read_yaml_from_file(config_file)
 
-  pipeline_arguments = {}
-  if output_directory is not None:
-    pipeline_arguments[CosmicDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
-  if username is not None:
-    pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_USER] = username
+    pipeline_arguments = {}
+    if output_directory is not None:
+        pipeline_arguments[CosmicDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
+    if username is not None:
+        pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_USER] = username
 
-  if password is not None:
-    pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
+    if password is not None:
+        pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
 
-  cosmic_downloader_service = CosmicDownloadService(config_data, pipeline_arguments)
-  cosmic_downloader_service.download_mutation_file(url_file_name = url_file)
+    cosmic_downloader_service = CosmicDownloadService(config_data, pipeline_arguments)
+    cosmic_downloader_service.download_mutation_file(url_file_name=url_file)

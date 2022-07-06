@@ -23,7 +23,6 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_ENSEMBL_API_SERVER = 'server'
     CONFIG_ENSEMBL_API_SPECIES = 'species'
     CONFIG_KEY_BASE_URL = 'ensembl_base_url'
-    CONFIG_KEY_FOLDER_PREFIX_RELEASE = 'folder_prefix_release'
     CONFIG_KEY_FOLDER_NAME_FASTA = 'folder_name_fasta'
     CONFIG_KEY_FOLDER_NAME_PROTEIN_SEQUENCES = 'folder_name_protein_sequences'
     CONFIG_KEY_FOLDER_NAME_GTF = 'folder_name_gtf'
@@ -38,13 +37,12 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     CONFIG_REST_API_NAME = 'name'
     CONFIG_TAXONOMY = 'taxonomy'
     CONFIG_ENSEMBL_NAME = 'name'
-    CONFIG_LIST_TAXONOMIES = 'list_taxonomies'
     CONFIG_KEY_SKIP_PROTEIN = 'skip_protein'
     CONFIG_KEY_SKIP_GTF = 'skip_gtf'
     CONFIG_KEY_SKIP_CDS = 'skip_cds'
     CONFIG_KEY_SKIP_CDNA = 'skip_cdna'
     CONFIG_KEY_SKIP_NCRNA = 'skip_ncrna'
-    CONFIG_KEY_SKIP_DNA = 'skip_DNA'
+    CONFIG_KEY_SKIP_DNA = 'skip_dna'
     CONFIG_KEY_SKIP_VCF = 'skip_vcf'
     CONFIG_KEY_GRCh37 = 'grch37'
 
@@ -57,14 +55,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         super(EnsemblDataDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                          pipeline_arguments)
 
-        self._local_path_ensembl = 'database_ensembl'
-        self._list_taxonomies = False
         self._rest_api = 'http://rest.ensembl.org'
         self._rest_endpoint = '/info/species'
-        self._ensembl_base_ftp = 'ftp://ftp.ensembl.org/pub'
-        self._species_list = []
-        self._ensembl_names = []
-
 
         self._skip_protein_database = self.get_data_download_parameters(variable=self.CONFIG_KEY_SKIP_PROTEIN,
                                                                         default_value=False)
@@ -80,35 +72,31 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                                                                     default_value=False)
         self._skip_vcf_database = self.get_data_download_parameters(variable=self.CONFIG_KEY_SKIP_VCF,
                                                                     default_value=False)
-
+        self._local_path_ensembl = 'database_ensembl'
         if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
             self._local_path_ensembl = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
         elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters():
             self._local_path_ensembl = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_OUTPUT_DIRECTORY]
 
-        if self.CONFIG_LIST_TAXONOMIES in self.get_pipeline_parameters():
-            self._list_taxonomies = self.get_pipeline_parameters()[self.CONFIG_LIST_TAXONOMIES]
-        elif self.CONFIG_KEY_DATA_DOWNLOADER is self.get_pipeline_parameters():
-            self._list_taxonomies = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
-                self.CONFIG_LIST_TAXONOMIES]
-
+        self._ensembl_base_ftp = 'ftp://ftp.ensembl.org/pub'
         if self.CONFIG_KEY_BASE_URL in self.get_pipeline_parameters():
             self._ensembl_base_ftp = self.get_pipeline_parameters()[self.CONFIG_KEY_BASE_URL]
         elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters():
             self._ensembl_base_ftp = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
                 self.CONFIG_KEY_BASE_URL]
 
+        self._species_list = []
         if self.CONFIG_TAXONOMY in self.get_pipeline_parameters():
             species_parameters = self.get_pipeline_parameters()[self.CONFIG_TAXONOMY]
             self._species_list = species_parameters.split(",")
 
+        self._ensembl_names = []
         if self.CONFIG_ENSEMBL_NAME in self.get_pipeline_parameters():
           species_name = self.get_pipeline_parameters()[self.CONFIG_ENSEMBL_NAME]
           self._ensembl_names = species_name.split(",")
 
         self._grch37 = self.get_data_download_parameters(variable=self.CONFIG_KEY_GRCh37, default_value=False)
-
 
         self.prepare_local_ensembl_repository()
 
@@ -160,13 +148,16 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         grch37 = self._grch37
         self.get_species_from_rest()
 
+        if self._grch37:
+            self.get_logger().info("gtch37 is only available for human not other species")
+
         url_file = None
         if url_file_name is not None:
             url_file = open(url_file_name, 'w')
 
         total_files = []
         files = []
-        if self._species_list is not None and len(self._species_list) > 0 and len(self._ensembl_names) > 0:
+        if self._species_list is not None and len(self._species_list) > 0:
             for species_id in self._species_list:
                 for species in self._ensembl_species:
                     if species_id == species[self.CONFIG_REST_API_TAXON_ID]:

@@ -1,22 +1,20 @@
 import logging
+
 import click
+
+from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.data_downloader import EnsemblDataDownloadService
-
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
 @click.option('-o', '--output_directory',
               help='Output directory for the peptide databases')
-@click.option('-fp', '--folder_prefix_release', help='Output folder prefix to download the data')
 @click.option('-t', '--taxonomy',
               help='Taxonomy identifiers (comma separated list can be given) that will be use to download the data from Ensembl')
-@click.option('-l', '--list_taxonomies',
-              help='Print the list of all the taxonomies in ENSEMBL (https://www.ensembl.org)', is_flag=True)
 @click.option('-sg', '--skip_gtf', help="Skip the GTF file during the download", is_flag=True)
 @click.option('-sp', '--skip_protein', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
@@ -28,8 +26,8 @@ log = logging.getLogger(__name__)
               help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)')
 @click.option('--grch37', is_flag=True, help='Download a previous version GRCh37 of ensembl genomes')
 @click.option('--url_file', help='Add the url to a downloaded file')
-def ensembl_downloader(config_file, output_directory, folder_prefix_release,
-                       taxonomy, list_taxonomies, skip_gtf, skip_protein,
+@click.pass_context
+def ensembl_downloader(ctx, config_file, output_directory, taxonomy, skip_gtf, skip_protein,
                        skip_cds, skip_cdna, skip_ncrna, skip_dna, skip_vcf,
                        ensembl_name, grch37, url_file):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
@@ -38,6 +36,8 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 
+    if taxonomy is None and ensembl_name is None:
+       print_help()
 
     # Parse pipelines parameters.
     pipeline_arguments = {}
@@ -50,9 +50,6 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
 
     if ensembl_name is not None:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_ENSEMBL_NAME] = ensembl_name
-
-    if list_taxonomies:
-        pipeline_arguments[EnsemblDataDownloadService.CONFIG_LIST_TAXONOMIES] = list_taxonomies
 
     if skip_protein is not None and skip_protein:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_SKIP_PROTEIN] = skip_protein
@@ -80,13 +77,5 @@ def ensembl_downloader(config_file, output_directory, folder_prefix_release,
 
     ensembl_download_service = EnsemblDataDownloadService(config_data, pipeline_arguments)
 
-    logger = ensembl_download_service.get_logger_for("Main Pipeline Ensembl Downloader")
-    logger.info("Pipeline STARTING ... ")
-    if list_taxonomies:
-        list_of_taxonomies = ensembl_download_service.get_species_from_rest()
-        for taxonomy_info in list_of_taxonomies:
-            print(taxonomy_info)
-
     ensembl_download_service.download_database_by_species(url_file)
 
-    logger.info("Pipeline Finish !!!")

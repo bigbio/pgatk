@@ -1,11 +1,10 @@
-import click
 import logging
+
+import click
+
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
-
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
 
@@ -29,7 +28,7 @@ log = logging.getLogger(__name__)
 @click.option('--biotype_str', type=str,
               help='String that is used for biotype in the VCF header INFO field')
 @click.option('--exclude_biotypes', help="Excluded Biotypes")
-@click.option('--include_biotypes',help="included_biotypes, default all")
+@click.option('--include_biotypes', help="included_biotypes, default all")
 @click.option('--consequence_str', type=str, help='String that is used for consequence in the VCF header INFO field')
 @click.option('--exclude_consequences', help="Excluded Consequences")
 @click.option('-s', '--skip_including_all_cds',
@@ -48,6 +47,7 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      include_biotypes, consequence_str, exclude_consequences,
                      skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
+
     config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
@@ -76,7 +76,7 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
         pipeline_arguments[EnsemblDataService.ANNOTATION_FIELD_NAME] = annotation_field_name
 
     if af_field is not None:
-        pipeline_arguments[EnsemblDataService.AF_FIELD] =  af_field
+        pipeline_arguments[EnsemblDataService.AF_FIELD] = af_field
 
     if af_threshold is not None:
         pipeline_arguments[EnsemblDataService.AF_THRESHOLD] = af_threshold
@@ -88,19 +88,19 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
         pipeline_arguments[EnsemblDataService.BIOTYPE_STR] = biotype_str
 
     if exclude_biotypes is not None:
-        pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] =  exclude_biotypes
+        pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes
 
     if include_biotypes is not None:
         pipeline_arguments[EnsemblDataService.INCLUDE_BIOTYPES] = include_biotypes
 
     if consequence_str is not None:
-        pipeline_arguments[EnsemblDataService.CONSEQUENCE_STR] =  consequence_str
+        pipeline_arguments[EnsemblDataService.CONSEQUENCE_STR] = consequence_str
 
     if exclude_consequences is not None:
         pipeline_arguments[EnsemblDataService.EXCLUDE_CONSEQUENCES] = exclude_consequences
 
     if skip_including_all_cds is not None:
-        pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] =  skip_including_all_cds
+        pipeline_arguments[EnsemblDataService.SKIP_INCLUDING_ALL_CDS] = skip_including_all_cds
 
     if include_consequences is not None:
         pipeline_arguments[EnsemblDataService.INCLUDE_CONSEQUENCES] = include_consequences

@@ -1,6 +1,5 @@
 ensembl_data_downloader:
   output_directory: database_ensembl
-  list_taxonomies: False
   skip_gtf: False
   skip_protein: False
   skip_cds: False

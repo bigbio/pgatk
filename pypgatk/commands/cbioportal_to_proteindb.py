@@ -1,13 +1,13 @@
-import click
 import logging
+
+import click
 
 from pypgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
 from pypgatk.commands.utils import print_help
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('-c', '--config_file', help='Configuration for cbioportal to proteindb tool')
@@ -26,35 +26,35 @@ log = logging.getLogger(__name__)
 def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_db,
                             clinical_sample_file, filter_column, accepted_values, split_by_filter_column):
 
-  config_data = None
-  if config_file is not None:
-    config_data = read_yaml_from_file(config_file)
+    config_data = None
+    if config_file is not None:
+        config_data = read_yaml_from_file(config_file)
 
-  if input_mutation is None or input_cds is None or output_db is None:
-    print_help()
+    if input_mutation is None or input_cds is None or output_db is None:
+        print_help()
 
-  pipeline_arguments = {}
+    pipeline_arguments = {}
 
-  if input_mutation is not None:
-      pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
+    if input_mutation is not None:
+        pipeline_arguments[CancerGenomesService.CONFIG_CANCER_GENOMES_MUTATION_FILE] = input_mutation
 
-  if input_cds is not None:
-      pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_cds
+    if input_cds is not None:
+        pipeline_arguments[CancerGenomesService.CONFIG_COMPLETE_GENES_FILE] = input_cds
 
-  if output_db is not None:
-      pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
+    if output_db is not None:
+        pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
 
-  if clinical_sample_file is not None:
-      pipeline_arguments[CancerGenomesService.CLINICAL_SAMPLE_FILE] = clinical_sample_file
+    if clinical_sample_file is not None:
+        pipeline_arguments[CancerGenomesService.CLINICAL_SAMPLE_FILE] = clinical_sample_file
 
-  if filter_column is not None:
-      pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = filter_column
+    if filter_column is not None:
+        pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = filter_column
 
-  if accepted_values is not None:
-      pipeline_arguments[CancerGenomesService.ACCEPTED_VALUES] = accepted_values
+    if accepted_values is not None:
+        pipeline_arguments[CancerGenomesService.ACCEPTED_VALUES] = accepted_values
 
-  if split_by_filter_column is not None:
-      pipeline_arguments[CancerGenomesService.SPLIT_BY_FILTER_COLUMN] = split_by_filter_column
+    if split_by_filter_column is not None:
+        pipeline_arguments[CancerGenomesService.SPLIT_BY_FILTER_COLUMN] = split_by_filter_column
 
-  cosmic_to_proteindb_service = CancerGenomesService(config_data, pipeline_arguments)
-  cosmic_to_proteindb_service.cbioportal_to_proteindb()
+    cosmic_to_proteindb_service = CancerGenomesService(config_data, pipeline_arguments)
+    cosmic_to_proteindb_service.cbioportal_to_proteindb()

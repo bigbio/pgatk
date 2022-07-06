@@ -1,13 +1,13 @@
-import click
 import logging
+
+import click
 
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
@@ -36,6 +36,7 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         output_proteindb, var_prefix,
                         skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str,
                         transcript_description_sep, expression_str, expression_thresh):
+
     config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)

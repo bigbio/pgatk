@@ -3,11 +3,10 @@ import logging
 import click
 
 from pypgatk.cgenomes.cbioportal_downloader import CbioPortalDownloadService
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('cbioportal-downloader', short_help='Command to download the the cbioportal studies')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')

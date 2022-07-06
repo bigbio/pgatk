@@ -1,13 +1,13 @@
-import click
 import logging
+
+import click
+
 from pypgatk.commands.utils import print_help
-
-import pkgutil
-
 from pypgatk.proteomics.openms import OpenmsDataService
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('generate-deeplc', short_help="Generate input for deepLC tool from idXML,mzTab or consensusXML")
 @click.option('-c', '--config_file', help='Configuration to perform deepLC configuration file')

@@ -1,13 +1,13 @@
-import click
 import logging
+
+import click
+
 from pypgatk.commands.utils import print_help
 from pypgatk.ensembl.ensembl import EnsemblDataService
-
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
+
 
 @click.command('threeframe-translation', short_help="Command to perform 3'frame translation")
 @click.option('-c', '--config_file',
@@ -24,7 +24,6 @@ def threeframe_translation(ctx, config_file, input_fasta, translation_table, out
 
     if input_fasta is None:
         print_help()
-
 
     pipeline_arguments = {}
 
