@@ -19,6 +19,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
     CONFIG_KEY_DATA_DOWNLOADER = 'ensembl_data_downloader'
     CONFIG_OUTPUT_DIRECTORY = 'output_directory'
+    CONFIG_PREFIX_RELEASE_FOLDER = 'folder_prefix_release'
     CONFIG_ENSEMBL_API = 'ensembl_api'
     CONFIG_ENSEMBL_API_SERVER = 'server'
     CONFIG_ENSEMBL_API_SPECIES = 'species'
@@ -72,6 +73,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                                                                     default_value=False)
         self._skip_vcf_database = self.get_data_download_parameters(variable=self.CONFIG_KEY_SKIP_VCF,
                                                                     default_value=False)
+        self._folder_prefix_release = self.get_data_download_parameters(variable=self.CONFIG_PREFIX_RELEASE_FOLDER,
+                                                                    default_value='release-')
         self._local_path_ensembl = 'database_ensembl'
         if self.CONFIG_OUTPUT_DIRECTORY in self.get_pipeline_parameters():
             self._local_path_ensembl = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_DIRECTORY]
@@ -137,6 +140,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
         species_info = loads(call_api(server + endpoint).text)
         self._ensembl_species = species_info['species']
+
         return self._ensembl_species
 
     def download_database_by_species(self, url_file_name: str):
@@ -251,21 +255,32 @@ class EnsemblDataDownloadService(ParameterConfiguration):
 
         return total_files
 
+    def get_release_path(self, species):
+        """
+        Get the release path in ensembl
+        :param species: specie with to be downloaded
+        :return: release path in ensembl
+        """
+        if self._folder_prefix_release == 'release-':
+            return 'release-{}'.format(species['release'])
+        return self._folder_prefix_release
+
     def get_cds_files(self, species: dict, grch37=False, url_file=None) -> list:
         """
     Get the cds files for a specific species object.
     :return: List of files names.
     """
         files = []
+        release_version = self.get_release_path(species = species)
         try:
             if grch37:
                 species['assembly'] = 'GRCh37'
             file_name = '{}.{}.cds.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'],
+            file_url = '{}/{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, release_version,
                                                               species['name'], file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, species['release'],
+                file_url = '{}/grch37/{}/fasta/{}/cds/{}'.format(self._ensembl_base_ftp, release_version,
                                                                          species['name'], file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -281,16 +296,16 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return: List of files names.
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             if grch37:
                 species['assembly'] = 'GRCh37'
             file_name = '{}.{}.cdna.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                       species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp,
-                                                               species['release'], species['name'], file_name)
+            file_url = '{}/{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp, release_version, species['name'], file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp,
-                                                                          species['release'], species['name'],
+                file_url = '{}/grch37/{}/fasta/{}/cdna/{}'.format(self._ensembl_base_ftp,
+                                                                          release_version, species['name'],
                                                                           file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -306,17 +321,16 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return: List of files names.
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             if grch37:
                 species['assembly'] = 'GRCh37'
 
             file_name = '{}.{}.ncrna.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                    species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp,
-                                                                species['release'], species['name'], file_name)
+            file_url = '{}/{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp, release_version, species['name'], file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp,
-                                                                           species['release'], species['name'],
+                file_url = '{}/grch37/{}/fasta/{}/ncrna/{}'.format(self._ensembl_base_ftp, release_version, species['name'],
                                                                            file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -332,17 +346,16 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return: List of files names.
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             # TODO: Would be better to check by API the assembly version
             if grch37:
                 species['assembly'] = 'GRCh37'
             file_name = '{}.{}.pep.all.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                      species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp,
-                                                              species['release'], species['name'], file_name)
+            file_url = '{}/{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp, release_version, species['name'], file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp,
-                                                                         species['release'], species['name'], file_name)
+                file_url = '{}/grch37/{}/fasta/{}/pep/{}'.format(self._ensembl_base_ftp, release_version, species['name'], file_name)
             print('Downloading -- ', file_url)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -362,16 +375,17 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return:
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             if grch37:
                 species['assembly'] = 'GRCh37'
                 species['release'] = '87'
             file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
-                                                 species['release'], )
-            file_url = '{}/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'], species['name'],
+                                                 release_version, )
+            file_url = '{}/{}/gtf/{}/{}'.format(self._ensembl_base_ftp, release_version, species['name'],
                                                         file_name)
             if grch37:
-                file_url = '{}/grch37/release-{}/gtf/{}/{}'.format(self._ensembl_base_ftp, species['release'],
+                file_url = '{}/grch37/{}/gtf/{}/{}'.format(self._ensembl_base_ftp, release_version,
                                                                    species['name'], file_name)
             if url_file is None:
                 files.append(download_file(file_url=file_url,
@@ -394,10 +408,10 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return:
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             file_name = '{}_incl_consequences.vcf.gz'.format(species['name'])
-            file_url = '{}/release-{}/variation/vcf/{}/'.format(self._ensembl_base_ftp, species['release'],
-                                                                species['name'])
+            file_url = '{}/{}/variation/vcf/{}/'.format(self._ensembl_base_ftp, release_version, species['name'])
 
             downloaded_file = download_file(file_url=file_url + file_name,
                                             file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
@@ -448,16 +462,17 @@ class EnsemblDataDownloadService(ParameterConfiguration):
     :return:
     """
         files = []
+        release_version = self.get_release_path(species=species)
         try:
             if grch37:
                 species['assembly'] = 'GRCh37'
             file_name = '{}.{}.dna_sm.toplevel.fa.gz'.format(species['name'][0].upper() + species['name'][1:],
                                                              species['assembly'])
-            file_url = '{}/release-{}/fasta/{}/dna/{}'.format(self._ensembl_base_ftp,
-                                                              species['release'], species['name'], file_name)
+            file_url = '{}/{}/fasta/{}/dna/{}'.format(self._ensembl_base_ftp,
+                                                              release_version, species['name'], file_name)
             if grch37:
                 file_url = '{}/grch37/release-{}/fasta/{}/dna/{}'.format(self._ensembl_base_ftp,
-                                                                         species['release'], species['name'], file_name)
+                                                                         release_version, species['name'], file_name)
             files.append(
                 download_file(file_url=file_url, file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                               log=self.get_logger(), url_file=url_file))
@@ -465,3 +480,17 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             print("No valid info is available species: ", species)
 
         return files
+
+    def validate_taxonomies(self):
+        if self._species_list is not None:
+            list_of_taxonomies = self.get_species_from_rest()
+            taxonomies = list(map(lambda name: name['taxon_id'], list_of_taxonomies))
+            for taxonomy in self._species_list:
+                if taxonomy not in taxonomies:
+                    print('Taxonomy -- {} not found in the ensembl taxonomies'.format(taxonomy))
+                    print('Valid Taxonomies:')
+                    [print('Taxonomy {} --- {}'.format(i['taxon_id'], i['common_name'])) for i in list_of_taxonomies]
+                    return False
+        return True
+
+

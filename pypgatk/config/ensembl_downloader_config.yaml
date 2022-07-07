@@ -1,6 +1,7 @@
 ensembl_data_downloader:
   output_directory: database_ensembl
   skip_gtf: False
+  folder_prefix_release: 'release-'
   skip_protein: False
   skip_cds: False
   skip_cdna: False

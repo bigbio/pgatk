@@ -1,4 +1,6 @@
+import errno
 import logging
+import sys
 
 import click
 
@@ -8,13 +10,13 @@ from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
 
-
 @click.command('ensembl-downloader', short_help='Command to download the ensembl information')
 @click.option('-c', '--config_file', help='Configuration file for the ensembl data downloader pipeline')
 @click.option('-o', '--output_directory',
               help='Output directory for the peptide databases')
 @click.option('-t', '--taxonomy',
               help='Taxonomy identifiers (comma separated list can be given) that will be use to download the data from Ensembl')
+@click.option('-fp', '--folder_prefix_release', help='Output folder prefix to download the data')
 @click.option('-sg', '--skip_gtf', help="Skip the GTF file during the download", is_flag=True)
 @click.option('-sp', '--skip_protein', help="Skip the protein fasta file during download", is_flag=True)
 @click.option('-sc', '--skip_cds', help='Skip the CDS file download', is_flag=True)
@@ -27,7 +29,7 @@ log = logging.getLogger(__name__)
 @click.option('--grch37', is_flag=True, help='Download a previous version GRCh37 of ensembl genomes')
 @click.option('--url_file', help='Add the url to a downloaded file')
 @click.pass_context
-def ensembl_downloader(ctx, config_file, output_directory, taxonomy, skip_gtf, skip_protein,
+def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_prefix_release, skip_gtf, skip_protein,
                        skip_cds, skip_cdna, skip_ncrna, skip_dna, skip_vcf,
                        ensembl_name, grch37, url_file):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
@@ -75,6 +77,13 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, skip_gtf, s
     if grch37 is not None and grch37:
         pipeline_arguments[EnsemblDataDownloadService.CONFIG_KEY_GRCh37] = grch37
 
+    if folder_prefix_release is not None:
+        pipeline_arguments[EnsemblDataDownloadService.CONFIG_PREFIX_RELEASE_FOLDER] = folder_prefix_release
+
     ensembl_download_service = EnsemblDataDownloadService(config_data, pipeline_arguments)
+
+    if taxonomy is not None:
+        if not ensembl_download_service.validate_taxonomies():
+            sys.exit(errno.EFAULT)
 
     ensembl_download_service.download_database_by_species(url_file)
