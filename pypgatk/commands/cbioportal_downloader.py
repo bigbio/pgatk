@@ -3,19 +3,9 @@ import logging
 import click
 
 from pypgatk.cgenomes.cbioportal_downloader import CbioPortalDownloadService
-import pkgutil
-
-from pypgatk.toolbox.general import read_yaml_from_text, read_yaml_from_file
+from pypgatk.toolbox.general import read_yaml_from_file
 
 log = logging.getLogger(__name__)
-
-try:
-    default_config_text = pkgutil.get_data(__name__, "../config/cbioportal_config.yaml").decode()
-except ValueError:
-    try:
-        default_config_text = pkgutil.get_data(__name__, "config/cbioportal_config.yaml").decode()
-    except ValueError:
-        log.info("The config file is now available !! ")
 
 
 @click.command('cbioportal-downloader', short_help='Command to download the the cbioportal studies')
@@ -30,14 +20,13 @@ except ValueError:
 @click.option('--url_file', help='Add the url to a downloaded file')
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study, multithreading, url_file):
-    if config_file is None:
-        config_data = read_yaml_from_text(default_config_text)
-        msg = "The default configuration file for cbioportal is used: {}".format("cbioportal_config.yaml")
-        log.info(msg)
-    else:
+
+    config_data = None
+    if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 
     pipeline_arguments = {}
+
     if output_directory is not None:
         pipeline_arguments[CbioPortalDownloadService.CONFIG_OUTPUT_DIRECTORY] = output_directory
     if list_studies:

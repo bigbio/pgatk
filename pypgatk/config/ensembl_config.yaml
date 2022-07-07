@@ -3,7 +3,7 @@ ensembl_translation:
   proteindb_output_file: 'peptide-database.fa'
   ensembl_translation:
     mito_translation_table: 2
-    var_prefix: "var"
+    var_prefix: "var_"
     report_ref_seq: False
     annotation_field_name: 'CSQ'
     af_field: ''
@@ -13,7 +13,7 @@ ensembl_translation:
     skip_including_all_cds: False
     include_biotypes: 'protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'
     include_consequences: 'all'
-    biotype_str: biotype
+    biotype_str: transcript_biotype
     transcript_description_sep: ';'
     transcript_str: 'FEATURE'
     consequence_str: 'CONSEQUENCE'

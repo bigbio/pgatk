@@ -18,6 +18,6 @@ cosmic_data:
 proteindb:
    filter_info:
       filter_column: 'Primary site'
-      accepted_values: 'all'
+      accepted_values: "all"
       split_by_filter_column: False
       clinical_sample_file: ''

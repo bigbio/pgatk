@@ -27,10 +27,12 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 # Cli returns command line requests
 @click.group(context_settings=CONTEXT_SETTINGS)
+@click.version_option(version='0.0.23')
 def cli():
-  """
+    """
   This is the main tool that give access to all commands and options provided by the pypgatk
   """
+
 
 cli.add_command(ensembl_downloader_cmd.ensembl_downloader)
 cli.add_command(ensembl_database_cmd.ensembl_check)
@@ -47,9 +49,10 @@ cli.add_command(peptide_class_fdr_cmd.peptide_class_fdr)
 cli.add_command(msrescore_configuration_cmd.msrescore_configuration)
 cli.add_command(deeplc_cmd.generate_deeplc)
 
+
 def main():
-  cli()
+    cli()
 
 
 if __name__ == "__main__":
-  main()
+    main()
