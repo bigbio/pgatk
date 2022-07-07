@@ -29,7 +29,8 @@ class CancerGenomesService(ParameterConfiguration):
 
         self._filter_column = self.get_mutations_default_options(variable=self.FILTER_COLUMN,
                                                                  default_value='CANCER_TYPE')
-        self._accepted_values = self.get_mutations_default_options(variable=self.ACCEPTED_VALUES, default_value='all')
+        self._accepted_values = self.get_multiple_options(self.get_mutations_default_options(variable=self.ACCEPTED_VALUES, default_value="all"))
+
         self._split_by_filter_column = self.get_mutations_default_options(variable=self.SPLIT_BY_FILTER_COLUMN,
                                                                           default_value=False)
         self._local_clinical_sample_file = self.get_mutations_default_options(variable=self.CLINICAL_SAMPLE_FILE,

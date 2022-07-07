@@ -14,6 +14,6 @@ cbioportal_data_downloader:
 proteindb:
    filter_info:
       filter_column: 'CANCER_TYPE'
-      accepted_values: 'all'
+      accepted_values: "all"
       split_by_filter_column: False
       clinical_sample_file: ''

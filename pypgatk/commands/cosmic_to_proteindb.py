@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 @click.option('-f', '--filter_column',
               help='Column in the VCF file to be used for filtering or splitting mutations')
 @click.option('-a', '--accepted_values',
-              help='Limit mutations to values (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered')
+              help='Limit mutations to values (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered (e.g. "")')
 @click.option('-s', '--split_by_filter_column',
               help='Use this flag to generate a proteinDB per group as specified in the filter_column, default is False',
               is_flag=True)
@@ -47,6 +47,8 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
 
     if filter_column is not None:
         pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = filter_column
+    elif config_data is None:
+        pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = 'Primary site'
 
     if accepted_values is not None:
         pipeline_arguments[CancerGenomesService.ACCEPTED_VALUES] = accepted_values
