@@ -1,7 +1,7 @@
 """
 This module implements en Ensembl data grabber for a given Ensembl Service instance.
 
-Some of the use cases for this module:
+Some use cases for this module:
     1. Given a species ID, download its protein sequence data, with the option of decompressing it or not.
     2. Given a species ID, collect its GTF data, with the option of decompressing it or not.
 """
@@ -420,7 +420,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 files.append(downloaded_file)
 
             elif species['name'] == 'homo_sapiens':
-                # for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here"
+                # for humans the variants are stored per chromosome, so we need to download them all and combine them into one file here
                 chrN = 1
                 file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
                 downloaded_file = download_file(file_url=file_url + file_name,
@@ -489,7 +489,8 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 if taxonomy not in taxonomies:
                     print('Taxonomy -- {} not found in the ensembl taxonomies'.format(taxonomy))
                     print('Valid Taxonomies:')
-                    [print('Taxonomy {} --- {}'.format(i['taxon_id'], i['common_name'])) for i in list_of_taxonomies]
+                    for i in list_of_taxonomies:
+                        print('Taxonomy {} --- {}'.format(i['taxon_id'], i['common_name']))
                     return False
         return True
 
