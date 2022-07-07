@@ -1,4 +1,4 @@
-# Python tools for ProteoGenomics Analysis Toolkit
+# ProteoGenomics Analysis Toolkit
 
 
 ![Python application](https://github.com/bigbio/py-pgatk/workflows/Python%20application/badge.svg)
@@ -7,11 +7,11 @@
 [![PyPI version](https://badge.fury.io/py/pypgatk.svg)](https://badge.fury.io/py/pypgatk)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pypgatk)
 
-**pypgatk** is a Python library part of the [ProteoGenomics Analysis Toolkit](https://pgatk.readthedocs.io/en/latest). It provides different bioinformatics tools for proteogenomics data analysis.
+**pypgatk** is a Python library - part of the [ProteoGenomics Analysis Toolkit](https://pgatk.readthedocs.io/en/latest). It provides different bioinformatics tools for proteogenomics data analysis.
 
 # Requirements:
 
-This package requirements vary depending on the way that you want to install it (all three are independent, you don't need all these requirements):
+The package requirements vary depending on the way that you want to install it (you need one of the following):
 
 - pip: if installation goes through pip, you will require Python3 and pip3 installed.
 - Bioconda: if installation goes through Bioconda, you will require that [conda is installed and configured to use bioconda channels](https://bioconda.github.io/user/index.html).
@@ -68,43 +68,50 @@ pip3 install .
 
 The pypgatk design combines multiple modules and tools into one framework. All the possible commands are accessible using the commandline tool `pypgatk_cli.py`.
 
+The library provides multiple commands to download, translate and generate protein sequence databases from reference and mutation genome databases.
+
 ```
-$: pypgatk_cli.py -h
+$: pypgatk_cli -h
+
 Usage: pypgatk [OPTIONS] COMMAND [ARGS]...
 
   This is the main tool that give access to all commands and options
   provided by the pypgatk
 
 Options:
+  --version   Show the version and exit.
   -h, --help  Show this message and exit.
 
 Commands:
-  cbioportal-downloader     Command to download the the cbioportal studies
+  cbioportal-downloader    Command to download the the cbioportal studies
   cbioportal-to-proteindb  Command to translate cbioportal mutation data into
                            proteindb
   cosmic-downloader        Command to download the cosmic mutation database
   cosmic-to-proteindb      Command to translate Cosmic mutation data into
                            proteindb
   dnaseq-to-proteindb      Generate peptides based on DNA sequences
+  ensembl-check            Command to check ensembl database for stop codons,
+                           gaps
   ensembl-downloader       Command to download the ensembl information
-  generate-decoy           Create decoy protein sequences. Each protein is
-                           reversed and the cleavage sites switched with
-                           preceding amino acid. Peptides are checked for
-                           existence in target sequences if foundthe tool will
-                           attempt to shuffle them. James.Wright@sanger.ac.uk
-                           2015
-  threeframe-translation   Command to perform 3frame translation
-  vcf-to-proteindb         Generate peptides based on DNA variants from
-                           ENSEMBL VEP VCF files
+  generate-decoy           Create decoy protein sequences using multiple
+                           methods DecoyPYrat, Reverse/Shuffled Proteins.
+  generate-deeplc          Generate input for deepLC tool from idXML,mzTab or
+                           consensusXML
+  msrescore-configuration  Command to generate the msrescore configuration
+                           file from idXML
+  peptide-class-fdr        Command to compute the Peptide class FDR
+  threeframe-translation   Command to perform 3'frame translation
+  vcf-to-proteindb         Generate peptides based on DNA variants VCF files
 
 ```
-
-The library provides multiple commands to download, translate and generate protein sequence databases from reference and mutation genome databases.
 
 # Full Documentation
 
 [https://pgatk.readthedocs.io/en/latest/pypgatk.html](https://pgatk.readthedocs.io/en/latest/pypgatk.html)
 
 ## Cite as
-Husen M Umer, Enrique Audain, Yafeng Zhu, Julianus Pfeuffer, Timo Sachsenberg, Janne Lehtiö, Rui M Branca, Yasset Perez-Riverol, Generation of ENSEMBL-based proteogenomics databases boosts the identification of non-canonical peptides, Bioinformatics, Volume 38, Issue 5, 1 March 2022, Pages 1470–1472, https://doi.org/10.1093/bioinformatics/btab838
+Husen M Umer, Enrique Audain, Yafeng Zhu, Julianus Pfeuffer, Timo Sachsenberg, Janne Lehtiö, Rui M Branca, Yasset Perez-Riverol
+Generation of ENSEMBL-based proteogenomics databases boosts the identification of non-canonical peptides
+Bioinformatics, Volume 38, Issue 5, 1 March 2022, Pages 1470–1472
+https://doi.org/10.1093/bioinformatics/btab838
 
