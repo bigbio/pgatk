@@ -39,7 +39,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--vcf', 'testdata/test.vcf',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--gene_annotations_gtf', 'testdata/test.gtf',
-                                '--var_prefix', 'ensvar',
+                                '--protein_prefix', 'ensvar',
                                 '--af_field', 'MAF',
                                 '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
                                 '--annotation_field_name', 'CSQ',
@@ -58,7 +58,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--vcf', 'testdata/test.vcf',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--gene_annotations_gtf', 'testdata/test.gtf',
-                                '--var_prefix', 'varsample',
+                                '--protein_prefix', 'varsample',
                                 '--output_proteindb', 'testdata/proteindb_from_custom_VCF.fa',
                                 '--annotation_field_name', ""])
         if result.exit_code != 0:
@@ -79,7 +79,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--output_proteindb', 'testdata/proteindb_from_gnomad_VCF.fa',
                                 '--af_field', 'controls_AF',
                                 '--af_threshold', '0.001',
-                                '--var_prefix', 'gnomvar',
+                                '--protein_prefix', 'gnomvar',
                                 '--annotation_field_name', 'vep', ])
         self.assertEqual(result.exit_code, 0)
 
@@ -105,7 +105,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_ncRNAs_DNAseq.fa',
-                                '--var_prefix', 'ncRNA_',
+                                '--protein_prefix', 'ncRNA_',
                                 '--include_biotypes',
                                 'lncRNA,retained_intron,Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                                 '--skip_including_all_cds'])
@@ -121,7 +121,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_lncRNAs_DNAseq.fa',
-                                '--var_prefix', 'lncRNA_',
+                                '--protein_prefix', 'lncRNA_',
                                 '--include_biotypes',
                                 'lncRNA,retained_intron',
                                 '--skip_including_all_cds'])
@@ -137,7 +137,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_sncRNAs_DNAseq.fa',
-                                '--var_prefix', 'sncRNA_',
+                                '--protein_prefix', 'sncRNA_',
                                 '--include_biotypes',
                                 'Mt_rRNA,Mt_tRNA,miRNA,misc_RNA,rRNA,ribozyme,sRNA,scRNA,scaRNA,snRNA,snoRNA,vaultRNA',
                                 '--skip_including_all_cds'])
@@ -153,7 +153,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_pseudogenes_DNAseq.fa',
-                                '--var_prefix', 'pseudo_',
+                                '--protein_prefix', 'pseudo_',
                                 '--include_biotypes',
                                 'disrupted_domain, IGC_pseudogene, IGJ_pseudogene, IG_pseudogene, IGV_pseudogene, processed_pseudogene, transcribed_processed_pseudogene, transcribed_unitary_pseudogene, transcribed_unprocessed_pseudogene, translated_processed_pseudogene, TRJ_pseudogene, unprocessed_pseudogene',
                                 '--skip_including_all_cds'])
@@ -169,7 +169,7 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['dnaseq-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/test.fa',
                                 '--output_proteindb', 'testdata/proteindb_from_altORFs_DNAseq.fa',
-                                '--var_prefix', 'altorf_',
+                                '--protein_prefix', 'altorf_',
                                 '--include_biotypes', 'altORFs', '--skip_including_all_cds'])
         self.assertEqual(result.exit_code, 0)
 

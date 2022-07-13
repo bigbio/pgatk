@@ -12,7 +12,7 @@ class EnsemblDataService(ParameterConfiguration):
     INPUT_FASTA = "input_fasta"
     TRANSLATION_TABLE = "translation_table"
     MITO_TRANSLATION_TABLE = "mito_translation_table"
-    HEADER_VAR_PREFIX = "var_prefix"
+    HEADER_VAR_PREFIX = "protein_prefix"
     REPORT_REFERENCE_SEQ = "report_ref_seq"
     PROTEIN_DB_OUTPUT = "proteindb_output_file"
     ANNOTATION_FIELD_NAME = "annotation_field_name"
@@ -61,7 +61,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._mito_translation_table = self.get_translation_properties(variable=self.MITO_TRANSLATION_TABLE,
                                                                        default_value=2)
-        self._header_var_prefix = self.get_translation_properties(variable=self.HEADER_VAR_PREFIX, default_value="var_")
+        self._header_protein_prefix = self.get_translation_properties(variable=self.HEADER_VAR_PREFIX, default_value="var_")
         self._report_reference_seq = self.get_translation_properties(variable=self.REPORT_REFERENCE_SEQ,
                                                                      default_value=False)
         self._annotation_field_name = self.get_translation_properties(variable=self.ANNOTATION_FIELD_NAME,
@@ -382,7 +382,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                        self._include_biotypes == ['all'])):
                     ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, self._num_orfs,
                                                  self._num_orfs_complement, to_stop=False)
-                    self.write_output(seq_id=self._header_var_prefix + record_id, desc=desc, seqs=ref_orfs,
+                    self.write_output(seq_id=self._header_protein_prefix + record_id, desc=desc, seqs=ref_orfs,
                                       prots_fn=prots_fn)
 
                 # also allow for direct translation of the CDS, when the cds info exists in the fasta header skip_including_all_cds is false
@@ -724,7 +724,7 @@ class EnsemblDataService(ParameterConfiguration):
                                 record_id = ""
                                 if record.ID:
                                     record_id = '_' + str(record.ID)
-                                self.write_output(seq_id='_'.join([self._header_var_prefix + str(record_id),
+                                self.write_output(seq_id='_'.join([self._header_protein_prefix + str(record_id),
                                                                    '.'.join([str(record.CHROM), str(record.POS),
                                                                              str(record.REF), str(alt)]),
                                                                    transcript_id_v]),
