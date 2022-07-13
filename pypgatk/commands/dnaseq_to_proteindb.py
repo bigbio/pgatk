@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 @click.option('--num_orfs_complement', type=int,
               help='Number of ORFs from the reverse side (default 0)')
 @click.option('--output_proteindb', help="Output file name, exits if already exists")
-@click.option('-p', '--var_prefix', help="String to add before the variant peptides")
+@click.option('-p', '--protein_prefix', help="String to add before the variant protein")
 @click.option('--skip_including_all_cds',
               help="By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes",
               is_flag=True)
@@ -33,7 +33,7 @@ log = logging.getLogger(__name__)
               help='Threshold used to filter transcripts based on their expression values')
 @click.pass_context
 def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_orfs, num_orfs_complement,
-                        output_proteindb, var_prefix,
+                        output_proteindb, protein_prefix,
                         skip_including_all_cds, include_biotypes, exclude_biotypes, biotype_str,
                         transcript_description_sep, expression_str, expression_thresh):
 
@@ -52,8 +52,8 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
     if output_proteindb is not None:
         pipeline_arguments[EnsemblDataService.PROTEIN_DB_OUTPUT] = output_proteindb
 
-    if var_prefix is not None:
-        pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
+    if protein_prefix is not None:
+        pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = protein_prefix
 
     if exclude_biotypes is not None:
         pipeline_arguments[EnsemblDataService.EXCLUDE_BIOTYPES] = exclude_biotypes

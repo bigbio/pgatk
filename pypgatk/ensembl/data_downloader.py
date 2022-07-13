@@ -8,9 +8,9 @@ Some use cases for this module:
 
 # App imports
 from json import loads
+import re
 from pypgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pypgatk.toolbox.rest import call_api
-
 
 class EnsemblDataDownloadService(ParameterConfiguration):
     """
@@ -381,7 +381,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 species['assembly'] = 'GRCh37'
                 species['release'] = '87'
             file_name = '{}.{}.{}.gtf.gz'.format(species['name'][0].upper() + species['name'][1:], species['assembly'],
-                                                 release_version, )
+                                                 re.sub("[^0-9]", "", release_version), )
             file_url = '{}/{}/gtf/{}/{}'.format(self._ensembl_base_ftp, release_version, species['name'],
                                                         file_name)
             if grch37:

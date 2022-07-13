@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 @click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
 @click.option('-t', '--translation_table', type=int, help="Translation table (Default 1) ")
 @click.option('-m', '--mito_translation_table', type=int, help='Mito_trans_table (default 2)')
-@click.option('-p', '--var_prefix', default="var", help="String to add before the variant peptides")
+@click.option('-p', '--protein_prefix', default="var", help="String to add before the variant peptides")
 @click.option('--report_ref_seq', help='In addition to var peps, also report all ref peps', is_flag=True)
 @click.option('-o', '--output_proteindb', help="Output file name, exits if already exists")
 @click.option('--annotation_field_name', help='''Annotation field name found in the INFO column,
@@ -42,7 +42,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
-                     var_prefix, report_ref_seq, output_proteindb, annotation_field_name,
+                     protein_prefix, report_ref_seq, output_proteindb, annotation_field_name,
                      af_field, af_threshold, transcript_str, biotype_str, exclude_biotypes,
                      include_biotypes, consequence_str, exclude_consequences,
                      skip_including_all_cds, include_consequences,
@@ -63,8 +63,8 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
     if translation_table is not None:
         pipeline_arguments[EnsemblDataService.TRANSLATION_TABLE] = translation_table
 
-    if var_prefix is not None:
-        pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = var_prefix
+    if protein_prefix is not None:
+        pipeline_arguments[EnsemblDataService.HEADER_VAR_PREFIX] = protein_prefix
 
     if report_ref_seq is not None:
         pipeline_arguments[EnsemblDataService.REPORT_REFERENCE_SEQ] = report_ref_seq

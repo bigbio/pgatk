@@ -3,7 +3,7 @@ ensembl_translation:
   proteindb_output_file: 'peptide-database.fa'
   ensembl_translation:
     mito_translation_table: 2
-    var_prefix: "var_"
+    protein_prefix: "var_"
     report_ref_seq: False
     annotation_field_name: 'CSQ'
     af_field: ''
