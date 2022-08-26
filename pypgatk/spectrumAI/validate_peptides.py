@@ -10,6 +10,7 @@ from pypgatk.toolbox.general import ParameterConfiguration
 class ValidatePeptidesService(ParameterConfiguration):
     CONFIG_KEY_VALIDATE_PEPTIDES = 'validate_peptides'
     CONFIG_MZML_PATH = 'mzml_path'
+    CONFIG_MZML_FILES = 'mzml_files'
     CONFIG_INFILE_NAME = 'infile_name'
     CONFIG_OUTFILE_NAME = 'outfile_name'
     CONFIG_IONS_TOLERANCE = 'ions_tolerance'
@@ -30,6 +31,13 @@ class ValidatePeptidesService(ParameterConfiguration):
                 self.CONFIG_MZML_PATH in self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES]:
             self._mzml_path = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][
                 self.CONFIG_MZML_PATH]
+
+        if self.CONFIG_MZML_FILES in self.get_pipeline_parameters():
+            self._mzml_files = self.get_pipeline_parameters()[self.CONFIG_MZML_FILES]
+        elif self.CONFIG_KEY_VALIDATE_PEPTIDES in self.get_default_parameters() and \
+                self.CONFIG_MZML_FILES in self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES]:
+            self._mzml_files = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][
+                self.CONFIG_MZML_FILES]        
         
         if self.CONFIG_INFILE_NAME in self.get_pipeline_parameters():
             self._infile_name = self.get_pipeline_parameters()[self.CONFIG_INFILE_NAME]
@@ -128,8 +136,8 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         return match_ions
 
-    def InspectSpectrum(self, DF, mzml_path, tolerance, relative):
-        DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(x["Sequence"]), axis=1)
+    def InspectSpectrum(self, DF, mzml_path, mzml_files, tolerance, relative):
+        DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(x["Variant Peptide"]), axis=1)
 
         DF["status"] = "skiped"
 
@@ -154,21 +162,32 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         for i in range(DF.shape[0]):
             spectra_file = str(DF.loc[i, "#SpecFile"])
-            mzml_file = os.path.join(mzml_path, spectra_file)
+
+            if mzml_files and not mzml_path:
+                mzml_list = mzml_files.split(",")
+                for file in mzml_list:
+                    if spectra_file in file:
+                        mzml_file = file
+                        break
+            elif not mzml_files and mzml_path:
+                mzml_file = os.path.join(mzml_path, spectra_file)
+            else:
+                print("You only need to use either '--mzml_path' or '--mzml_files'.")
+
             ScanNum = int(DF.loc[i, "ScanNum"])
-            sub_pos = int(DF.loc[i, "sub_pos"])
-            seq = DF.loc[i, "Sequence"]
+            position = int(DF.loc[i, "position"])
+            seq = DF.loc[i, "Variant Peptide"]
             length = DF.loc[i, "peptide_length"]
 
             if not Spectra_list[spectra_file]:
-                # 读取质谱文件
+                # read the mass spectrometry file
                 exp = MSExperiment()
                 MzMLFile().load(mzml_file, exp)
                 Spectra_list[spectra_file].append(exp)
                 look = SpectrumLookup()
                 look.readSpectra(exp, "((?<SCAN>)\d+$)")
                 Spectra_list[spectra_file].append(look)
-            # 通过ScanNum获取peaks
+            # get peaks through ScanNum
             index = Spectra_list[spectra_file][1].findByScanNumber(ScanNum)
             exp_peaks = Spectra_list[spectra_file][0].getSpectrum(index).get_peaks()
             exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
@@ -190,9 +209,9 @@ class ValidatePeptidesService(ParameterConfiguration):
             DF.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
             DF.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
 
-            if sub_pos == 0:
+            if position == 0:
                 continue
-            if sub_pos > DF.loc[i, "peptide_length"]:
+            if position > DF.loc[i, "peptide_length"]:
                 continue
 
             DF.loc[i, "status"] = "checked"
@@ -205,11 +224,11 @@ class ValidatePeptidesService(ParameterConfiguration):
                 pos = int(match_ions.loc[j, "pos"])
                 ion = match_ions.loc[j, "ion"]
 
-                if type == "b" and pos >= sub_pos:
+                if type == "b" and pos >= position:
                     ions_support = "YES"
                     supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
                     supportions = supportions + ',' + ion
-                elif type == "y" and pos > length - sub_pos:
+                elif type == "y" and pos > length - position:
                     ions_support = "YES"
                     supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
                     supportions = supportions + ',' + ion
@@ -224,7 +243,7 @@ class ValidatePeptidesService(ParameterConfiguration):
 
             flanking_ions_support = "NO"
             n1 = DF.loc[i, "peptide_length"]
-            n2 = sub_pos
+            n2 = position
             match_ions_set = set(match_ions["ion"].tolist())
 
             if n2 == 1:
@@ -257,16 +276,16 @@ class ValidatePeptidesService(ParameterConfiguration):
                 DF.loc[i, "flanking_ions_support"] = "NO"
 
             # fragmentation is not preferable at Cterm side of proline, so only require supporting ions
-            if re.search("P", seq[sub_pos - 1:sub_pos]):
+            if re.search("P", seq[position - 1:position]):
                 DF.loc[i, "flanking_ions_support"] = DF.loc[i, "ions_support"]
 
         return DF
 
-    def validate(self, infile_name, outfile_name, mzml_path, tolerance, relative):
+    def validate(self, infile_name, outfile_name, mzml_path, mzml_files, tolerance, relative):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
         df_psm = pd.read_table(infile_name, header=0, dtype="str", sep="\t")
-        df_output = self.InspectSpectrum(df_psm, mzml_path, tolerance, relative)
+        df_output = self.InspectSpectrum(df_psm, mzml_path, mzml_files, tolerance, relative)
         df_output.to_csv(outfile_name, header=1, sep="\t")
 
         df_sub = df_output[df_output["status"] == "checked"]

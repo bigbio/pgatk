@@ -283,20 +283,20 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
         self.assertEqual(result.exit_code, 0)
 
-    # def test_validate_peptides(self):
-    #     runner = CliRunner()
-    #     result = runner.invoke(cli,
-    #                            ['validate_peptides', '--mzml_path', 'testdata',
-    #                             '--infile_name', 'testdata/380need.txt', '--outfile_name',
-    #                             'testdata/380need_AI_out.txt', '--ions_tolerance', '0.02'])
-    #     self.assertEqual(result.exit_code, 0)
-
-    def test_get_subpos(self):
+    def test_validate_peptides(self):
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['get_subpos', '--input_psm_table', 'testdata/MFA380.tsv',
-                                '--input_fasta', 'testdata/cosmic_A549_proteinDB.fa', '--output_psm_table',
-                                'testdata/MFA380.tsv'])
+                               ['validate_peptides', '--mzml_path', 'testdata',
+                                '--infile_name', 'testdata/test_validate_psms.tsv', '--outfile_name',
+                                'testdata/test_validate_psms_out.tsv', '--ions_tolerance', '0.02'])
+        self.assertEqual(result.exit_code, 0)
+
+    def test_get_position(self):
+        runner = CliRunner()
+        result = runner.invoke(cli,
+                               ['validate_peptides', '--input_psm_table', 'testdata/test_get_position_psm.tsv',
+                                '--input_fasta', 'testdata/test_protein.fa', '--output_psm_table',
+                                'testdata/test_get_position_psm_out.tsv'])
         self.assertEqual(result.exit_code, 0)
 
 

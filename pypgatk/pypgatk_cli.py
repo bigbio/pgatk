@@ -21,6 +21,7 @@ from pypgatk.commands import proteindb_decoy as proteindb_decoy_cmd
 from pypgatk.commands import peptide_class_fdr as peptide_class_fdr_cmd
 from pypgatk.commands import msrescore as msrescore_configuration_cmd
 from pypgatk.commands import deeplc as deeplc_cmd
+from pypgatk.commands import validate_peptides as validate_peptides_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -48,6 +49,7 @@ cli.add_command(proteindb_decoy_cmd.generate_database)
 cli.add_command(peptide_class_fdr_cmd.peptide_class_fdr)
 cli.add_command(msrescore_configuration_cmd.msrescore_configuration)
 cli.add_command(deeplc_cmd.generate_deeplc)
+cli.add_command(validate_peptides_cmd.validate_peptides)
 
 
 def main():
