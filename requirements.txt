@@ -10,4 +10,4 @@ pyteomics==4.4.2
 pybedtools
 pandas
 matplotlib==3.3.4
-pyopenms==2.7.0
+pyopenms==2.6.0

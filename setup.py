@@ -32,7 +32,7 @@ setup(name='pypgatk',
         'pybedtools',
         'pyopenms',
         'matplotlib==3.3.4',
-        'pyopenms==2.7.0'
+        'pyopenms==2.6.0'
       ],
       python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
