@@ -31,7 +31,7 @@ setup(name='pypgatk',
         'pyteomics==4.4.2',
         'pybedtools',
         'pyopenms',
-        'matplotlib==3.5.1',
+        'matplotlib==3.3.4',
         'pyopenms==2.7.0'
       ],
       python_requires=">=3.6",
