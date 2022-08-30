@@ -28,7 +28,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 # Cli returns command line requests
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option(version='0.0.24')
+@click.version_option(version='0.0.25')
 def cli():
     """
   This is the main tool that give access to all commands and options provided by the pypgatk
