@@ -107,11 +107,10 @@ class MzTabClassFdr(ParameterConfiguration):
             elif row_list[0] == "PSM":
                 psm.append(row_list)
 
-
         #Convert to dataframe
         PSM = pd.DataFrame(psm, columns=psm_cols)
         PSM.loc[:, "SpecFile"] = PSM.apply(lambda x: self._get_mzml_name(x["spectra_ref"].split(":")[0], mtd_dict), axis=1)
-        PSM.loc[:, "ScanNum"] = PSM.apply(lambda x: re.sub("[^\d]", "", x["opt_global_spectrum_reference"].split(" ")[-1]),axis=1)
+        PSM.loc[:, "ScanNum"] = PSM.apply(lambda x: re.sub("[^\d]", "", x["spectra_ref"].split(":")[-1].split(" ")[-1]),axis=1)
         
         PSM.loc[:,"target"] = PSM.apply(lambda x: self._is_decoy(x["accession"]), axis=1)
         if len(PSM[PSM["target"] == 0]) ==0:
@@ -124,7 +123,7 @@ class MzTabClassFdr(ParameterConfiguration):
                 PSM['class-specific-q-value'] < self._class_fdr_cutoff))]
         PSM.reset_index(drop=True, inplace=True)
 
-        PSM.to_csv(outfile_name, header=1, sep="\t")
+        PSM.to_csv(outfile_name, header=1, sep="\t", index=None)
 
 
 
