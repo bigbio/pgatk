@@ -22,13 +22,14 @@ from pypgatk.commands import peptide_class_fdr as peptide_class_fdr_cmd
 from pypgatk.commands import msrescore as msrescore_configuration_cmd
 from pypgatk.commands import deeplc as deeplc_cmd
 from pypgatk.commands import validate_peptides as validate_peptides_cmd
+from pypgatk.commands import mzTab_class_fdr as mzTab_class_fdr_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 # Cli returns command line requests
 @click.group(context_settings=CONTEXT_SETTINGS)
-@click.version_option(version='0.0.25')
+@click.version_option(version='0.0.24')
 def cli():
     """
   This is the main tool that give access to all commands and options provided by the pypgatk
@@ -50,6 +51,7 @@ cli.add_command(peptide_class_fdr_cmd.peptide_class_fdr)
 cli.add_command(msrescore_configuration_cmd.msrescore_configuration)
 cli.add_command(deeplc_cmd.generate_deeplc)
 cli.add_command(validate_peptides_cmd.validate_peptides)
+cli.add_command(mzTab_class_fdr_cmd.mztab_class_fdr)
 
 
 def main():

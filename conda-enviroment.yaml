@@ -16,5 +16,5 @@ dependencies:
   - ratelimit=2.2.1
   - bioconda::pyteomics
   - pybedtools=0.8.2
-  - matplotlib=3.3.4
+  - matplotlib
   - bioconda::pyopenms
