@@ -1,9 +1,10 @@
 import datetime
 import os.path
+import re
 import pandas as pd
 from matplotlib import pyplot as plt
 from pyopenms import *
-import re
+from Bio import SeqIO
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -15,7 +16,7 @@ class ValidatePeptidesService(ParameterConfiguration):
     CONFIG_OUTFILE_NAME = 'outfile_name'
     CONFIG_IONS_TOLERANCE = 'ions_tolerance'
     CONFIG_RELATIVE = 'relative'
-    CONFIG_MSGF = 'MSGF'
+    CONFIG_MSGF = 'msgf'
 
     def __init__(self, config_data, pipeline_arguments):
         """
@@ -28,7 +29,7 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         self._ions_tolerance = self.get_validate_parameters(variable=self.CONFIG_IONS_TOLERANCE, default_value=0.02)
         self._relative = self.get_validate_parameters(variable=self.CONFIG_RELATIVE, default_value=False)
-        self._MSGF = self.get_validate_parameters(variable=self.CONFIG_MSGF, default_value=False)
+        self._msgf = self.get_validate_parameters(variable=self.CONFIG_MSGF, default_value=False)
 
     def get_validate_parameters(self, variable: str, default_value):
         value_return = default_value
@@ -69,8 +70,8 @@ class ValidatePeptidesService(ParameterConfiguration):
             return str1 + canonical_aa + str2
 
     def get_position(self, input_psm_table, input_fasta, output_psm_table):
-        if self._MSGF:
-            PSM = pd.read_table(input_psm_table, header = 0, sep = "\t")
+        if self._msgf:
+            PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
             PSM.loc[:, "Variant Peptide"] = PSM.apply(lambda x: re.sub("[^A-Z]","",x["Peptide"]), axis = 1)
             PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["Protein"]), axis = 1)
             PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["Protein"]), axis = 1)
@@ -81,6 +82,7 @@ class ValidatePeptidesService(ParameterConfiguration):
             psm = list(PSM)
             PSM = PSM.loc[:,psm]
         else:
+            PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
             PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["accession"]), axis = 1)
             PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["accession"]), axis = 1)
             PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["accession"], x["sequence"], input_fasta), axis = 1)
@@ -88,8 +90,8 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         PSM.to_csv(output_psm_table, sep = "\t", index = 0)
 
-    def _predict_MS2_spectrum(self, Peptide, product_ion_charge = 1):
-        if self._MSGF:
+    def _predict_MS2_spectrum(self, Peptide, size, product_ion_charge = 1 ):
+        if self._msgf:
             Peptide = re.sub("[-?]", "", Peptide)
             modification = re.finditer("(\+\d{1,}\.\d{1,})", Peptide)
 
@@ -101,6 +103,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         tsg = TheoreticalSpectrumGenerator()
         spec = MSSpectrum()
         peptide = AASequence.fromString(Peptide)
+        # size = len(peptide.toUnmodifiedString())
         p = Param()
         p.setValue("add_metainfo", "true")
         p.setValue("add_first_prefix_ion", "true")
@@ -157,8 +160,8 @@ class ValidatePeptidesService(ParameterConfiguration):
         return match_ions
 
     def _InspectSpectrum(self, DF, mzml_path, mzml_files):
-        if self._MSGF:
-            DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(x["Variant Peptide"]), axis=1)
+        if self._msgf:
+            DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(re.sub("[^A-Z]", "", x["Peptide"])), axis=1)
         else:
             DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(x["sequence"]), axis=1)
 
@@ -180,11 +183,11 @@ class ValidatePeptidesService(ParameterConfiguration):
         DF["median_intensity"] = float(0)
 
         Spectra_list = {}
-        for k in range(DF["#SpecFile"].nunique()):
-            Spectra_list[DF["#SpecFile"].unique()[k]] = []
+        for k in range(DF["SpecFile"].nunique()):
+            Spectra_list[DF["SpecFile"].unique()[k]] = []
 
         for i in range(DF.shape[0]):
-            spectra_file = str(DF.loc[i, "#SpecFile"])
+            spectra_file = str(DF.loc[i, "SpecFile"])
 
             if mzml_files and not mzml_path:
                 mzml_list = mzml_files.split(",")
@@ -195,12 +198,14 @@ class ValidatePeptidesService(ParameterConfiguration):
             elif not mzml_files and mzml_path:
                 mzml_file = os.path.join(mzml_path, spectra_file)
             else:
-                print("You only need to use either '--mzml_path' or '--mzml_files'.")
+                raise ValueError(
+                    "You only need to use either '--mzml_path' or '--mzml_files'.")
 
-            ScanNum = int(DF.loc[i, "ScanNum"])
+            scan_num = int(DF.loc[i, "ScanNum"])
             position = int(DF.loc[i, "position"])
-            if self._MSGF:
-                seq = DF.loc[i, "Variant Peptide"]
+            if self._msgf:
+                # seq = DF.loc[i, "Variant Peptide"]
+                seq = re.sub("[^A-Z]", "", DF.loc[i, "Peptide"])
                 length = DF.loc[i, "peptide_length"]
             else:
                 seq = DF.loc[i, "sequence"]
@@ -215,11 +220,14 @@ class ValidatePeptidesService(ParameterConfiguration):
                 look.readSpectra(exp, "((?<SCAN>)\d+$)")
                 Spectra_list[spectra_file].append(look)
             # get peaks through ScanNum
-            index = Spectra_list[spectra_file][1].findByScanNumber(ScanNum)
+            index = Spectra_list[spectra_file][1].findByScanNumber(scan_num)
             exp_peaks = Spectra_list[spectra_file][0].getSpectrum(index).get_peaks()
             exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
 
-            predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "Peptide"]), 1)
+            if self._msgf:
+                predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "Peptide"]), length, 1)
+            else:
+                predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
             match_ions = self._match_exp2predicted(exp_peaks, predicted_peaks)
 
             maxintensity = exp_peaks["intensity"].max()
@@ -238,7 +246,7 @@ class ValidatePeptidesService(ParameterConfiguration):
 
             if position == 0:
                 continue
-            if position > DF.loc[i, "peptide_length"]:
+            if position > length:
                 continue
 
             DF.loc[i, "status"] = "checked"
@@ -269,7 +277,7 @@ class ValidatePeptidesService(ParameterConfiguration):
                 DF.loc[i, "ions_support"] = "NO"
 
             flanking_ions_support = "NO"
-            n1 = DF.loc[i, "peptide_length"]
+            n1 = length
             n2 = position
             match_ions_set = set(match_ions["ion"].tolist())
 
@@ -315,7 +323,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         df_output = self._InspectSpectrum(df_psm, mzml_path, mzml_files)
         df_output.to_csv(outfile_name, header=1, sep="\t")
 
-        if self._MSGF:
+        if self._msgf:
             df_sub = df_output[df_output["status"] == "checked"]
             saav_psm_passed = df_sub[df_sub["flanking_ions_support"]=="YES"]["PrecursorError(ppm)"]
             saav_psm_failed = df_sub[df_sub["flanking_ions_support"]=="NO"]["PrecursorError(ppm)"]

@@ -288,15 +288,15 @@ class PypgatkRunnerTests(unittest.TestCase):
         result = runner.invoke(cli,
                                ['validate_peptides', '--mzml_path', 'testdata',
                                 '--infile_name', 'testdata/test_validate_psms.tsv', '--outfile_name',
-                                'testdata/test_validate_psms_out.tsv', '--MSGF'])
+                                'testdata/test_validate_psms_out.tsv', '--msgf'])
         self.assertEqual(result.exit_code, 0)
 
     def test_get_position(self):
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['validate_peptides', '--input_psm_table', 'testdata/test_get_position_psm.tsv',
-                                '--input_fasta', 'testdata/test_protein.fa', '--output_psm_table','--MSGF'
-                                'testdata/test_get_position_psm_out.tsv'])
+                                '--input_fasta', 'testdata/test_protein_get_positon.fa', '--output_psm_table',
+                                'testdata/test_get_position_psm_out.tsv', '--msgf'])
         self.assertEqual(result.exit_code, 0)
 
 
