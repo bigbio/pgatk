@@ -28,7 +28,7 @@ class MzTabClassFdr(ParameterConfiguration):
                                                                                               'ncRNA'],
                                                                             'mutations': ['COSMIC', 'cbiomut'],
                                                                             'variants': ['var_mut', 'var_rs']})
-                    
+
     def get_fdr_parameters(self, variable: str, default_value):
         value_return = default_value
         if variable in self.get_pipeline_parameters():
@@ -44,8 +44,8 @@ class MzTabClassFdr(ParameterConfiguration):
         return value.split("/")[-1]
 
     def _is_decoy(self, accessions):
-        list = accessions.split(',')
-        if all(self._decoy_prefix in accession for accession in list):
+        accession_list = accessions.split(',')
+        if all(self._decoy_prefix in accession for accession in accession_list):
             return 0
         else:
             return 1

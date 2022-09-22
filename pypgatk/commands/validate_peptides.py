@@ -39,7 +39,7 @@ def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outf
     pipeline_arguments = {}  
 
     if ions_tolerance is not None:
-        pipeline_arguments[ValidatePeptidesService.CONFIG_IONS_TOLERANCE] = ions_tolerance  
+        pipeline_arguments[ValidatePeptidesService.CONFIG_IONS_TOLERANCE] = ions_tolerance
     if relative is not None:
         pipeline_arguments[ValidatePeptidesService.CONFIG_RELATIVE] = relative
     if msgf is not None:
