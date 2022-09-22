@@ -18,12 +18,14 @@ log = logging.getLogger(__name__)
 @click.option('-o', '--outfile_name', help='Output file for the results')
 @click.option('-ion', '--ions_tolerance', help='MS2 fragment ions mass accuracy')
 @click.option('-r', '--relative', help='relative', is_flag=True)
-@click.option('-msgf', '--msgf', help='If it is the standard format of MSGF output, please turn on this switch, otherwise it defaults to mzTab format', is_flag=True)
+@click.option('-msgf', '--msgf', 
+              help='If it is the standard format of MSGF output, please turn on this switch, otherwise it defaults to mzTab format', is_flag=True)
 @click.option('-in_psms', '--input_psm_table', help='Input variant peptide PSMs table')
 @click.option('-fa', '--input_fasta', help='Protein sequence used')
 @click.option('-out_psms', '--output_psm_table', help='Output variant peptide PSMs table')
 @click.pass_context
-def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance, relative, input_psm_table, input_fasta, output_psm_table ,msgf):
+def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance, relative,
+                      input_psm_table, input_fasta, output_psm_table ,msgf):
 
     config_data = None
     if config_file is not None:

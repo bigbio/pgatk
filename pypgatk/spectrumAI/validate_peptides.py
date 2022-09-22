@@ -78,7 +78,8 @@ class ValidatePeptidesService(ParameterConfiguration):
             PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["Protein"], x["Variant Peptide"], input_fasta), axis = 1)
             PSM["position"].fillna(0, inplace = True)
 
-            PSM.loc[:, "Canonical Peptide"] = PSM.apply(lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
+            PSM.loc[:, "Canonical Peptide"] = PSM.apply(
+                lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
             psm = list(PSM)
             PSM = PSM.loc[:,psm]
         else:
