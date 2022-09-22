@@ -1,12 +1,10 @@
 import logging
-from turtle import position
 
 import click
 
 from pypgatk.toolbox.general import read_yaml_from_file
 from pypgatk.spectrumAI.validate_peptides import ValidatePeptidesService
 from pypgatk.commands.utils import print_help
-
 
 log = logging.getLogger(__name__)
 
@@ -36,7 +34,7 @@ def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outf
     if not validate_flag and not position_flag:
         print_help()
 
-    pipeline_arguments = {}  
+    pipeline_arguments = {}
 
     if ions_tolerance is not None:
         pipeline_arguments[ValidatePeptidesService.CONFIG_IONS_TOLERANCE] = ions_tolerance
