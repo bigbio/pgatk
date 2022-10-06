@@ -19,7 +19,7 @@ setup(name='pypgatk',
       license='LICENSE.txt',
       include_package_data=True,
       install_requires=[
-        'biopython==1.73',
+        'biopython==1.79',
         'Click==7.0',
         'gffutils==0.10.1',
         'numpy',
