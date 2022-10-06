@@ -307,13 +307,13 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 'testdata/test_blast_reference_database.fa'])
         self.assertEqual(result.exit_code, 0)
 
-    def test_blast_validate(self):
-        runner = CliRunner()
-        result = runner.invoke(cli,
-                               ['validate_peptides', '--mzml_path', 'testdata',
-                                '--infile_name', 'testdata/test_blast_validate_psms.tsv', '--outfile_name',
-                                'testdata/test_blast_validate_psms_out.tsv'])
-        self.assertEqual(result.exit_code, 0)
+    # def test_blast_validate(self):
+    #     runner = CliRunner()
+    #     result = runner.invoke(cli,
+    #                            ['validate_peptides', '--mzml_path', 'testdata',
+    #                             '--infile_name', 'testdata/test_blast_validate_psms.tsv', '--outfile_name',
+    #                             'testdata/test_blast_validate_psms_out.tsv'])
+    #     self.assertEqual(result.exit_code, 0)
 
 
 if __name__ == '__main__':
