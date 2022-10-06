@@ -78,8 +78,7 @@ class ValidatePeptidesService(ParameterConfiguration):
             PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["Protein"], x["Variant Peptide"], input_fasta), axis = 1)
             PSM["position"].fillna(0, inplace = True)
 
-            PSM.loc[:, "Canonical Peptide"] = PSM.apply(
-                lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
+            PSM.loc[:, "Canonical Peptide"] = PSM.apply(lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
             psm = list(PSM)
             PSM = PSM.loc[:,psm]
         else:
@@ -203,7 +202,6 @@ class ValidatePeptidesService(ParameterConfiguration):
                     "You only need to use either '--mzml_path' or '--mzml_files'.")
 
             scan_num = int(DF.loc[i, "ScanNum"])
-            position = int(DF.loc[i, "position"])
             if self._msgf:
                 # seq = DF.loc[i, "Variant Peptide"]
                 seq = re.sub("[^A-Z]", "", DF.loc[i, "Peptide"])
@@ -245,11 +243,16 @@ class ValidatePeptidesService(ParameterConfiguration):
             DF.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
             DF.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
 
+            if DF.loc[i, "position"] == "canonical":
+                continue
+            if DF.loc[i, "position"] == "non-canonical":
+                continue
+            position = int(DF.loc[i, "position"])
             if position == 0:
                 continue
             if position > length:
                 continue
-
+            
             DF.loc[i, "status"] = "checked"
             supportions_intensity = 0
             ions_support = "NO"

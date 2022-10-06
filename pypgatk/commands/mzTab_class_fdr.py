@@ -4,7 +4,7 @@ import click
 
 from pypgatk.toolbox.general import read_yaml_from_file
 from pypgatk.commands.utils import print_help
-from pypgatk.spectrumAI.mzTab_class_fdr import MzTabClassFdr
+from pypgatk.proteogenomics.mzTab_class_fdr import MzTabClassFdr
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
                                               "groups e.g. \"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}\"")
 @click.pass_context
 def mztab_class_fdr(ctx, config_file, input_mztab, outfile_name, decoy_prefix, global_fdr_cutoff, class_fdr_cutoff, peptide_groups_prefix):
-
+    
     config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
