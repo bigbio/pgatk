@@ -1,4 +1,4 @@
-biopython==1.73
+biopython==1.79
 Click==7.0
 gffutils==0.10.1
 numpy
@@ -10,3 +10,4 @@ pyteomics==4.4.2
 pybedtools
 pandas
 pyopenms
+matplotlib

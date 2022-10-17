@@ -19,7 +19,7 @@ setup(name='pypgatk',
       license='LICENSE.txt',
       include_package_data=True,
       install_requires=[
-        'biopython==1.73',
+        'biopython==1.79',
         'Click==7.0',
         'gffutils==0.10.1',
         'numpy',
@@ -30,7 +30,8 @@ setup(name='pypgatk',
         'ratelimit==2.2.1',
         'pyteomics==4.4.2',
         'pybedtools',
-        'pyopenms'
+        'pyopenms',
+        'matplotlib'
       ],
       python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
