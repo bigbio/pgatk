@@ -22,7 +22,7 @@ from pypgatk.commands import peptide_class_fdr as peptide_class_fdr_cmd
 from pypgatk.commands import msrescore as msrescore_configuration_cmd
 from pypgatk.commands import deeplc as deeplc_cmd
 from pypgatk.commands import validate_peptides as validate_peptides_cmd
-from pypgatk.commands import mzTab_class_fdr as mzTab_class_fdr_cmd
+from pypgatk.commands import mztab_class_fdr as mztab_class_fdr_cmd
 from pypgatk.commands import blast_get_position as blast_get_position_cmd
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])

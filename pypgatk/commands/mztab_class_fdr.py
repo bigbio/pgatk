@@ -8,7 +8,7 @@ from pypgatk.proteogenomics.mzTab_class_fdr import MzTabClassFdr
 
 log = logging.getLogger(__name__)
 
-@click.command('mzTab_class_fdr', short_help='Extract psms from mzTab for global-fdr and class-fdr filtering')
+@click.command('mztab_class_fdr', short_help='Extract psms from mzTab for global-fdr and class-fdr filtering')
 @click.option('-c', '--config_file', help='Configuration file for the fdr peptides pipeline')
 @click.option('-i', '--input_mztab', help='The file name of the input mzTab')
 @click.option('-o', '--outfile_name', help='The file name of the psm table filtered by global-fdr and class-fdr')
