@@ -302,7 +302,7 @@ class PypgatkRunnerTests(unittest.TestCase):
     def test_blast_out_validate(self):
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['validate_peptides', '--mzml_files', 'testdata/test_blast_psms_out.tsv',
+                               ['validate_peptides', '--mzml_files', 'testdata/test_blast_validate.mzML',
                                 '--infile_name', 'testdata/test_blast_validate_psms.tsv', '--outfile_name',
                                 'testdata/test_blast_validate_psms_out.tsv'])
         self.assertEqual(result.exit_code, 0)
