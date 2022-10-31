@@ -61,7 +61,8 @@ class MzTabClassFdr(ParameterConfiguration):
                     accession_group += 1
         return len(list) == accession_group
     
-    def _compute_global_fdr(self, df_psms, order):
+    @staticmethod
+    def _compute_global_fdr(df_psms, order):
         df_psms.sort_values("search_engine_score[1]", ascending=order, inplace=True)
         df_psms['FDR'] = (range(1, len(df_psms) + 1) / df_psms['target'].cumsum()) - 1
         df_psms['q-value'] = df_psms['FDR'][::-1].cummin()[::-1]

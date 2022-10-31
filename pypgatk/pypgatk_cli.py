@@ -52,7 +52,7 @@ cli.add_command(peptide_class_fdr_cmd.peptide_class_fdr)
 cli.add_command(msrescore_configuration_cmd.msrescore_configuration)
 cli.add_command(deeplc_cmd.generate_deeplc)
 cli.add_command(validate_peptides_cmd.validate_peptides)
-cli.add_command(mzTab_class_fdr_cmd.mztab_class_fdr)
+cli.add_command(mztab_class_fdr_cmd.mztab_class_fdr)
 cli.add_command(blast_get_position_cmd.blast_get_position)
 
 
