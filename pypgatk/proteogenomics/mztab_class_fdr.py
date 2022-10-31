@@ -40,7 +40,8 @@ class MzTabClassFdr(ParameterConfiguration):
             value_return = self.get_default_parameters()[self.CONFIG_KEY_MzTabClassFdr][variable]
         return value_return
 
-    def _get_mzml_name(self, run, mtd):
+    @staticmethod
+    def _get_mzml_name(run, mtd):
         key = run + '-location'
         value = mtd.get(key)
         return value.split("/")[-1]
@@ -52,7 +53,8 @@ class MzTabClassFdr(ParameterConfiguration):
         else:
             return 1
     
-    def _is_group(self, peptide_group_members, accessions):
+    @staticmethod
+    def _is_group(peptide_group_members, accessions):
         accession_group = 0
         list = accessions.split(',')
         for accession in list:

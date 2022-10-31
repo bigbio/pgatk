@@ -140,7 +140,8 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         return ions    
 
-    def _get_intensity(self, exp_peak, ion_mz):
+    @staticmethod
+    def _get_intensity(exp_peak, ion_mz):
         exp_peak.loc[:,"mz_difference"] = exp_peak.apply(lambda x:abs(float(ion_mz) - x["mz"]), axis = 1)
         min_index=exp_peak["mz_difference"].idxmin()
         return exp_peak.loc[exp_peak["mz_difference"]==exp_peak["mz_difference"].min()].loc[min_index,"intensity"]

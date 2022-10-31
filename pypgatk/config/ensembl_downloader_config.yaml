@@ -26,7 +26,7 @@ ensembl_data_downloader:
       - chr_patch_hapl_scaff.
       file_extension: gtf
   ensembl_api:
-    server: http://rest.ensembl.org
+    server: https://rest.ensembl.org
     species: /info/species
   logger:
     formatters:

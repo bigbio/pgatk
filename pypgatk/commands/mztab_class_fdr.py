@@ -4,7 +4,7 @@ import click
 
 from pypgatk.toolbox.general import read_yaml_from_file
 from pypgatk.commands.utils import print_help
-from pypgatk.proteogenomics.mzTab_class_fdr import MzTabClassFdr
+from pypgatk.proteogenomics.mztab_class_fdr import MzTabClassFdr
 
 log = logging.getLogger(__name__)
 

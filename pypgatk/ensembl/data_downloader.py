@@ -56,7 +56,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         super(EnsemblDataDownloadService, self).__init__(self.CONFIG_KEY_DATA_DOWNLOADER, config_file,
                                                          pipeline_arguments)
 
-        self._rest_api = 'http://rest.ensembl.org'
+        self._rest_api = 'https://rest.ensembl.org'
         self._rest_endpoint = '/info/species'
 
         self._skip_protein_database = self.get_data_download_parameters(variable=self.CONFIG_KEY_SKIP_PROTEIN,
