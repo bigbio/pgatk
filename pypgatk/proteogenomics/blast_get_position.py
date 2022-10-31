@@ -1,12 +1,14 @@
 import pandas as pd
 from Bio import pairwise2,SeqIO
 import datetime
+from pathos.multiprocessing import ProcessingPool as Pool
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
-class BlastGetPositonService(ParameterConfiguration):
-    CONFIG_KEY_BlastGetPositon = 'blast_get_positon'
+class BlastGetPositionService(ParameterConfiguration):
+    CONFIG_KEY_BlastGetPosition = 'blast_get_position'
     CONFIG_CANONICAL_PEPTIDE_PREFIX = 'canonical_peptide_prefix'
+    CONFIG_INPUT_REFERENCE_DATABASE = 'input_reference_database'
 
     def __init__(self, config_data, pipeline_arguments):
         """
@@ -15,17 +17,20 @@ class BlastGetPositonService(ParameterConfiguration):
       :param pipeline_arguments pipelines arguments
       """
 
-        super(BlastGetPositonService, self).__init__(self.CONFIG_KEY_BlastGetPositon, config_data, pipeline_arguments)
-
+        super(BlastGetPositionService, self).__init__(self.CONFIG_KEY_BlastGetPosition, config_data, pipeline_arguments)
         self._canonical_peptide_prefix = self.get_blast_parameters(variable=self.CONFIG_CANONICAL_PEPTIDE_PREFIX, default_value='sp,NP,ENSP')
+        self._input_reference_database = self.get_blast_parameters(variable=self.CONFIG_INPUT_REFERENCE_DATABASE, default_value='')
+        self.fa_set =set()
+        for j in SeqIO.parse(self._input_reference_database, "fasta"):
+            self.fa_set.add(str(j.seq))
 
     def get_blast_parameters(self, variable: str, default_value):
         value_return = default_value
         if variable in self.get_pipeline_parameters():
             value_return = self.get_pipeline_parameters()[variable]
-        elif self.CONFIG_KEY_BlastGetPositon in self.get_default_parameters() and \
-                variable in self.get_default_parameters()[self.CONFIG_KEY_BlastGetPositon]:
-            value_return = self.get_default_parameters()[self.CONFIG_KEY_BlastGetPositon][variable]
+        elif self.CONFIG_KEY_BlastGetPosition in self.get_default_parameters() and \
+                variable in self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition]:
+            value_return = self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition][variable]
         return value_return
 
     def _is_canonical(self, accession):
@@ -87,19 +92,25 @@ class BlastGetPositonService(ParameterConfiguration):
         else:
             return "non-canonical"
 
-    def blast(self, input_psm_to_blast, output_psm, input_refence_proteome):
+    def _result(self, sequence):
+        return self._blast_set(self.fa_set ,sequence)
+
+    def blast(self, input_psm_to_blast, output_psm):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
 
         PSM = pd.read_table(input_psm_to_blast, header=0,sep="\t")
         PSM.loc[:,"position"] = PSM.apply(lambda x: self._is_canonical(x["accession"]),axis = 1)
+
         first_filter = PSM[PSM.position=="canonical"]
         psm_to_blast = PSM[PSM.position=="waiting for blast"]
+        psm_to_blast = psm_to_blast.copy()
 
-        fa_set =set()
-        for j in SeqIO.parse(input_refence_proteome, "fasta"):
-            fa_set.add(str(j.seq))
-        psm_to_blast.loc[:, "position"] = psm_to_blast.apply(lambda x: self._blast_set(fa_set, x["sequence"]), axis=1)
+        seq = psm_to_blast["sequence"].to_list()
+        pool = Pool()
+        res = pool.map(self._result, seq)
+        psm_to_blast["position"] = res
+        pool.close()
 
         second_filter = psm_to_blast[psm_to_blast.position=="canonical"]
         non_filter = psm_to_blast[psm_to_blast.position=="non-canonical"]
@@ -107,19 +118,20 @@ class BlastGetPositonService(ParameterConfiguration):
         psm_to_findpos = psm_to_blast[psm_to_blast.position!="canonical"]
         psm_to_findpos = psm_to_findpos[psm_to_findpos.position!="non-canonical"]
 
-        psm_to_findpos["var_num"] = psm_to_findpos.apply(lambda x: len(x["position"]),axis=1)
-        psm_to_findpos = psm_to_findpos.loc[psm_to_findpos.index.repeat(psm_to_findpos["var_num"])]
-        psm_to_findpos["var_num"].iloc[0] = 0
-        psm_id = psm_to_findpos["PSM_ID"].iloc[0]
-        for i in range(1,psm_to_findpos.shape[0]):
-            if psm_to_findpos["PSM_ID"].iloc[i] == psm_id:
-                psm_to_findpos["var_num"].iloc[i] = psm_to_findpos["var_num"].iloc[i-1]+1
-            else:
-                psm_id = psm_to_findpos["PSM_ID"].iloc[i]
-                psm_to_findpos["var_num"].iloc[i] = 0
-        psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: str(x["position"])[1:-1].split(",")[x["var_num"]],axis=1)
-        psm_to_findpos.drop(columns="var_num", axis = 1, inplace=True)
-        psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: x["position"].replace(' ', ''), axis=1)
+        if len(psm_to_findpos)>0:
+            psm_to_findpos["var_num"] = psm_to_findpos.apply(lambda x: len(x["position"]),axis=1)
+            psm_to_findpos = psm_to_findpos.loc[psm_to_findpos.index.repeat(psm_to_findpos["var_num"])]
+            psm_to_findpos["var_num"].iloc[0] = 0
+            psm_id = psm_to_findpos["PSM_ID"].iloc[0]
+            for i in range(1,psm_to_findpos.shape[0]):
+                if psm_to_findpos["PSM_ID"].iloc[i] == psm_id:
+                    psm_to_findpos["var_num"].iloc[i] = psm_to_findpos["var_num"].iloc[i-1]+1
+                else:
+                    psm_id = psm_to_findpos["PSM_ID"].iloc[i]
+                    psm_to_findpos["var_num"].iloc[i] = 0
+            psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: str(x["position"])[1:-1].split(",")[x["var_num"]],axis=1)
+            psm_to_findpos.drop(columns="var_num", axis = 1, inplace=True)
+            psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: x["position"].replace(' ', ''), axis=1)
 
         all_psm_out = pd.concat([first_filter, second_filter, non_filter, psm_to_findpos], axis=0, join='outer')
         all_psm_out = all_psm_out.sort_values("PSM_ID")
@@ -128,7 +140,7 @@ class BlastGetPositonService(ParameterConfiguration):
         end_time = datetime.datetime.now()
         print("End time :", end_time)
         set_time_taken = end_time - start_time
-        print("Set Time consumption :", set_time_taken)
+        print("Time consumption :", set_time_taken)
 
 
 

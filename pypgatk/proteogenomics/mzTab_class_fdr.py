@@ -1,5 +1,6 @@
 import re
 import pandas as pd
+import datetime
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -28,6 +29,7 @@ class MzTabClassFdr(ParameterConfiguration):
                                                                                               'ncRNA'],
                                                                             'mutations': ['COSMIC', 'cbiomut'],
                                                                             'variants': ['var_mut', 'var_rs']})
+        self._psm_search_engine_score_order =  {'1003113':True, '1003115': False,'1001493':True,'1001491':False}
                     
     def get_fdr_parameters(self, variable: str, default_value):
         value_return = default_value
@@ -59,16 +61,16 @@ class MzTabClassFdr(ParameterConfiguration):
                     accession_group += 1
         return len(list) == accession_group
     
-    def _compute_global_fdr(self, df_psms):       
-        df_psms.sort_values("search_engine_score[1]", inplace=True)
+    def _compute_global_fdr(self, df_psms, order):       
+        df_psms.sort_values("search_engine_score[1]", ascending=order, inplace=True)
         df_psms['FDR'] = (range(1, len(df_psms) + 1) / df_psms['target'].cumsum()) - 1
         df_psms['q-value'] = df_psms['FDR'][::-1].cummin()[::-1]
 
-        df_psms.sort_values("search_engine_score[1]",  inplace=True)
+        df_psms.sort_values("search_engine_score[1]", ascending=order, inplace=True)
 
         return df_psms
 
-    def _compute_class_fdr(self, df_psms):
+    def _compute_class_fdr(self, df_psms,order):
         ls = []
         for c in self._peptide_groups_prefix:
             # split the dataframe and save the subset
@@ -76,8 +78,14 @@ class MzTabClassFdr(ParameterConfiguration):
                 df_psms['accession'].apply(lambda x: self._is_group(self._peptide_groups_prefix[c], x))]
             ls.append(currClass)
 
+            # If there is no decoy to throw an exception
+            if len(currClass[currClass["target"] == 0 ]) == 0:
+                # raise ValueError(
+                #     "There is not enough decoys to calculate " + c +" class-fdr.")
+                print("Warning:There is no peptide or decoy of "+c+", and this kind of class-fdr has been skipped.")
+
             # calculate class-specific q-value
-            currClass.sort_values("search_engine_score[1]", inplace=True)
+            currClass.sort_values("search_engine_score[1]", ascending=order, inplace=True)
             FDR = (range(1, len(currClass["target"]) + 1) / currClass["target"].cumsum()) - 1
             currClass['class-specific-q-value'] = FDR[::-1].cummin()[::-1]
         df = pd.concat(ls)
@@ -85,12 +93,14 @@ class MzTabClassFdr(ParameterConfiguration):
         # df_psms['class-specific-q-value'] = df['class-specific-q-value']
         df_psms = df_psms.merge(df['class-specific-q-value'], left_index=True, right_index=True, how='left')
         df_psms.loc[df_psms['class-specific-q-value'].isnull(), 'class-specific-q-value'] = df_psms['q-value']
-        df_psms.sort_values("search_engine_score[1]", inplace=True)
+        df_psms.sort_values("search_engine_score[1]", ascending=order, inplace=True)
 
         return df_psms
 
     def form_mzTab_class_fdr(self, input_mztab ,outfile_name):
-
+        start_time = datetime.datetime.now()
+        print("Start time :", start_time)
+        
         file = open(input_mztab, "r")
         list = file.readlines()
 
@@ -107,6 +117,9 @@ class MzTabClassFdr(ParameterConfiguration):
             elif row_list[0] == "PSM":
                 psm.append(row_list)
 
+        psm_search_engine = mtd_dict.get("psm_search_engine_score[1]").split("MS:")[1][:7]
+        order = self._psm_search_engine_score_order.get(psm_search_engine)
+
         #Convert to dataframe
         PSM = pd.DataFrame(psm, columns=psm_cols)
         PSM.loc[:, "SpecFile"] = PSM.apply(lambda x: self._get_mzml_name(x["spectra_ref"].split(":")[0], mtd_dict), axis=1)
@@ -117,13 +130,18 @@ class MzTabClassFdr(ParameterConfiguration):
             raise ValueError(
                     "There is not enough decoys to calculate fdr.")
 
-        PSM = self._compute_global_fdr(PSM)
-        PSM = self._compute_class_fdr(PSM)
+        PSM = self._compute_global_fdr(PSM, order)
+        PSM = self._compute_class_fdr(PSM, order)
         PSM = PSM[((PSM['q-value'] < self._global_fdr_cutoff) & (
                 PSM['class-specific-q-value'] < self._class_fdr_cutoff))]
         PSM.reset_index(drop=True, inplace=True)
 
         PSM.to_csv(outfile_name, header=1, sep="\t", index=None)
+        
+        end_time = datetime.datetime.now()
+        print("End time :", end_time)
+        time_taken = end_time - start_time
+        print("Time consumption :", time_taken)
 
 
 
