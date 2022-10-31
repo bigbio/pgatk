@@ -14,6 +14,7 @@ dependencies:
   - requests=2.21.0
   - simplejson=3.16.0
   - ratelimit=2.2.1
+  - pathos=0.2.8
   - bioconda::pyteomics
   - pybedtools=0.8.2
   - matplotlib

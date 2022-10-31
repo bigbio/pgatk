@@ -2,7 +2,7 @@ import datetime
 import os.path
 import re
 import pandas as pd
-from matplotlib import pyplot as plt
+# from matplotlib import pyplot as plt
 from pyopenms import *
 from Bio import SeqIO
 
@@ -40,55 +40,55 @@ class ValidatePeptidesService(ParameterConfiguration):
             value_return = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][variable]
         return value_return
 
-    def _get_pep_pos(self, protein, sequence, fasta):
-        for seq in SeqIO.parse(fasta, "fasta"):
-            if seq.id == protein:
-                sequence_canonical = str(seq.seq)
-                rr = re.compile(sequence, re.I)
-                match = re.finditer(rr, sequence_canonical)
-                seq_position = int(re.sub("\D", "", protein.split(":")[2]))
-                for i in match:
-                    start = i.start() + 1
-                    end = i.end()
-                    if seq_position >= start and seq_position <= end:
-                        return seq_position - start + 1
-                    else:
-                        continue
+    # def _get_pep_pos(self, protein, sequence, fasta):
+    #     for seq in SeqIO.parse(fasta, "fasta"):
+    #         if seq.id == protein:
+    #             sequence_canonical = str(seq.seq)
+    #             rr = re.compile(sequence, re.I)
+    #             match = re.finditer(rr, sequence_canonical)
+    #             seq_position = int(re.sub("\D", "", protein.split(":")[2]))
+    #             for i in match:
+    #                 start = i.start() + 1
+    #                 end = i.end()
+    #                 if seq_position >= start and seq_position <= end:
+    #                     return seq_position - start + 1
+    #                 else:
+    #                     continue
 
-    def _get_canonical_aa(self, protein):
-        return protein.split(":")[2].split(".")[1][0]
+    # def _get_canonical_aa(self, protein):
+    #     return protein.split(":")[2].split(".")[1][0]
 
-    def _get_variant_aa(self, protein):
-        return protein.split(":")[2].split(".")[1][-1]
+    # def _get_variant_aa(self, protein):
+    #     return protein.split(":")[2].split(".")[1][-1]
 
-    def _get_canonical_peptide(self, variant_peptide,canonical_aa,position):
-        if position==0:
-            return "Unmutated"
-        else:
-            str1 = variant_peptide[0:position - 1]
-            str2 = variant_peptide[position:]
-            return str1 + canonical_aa + str2
+    # def _get_canonical_peptide(self, variant_peptide,canonical_aa,position):
+    #     if position==0:
+    #         return "Unmutated"
+    #     else:
+    #         str1 = variant_peptide[0:position - 1]
+    #         str2 = variant_peptide[position:]
+    #         return str1 + canonical_aa + str2
 
-    def get_position(self, input_psm_table, input_fasta, output_psm_table):
-        if self._msgf:
-            PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
-            PSM.loc[:, "Variant Peptide"] = PSM.apply(lambda x: re.sub("[^A-Z]","",x["Peptide"]), axis = 1)
-            PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["Protein"]), axis = 1)
-            PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["Protein"]), axis = 1)
-            PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["Protein"], x["Variant Peptide"], input_fasta), axis = 1)
-            PSM["position"].fillna(0, inplace = True)
+    # def get_position(self, input_psm_table, input_fasta, output_psm_table):
+    #     if self._msgf:
+    #         PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
+    #         PSM.loc[:, "Variant Peptide"] = PSM.apply(lambda x: re.sub("[^A-Z]","",x["Peptide"]), axis = 1)
+    #         PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["Protein"]), axis = 1)
+    #         PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["Protein"]), axis = 1)
+    #         PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["Protein"], x["Variant Peptide"], input_fasta), axis = 1)
+    #         PSM["position"].fillna(0, inplace = True)
 
-            PSM.loc[:, "Canonical Peptide"] = PSM.apply(lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
-            psm = list(PSM)
-            PSM = PSM.loc[:,psm]
-        else:
-            PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
-            PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["accession"]), axis = 1)
-            PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["accession"]), axis = 1)
-            PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["accession"], x["sequence"], input_fasta), axis = 1)
-            PSM["position"].fillna(0, inplace = True)
+    #         PSM.loc[:, "Canonical Peptide"] = PSM.apply(lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
+    #         psm = list(PSM)
+    #         PSM = PSM.loc[:,psm]
+    #     else:
+    #         PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
+    #         PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["accession"]), axis = 1)
+    #         PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["accession"]), axis = 1)
+    #         PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["accession"], x["sequence"], input_fasta), axis = 1)
+    #         PSM["position"].fillna(0, inplace = True)
 
-        PSM.to_csv(output_psm_table, sep = "\t", index = 0)
+    #     PSM.to_csv(output_psm_table, sep = "\t", index = 0)
 
     def _predict_MS2_spectrum(self, Peptide, size, product_ion_charge = 1 ):
         if self._msgf:
@@ -327,20 +327,20 @@ class ValidatePeptidesService(ParameterConfiguration):
         df_output = self._InspectSpectrum(df_psm, mzml_path, mzml_files)
         df_output.to_csv(outfile_name, header=1, sep="\t")
 
-        if self._msgf:
-            df_sub = df_output[df_output["status"] == "checked"]
-            saav_psm_passed = df_sub[df_sub["flanking_ions_support"]=="YES"]["PrecursorError(ppm)"]
-            saav_psm_failed = df_sub[df_sub["flanking_ions_support"]=="NO"]["PrecursorError(ppm)"]
-            plot=plt.figure(figsize=(10,7))
-            plot1=plot.add_subplot(1,2,1)
-            plot2=plot.add_subplot(1,2,2)
-            plot1.hist(saav_psm_passed,bins=20)
-            plot1.set_xlabel("PrecursorError(ppm)")
-            plot1.set_title("SpectrumAI curated")
-            plot2.hist(saav_psm_failed,bins=20)
-            plot2.set_xlabel("PrecursorError(ppm)")
-            plot2.set_title("SpectrumAI discarded")
-            plt.savefig("precursorError_histogram.pdf")
+        # if self._msgf:
+        #     df_sub = df_output[df_output["status"] == "checked"]
+        #     saav_psm_passed = df_sub[df_sub["flanking_ions_support"]=="YES"]["PrecursorError(ppm)"]
+        #     saav_psm_failed = df_sub[df_sub["flanking_ions_support"]=="NO"]["PrecursorError(ppm)"]
+        #     plot=plt.figure(figsize=(10,7))
+        #     plot1=plot.add_subplot(1,2,1)
+        #     plot2=plot.add_subplot(1,2,2)
+        #     plot1.hist(saav_psm_passed,bins=20)
+        #     plot1.set_xlabel("PrecursorError(ppm)")
+        #     plot1.set_title("SpectrumAI curated")
+        #     plot2.hist(saav_psm_failed,bins=20)
+        #     plot2.set_xlabel("PrecursorError(ppm)")
+        #     plot2.set_title("SpectrumAI discarded")
+        #     plt.savefig("precursorError_histogram.pdf")
 
         end_time = datetime.datetime.now()
         print("End time :", end_time)

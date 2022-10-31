@@ -17,19 +17,20 @@ log = logging.getLogger(__name__)
 @click.option('-ion', '--ions_tolerance', help='MS2 fragment ions mass accuracy')
 @click.option('-r', '--relative', help='relative', is_flag=True)
 @click.option('-msgf', '--msgf', help='If it is the standard format of MSGF output, please turn on this switch, otherwise it defaults to mzTab format', is_flag=True)
-@click.option('-in_psms', '--input_psm_table', help='Input variant peptide PSMs table')
-@click.option('-fa', '--input_fasta', help='Protein sequence used')
-@click.option('-out_psms', '--output_psm_table', help='Output variant peptide PSMs table')
+# @click.option('-in_psms', '--input_psm_table', help='Input variant peptide PSMs table')
+# @click.option('-fa', '--input_fasta', help='Protein sequence used')
+# @click.option('-out_psms', '--output_psm_table', help='Output variant peptide PSMs table')
 @click.pass_context
-def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance, relative, input_psm_table, input_fasta, output_psm_table ,msgf):
-
+# def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance, relative, input_psm_table, input_fasta, output_psm_table ,msgf):
+def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance, relative, msgf):
     config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
 
     validate_flag = bool(infile_name and (mzml_path or mzml_files) and outfile_name)
-    position_flag = bool(input_psm_table and input_fasta and output_psm_table)
-    if not validate_flag and not position_flag:
+    # position_flag = bool(input_psm_table and input_fasta and output_psm_table)
+    # if not validate_flag and not position_flag:
+    if not validate_flag :
         print_help()
 
     pipeline_arguments = {}
@@ -44,7 +45,7 @@ def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outf
     validate_peptides_service = ValidatePeptidesService(config_data, pipeline_arguments)
     if validate_flag:
         validate_peptides_service.validate(infile_name, outfile_name, mzml_path , mzml_files)
-    elif position_flag:
-        validate_peptides_service.get_position(input_psm_table, input_fasta, output_psm_table)
+    # elif position_flag:
+    #     validate_peptides_service.get_position(input_psm_table, input_fasta, output_psm_table)
 
 
