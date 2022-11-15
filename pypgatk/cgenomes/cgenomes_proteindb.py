@@ -121,6 +121,8 @@ class CancerGenomesService(ParameterConfiguration):
 
                 if "Missense" in snp.type:
                     mut_aa = snp.aa_mut[-1]
+                    if not mut_aa.isalpha():
+                        return ''
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
                 elif "Nonsense" in snp.type:
@@ -146,6 +148,8 @@ class CancerGenomesService(ParameterConfiguration):
                     except ValueError:
                         return ''
                     mut_aa = snp.aa_mut[index + 1:]
+                    if not mut_aa.replace('*','').isalpha():
+                        return ''
                     if "deletion" in snp.type:
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
