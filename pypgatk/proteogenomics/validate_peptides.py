@@ -155,9 +155,15 @@ class ValidatePeptidesService(ParameterConfiguration):
                 "You only need to use either '--mzml_path' or '--mzml_files'.")
         
         exp = MSExperiment()
-        MzMLFile().load(mzml_file, exp)
-        look = SpectrumLookup()
-        look.readSpectra(exp, "((?<SCAN>)\d+$)")
+        try:
+            MzMLFile().load(mzml_file, exp)
+            look = SpectrumLookup()
+            look.readSpectra(exp, "((?<SCAN>)\d+$)")
+        except Exception as e:
+            print(mzml_file + " has ERROR!")
+            print(e)
+            DF["ions_support"] = "mzML ERROR"
+            return DF
 
         for i in range(DF.shape[0]):
             scan_num = int(DF.loc[i, "ScanNum"])
@@ -173,6 +179,7 @@ class ValidatePeptidesService(ParameterConfiguration):
             try:
                 index = look.findByScanNumber(scan_num)
             except:
+                print("ERROR: file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
                 continue
 
             exp_peaks = exp.getSpectrum(index).get_peaks()

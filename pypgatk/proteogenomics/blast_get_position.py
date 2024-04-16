@@ -57,55 +57,6 @@ class BlastGetPositionService(ParameterConfiguration):
         df["position"] = df["sequence"].map(seq_dict)
         return df 
     
-    # def _blast_set(self, fasta_set, peptide):
-    #     length = len(peptide)
-    #     position_set = set()
-    #     for fasta in fasta_set:
-    #         if len(fasta)>=length:
-    #             alignments_score  = pairwise2.align.localms(sequenceA = fasta,sequenceB = peptide,match = 1,mismatch = 0,open = -1,extend = 0,score_only = True)
-    #             if alignments_score == length:
-    #                 return "canonical"
-    #             elif alignments_score == length-1:
-    #                 alignments_local  = pairwise2.align.localms(sequenceA = fasta,sequenceB = peptide,match = 1,mismatch = 0,open = -1,extend = 0)
-    #                 for alignment in alignments_local:
-    #                     #insertion e.g., ABCDMEFGH<----ABCDEFGH
-    #                     if alignment.end - alignment.start == length+1:
-    #                         s = fasta[alignment.start:alignment.end]
-    #                         for i in range(length):
-    #                             if peptide[i] != s[i]:
-    #                                 position_set.add(i+1)
-    #                                 break
-    #                     #substitution e.g., ABCDMFGH<----ABCDEFGH
-    #                     elif alignment.end - alignment.start == length:
-    #                         s = fasta[alignment.start:alignment.end]
-    #                         for i in range(length):
-    #                             if peptide[i] != s[i]:
-    #                                 position_set.add(i+1)
-    #                                 break
-    #                     # substitution e.g., ABCDEFGM<----ABCDEFGH
-    #                     elif alignment.end - alignment.start == length-1:
-    #                         s = fasta[alignment.start:alignment.end]
-    #                         if peptide[0] != s[0]:
-    #                             position_set.add(1)
-    #                         elif peptide[-1] != s[-1]:
-    #                             position_set.add(length)
-    #             elif alignments_score == length-2:
-    #                 alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=-1,
-    #                                                         open=-1, extend=0)
-    #                 for alignment in alignments_local:
-    #                     # deletion e.g., ABCEFGH<----ABCDEFGH
-    #                     if alignment.end - alignment.start == length and alignment.score == length - 2:
-    #                         s = fasta[alignment.start:alignment.end - 1]
-    #                         if pairwise2.align.localms(sequenceA=s, sequenceB=peptide, match=1, mismatch=0, open=0,
-    #                                                 extend=0, score_only=True) == length - 1:
-    #                             for i in range(length - 1):
-    #                                 if peptide[i] != s[i]:
-    #                                     position_set.add(i+1)
-    #                                     break
-    #     if position_set:
-    #         return position_set
-    #     else:
-    #         return "non-canonical"
     def _blast_set(self, fasta_set, peptide):
         length = len(peptide)
         position_set = set()
@@ -122,22 +73,22 @@ class BlastGetPositionService(ParameterConfiguration):
                             s = fasta[alignment.start:alignment.end]
                             for i in range(length):
                                 if peptide[i] != s[i]:
-                                    position_set.add("insertion-" + str(i+1))
+                                    position_set.add(i+1)
                                     break
                         #substitution e.g., ABCDMFGH<----ABCDEFGH
                         elif alignment.end - alignment.start == length:
                             s = fasta[alignment.start:alignment.end]
                             for i in range(length):
                                 if peptide[i] != s[i]:
-                                    position_set.add("substitution-" + str(i+1))
+                                    position_set.add(i+1)
                                     break
                         # substitution e.g., ABCDEFGM<----ABCDEFGH
                         elif alignment.end - alignment.start == length-1:
                             s = fasta[alignment.start:alignment.end]
                             if peptide[0] != s[0]:
-                                position_set.add("substitution-" + str(1))
+                                position_set.add(1)
                             elif peptide[-1] != s[-1]:
-                                position_set.add("substitution-" + str(length))
+                                position_set.add(length)
                 elif alignments_score == length-2:
                     alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=-1,
                                                             open=-1, extend=0)
@@ -149,7 +100,7 @@ class BlastGetPositionService(ParameterConfiguration):
                                                     extend=0, score_only=True) == length - 1:
                                 for i in range(length - 1):
                                     if peptide[i] != s[i]:
-                                        position_set.add("deletion-" + str(i+1))
+                                        position_set.add(i+1)
                                         break
         if position_set:
             return position_set
