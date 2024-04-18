@@ -16,7 +16,7 @@ log = logging.getLogger(__name__)
 @click.option('-o', '--outfile_name', help='Output file for the results')
 @click.option('-ion', '--ions_tolerance', help='MS2 fragment ions mass accuracy')
 @click.option('-n', '--number_of_processes', help='Used to specify the number of processes. Default is 40.')
-@click.option('-r', '--relative', help='relative', is_flag=True)
+@click.option('-r', '--relative', help='When using ppm as ions_tolerance (not Da), it needs to be turned on', is_flag=True)
 @click.option('-msgf', '--msgf', help='If it is the standard format of MSGF output, please turn on this switch, otherwise it defaults to mzTab format', is_flag=True)
 
 @click.pass_context
