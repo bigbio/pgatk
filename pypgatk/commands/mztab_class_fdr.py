@@ -39,4 +39,4 @@ def mztab_class_fdr(ctx, config_file, input_mztab, outfile_name, decoy_prefix, g
         pipeline_arguments[MzTabClassFdr.CONFIG_PEPTIDE_GROUPS_PREFIX] = peptide_groups_prefix
 
     mzTab_class_fdr = MzTabClassFdr(config_data, pipeline_arguments)
-    mzTab_class_fdr.form_mzTab_class_fdr(input_mztab, outfile_name)
+    mzTab_class_fdr.form_mztab_class_fdr(input_mztab, outfile_name)

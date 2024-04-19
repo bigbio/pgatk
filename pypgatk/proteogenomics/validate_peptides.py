@@ -9,6 +9,7 @@ from tqdm import tqdm
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
+
 class ValidatePeptidesService(ParameterConfiguration):
     CONFIG_KEY_VALIDATE_PEPTIDES = 'validate_peptides'
     CONFIG_MZML_PATH = 'mzml_path'
@@ -27,14 +28,16 @@ class ValidatePeptidesService(ParameterConfiguration):
       :param pipeline_arguments pipelines arguments
       """
 
-        super(ValidatePeptidesService, self).__init__(self.CONFIG_KEY_VALIDATE_PEPTIDES, config_data, pipeline_arguments)
+        super(ValidatePeptidesService, self).__init__(self.CONFIG_KEY_VALIDATE_PEPTIDES, config_data,
+                                                      pipeline_arguments)
 
-        self._mzml_path = self.get_validate_parameters(variable=self.CONFIG_MZML_PATH,default_value=False)
-        self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES,default_value=False)
+        self._mzml_path = self.get_validate_parameters(variable=self.CONFIG_MZML_PATH, default_value=False)
+        self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES, default_value=False)
         self._ions_tolerance = self.get_validate_parameters(variable=self.CONFIG_IONS_TOLERANCE, default_value=0.02)
         self._relative = self.get_validate_parameters(variable=self.CONFIG_RELATIVE, default_value=False)
         self._msgf = self.get_validate_parameters(variable=self.CONFIG_MSGF, default_value=False)
-        self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES, default_value=40)
+        self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
+                                                                 default_value=40)
 
         self.df_list = Manager().list()
 
@@ -47,19 +50,20 @@ class ValidatePeptidesService(ParameterConfiguration):
             value_return = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][variable]
         return value_return
 
-    def _predict_MS2_spectrum(self, Peptide, size, product_ion_charge = 1 ):
+    def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
         if self._msgf:
-            Peptide = re.sub("[-?]", "", Peptide)
-            modification = re.finditer("(\+\d{1,}\.\d{1,})", Peptide)
+            peptide = re.sub("[-?]", "", peptide)
+            modification = re.finditer("(\+\d{1,}\.\d{1,})", peptide)
 
             a = 0
             for i in modification:
-                Peptide = Peptide[:i.start() + a] + '[' + Peptide[i.start() + a:i.end() + a] + ']' + Peptide[i.end() + a:]
+                peptide = peptide[:i.start() + a] + '[' + peptide[i.start() + a:i.end() + a] + ']' + peptide[
+                                                                                                     i.end() + a:]
                 a += 2
 
         tsg = TheoreticalSpectrumGenerator()
         spec = MSSpectrum()
-        peptide = AASequence.fromString(Peptide)
+        peptide = AASequence.fromString(peptide)
         # size = len(peptide.toUnmodifiedString())
         p = Param()
         p.setValue("add_metainfo", "true")
@@ -75,7 +79,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         for i in spec:
             mz.append(i.getMZ())
 
-        ions = pd.DataFrame({"mz":mz,"ion":b_y_ions,"z":1})
+        ions = pd.DataFrame({"mz": mz, "ion": b_y_ions, "z": 1})
 
         ions.loc[2 * size - 2, "ion"] = "b" + str(size)
         ions = ions.drop(2 * size - 1)
@@ -88,25 +92,25 @@ class ValidatePeptidesService(ParameterConfiguration):
         proton_mono_mass = 1.007276
         if product_ion_charge > 1:
             ions2 = ions.copy()
-            ions2.loc[:, "mz"] = ions2.apply(lambda x: (x["mz"]+proton_mono_mass)/2, axis=1)
+            ions2.loc[:, "mz"] = ions2.apply(lambda x: (x["mz"] + proton_mono_mass) / 2, axis=1)
             ions2.loc[:, "z"] = 2
 
             ions = ions.merge(ions2, how='outer')
 
         ions = ions.reset_index(drop=True)
 
-        return ions    
+        return ions
 
     @staticmethod
     def _get_intensity(exp_peak, ion_mz):
-        exp_peak.loc[:,"mz_difference"] = exp_peak.apply(lambda x:abs(float(ion_mz) - x["mz"]), axis = 1)
-        min_index=exp_peak["mz_difference"].idxmin()
-        return exp_peak.loc[exp_peak["mz_difference"]==exp_peak["mz_difference"].min()].loc[min_index,"intensity"]
+        exp_peak.loc[:, "mz_difference"] = exp_peak.apply(lambda x: abs(float(ion_mz) - x["mz"]), axis=1)
+        min_index = exp_peak["mz_difference"].idxmin()
+        return exp_peak.loc[exp_peak["mz_difference"] == exp_peak["mz_difference"].min()].loc[min_index, "intensity"]
 
     def _match_exp2predicted(self, exp_peak, pred_peak):
-        pred_peak.loc[:,"error"] = pred_peak.apply(lambda x:min(abs(float(x["mz"])-exp_peak["mz"])), axis = 1)
-        pred_peak.loc[:,"intensity"] = pred_peak.apply(lambda x:self._get_intensity(exp_peak,x["mz"]), axis = 1)
-        pred_peak.loc[:,"ppm"] = pred_peak.apply(lambda x:round(x["error"]/x["mz"]*1000000,2), axis = 1)
+        pred_peak.loc[:, "error"] = pred_peak.apply(lambda x: min(abs(float(x["mz"]) - exp_peak["mz"])), axis=1)
+        pred_peak.loc[:, "intensity"] = pred_peak.apply(lambda x: self._get_intensity(exp_peak, x["mz"]), axis=1)
+        pred_peak.loc[:, "ppm"] = pred_peak.apply(lambda x: round(x["error"] / x["mz"] * 1000000, 2), axis=1)
 
         if self._relative:
             match_ions = pred_peak[pred_peak["ppm"] < self._ions_tolerance]
@@ -139,6 +143,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         DF["maxintensity"] = float(0)
         DF["average_intensity"] = float(0)
         DF["median_intensity"] = float(0)
+        mzml_file = None
 
         spectra_file = str(DF.loc[0, "SpecFile"])
         if mzml_files and not mzml_path:
@@ -152,7 +157,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         else:
             raise ValueError(
                 "You only need to use either '--mzml_path' or '--mzml_files'.")
-        
+
         exp = MSExperiment()
         try:
             MzMLFile().load(mzml_file, exp)
@@ -188,7 +193,8 @@ class ValidatePeptidesService(ParameterConfiguration):
             if self._msgf:
                 predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "Peptide"]), length, 1)
             else:
-                predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
+                predicted_peaks = self._predict_MS2_spectrum(
+                    str(DF.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
             match_ions = self._match_exp2predicted(exp_peaks, predicted_peaks)
 
             maxintensity = exp_peaks["intensity"].max()
@@ -214,22 +220,22 @@ class ValidatePeptidesService(ParameterConfiguration):
                 continue
             if position > length:
                 continue
-            
+
             DF.loc[i, "status"] = "checked"
             supportions_intensity = 0
             ions_support = "NO"
             supportions = ""
 
             for j in range(match_ions.shape[0]):
-                type = match_ions.loc[j, "type"]
+                ion_type = match_ions.loc[j, "type"]
                 pos = int(match_ions.loc[j, "pos"])
                 ion = match_ions.loc[j, "ion"]
 
-                if type == "b" and pos >= position:
+                if ion_type == "b" and pos >= position:
                     ions_support = "YES"
                     supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
                     supportions = supportions + ',' + ion
-                elif type == "y" and pos > length - position:
+                elif ion_type == "y" and pos > length - position:
                     ions_support = "YES"
                     supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
                     supportions = supportions + ',' + ion
@@ -271,7 +277,8 @@ class ValidatePeptidesService(ParameterConfiguration):
             DF.loc[i, "flanking_ions_support"] = flanking_ions_support
             DF.loc[i, "flanking_ions"] = ",".join(flanking_ions)
             if flanking_ions:
-                DF.loc[i, "sum.flanking.ions.intensity"] = match_ions[match_ions['ion'].str.contains("|".join(flanking_ions))]["intensity"].sum()
+                DF.loc[i, "sum.flanking.ions.intensity"] = \
+                    match_ions[match_ions['ion'].str.contains("|".join(flanking_ions))]["intensity"].sum()
 
             if DF.loc[i, "sum.flanking.ions.intensity"] < DF.loc[i, "median_intensity"]:
                 DF.loc[i, "flanking_ions_support"] = "NO"
@@ -282,25 +289,25 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         return DF
 
-
     def _multiprocess_InspectSpectrum(self, DF):
         self.df_list.append(self._InspectSpectrum(DF, self._mzml_path, self._mzml_files))
 
-    def validate(self, infile_name, outfile_name):
+    def validate(self, infile_name, outfile_name: str):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
         df_psm = pd.read_table(infile_name, header=0, sep="\t")
-        
+
         grouped_dfs = df_psm.groupby("SpecFile")
         list_of_dfs = [group_df.reset_index(drop=True) for name, group_df in grouped_dfs]
 
         pool = Pool(int(self._number_of_processes))
-        list(tqdm(pool.imap(self._multiprocess_InspectSpectrum, list_of_dfs) , total=len(list_of_dfs), desc="Validate By Each mzMl", unit="mzML"))
+        list(tqdm(pool.imap(self._multiprocess_InspectSpectrum, list_of_dfs), total=len(list_of_dfs),
+                  desc="Validate By Each mzMl", unit="mzML"))
         pool.close()
         pool.join()
 
         df_output = pd.concat(self.df_list, axis=0, ignore_index=True)
-        df_output.to_csv(outfile_name, header=1, sep="\t",index = None)
+        df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
 
         # if self._msgf:
         #     df_sub = df_output[df_output["status"] == "checked"]
@@ -321,7 +328,3 @@ class ValidatePeptidesService(ParameterConfiguration):
         print("End time :", end_time)
         time_taken = end_time - start_time
         print("Time consumption :", time_taken)
-
-
-
-        
