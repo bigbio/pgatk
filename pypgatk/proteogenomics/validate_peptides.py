@@ -2,9 +2,11 @@ import datetime
 import os.path
 import re
 import pandas as pd
-# from matplotlib import pyplot as plt
+from pathos.multiprocessing import ProcessingPool as Pool
+from multiprocessing import Manager
 from pyopenms import *
 from Bio import SeqIO
+from tqdm import tqdm
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
@@ -15,6 +17,7 @@ class ValidatePeptidesService(ParameterConfiguration):
     CONFIG_INFILE_NAME = 'infile_name'
     CONFIG_OUTFILE_NAME = 'outfile_name'
     CONFIG_IONS_TOLERANCE = 'ions_tolerance'
+    CONFIG_NUMBER_OF_PROCESSES = 'number_of_processes'
     CONFIG_RELATIVE = 'relative'
     CONFIG_MSGF = 'msgf'
 
@@ -27,9 +30,14 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         super(ValidatePeptidesService, self).__init__(self.CONFIG_KEY_VALIDATE_PEPTIDES, config_data, pipeline_arguments)
 
+        self._mzml_path = self.get_validate_parameters(variable=self.CONFIG_MZML_PATH,default_value=False)
+        self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES,default_value=False)
         self._ions_tolerance = self.get_validate_parameters(variable=self.CONFIG_IONS_TOLERANCE, default_value=0.02)
         self._relative = self.get_validate_parameters(variable=self.CONFIG_RELATIVE, default_value=False)
         self._msgf = self.get_validate_parameters(variable=self.CONFIG_MSGF, default_value=False)
+        self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES, default_value=40)
+
+        self.df_list = Manager().list()
 
     def get_validate_parameters(self, variable: str, default_value):
         value_return = default_value
@@ -39,56 +47,6 @@ class ValidatePeptidesService(ParameterConfiguration):
                 variable in self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES]:
             value_return = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][variable]
         return value_return
-
-    # def _get_pep_pos(self, protein, sequence, fasta):
-    #     for seq in SeqIO.parse(fasta, "fasta"):
-    #         if seq.id == protein:
-    #             sequence_canonical = str(seq.seq)
-    #             rr = re.compile(sequence, re.I)
-    #             match = re.finditer(rr, sequence_canonical)
-    #             seq_position = int(re.sub("\D", "", protein.split(":")[2]))
-    #             for i in match:
-    #                 start = i.start() + 1
-    #                 end = i.end()
-    #                 if seq_position >= start and seq_position <= end:
-    #                     return seq_position - start + 1
-    #                 else:
-    #                     continue
-
-    # def _get_canonical_aa(self, protein):
-    #     return protein.split(":")[2].split(".")[1][0]
-
-    # def _get_variant_aa(self, protein):
-    #     return protein.split(":")[2].split(".")[1][-1]
-
-    # def _get_canonical_peptide(self, variant_peptide,canonical_aa,position):
-    #     if position==0:
-    #         return "Unmutated"
-    #     else:
-    #         str1 = variant_peptide[0:position - 1]
-    #         str2 = variant_peptide[position:]
-    #         return str1 + canonical_aa + str2
-
-    # def get_position(self, input_psm_table, input_fasta, output_psm_table):
-    #     if self._msgf:
-    #         PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
-    #         PSM.loc[:, "Variant Peptide"] = PSM.apply(lambda x: re.sub("[^A-Z]","",x["Peptide"]), axis = 1)
-    #         PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["Protein"]), axis = 1)
-    #         PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["Protein"]), axis = 1)
-    #         PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["Protein"], x["Variant Peptide"], input_fasta), axis = 1)
-    #         PSM["position"].fillna(0, inplace = True)
-
-    #         PSM.loc[:, "Canonical Peptide"] = PSM.apply(lambda x: self._get_canonical_peptide(x["Variant Peptide"],x["Canonical AA"],int(x["position"])), axis = 1)
-    #         psm = list(PSM)
-    #         PSM = PSM.loc[:,psm]
-    #     else:
-    #         PSM = pd.read_table(input_psm_table, header = 0, sep = "\t", index_col=0)
-    #         PSM.loc[:, "Canonical AA"] = PSM.apply(lambda x: self._get_canonical_aa(x["accession"]), axis = 1)
-    #         PSM.loc[:, "Variant AA"] = PSM.apply(lambda x: self._get_variant_aa(x["accession"]), axis = 1)
-    #         PSM.loc[:, "position"] = PSM.apply(lambda x: self._get_pep_pos(x["accession"], x["sequence"], input_fasta), axis = 1)
-    #         PSM["position"].fillna(0, inplace = True)
-
-    #     PSM.to_csv(output_psm_table, sep = "\t", index = 0)
 
     def _predict_MS2_spectrum(self, Peptide, size, product_ion_charge = 1 ):
         if self._msgf:
@@ -183,25 +141,31 @@ class ValidatePeptidesService(ParameterConfiguration):
         DF["average_intensity"] = float(0)
         DF["median_intensity"] = float(0)
 
-        Spectra_list = {}
-        for k in range(DF["SpecFile"].nunique()):
-            Spectra_list[DF["SpecFile"].unique()[k]] = []
+        spectra_file = str(DF.loc[0, "SpecFile"])
+        if mzml_files and not mzml_path:
+            mzml_list = mzml_files.split(",")
+            for file in mzml_list:
+                if spectra_file in file:
+                    mzml_file = file
+                    break
+        elif not mzml_files and mzml_path:
+            mzml_file = os.path.join(mzml_path, spectra_file)
+        else:
+            raise ValueError(
+                "You only need to use either '--mzml_path' or '--mzml_files'.")
+        
+        exp = MSExperiment()
+        try:
+            MzMLFile().load(mzml_file, exp)
+            look = SpectrumLookup()
+            look.readSpectra(exp, "((?<SCAN>)\d+$)")
+        except Exception as e:
+            print(mzml_file + " has ERROR!")
+            print(e)
+            DF["ions_support"] = "mzML ERROR"
+            return DF
 
         for i in range(DF.shape[0]):
-            spectra_file = str(DF.loc[i, "SpecFile"])
-
-            if mzml_files and not mzml_path:
-                mzml_list = mzml_files.split(",")
-                for file in mzml_list:
-                    if spectra_file in file:
-                        mzml_file = file
-                        break
-            elif not mzml_files and mzml_path:
-                mzml_file = os.path.join(mzml_path, spectra_file)
-            else:
-                raise ValueError(
-                    "You only need to use either '--mzml_path' or '--mzml_files'.")
-
             scan_num = int(DF.loc[i, "ScanNum"])
             if self._msgf:
                 # seq = DF.loc[i, "Variant Peptide"]
@@ -211,17 +175,15 @@ class ValidatePeptidesService(ParameterConfiguration):
                 seq = DF.loc[i, "sequence"]
                 length = DF.loc[i, "peptide_length"]
 
-            if not Spectra_list[spectra_file]:
-                # read the mass spectrometry file
-                exp = MSExperiment()
-                MzMLFile().load(mzml_file, exp)
-                Spectra_list[spectra_file].append(exp)
-                look = SpectrumLookup()
-                look.readSpectra(exp, "((?<SCAN>)\d+$)")
-                Spectra_list[spectra_file].append(look)
             # get peaks through ScanNum
-            index = Spectra_list[spectra_file][1].findByScanNumber(scan_num)
-            exp_peaks = Spectra_list[spectra_file][0].getSpectrum(index).get_peaks()
+            try:
+                index = look.findByScanNumber(scan_num)
+            except:
+                print("ERROR: file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
+                continue
+
+            exp_peaks = exp.getSpectrum(index).get_peaks()
+
             exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
 
             if self._msgf:
@@ -321,12 +283,25 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         return DF
 
-    def validate(self, infile_name, outfile_name, mzml_path, mzml_files):
+
+    def _multiprocess_InspectSpectrum(self, DF):
+        self.df_list.append(self._InspectSpectrum(DF, self._mzml_path, self._mzml_files))
+
+    def validate(self, infile_name, outfile_name):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
         df_psm = pd.read_table(infile_name, header=0, sep="\t")
-        df_output = self._InspectSpectrum(df_psm, mzml_path, mzml_files)
-        df_output.to_csv(outfile_name, header=1, sep="\t")
+        
+        grouped_dfs = df_psm.groupby("SpecFile")
+        list_of_dfs = [group_df.reset_index(drop=True) for name, group_df in grouped_dfs]
+
+        pool = Pool(int(self._number_of_processes))
+        list(tqdm(pool.imap(self._multiprocess_InspectSpectrum, list_of_dfs) , total=len(list_of_dfs), desc="Validate By Each mzMl", unit="mzML"))
+        pool.close()
+        pool.join()
+
+        df_output = pd.concat(self.df_list, axis=0, ignore_index=True)
+        df_output.to_csv(outfile_name, header=1, sep="\t",index = None)
 
         # if self._msgf:
         #     df_sub = df_output[df_output["status"] == "checked"]

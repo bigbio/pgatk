@@ -24,7 +24,7 @@ from pypgatk.commands import deeplc as deeplc_cmd
 from pypgatk.commands import validate_peptides as validate_peptides_cmd
 from pypgatk.commands import mztab_class_fdr as mztab_class_fdr_cmd
 from pypgatk.commands import blast_get_position as blast_get_position_cmd
-
+from pypgatk.commands import deeplc_predict as deeplc_predict_cmd
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -54,6 +54,7 @@ cli.add_command(deeplc_cmd.generate_deeplc)
 cli.add_command(validate_peptides_cmd.validate_peptides)
 cli.add_command(mztab_class_fdr_cmd.mztab_class_fdr)
 cli.add_command(blast_get_position_cmd.blast_get_position)
+cli.add_command(deeplc_predict_cmd.deeplc_predict)
 
 
 def main():

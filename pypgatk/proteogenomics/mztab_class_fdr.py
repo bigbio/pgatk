@@ -100,7 +100,7 @@ class MzTabClassFdr(ParameterConfiguration):
 
         return df_psms
 
-    def form_mzTab_class_fdr(self, input_mztab ,outfile_name):
+    def form_mzTab_class_fdr(self, input_mztab , outfile_name):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
         
@@ -135,8 +135,8 @@ class MzTabClassFdr(ParameterConfiguration):
 
         PSM = self._compute_global_fdr(PSM, order)
         PSM = self._compute_class_fdr(PSM, order)
-        PSM = PSM[((PSM['q-value'] < self._global_fdr_cutoff) & (
-                PSM['class-specific-q-value'] < self._class_fdr_cutoff))]
+        PSM = PSM[((PSM['q-value'] < float(self._global_fdr_cutoff)) 
+                            &  (PSM['class-specific-q-value'] < float(self._class_fdr_cutoff)))]
         PSM.reset_index(drop=True, inplace=True)
 
         PSM.to_csv(outfile_name, header=1, sep="\t", index=None)
