@@ -4,9 +4,9 @@ import re
 import pandas as pd
 from pathos.multiprocessing import ProcessingPool as Pool
 from multiprocessing import Manager
-from pyopenms import *
+from pyopenms import (TheoreticalSpectrumGenerator, MSSpectrum,
+                      AASequence, Param, MzMLFile, MSExperiment, SpectrumLookup)
 from tqdm import tqdm
-
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
@@ -182,8 +182,8 @@ class ValidatePeptidesService(ParameterConfiguration):
             # get peaks through ScanNum
             try:
                 index = look.findByScanNumber(scan_num)
-            except:
-                print("ERROR: file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
+            except Exception as e:
+                print("ERROR: " + str(e) + "; file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
                 continue
 
             exp_peaks = exp.getSpectrum(index).get_peaks()
