@@ -121,31 +121,31 @@ class ValidatePeptidesService(ParameterConfiguration):
 
         return match_ions
 
-    def _InspectSpectrum(self, DF, mzml_path, mzml_files):
+    def _inspect_spectrum(self, df, mzml_path, mzml_files):
         if self._msgf:
-            DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(re.sub("[^A-Z]", "", x["Peptide"])), axis=1)
+            df.loc[:, "peptide_length"] = df.apply(lambda x: len(re.sub("[^A-Z]", "", x["Peptide"])), axis=1)
         else:
-            DF.loc[:, "peptide_length"] = DF.apply(lambda x: len(x["sequence"]), axis=1)
+            df.loc[:, "peptide_length"] = df.apply(lambda x: len(x["sequence"]), axis=1)
 
-        DF["status"] = "skiped"
+        df["status"] = "skiped"
 
-        DF["ions_support"] = "NO"
-        DF["support_ions"] = ""
-        DF["sum.supportions.intensity"] = float(0)
+        df["ions_support"] = "NO"
+        df["support_ions"] = ""
+        df["sum.supportions.intensity"] = float(0)
 
-        DF["flanking_ions_support"] = "NO"
-        DF["flanking_ions"] = ""
-        DF["sum.flanking.ions.intensity"] = float(0)
+        df["flanking_ions_support"] = "NO"
+        df["flanking_ions"] = ""
+        df["sum.flanking.ions.intensity"] = float(0)
 
-        DF["matched_ions"] = ""
-        DF["sum.matchedions.intensity"] = float(0)
-        DF["sum.fragmentions.intensity"] = float(0)
-        DF["maxintensity"] = float(0)
-        DF["average_intensity"] = float(0)
-        DF["median_intensity"] = float(0)
+        df["matched_ions"] = ""
+        df["sum.matchedions.intensity"] = float(0)
+        df["sum.fragmentions.intensity"] = float(0)
+        df["maxintensity"] = float(0)
+        df["average_intensity"] = float(0)
+        df["median_intensity"] = float(0)
         mzml_file = None
 
-        spectra_file = str(DF.loc[0, "SpecFile"])
+        spectra_file = str(df.loc[0, "SpecFile"])
         if mzml_files and not mzml_path:
             mzml_list = mzml_files.split(",")
             for file in mzml_list:
@@ -166,18 +166,18 @@ class ValidatePeptidesService(ParameterConfiguration):
         except Exception as e:
             print(mzml_file + " has ERROR!")
             print(e)
-            DF["ions_support"] = "mzML ERROR"
-            return DF
+            df["ions_support"] = "mzML ERROR"
+            return df
 
-        for i in range(DF.shape[0]):
-            scan_num = int(DF.loc[i, "ScanNum"])
+        for i in range(df.shape[0]):
+            scan_num = int(df.loc[i, "ScanNum"])
             if self._msgf:
                 # seq = DF.loc[i, "Variant Peptide"]
-                seq = re.sub("[^A-Z]", "", DF.loc[i, "Peptide"])
-                length = DF.loc[i, "peptide_length"]
+                seq = re.sub("[^A-Z]", "", df.loc[i, "Peptide"])
+                length = df.loc[i, "peptide_length"]
             else:
-                seq = DF.loc[i, "sequence"]
-                length = DF.loc[i, "peptide_length"]
+                seq = df.loc[i, "sequence"]
+                length = df.loc[i, "peptide_length"]
 
             # get peaks through ScanNum
             try:
@@ -191,37 +191,37 @@ class ValidatePeptidesService(ParameterConfiguration):
             exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
 
             if self._msgf:
-                predicted_peaks = self._predict_MS2_spectrum(str(DF.loc[i, "Peptide"]), length, 1)
+                predicted_peaks = self._predict_MS2_spectrum(str(df.loc[i, "Peptide"]), length, 1)
             else:
                 predicted_peaks = self._predict_MS2_spectrum(
-                    str(DF.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
+                    str(df.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
             match_ions = self._match_exp2predicted(exp_peaks, predicted_peaks)
 
-            maxintensity = exp_peaks["intensity"].max()
+            max_intensity = exp_peaks["intensity"].max()
             average_intensity = exp_peaks["intensity"].mean()
             median_intensity = exp_peaks["intensity"].median()
 
-            DF.loc[i, "sum.fragmentions.intensity"] = exp_peaks["intensity"].sum()
-            DF.loc[i, "maxintensity"] = maxintensity
-            DF.loc[i, "average_intensity"] = average_intensity
-            DF.loc[i, "median_intensity"] = median_intensity
+            df.loc[i, "sum.fragmentions.intensity"] = exp_peaks["intensity"].sum()
+            df.loc[i, "maxintensity"] = max_intensity
+            df.loc[i, "average_intensity"] = average_intensity
+            df.loc[i, "median_intensity"] = median_intensity
 
             if match_ions.shape[0] == 0:
                 continue
-            DF.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
-            DF.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
+            df.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
+            df.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
 
-            if DF.loc[i, "position"] == "canonical":
+            if df.loc[i, "position"] == "canonical":
                 continue
-            if DF.loc[i, "position"] == "non-canonical":
+            if df.loc[i, "position"] == "non-canonical":
                 continue
-            position = int(DF.loc[i, "position"])
+            position = int(df.loc[i, "position"])
             if position == 0:
                 continue
             if position > length:
                 continue
 
-            DF.loc[i, "status"] = "checked"
+            df.loc[i, "status"] = "checked"
             supportions_intensity = 0
             ions_support = "NO"
             supportions = ""
@@ -240,13 +240,13 @@ class ValidatePeptidesService(ParameterConfiguration):
                     supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
                     supportions = supportions + ',' + ion
 
-            DF.loc[i, "ions_support"] = ions_support
-            DF.loc[i, "support_ions"] = supportions
-            DF.loc[i, "sum.supportions.intensity"] = supportions_intensity
+            df.loc[i, "ions_support"] = ions_support
+            df.loc[i, "support_ions"] = supportions
+            df.loc[i, "sum.supportions.intensity"] = supportions_intensity
 
             # check if it is a noise peak or isotope peak supporting mutant ions
-            if DF.loc[i, "sum.supportions.intensity"] < DF.loc[i, "median_intensity"]:
-                DF.loc[i, "ions_support"] = "NO"
+            if df.loc[i, "sum.supportions.intensity"] < df.loc[i, "median_intensity"]:
+                df.loc[i, "ions_support"] = "NO"
 
             flanking_ions_support = "NO"
             n1 = length
@@ -274,23 +274,23 @@ class ValidatePeptidesService(ParameterConfiguration):
                 if len(flanking_ions_left) > 0 and len(flanking_ions_right) > 0:
                     flanking_ions_support = "YES"
 
-            DF.loc[i, "flanking_ions_support"] = flanking_ions_support
-            DF.loc[i, "flanking_ions"] = ",".join(flanking_ions)
+            df.loc[i, "flanking_ions_support"] = flanking_ions_support
+            df.loc[i, "flanking_ions"] = ",".join(flanking_ions)
             if flanking_ions:
-                DF.loc[i, "sum.flanking.ions.intensity"] = \
+                df.loc[i, "sum.flanking.ions.intensity"] = \
                     match_ions[match_ions['ion'].str.contains("|".join(flanking_ions))]["intensity"].sum()
 
-            if DF.loc[i, "sum.flanking.ions.intensity"] < DF.loc[i, "median_intensity"]:
-                DF.loc[i, "flanking_ions_support"] = "NO"
+            if df.loc[i, "sum.flanking.ions.intensity"] < df.loc[i, "median_intensity"]:
+                df.loc[i, "flanking_ions_support"] = "NO"
 
             # fragmentation is not preferable at Cterm side of proline, so only require supporting ions
             if re.search("P", seq[position - 1:position]):
-                DF.loc[i, "flanking_ions_support"] = DF.loc[i, "ions_support"]
+                df.loc[i, "flanking_ions_support"] = df.loc[i, "ions_support"]
 
-        return DF
+        return df
 
-    def _multiprocess_InspectSpectrum(self, DF):
-        self.df_list.append(self._InspectSpectrum(DF, self._mzml_path, self._mzml_files))
+    def _multiprocess_inspect_spectrum(self, df):
+        self.df_list.append(self._inspect_spectrum(df, self._mzml_path, self._mzml_files))
 
     def validate(self, infile_name, outfile_name: str):
         start_time = datetime.datetime.now()
@@ -301,7 +301,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         list_of_dfs = [group_df.reset_index(drop=True) for name, group_df in grouped_dfs]
 
         pool = Pool(int(self._number_of_processes))
-        list(tqdm(pool.imap(self._multiprocess_InspectSpectrum, list_of_dfs), total=len(list_of_dfs),
+        list(tqdm(pool.imap(self._multiprocess_inspect_spectrum, list_of_dfs), total=len(list_of_dfs),
                   desc="Validate By Each mzMl", unit="mzML"))
         pool.close()
         pool.join()

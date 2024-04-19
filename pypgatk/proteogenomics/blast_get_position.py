@@ -110,6 +110,7 @@ class BlastGetPositionService(ParameterConfiguration):
         for protein_seq in self.fa_set:
             for end_ind, found in auto.iter(protein_seq):
                 seq_dict[found] = "canonical"
+                print("Found", found, "at position", end_ind, "in protein sequence")
 
         df["position"] = df["sequence"].map(seq_dict)
         return df

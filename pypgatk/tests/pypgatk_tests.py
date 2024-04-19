@@ -1,7 +1,4 @@
-import os
 import unittest
-
-import pytest
 from click.testing import CliRunner
 
 from pypgatk.pypgatk_cli import cli
