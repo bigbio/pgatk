@@ -2,8 +2,8 @@ cbioportal_data_downloader:
   output_directory: database_cbioportal
   list_studies: []
   cbioportal_api:
-    base_url: https://www.cbioportal.org/webservice.do
-    cancer_studies: cmd=getCancerStudies
+    base_url: https://www.cbioportal.org/api
+    cancer_studies: studies
   cbioportal_download_url: https://cbioportal-datahub.s3.amazonaws.com
   logger:
     formatters:
