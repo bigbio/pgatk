@@ -47,4 +47,4 @@ jobs:
       run: |
         python setup.py install
         cd pypgatk
-        python tests/pypgatk_tests.py
+        python -s tests/pypgatk_tests.py
