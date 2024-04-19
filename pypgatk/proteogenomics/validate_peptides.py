@@ -5,7 +5,6 @@ import pandas as pd
 from pathos.multiprocessing import ProcessingPool as Pool
 from multiprocessing import Manager
 from pyopenms import *
-from Bio import SeqIO
 from tqdm import tqdm
 
 from pypgatk.toolbox.general import ParameterConfiguration

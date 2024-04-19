@@ -32,7 +32,10 @@ setup(name='pypgatk',
         'pathos',
         'pybedtools',
         'pyopenms',
-        'matplotlib'
+        'matplotlib',
+        'tqdm',
+        'pyahocorasick',
+        'deeplc'
       ],
       python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],
