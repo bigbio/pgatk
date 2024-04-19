@@ -25,9 +25,7 @@ def mztab_class_fdr(ctx, config_file, input_mztab, outfile_name, decoy_prefix, g
 
     if input_mztab is None or outfile_name is None:
         print_help()
-    
     pipeline_arguments = {}
-
     if decoy_prefix is not None:
         pipeline_arguments[MzTabClassFdr.CONFIG_DECOY_PREFIX] = decoy_prefix
     if global_fdr_cutoff is not None:

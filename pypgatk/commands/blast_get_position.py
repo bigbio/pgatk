@@ -23,9 +23,7 @@ def blast_get_position(ctx, config_file, input_psm_to_blast, output_psm, input_r
 
     if input_psm_to_blast is None or input_reference_database is None or output_psm is None:
         print_help()
-    
     pipeline_arguments = {}
-
     if input_reference_database is not None:
         pipeline_arguments[BlastGetPositionService.CONFIG_INPUT_REFERENCE_DATABASE] = input_reference_database
     if number_of_processes is not None:
