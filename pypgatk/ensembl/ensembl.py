@@ -252,7 +252,6 @@ class EnsemblDataService(ParameterConfiguration):
     also genomic positions for all its elements (exons/cds&start_codon)
     :param db:
     :param feature_id:
-    :param biotype_str:
     :param feature_types:
     :return:
     """

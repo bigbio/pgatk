@@ -1,5 +1,4 @@
 import unittest
-
 from click.testing import CliRunner
 
 from pypgatk.pypgatk_cli import cli
@@ -282,6 +281,33 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output',
                                 'testdata/proteindb_from_ENSEMBL_VCF-clean.fa', '--add_stop_codons', '--num_aa', '6'])
         self.assertEqual(result.exit_code, 0)
+
+    # @pytest.mark.skip(reason="Not working with pytest pooling")
+    # def test_validate_peptides_msgf(self):
+    #     runner = CliRunner()
+    #     result = runner.invoke(cli,
+    #                            ['validate_peptides', '--mzml_path', 'testdata',
+    #                             '--infile_name', 'testdata/test_validate_psms.tsv', '--outfile_name',
+    #                             'testdata/test_validate_psms_out.tsv', '--msgf'])
+    #     print("ERROR IN RESULT: + " + str(result.exception) + " + " + result.output)
+    #     self.assertEqual(result.exit_code, 0)
+
+    def test_blast(self):
+        runner = CliRunner()
+        result = runner.invoke(cli,
+                               ['blast_get_position', '--input_psm_to_blast', 'testdata/test_blast_psms.tsv',
+                                '--output_psm', 'testdata/test_blast_psms_out.tsv', '--input_reference_database',
+                                'testdata/test_blast_reference_database.fa'])
+        self.assertEqual(result.exit_code, 0)
+
+    # @pytest.mark.skip(reason="Not working with pytest pooling")
+    # def test_blast_out_validate(self):
+    #     runner = CliRunner()
+    #     result = runner.invoke(cli,
+    #                            ['validate_peptides', '--mzml_files', 'testdata/test_blast_validate.mzML',
+    #                             '--infile_name', 'testdata/test_blast_validate_psms.tsv', '--outfile_name',
+    #                             'testdata/test_blast_validate_psms_out.tsv'])
+    #     self.assertEqual(result.exit_code, 0)
 
 
 if __name__ == '__main__':

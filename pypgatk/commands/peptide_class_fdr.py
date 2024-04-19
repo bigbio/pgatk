@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
 @click.option('-in', '--input-file', help='input file with the peptides and proteins')
 @click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins')
-@click.option("--file-type")
+@click.option("--file-type", help="File types supported by the tool (TSV (.tsv), IDXML (.idxml), MZTAB (.mztab))")
 @click.option('--min-peptide-length', help='minimum peptide length')
 @click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold")
 @click.option('--psm-pep-class-fdr-cutoff', help="PSM class peptide FDR cutoff or threshold")
@@ -48,7 +48,7 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :param psm_pep_class_fdr_cutoff: Peptide class FDR cutoff
   :param peptide_groups_prefix: Peptide groups prefix for the Peptide classes FDR
   :param peptide_classes_prefix: Peptide classes
-  :param file_type: File type to compute the FDR and class FDR.
+  :param file_type: File type to compute the FDR and class FDR ()
   :param disable_class_fdr: Do not compute class FDR and not filtering the PSMs
   :return:
   """

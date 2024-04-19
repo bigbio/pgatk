@@ -34,8 +34,8 @@ class CbioPortalDownloadService(ParameterConfiguration):
         self._list_studies = []
         self._multithreading = True
 
-        self._cbioportal_base_url = 'https://www.cbioportal.org/webservice.do'
-        self._cancer_studies_command = 'cmd=getCancerStudies'
+        self._cbioportal_base_url = 'https://www.cbioportal.org/api'
+        self._cancer_studies_command = 'studies'
 
         self._cbioportal_download_url = 'https://cbioportal-datahub.s3.amazonaws.com'
 
@@ -111,13 +111,13 @@ class CbioPortalDownloadService(ParameterConfiguration):
         """
         server = self._cbioportal_base_url
         endpoint = self._cancer_studies_command
-        self._cbioportal_studies = call_api_raw(server + "?" + endpoint).text
+        self._cbioportal_studies = call_api_raw(server + "/" + endpoint).text
         return self._cbioportal_studies
 
     def download_study(self, download_study, url_file_name=None):
         """
         This function will download a study from cBioPortal using the study ID
-        :param download_study: Study to be download, if the study is empty or None, all the studies will be
+        :param download_study: Study to be downloaded, if the study is empty or None, all the studies will be
         downloaded.
         :param url_file_name: file tsv containing the urls to be downloaded.
         :return: None

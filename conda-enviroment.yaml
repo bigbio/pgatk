@@ -7,13 +7,18 @@ channels:
   - bioconda
 dependencies:
   - biopython
-  - Click=7.0
-  - gffutils=0.10.1
-  - numpy=1.16.3
-  - PyYAML=5.1.2
-  - requests=2.21.0
-  - simplejson=3.16.0
-  - ratelimit=2.2.1
+  - Click
+  - gffutils
+  - numpy
+  - PyYAML
+  - requests
+  - simplejson
+  - ratelimit
+  - pathos
   - bioconda::pyteomics
-  - pybedtools=0.8.2
+  - pybedtools
+  - matplotlib
   - bioconda::pyopenms
+  - pytest
+  - tqdm
+  - pyahocorasick
