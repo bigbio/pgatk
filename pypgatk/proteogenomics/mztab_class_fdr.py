@@ -14,11 +14,10 @@ class MzTabClassFdr(ParameterConfiguration):
 
     def __init__(self, config_data, pipeline_arguments):
         """
-      Init the class with the specific parameters.
-      :param config_data configuration file
-      :param pipeline_arguments pipelines arguments
-      """
-
+        Init the class with the specific parameters.
+        :param config_data configuration file
+        :param pipeline_arguments pipelines arguments
+        """
         super(MzTabClassFdr, self).__init__(self.CONFIG_KEY_MzTabClassFdr, config_data, pipeline_arguments)
         self._decoy_prefix = self.get_fdr_parameters(variable=self.CONFIG_DECOY_PREFIX, default_value='decoy')
         self._global_fdr_cutoff = self.get_fdr_parameters(variable=self.CONFIG_GLOBAL_FDR_CUTOFF, default_value=0.01)
@@ -87,8 +86,8 @@ class MzTabClassFdr(ParameterConfiguration):
 
             # calculate class-specific q-value
             curr_class.sort_values("search_engine_score[1]", ascending=order, inplace=True)
-            FDR = (range(1, len(curr_class["target"]) + 1) / curr_class["target"].cumsum()) - 1
-            curr_class['class-specific-q-value'] = FDR[::-1].cummin()[::-1]
+            fdr = (range(1, len(curr_class["target"]) + 1) / curr_class["target"].cumsum()) - 1
+            curr_class['class-specific-q-value'] = fdr[::-1].cummin()[::-1]
         df = pd.concat(ls)
 
         # df_psms['class-specific-q-value'] = df['class-specific-q-value']
