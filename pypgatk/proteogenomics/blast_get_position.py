@@ -14,14 +14,11 @@ def _blast_set(fasta_set, peptide):
     position_set = set()
     for fasta in fasta_set:
         if len(fasta) >= length:
-            alignments_score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0,
-                                                       open=-1,
-                                                       extend=0, score_only=True)
+            alignments_score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0, open=-1, extend=0, score_only=True)
             if alignments_score == length:
                 return "canonical"
             elif alignments_score == length - 1:
-                alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0,
-                                                           open=-1, extend=0)
+                alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0, open=-1, extend=0)
                 for alignment in alignments_local:
                     # insertion e.g., ABCDMEFGH<----ABCDEFGH
                     if alignment.end - alignment.start == length + 1:
