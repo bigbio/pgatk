@@ -34,8 +34,7 @@ setup(name='pypgatk',
         'pyopenms',
         'matplotlib',
         'tqdm',
-        'pyahocorasick',
-        'deeplc'
+        'pyahocorasick'
       ],
       python_requires=">=3.6",
       scripts=['pypgatk/pypgatk_cli.py'],

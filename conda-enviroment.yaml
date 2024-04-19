@@ -22,4 +22,3 @@ dependencies:
   - pytest
   - tqdm
   - pyahocorasick
-  - bioconda::deeplc
