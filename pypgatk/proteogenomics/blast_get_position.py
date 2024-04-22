@@ -126,10 +126,16 @@ class BlastGetPositionService(ParameterConfiguration):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
 
-        if input_psm_to_blast.endswith(".gz"):
+        if input_psm_to_blast.endswith(".csv.gz"):
             psm = pd.read_csv(input_psm_to_blast, header=0, sep=",", compression="gzip")
+        elif input_psm_to_blast.endswith(".csv"):
+            psm = pd.read_csv(input_psm_to_blast, header=0, sep=",")
+        elif input_psm_to_blast.endswith(".tsv.gz"):
+            psm = pd.read_table(input_psm_to_blast, header=0, sep="\t", compression="gzip")
+        elif input_psm_to_blast.endswith(".tsv"):
+            psm = pd.read_table(input_psm_to_blast, header=0, sep="\t")
         else:
-            psm = pd.read_table(input_psm_to_blast, header=0, sep=",")
+            raise ValueError("The input file format is not supported.")
 
         psm = psm.head(4)
         psm = self._blast_canonical(psm)
