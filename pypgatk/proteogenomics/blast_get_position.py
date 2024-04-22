@@ -116,10 +116,22 @@ class BlastGetPositionService(ParameterConfiguration):
         self.blast_dict[sequence] = _blast_set(self.fa_set, sequence)
 
     def blast(self, input_psm_to_blast, output_psm):
+        """
+        Blast peptide and reference protein database to find variation sites.
+        :param input_psm_to_blast: input PSM table to blast
+        :param output_psm: output PSM table
+        :return:
+        """
+
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
 
-        psm = pd.read_table(input_psm_to_blast, header=0, sep="\t")
+        if input_psm_to_blast.endswith(".gz"):
+            psm = pd.read_csv(input_psm_to_blast, header=0, sep=",", compression="gzip")
+        else:
+            psm = pd.read_table(input_psm_to_blast, header=0, sep=",")
+
+        psm = psm.head(4)
         psm = self._blast_canonical(psm)
 
         first_filter = psm[psm.position == "canonical"]
@@ -148,12 +160,12 @@ class BlastGetPositionService(ParameterConfiguration):
             psm_to_findpos["var_num"] = psm_to_findpos.apply(lambda x: len(x["position"]), axis=1)
             psm_to_findpos = psm_to_findpos.loc[psm_to_findpos.index.repeat(psm_to_findpos["var_num"])]
             psm_to_findpos["var_num"].iloc[0] = 0
-            psm_id = psm_to_findpos["PSM_ID"].iloc[0]
+            psm_id = psm_to_findpos["usi"].iloc[0]
             for i in range(1, psm_to_findpos.shape[0]):
-                if psm_to_findpos["PSM_ID"].iloc[i] == psm_id:
+                if psm_to_findpos["usi"].iloc[i] == psm_id:
                     psm_to_findpos["var_num"].iloc[i] = psm_to_findpos["var_num"].iloc[i - 1] + 1
                 else:
-                    psm_id = psm_to_findpos["PSM_ID"].iloc[i]
+                    psm_id = psm_to_findpos["usi"].iloc[i]
                     psm_to_findpos["var_num"].iloc[i] = 0
             psm_to_findpos["position"] = psm_to_findpos.apply(
                 lambda x: str(x["position"])[1:-1].split(",")[x["var_num"]],
@@ -162,8 +174,8 @@ class BlastGetPositionService(ParameterConfiguration):
             psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: x["position"].replace(' ', ''), axis=1)
 
         all_psm_out = pd.concat([first_filter, second_filter, non_filter, psm_to_findpos], axis=0, join='outer')
-        all_psm_out = all_psm_out.sort_values("PSM_ID")
-        all_psm_out.to_csv(output_psm, header=1, sep="\t", index=None)
+        all_psm_out = all_psm_out.sort_values("usi")
+        all_psm_out.to_csv(output_psm, header=1, sep=",", index=None)
 
         end_time = datetime.datetime.now()
         print("End time :", end_time)
