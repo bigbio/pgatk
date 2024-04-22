@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.0.24](https://github.com/bigbio/py-pgatk/tree/v0.0.24) (2024-04-19)
+
+**Implemented enhancements:**
+
+- change var\_prefix [\#66](https://github.com/bigbio/py-pgatk/issues/66)
+
 ## [v0.0.23](https://github.com/bigbio/py-pgatk/tree/v0.0.23) (2022-07-07)
 
 ## [v0.0.22](https://github.com/bigbio/py-pgatk/tree/v0.0.22) (2022-06-21)
