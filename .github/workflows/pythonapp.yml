@@ -5,9 +5,9 @@ name: Python application
 
 on:
   push:
-    branches: [ spectrumAI ]
+    branches: [ dev ]
   pull_request:
-    branches: [ spectrumAI ]
+    branches: [ dev ]
 
 jobs:
   build:

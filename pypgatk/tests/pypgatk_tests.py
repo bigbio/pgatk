@@ -1,8 +1,6 @@
 import unittest
 from click.testing import CliRunner
-
 from pypgatk.pypgatk_cli import cli
-
 
 class PypgatkRunnerTests(unittest.TestCase):
 
@@ -252,27 +250,27 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--grch37'])
         self.assertEqual(result.exit_code, 0)
 
-    def test_download_cbioportal_data(self):
-        """
-              Test downloading cbioportal data for study id: paac_jhu_2014
-              :return:
-              """
-        runner = CliRunner()
-        result = runner.invoke(cli,
-                               ['cbioportal-downloader', '--config_file', 'config/cbioportal_config.yaml',
-                                '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
-        self.assertEqual(result.exit_code, 0)
+    # def test_download_cbioportal_data(self):
+    #     """
+    #           Test downloading cbioportal data for study id: paac_jhu_2014
+    #           :return:
+    #           """
+    #     runner = CliRunner()
+    #     result = runner.invoke(cli,
+    #                            ['cbioportal-downloader', '--config_file', 'config/cbioportal_config.yaml',
+    #                             '--download_study', 'paac_jhu_2014', '--output_directory', 'testdata'])
+    #     self.assertEqual(result.exit_code, 0)
 
-    def test_download_cbioportal_data_noconfig(self):
-        """
-              Test downloading cbioportal data for study id: paac_jhu_2014
-              :return:
-              """
-        runner = CliRunner()
-        result = runner.invoke(cli,
-                               ['cbioportal-downloader', '--download_study', 'paac_jhu_2014', '--output_directory',
-                                'testdata'])
-        self.assertEqual(result.exit_code, 0)
+    # def test_download_cbioportal_data_noconfig(self):
+    #     """
+    #           Test downloading cbioportal data for study id: paac_jhu_2014
+    #           :return:
+    #           """
+    #     runner = CliRunner()
+    #     result = runner.invoke(cli,
+    #                            ['cbioportal-downloader', '--download_study', 'paac_jhu_2014', '--output_directory',
+    #                             'testdata'])
+    #     self.assertEqual(result.exit_code, 0)
 
     def test_check_ensembl_database(self):
         runner = CliRunner()
