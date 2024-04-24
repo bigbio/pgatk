@@ -24,11 +24,11 @@ def get_details(fasta, peptide):
 def peptide_blast_protein(fasta, peptide):
     length = len(peptide)
     mismatch = []
-    if len(fasta) >= length:    
-        score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, 
+    if len(fasta) >= length:
+        score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
                                                        match=1, mismatch=0, open=-2, extend=-2, score_only=True)
         if score == length-1:
-            alignment = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, 
+            alignment = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
                                                        match=1, mismatch=0, open=-2, extend=-2)[0]
             if alignment.end - alignment.start == length:
                 mismatch = get_details(alignment.seqA[alignment.start:alignment.end], alignment.seqB[alignment.start:alignment.end])
@@ -64,7 +64,7 @@ def _blast_set(fasta_dict, peptide):
         for key,value in positions.items():
             splits = key.split("|")
             splits.append(",".join(value))
-            res.append(splits) 
+            res.append(splits)
         return res
     else:
         return "non-canonical"
@@ -94,7 +94,6 @@ class BlastGetPositionService(ParameterConfiguration):
                 self.fasta_dict[str(j.seq)].add(j.id)
             else:
                 self.fasta_dict[str(j.seq)] = {j.id}
-        
         self.blast_dict = Manager().dict()
 
     def get_blast_parameters(self, variable: str, default_value):

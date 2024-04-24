@@ -298,7 +298,6 @@ class SpectrumAIService(ParameterConfiguration):
             df_psm = pd.read_table(infile_name, header=0, sep="\t")
         else:
             raise ValueError("The input file format is not supported.")
-        
 
         if self._mztab:
             grouped_dfs = df_psm.groupby("SpecFile")
