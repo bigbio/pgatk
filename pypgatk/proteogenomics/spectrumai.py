@@ -10,7 +10,7 @@ from tqdm import tqdm
 from pypgatk.toolbox.general import ParameterConfiguration
 
 
-class ValidatePeptidesService(ParameterConfiguration):
+class SpectrumAIService(ParameterConfiguration):
     CONFIG_KEY_VALIDATE_PEPTIDES = 'validate_peptides'
     CONFIG_MZML_PATH = 'mzml_path'
     CONFIG_MZML_FILES = 'mzml_files'
@@ -28,8 +28,8 @@ class ValidatePeptidesService(ParameterConfiguration):
       :param pipeline_arguments pipelines arguments
       """
 
-        super(ValidatePeptidesService, self).__init__(self.CONFIG_KEY_VALIDATE_PEPTIDES, config_data,
-                                                      pipeline_arguments)
+        super(SpectrumAIService, self).__init__(self.CONFIG_KEY_VALIDATE_PEPTIDES, config_data,
+                                                pipeline_arguments)
 
         self._mzml_path = self.get_validate_parameters(variable=self.CONFIG_MZML_PATH, default_value=False)
         self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES, default_value=False)
@@ -51,6 +51,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         return value_return
 
     def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
+
         tsg = TheoreticalSpectrumGenerator()
         spec = MSSpectrum()
         peptide = AASequence.fromString(peptide)
@@ -313,7 +314,6 @@ class ValidatePeptidesService(ParameterConfiguration):
         pool.join()
 
         df_output = pd.concat(self.df_list, axis=0, ignore_index=True)
-
 
         if outfile_name.endswith(".csv.gz"):
             df_output.to_csv(outfile_name, header=True, sep=",", index=None, compression="gzip")
