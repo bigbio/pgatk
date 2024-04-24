@@ -8,61 +8,69 @@ import ahocorasick
 
 from pypgatk.toolbox.general import ParameterConfiguration
 
+def get_details(fasta, peptide):
+    res = []
+    i = 0
+    j = 0
+    for AA1, AA2 in zip(fasta, peptide):
+        i += 1
+        j += 1
+        if AA1 == AA2:
+            continue
+        else:
+            res.append(str(i) + "|" + AA1 + ">" + AA2)
+    return res
 
-def _blast_set(fasta_set, peptide):
+def peptide_blast_protein(fasta, peptide):
     length = len(peptide)
-    position_set = set()
-    for fasta in fasta_set:
-        if len(fasta) >= length:
-            alignments_score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0, open=-1, extend=0, score_only=True)
-            if alignments_score == length:
-                return "canonical"
-            elif alignments_score == length - 1:
-                alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=0, open=-1, extend=0)
-                for alignment in alignments_local:
-                    # insertion e.g., ABCDMEFGH<----ABCDEFGH
-                    if alignment.end - alignment.start == length + 1:
-                        s = fasta[alignment.start:alignment.end]
-                        for i in range(length):
-                            if peptide[i] != s[i]:
-                                position_set.add(i + 1)
-                                break
-                    # substitution e.g., ABCDMFGH<----ABCDEFGH
-                    elif alignment.end - alignment.start == length:
-                        s = fasta[alignment.start:alignment.end]
-                        for i in range(length):
-                            if peptide[i] != s[i]:
-                                position_set.add(i + 1)
-                                break
-                    # substitution e.g., ABCDEFGM<----ABCDEFGH
-                    elif alignment.end - alignment.start == length - 1:
-                        s = fasta[alignment.start:alignment.end]
-                        if peptide[0] != s[0]:
-                            position_set.add(1)
-                        elif peptide[-1] != s[-1]:
-                            position_set.add(length)
-            elif alignments_score == length - 2:
-                alignments_local = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide, match=1, mismatch=-1,
-                                                           open=-1, extend=0)
-                for alignment in alignments_local:
-                    # deletion e.g., ABCEFGH<----ABCDEFGH
-                    if alignment.end - alignment.start == length and alignment.score == length - 2:
-                        s = fasta[alignment.start:alignment.end - 1]
-                        if pairwise2.align.localms(sequenceA=s, sequenceB=peptide, match=1, mismatch=0, open=0,
-                                                   extend=0, score_only=True) == length - 1:
-                            for i in range(length - 1):
-                                if peptide[i] != s[i]:
-                                    position_set.add(i + 1)
-                                    break
-    if position_set:
-        return position_set
+    mismatch = []
+    if len(fasta) >= length:
+        score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
+                                                       match=1, mismatch=0, open=-2, extend=-2, score_only=True)
+        if score == length-1:
+            alignment = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
+                                                       match=1, mismatch=0, open=-2, extend=-2)[0]
+            if alignment.end - alignment.start == length:
+                mismatch = get_details(alignment.seqA[alignment.start:alignment.end], alignment.seqB[alignment.start:alignment.end])
+            elif alignment.end - alignment.start == length-1:
+                res = get_details(alignment.seqA[alignment.start:alignment.end+1], alignment.seqB[alignment.start:alignment.end+1])
+                if len(res) == 1:
+                    if res[0].split(">")[1]!="-":
+                        mismatch = res
+                    else:
+                        mismatch = get_details(alignment.seqA[alignment.start-1:alignment.end], alignment.seqB[alignment.start-1:alignment.end])
+                elif len(res) == 0:
+                    mismatch = get_details(alignment.seqA[alignment.start-1:alignment.end], alignment.seqB[alignment.start-1:alignment.end])
+                else:
+                    print("Number of mismatch Error")
+    return mismatch
+
+def _blast_set(fasta_dict, peptide):
+    positions = dict()
+    for fasta in fasta_dict.keys():
+        mismatch = peptide_blast_protein(fasta, peptide)
+        if len(mismatch) == 1:
+            if positions.get(mismatch[0]):
+                positions[mismatch[0]].update(fasta_dict[fasta])
+            else:
+                positions[mismatch[0]] = fasta_dict[fasta]
+        elif len(mismatch) > 1:
+            print("Number of mismatch > 1")
+            print(peptide)
+            print(fasta)
+            print(mismatch)
+    if positions:
+        res = []
+        for key,value in positions.items():
+            splits = key.split("|")
+            splits.append(",".join(value))
+            res.append(splits)
+        return res
     else:
         return "non-canonical"
 
-
 class BlastGetPositionService(ParameterConfiguration):
     CONFIG_KEY_BlastGetPosition = 'blast_get_position'
-    # CONFIG_CANONICAL_PEPTIDE_PREFIX = 'canonical_peptide_prefix'
     CONFIG_INPUT_REFERENCE_DATABASE = 'input_reference_database'
     CONFIG_NUMBER_OF_PROCESSES = 'number_of_processes'
 
@@ -79,9 +87,13 @@ class BlastGetPositionService(ParameterConfiguration):
         self._number_of_processes = self.get_blast_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
                                                               default_value='40')
 
-        self.fa_set = set()
+
+        self.fasta_dict = dict()
         for j in SeqIO.parse(self._input_reference_database, "fasta"):
-            self.fa_set.add(str(j.seq))
+            if self.fasta_dict.get(str(j.seq)):
+                self.fasta_dict[str(j.seq)].add(j.id)
+            else:
+                self.fasta_dict[str(j.seq)] = {j.id}
         self.blast_dict = Manager().dict()
 
     def get_blast_parameters(self, variable: str, default_value):
@@ -104,7 +116,7 @@ class BlastGetPositionService(ParameterConfiguration):
 
         auto.make_automaton()
 
-        for protein_seq in self.fa_set:
+        for protein_seq in self.fasta_dict.keys():
             for end_ind, found in auto.iter(protein_seq):
                 seq_dict[found] = "canonical"
                 print("Found", found, "at position", end_ind, "in protein sequence")
@@ -113,13 +125,31 @@ class BlastGetPositionService(ParameterConfiguration):
         return df
 
     def _result(self, sequence):
-        self.blast_dict[sequence] = _blast_set(self.fa_set, sequence)
+        self.blast_dict[sequence] = _blast_set(self.fasta_dict, sequence)
 
     def blast(self, input_psm_to_blast, output_psm):
+        """
+        Blast peptide and reference protein database to find variation sites.
+        :param input_psm_to_blast: input PSM table to blast
+        :param output_psm: output PSM table
+        :return:
+        """
+
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
 
-        psm = pd.read_table(input_psm_to_blast, header=0, sep="\t")
+        if input_psm_to_blast.endswith(".csv.gz"):
+            psm = pd.read_csv(input_psm_to_blast, header=0, sep=",", compression="gzip")
+        elif input_psm_to_blast.endswith(".csv"):
+            psm = pd.read_csv(input_psm_to_blast, header=0, sep=",")
+        elif input_psm_to_blast.endswith(".tsv.gz"):
+            psm = pd.read_table(input_psm_to_blast, header=0, sep="\t", compression="gzip")
+        elif input_psm_to_blast.endswith(".tsv"):
+            psm = pd.read_table(input_psm_to_blast, header=0, sep="\t")
+        else:
+            raise ValueError("The input file format is not supported.")
+
+
         psm = self._blast_canonical(psm)
 
         first_filter = psm[psm.position == "canonical"]
@@ -145,25 +175,24 @@ class BlastGetPositionService(ParameterConfiguration):
         psm_to_findpos = psm_to_findpos[psm_to_findpos.position != "non-canonical"]
 
         if len(psm_to_findpos) > 0:
-            psm_to_findpos["var_num"] = psm_to_findpos.apply(lambda x: len(x["position"]), axis=1)
-            psm_to_findpos = psm_to_findpos.loc[psm_to_findpos.index.repeat(psm_to_findpos["var_num"])]
-            psm_to_findpos["var_num"].iloc[0] = 0
-            psm_id = psm_to_findpos["PSM_ID"].iloc[0]
-            for i in range(1, psm_to_findpos.shape[0]):
-                if psm_to_findpos["PSM_ID"].iloc[i] == psm_id:
-                    psm_to_findpos["var_num"].iloc[i] = psm_to_findpos["var_num"].iloc[i - 1] + 1
-                else:
-                    psm_id = psm_to_findpos["PSM_ID"].iloc[i]
-                    psm_to_findpos["var_num"].iloc[i] = 0
-            psm_to_findpos["position"] = psm_to_findpos.apply(
-                lambda x: str(x["position"])[1:-1].split(",")[x["var_num"]],
-                axis=1)
-            psm_to_findpos.drop(columns="var_num", axis=1, inplace=True)
-            psm_to_findpos["position"] = psm_to_findpos.apply(lambda x: x["position"].replace(' ', ''), axis=1)
+            psm_to_findpos = psm_to_findpos.explode("position", ignore_index=True)
+            psm_to_findpos["variant"] = psm_to_findpos["position"].apply(lambda x: x[1])
+            psm_to_findpos["protein"] = psm_to_findpos["position"].apply(lambda x: x[2])
+            psm_to_findpos["position"] = psm_to_findpos["position"].apply(lambda x: x[0])
 
         all_psm_out = pd.concat([first_filter, second_filter, non_filter, psm_to_findpos], axis=0, join='outer')
-        all_psm_out = all_psm_out.sort_values("PSM_ID")
-        all_psm_out.to_csv(output_psm, header=1, sep="\t", index=None)
+        all_psm_out = all_psm_out.sort_values("usi")
+
+        if output_psm.endswith(".csv.gz"):
+            all_psm_out.to_csv(output_psm, header=True, sep=",", index=None, compression="gzip")
+        elif output_psm.endswith(".csv"):
+            all_psm_out.to_csv(output_psm, header=True, sep=",", index=None)
+        elif output_psm.endswith(".tsv.gz"):
+            all_psm_out.to_csv(output_psm, header=True, sep="\t", index=None, compression="gzip")
+        elif output_psm.endswith(".tsv"):
+            all_psm_out.to_csv(output_psm, header=True, sep="\t", index=None)
+        else:
+            all_psm_out.to_csv(output_psm, header=True, sep="\t", index=None)
 
         end_time = datetime.datetime.now()
         print("End time :", end_time)

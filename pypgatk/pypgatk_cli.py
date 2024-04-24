@@ -46,7 +46,7 @@ cli.add_command(dnase_to_proteindb_cmd.dnaseq_to_proteindb)
 cli.add_command(proteindb_decoy_cmd.generate_database)
 cli.add_command(proteindb_decoy_cmd.generate_database)
 cli.add_command(peptide_class_fdr_cmd.peptide_class_fdr)
-cli.add_command(validate_peptides_cmd.validate_peptides)
+cli.add_command(validate_peptides_cmd.spectrumai)
 cli.add_command(mztab_class_fdr_cmd.mztab_class_fdr)
 cli.add_command(blast_get_position_cmd.blast_get_position)
 
