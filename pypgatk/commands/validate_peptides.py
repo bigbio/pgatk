@@ -21,12 +21,12 @@ log = logging.getLogger(__name__)
 @click.option('-n', '--number_of_processes', help='Used to specify the number of processes. Default is 40.')
 @click.option('-r', '--relative', help='When using ppm as ions_tolerance (not Da), it needs to be turned on',
               is_flag=True)
-@click.option('-msgf', '--msgf',
-              help='If it is the standard format of MSGF output, please turn on this switch, otherwise it defaults to mzTab format',
+@click.option('-m', '--mztab',
+              help='If the tsv was obtained from mzTab, please enable this option. Default to tsv obtained from parquet',
               is_flag=True)
 @click.pass_context
 def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance,
-                      number_of_processes, relative, msgf):
+                      number_of_processes, relative, mztab):
     config_data = None
     if config_file is not None:
         config_data = read_yaml_from_file(config_file)
@@ -47,8 +47,8 @@ def validate_peptides(ctx, config_file, mzml_path, mzml_files, infile_name, outf
         pipeline_arguments[ValidatePeptidesService.CONFIG_NUMBER_OF_PROCESSES] = number_of_processes
     if relative is not None:
         pipeline_arguments[ValidatePeptidesService.CONFIG_RELATIVE] = relative
-    if msgf is not None:
-        pipeline_arguments[ValidatePeptidesService.CONFIG_MSGF] = msgf
+    if mztab is not None:
+        pipeline_arguments[ValidatePeptidesService.CONFIG_MZTAB] = mztab
 
     validate_peptides_service = ValidatePeptidesService(config_data, pipeline_arguments)
     if validate_flag:

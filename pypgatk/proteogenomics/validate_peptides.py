@@ -19,7 +19,7 @@ class ValidatePeptidesService(ParameterConfiguration):
     CONFIG_IONS_TOLERANCE = 'ions_tolerance'
     CONFIG_NUMBER_OF_PROCESSES = 'number_of_processes'
     CONFIG_RELATIVE = 'relative'
-    CONFIG_MSGF = 'msgf'
+    CONFIG_MZTAB = 'mztab'
 
     def __init__(self, config_data, pipeline_arguments):
         """
@@ -35,7 +35,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES, default_value=False)
         self._ions_tolerance = self.get_validate_parameters(variable=self.CONFIG_IONS_TOLERANCE, default_value=0.02)
         self._relative = self.get_validate_parameters(variable=self.CONFIG_RELATIVE, default_value=False)
-        self._msgf = self.get_validate_parameters(variable=self.CONFIG_MSGF, default_value=False)
+        self._mztab = self.get_validate_parameters(variable=self.CONFIG_MZTAB, default_value=False)
         self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
                                                                  default_value=40)
 
@@ -51,20 +51,10 @@ class ValidatePeptidesService(ParameterConfiguration):
         return value_return
 
     def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
-        if self._msgf:
-            peptide = re.sub("[-?]", "", peptide)
-            modification = re.finditer("(\+\d{1,}\.\d{1,})", peptide)
-
-            a = 0
-            for i in modification:
-                peptide = peptide[:i.start() + a] + '[' + peptide[i.start() + a:i.end() + a] + ']' + peptide[
-                                                                                                     i.end() + a:]
-                a += 2
-
         tsg = TheoreticalSpectrumGenerator()
         spec = MSSpectrum()
         peptide = AASequence.fromString(peptide)
-        # size = len(peptide.toUnmodifiedString())
+
         p = Param()
         p.setValue("add_metainfo", "true")
         p.setValue("add_first_prefix_ion", "true")
@@ -122,10 +112,7 @@ class ValidatePeptidesService(ParameterConfiguration):
         return match_ions
 
     def _inspect_spectrum(self, df, mzml_path, mzml_files):
-        if self._msgf:
-            df.loc[:, "peptide_length"] = df.apply(lambda x: len(re.sub("[^A-Z]", "", x["Peptide"])), axis=1)
-        else:
-            df.loc[:, "peptide_length"] = df.apply(lambda x: len(x["sequence"]), axis=1)
+        df.loc[:, "peptide_length"] = df.apply(lambda x: len(x["sequence"]), axis=1)
 
         df["status"] = "skiped"
 
@@ -145,7 +132,11 @@ class ValidatePeptidesService(ParameterConfiguration):
         df["median_intensity"] = float(0)
         mzml_file = None
 
-        spectra_file = str(df.loc[0, "SpecFile"])
+        if self._mztab:
+            spectra_file = str(df.loc[0, "SpecFile"])
+        else:
+            spectra_file = str(df.loc[0, "reference_file_name"]) + ".mzML"
+
         if mzml_files and not mzml_path:
             mzml_list = mzml_files.split(",")
             for file in mzml_list:
@@ -170,14 +161,13 @@ class ValidatePeptidesService(ParameterConfiguration):
             return df
 
         for i in range(df.shape[0]):
-            scan_num = int(df.loc[i, "ScanNum"])
-            if self._msgf:
-                # seq = DF.loc[i, "Variant Peptide"]
-                seq = re.sub("[^A-Z]", "", df.loc[i, "Peptide"])
-                length = df.loc[i, "peptide_length"]
+            if self._mztab:
+                scan_num = int(df.loc[i, "ScanNum"])
             else:
-                seq = df.loc[i, "sequence"]
-                length = df.loc[i, "peptide_length"]
+                scan_num = int(df.loc[i, "scan_number"])
+
+            seq = df.loc[i, "sequence"]
+            length = df.loc[i, "peptide_length"]
 
             # get peaks through ScanNum
             try:
@@ -190,11 +180,12 @@ class ValidatePeptidesService(ParameterConfiguration):
 
             exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
 
-            if self._msgf:
-                predicted_peaks = self._predict_MS2_spectrum(str(df.loc[i, "Peptide"]), length, 1)
-            else:
+            if self._mztab:
                 predicted_peaks = self._predict_MS2_spectrum(
                     str(df.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
+            else:
+                predicted_peaks = self._predict_MS2_spectrum(
+                    str(df.loc[i, "peptidoform"]).replace("[","(").replace("]",")").replace("-",""), length, 1)
             match_ions = self._match_exp2predicted(exp_peaks, predicted_peaks)
 
             max_intensity = exp_peaks["intensity"].max()
@@ -295,9 +286,24 @@ class ValidatePeptidesService(ParameterConfiguration):
     def validate(self, infile_name, outfile_name: str):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
-        df_psm = pd.read_table(infile_name, header=0, sep="\t")
 
-        grouped_dfs = df_psm.groupby("SpecFile")
+        if infile_name.endswith(".csv.gz"):
+            df_psm = pd.read_csv(infile_name, header=0, sep=",", compression="gzip")
+        elif infile_name.endswith(".csv"):
+            df_psm = pd.read_csv(infile_name, header=0, sep=",")
+        elif infile_name.endswith(".tsv.gz"):
+            df_psm = pd.read_table(infile_name, header=0, sep="\t", compression="gzip")
+        elif infile_name.endswith(".tsv"):
+            df_psm = pd.read_table(infile_name, header=0, sep="\t")
+        else:
+            raise ValueError("The input file format is not supported.")
+        
+
+        if self._mztab:
+            grouped_dfs = df_psm.groupby("SpecFile")
+        else:
+            grouped_dfs = df_psm.groupby("reference_file_name")
+
         list_of_dfs = [group_df.reset_index(drop=True) for name, group_df in grouped_dfs]
 
         pool = Pool(int(self._number_of_processes))
@@ -307,22 +313,18 @@ class ValidatePeptidesService(ParameterConfiguration):
         pool.join()
 
         df_output = pd.concat(self.df_list, axis=0, ignore_index=True)
-        df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
 
-        # if self._msgf:
-        #     df_sub = df_output[df_output["status"] == "checked"]
-        #     saav_psm_passed = df_sub[df_sub["flanking_ions_support"]=="YES"]["PrecursorError(ppm)"]
-        #     saav_psm_failed = df_sub[df_sub["flanking_ions_support"]=="NO"]["PrecursorError(ppm)"]
-        #     plot=plt.figure(figsize=(10,7))
-        #     plot1=plot.add_subplot(1,2,1)
-        #     plot2=plot.add_subplot(1,2,2)
-        #     plot1.hist(saav_psm_passed,bins=20)
-        #     plot1.set_xlabel("PrecursorError(ppm)")
-        #     plot1.set_title("SpectrumAI curated")
-        #     plot2.hist(saav_psm_failed,bins=20)
-        #     plot2.set_xlabel("PrecursorError(ppm)")
-        #     plot2.set_title("SpectrumAI discarded")
-        #     plt.savefig("precursorError_histogram.pdf")
+
+        if outfile_name.endswith(".csv.gz"):
+            df_output.to_csv(outfile_name, header=True, sep=",", index=None, compression="gzip")
+        elif outfile_name.endswith(".csv"):
+            df_output.to_csv(outfile_name, header=True, sep=",", index=None)
+        elif outfile_name.endswith(".tsv.gz"):
+            df_output.to_csv(outfile_name, header=True, sep="\t", index=None, compression="gzip")
+        elif outfile_name.endswith(".tsv"):
+            df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
+        else:
+            df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
 
         end_time = datetime.datetime.now()
         print("End time :", end_time)
