@@ -104,7 +104,7 @@ class BlastGetPositionService(ParameterConfiguration):
                 variable in self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition]:
             value_return = self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition][variable]
         return value_return
-        
+
     def _blast_canonical(self, df):
         seq_set = set(df["sequence"].to_list())
 
@@ -176,9 +176,9 @@ class BlastGetPositionService(ParameterConfiguration):
 
         if len(psm_to_findpos) > 0:
             psm_to_findpos = psm_to_findpos.explode("position", ignore_index=True)
-            psm_to_findpos["variant"] = psm_to_findpos["position"].apply(lambda x : x[1]) 
-            psm_to_findpos["protein"] = psm_to_findpos["position"].apply(lambda x : x[2]) 
-            psm_to_findpos["position"] = psm_to_findpos["position"].apply(lambda x : x[0]) 
+            psm_to_findpos["variant"] = psm_to_findpos["position"].apply(lambda x: x[1])
+            psm_to_findpos["protein"] = psm_to_findpos["position"].apply(lambda x: x[2])
+            psm_to_findpos["position"] = psm_to_findpos["position"].apply(lambda x: x[0])
 
         all_psm_out = pd.concat([first_filter, second_filter, non_filter, psm_to_findpos], axis=0, join='outer')
         all_psm_out = all_psm_out.sort_values("usi")
