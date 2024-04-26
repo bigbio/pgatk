@@ -34,6 +34,11 @@ class SpectrumAIService(ParameterConfiguration):
         self._mzml_path = self.get_validate_parameters(variable=self.CONFIG_MZML_PATH, default_value=False)
         self._mzml_files = self.get_validate_parameters(variable=self.CONFIG_MZML_FILES, default_value=False)
         self._ions_tolerance = self.get_validate_parameters(variable=self.CONFIG_IONS_TOLERANCE, default_value=0.02)
+
+        ## check if ions_tolerance is string, convert to float
+        if isinstance(self._ions_tolerance, str):
+            self._ions_tolerance = float(self._ions_tolerance)
+
         self._relative = self.get_validate_parameters(variable=self.CONFIG_RELATIVE, default_value=False)
         self._mztab = self.get_validate_parameters(variable=self.CONFIG_MZTAB, default_value=False)
         self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
