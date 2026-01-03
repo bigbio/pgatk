@@ -35,6 +35,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .
     - name: Lint with flake8
       shell: bash -l {0}
       run: |
@@ -42,12 +43,11 @@ jobs:
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    - name: Test with pytest
+    - name: Test with unittest
       shell: bash -l {0}
       run: |
-        pip install -e .
         cd pypgatk
-        python tests/pypgatk_tests.py
+        python -m unittest discover -s tests -p "*_tests.py" -v
 
     - name: Update changelog
       uses: heinrichreimer/github-changelog-generator-action@v2.2
@@ -66,9 +66,9 @@ jobs:
     - name: Generate coverage report
       shell: bash -l {0}
       run: |
-        pip install pytest pytest-cov
-        pip install -e .
+        pip install pytest pytest-cov coverage
         cd pypgatk
-        pytest -s --cov=./ --cov-report=xml tests/*
+        coverage run -m unittest discover -s tests -p "*_tests.py"
+        coverage xml -o coverage.xml
 
 
