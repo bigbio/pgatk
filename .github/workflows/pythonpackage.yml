@@ -31,7 +31,7 @@ jobs:
     - name: Install dependencies
       shell: bash -l {0}
       run: |
-        conda install --channel conda-forge --channel bioconda bedtools htslib
+        conda install --channel conda-forge --channel bioconda --channel openms bedtools htslib pyopenms -y
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi

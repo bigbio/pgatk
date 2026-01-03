@@ -13,7 +13,10 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
                                 '--peptide-groups-prefix',
                                 '"{non_canonical:[altorf,pseudo,ncRNA];mutations:[COSMIC,cbiomut];variants:[var_mut,var_rs]}"'])
-        self.assertEqual(result.exit_code, 0)
+        if result.exit_code != 0:
+            print(f"Error output: {result.output}")
+            print(f"Exception: {result.exception}")
+        self.assertEqual(result.exit_code, 0, f"Command failed with output: {result.output}")
 
     def test_peptide_classes_fdr(self):
         runner = CliRunner()
@@ -23,7 +26,10 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '-out',
                                 'testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml',
                                 '--peptide-classes-prefix', '"altorf,pseudo,ncRNA,COSMIC,cbiomut,var_mut,var_rs"'])
-        self.assertEqual(result.exit_code, 0)
+        if result.exit_code != 0:
+            print(f"Error output: {result.output}")
+            print(f"Exception: {result.exception}")
+        self.assertEqual(result.exit_code, 0, f"Command failed with output: {result.output}")
 
     def test_vcf_to_proteindb(self):
         """
