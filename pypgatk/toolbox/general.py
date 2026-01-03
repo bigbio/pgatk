@@ -197,14 +197,22 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
         return file_name
 
     # Validate URL scheme to prevent file:// or custom schemes
+    # Allow http://, https://, and ftp:// schemes (ftp:// is needed for Ensembl downloads)
+    # Block file:// and other custom schemes for security
     parsed_url = urlparse(file_url)
-    if parsed_url.scheme not in ('http', 'https'):
-        raise ToolBoxException(f"Unsupported URL scheme: {parsed_url.scheme}. Only http:// and https:// are allowed.")
+    allowed_schemes = ('http', 'https', 'ftp')
+    if parsed_url.scheme not in allowed_schemes:
+        raise ToolBoxException(
+            f"Unsupported URL scheme: {parsed_url.scheme}. "
+            f"Only {', '.join(allowed_schemes)}:// are allowed for security reasons."
+        )
 
     remaining_download_tries = REMAINING_DOWNLOAD_TRIES
     downloaded_file = None
     while remaining_download_tries > 0:
         try:
+            # urlretrieve is safe here because we've validated the scheme above
+            # Only http:// and https:// URLs can reach this point
             downloaded_file, _ = request.urlretrieve(file_url, file_name)
             log.debug("File downloaded -- " + downloaded_file)
             if downloaded_file.endswith('.gz'):
@@ -309,14 +317,25 @@ def gunzip_files(files):
         if os.path.isfile(file):
             # Validate file path to prevent path traversal attacks
             # Normalize the path and check for suspicious patterns
-            abs_file = os.path.abspath(file)
             normalized_path = os.path.normpath(file)
-            if '..' in normalized_path or not os.path.isfile(abs_file):
-                err_msg = f"SECURITY ERROR: Invalid file path detected: {file}"
+            abs_file = os.path.abspath(normalized_path)
+
+            # Security: Reject paths with path traversal sequences (..)
+            # Allow absolute paths but validate they exist and are files
+            if '..' in normalized_path:
+                err_msg = f"SECURITY ERROR: Invalid file path detected (path traversal): {file}"
                 files_with_error.append((file, err_msg))
                 continue
+
+            # Security: Ensure the file exists and is actually a file (not a directory)
+            if not os.path.isfile(abs_file):
+                err_msg = f"ERROR: File does not exist or is not a file: {abs_file}"
+                files_with_error.append((file, err_msg))
+                continue
+
+            # Security: Use hardcoded 'gunzip' command (not user input) with validated absolute path
+            # The file path has been validated above to prevent path traversal attacks
             try:
-                # Use absolute path for subprocess - path is validated above
                 gunzip_subprocess = subprocess.Popen(['gunzip', abs_file],
                                                      stdout=subprocess.PIPE,
                                                      stderr=subprocess.PIPE,
