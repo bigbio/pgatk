@@ -125,37 +125,60 @@ class CbioPortalDownloadService(ParameterConfiguration):
 
         clear_cache()
 
-        url_file = None
-        if url_file_name is not None:
-            url_file = open(url_file_name, 'w')
-
         if self._cbioportal_studies is None or len(self._cbioportal_studies) == 0:
             self.get_cancer_studies()
 
-        if 'all' not in download_study:
-            if not self.check_study_identifier(download_study):
-                msg = "The following study accession '{}' is not present in cBioPortal Studies".format(download_study)
-                self.get_logger().debug(msg)
-                raise AppException(msg)
-            else:
-                self.download_one_study(download_study)
+        if url_file_name is not None:
+            with open(url_file_name, 'w', encoding='utf-8') as url_file:
+                if 'all' not in download_study:
+                    if not self.check_study_identifier(download_study):
+                        msg = "The following study accession '{}' is not present in cBioPortal Studies".format(download_study)
+                        self.get_logger().debug(msg)
+                        raise AppException(msg)
+                    else:
+                        self.download_one_study(download_study, url_file=url_file)
+                else:
+                    csv_reader = csv.reader(self._cbioportal_studies.splitlines(), delimiter="\t")
+                    line_count = 0
+                    if self._multithreading:
+                        processes = []
+                        with ThreadPoolExecutor(max_workers=10, thread_name_prefix='Thread-Download') as executor:
+                            for row in csv_reader:
+                                if line_count != 0:
+                                    processes.append(executor.submit(self.download_one_study, row[0], url_file=url_file))
+                                line_count = line_count + 1
+                        for task in as_completed(processes):
+                            print(task.result())
+                    else:
+                        for row in csv_reader:
+                            if line_count != 0:
+                                self.download_one_study(row[0], url_file=url_file)
+                            line_count = line_count + 1
         else:
-            csv_reader = csv.reader(self._cbioportal_studies.splitlines(), delimiter="\t")
-            line_count = 0
-            if self._multithreading:
-                processes = []
-                with ThreadPoolExecutor(max_workers=10, thread_name_prefix='Thread-Download') as executor:
+            if 'all' not in download_study:
+                if not self.check_study_identifier(download_study):
+                    msg = "The following study accession '{}' is not present in cBioPortal Studies".format(download_study)
+                    self.get_logger().debug(msg)
+                    raise AppException(msg)
+                else:
+                    self.download_one_study(download_study)
+            else:
+                csv_reader = csv.reader(self._cbioportal_studies.splitlines(), delimiter="\t")
+                line_count = 0
+                if self._multithreading:
+                    processes = []
+                    with ThreadPoolExecutor(max_workers=10, thread_name_prefix='Thread-Download') as executor:
+                        for row in csv_reader:
+                            if line_count != 0:
+                                processes.append(executor.submit(self.download_one_study, row[0]))
+                            line_count = line_count + 1
+                    for task in as_completed(processes):
+                        print(task.result())
+                else:
                     for row in csv_reader:
                         if line_count != 0:
-                            processes.append(executor.submit(self.download_one_study, row[0]))
+                            self.download_one_study(row[0])
                         line_count = line_count + 1
-                for task in as_completed(processes):
-                    print(task.result())
-            else:
-                for row in csv_reader:
-                    if line_count != 0:
-                        self.download_one_study(row[0], url_file=url_file)
-                    line_count = line_count + 1
 
     def download_one_study(self, download_study, url_file=None):
         file_name = '{}.tar.gz'.format(download_study)

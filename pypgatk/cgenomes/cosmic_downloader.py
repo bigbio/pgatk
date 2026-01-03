@@ -1,5 +1,4 @@
 import base64
-import json
 import gzip
 import requests
 import os
@@ -121,7 +120,7 @@ class CosmicDownloadService(ParameterConfiguration):
 
         else:
             if url_file_name is not None:
-                with open(url_file_name, 'w') as url_file:
+                with open(url_file_name, 'w', encoding='utf-8') as url_file:
                     url_file.write("{}\t{}\n".format(mutation_url, mutation_output_file))
                     url_file.write("{}\t{}\n".format(cds_gene_url, cds_genes_output_file))
                     url_file.write("{}\t{}\n".format(celllines_gene_url, cellines_genes_output_file))
@@ -136,13 +135,13 @@ class CosmicDownloadService(ParameterConfiguration):
         :return:
         """
 
-        response = requests.get(url, stream=True, headers={'Authorization': token})
+        response = requests.get(url, stream=True, headers={'Authorization': token}, timeout=30)
         if response.status_code == 200:
-            url = json.loads(response.text)['url']
+            url = response.json()['url']
             msg = "Downloading file from url '{}'".format(url)
             self.get_logger().debug(msg)
 
-            response = requests.get(url, stream=True)
+            response = requests.get(url, stream=True, timeout=30)
             if response.status_code == 200:
                 with open(local_file, 'wb') as f:
                     f.write(response.content)
@@ -150,7 +149,7 @@ class CosmicDownloadService(ParameterConfiguration):
                     self.get_logger().debug(msg)
                 if local_file.endswith('.gz'):
                     extracted_file = local_file.replace('.gz', '')
-                    with open(extracted_file, 'w') as outfile:
+                    with open(extracted_file, 'w', encoding='utf-8') as outfile:
                         try:
                             outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))
                         except UnicodeDecodeError:

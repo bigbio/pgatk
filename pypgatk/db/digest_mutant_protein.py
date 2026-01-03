@@ -28,7 +28,7 @@ def trypsin_cleavage(proseq: str, miss_cleavage: int):
 
     peptides_with_miss_cleavage = []
     for i in range(1, miss_cleavage + 1):
-        for j, pep in enumerate(peptides):
+        for j in range(len(peptides)):
             if j + i < len(peptides):
                 peptide = ''.join([x for x in (peptides[j:j + i + 1])])
                 peptides_with_miss_cleavage.append(peptide)
@@ -38,8 +38,8 @@ def trypsin_cleavage(proseq: str, miss_cleavage: int):
     return peptides
 
 
-min = 7  # default minimum peptide length
-max = 40  # default maximum peptide length
+min_len = 7  # default minimum peptide length
+max_len = 40  # default maximum peptide length
 header_prefix = "Mutation"
 cleavageMiss = 0  # number of misscleavage,default no misscleavage
 
@@ -47,27 +47,38 @@ if len(sys.argv[1:]) <= 1:  ### Indicates that there are insufficient number of 
     print("Warning! wrong command!")
     print(
         "Example: python3 digest_mutant_protein.py --input mutproteins.1.fa, mutproteins.2.fa --fa knownproteins.fa --prefix Mutation --output mutpeptides.fa --min_len 7 --max_len 40 --miss 0")
-else:
-    options, remainder = getopt.getopt(sys.argv[1:], '',
-                                       ['input=', 'fa=', 'output=', 'prefix=', 'min_len', 'max_len', 'miss'])
-    for opt, arg in options:
-        if opt == '--input':
-            input_file = arg
-        elif opt == '--output':
-            output_file = arg
-        elif opt == '--fa':
-            fa_file = arg
-        elif opt == '--prefix':
-            header_prefix = arg
-        elif opt == '--min_len':
-            min = int(arg)
-        elif opt == '--max_len':
-            max = int(arg)
-        elif opt == '--miss':
-            cleavageMiss = int(arg)
-        else:
-            print("Warning! Command-line argument: %s not recognized. Exiting..." % opt)
-            sys.exit()
+    sys.exit(1)
+
+# Initialize variables
+input_file = None
+output_file = None
+fa_file = None
+
+options, remainder = getopt.getopt(sys.argv[1:], '',
+                                   ['input=', 'fa=', 'output=', 'prefix=', 'min_len=', 'max_len=', 'miss='])
+for opt, arg in options:
+    if opt == '--input':
+        input_file = arg
+    elif opt == '--output':
+        output_file = arg
+    elif opt == '--fa':
+        fa_file = arg
+    elif opt == '--prefix':
+        header_prefix = arg
+    elif opt == '--min_len':
+        min_len = int(arg)
+    elif opt == '--max_len':
+        max_len = int(arg)
+    elif opt == '--miss':
+        cleavageMiss = int(arg)
+    else:
+        print("Warning! Command-line argument: %s not recognized. Exiting..." % opt)
+        sys.exit(1)
+
+# Validate required arguments
+if not all([input_file, output_file, fa_file]):
+    print("Error: Missing required arguments. All of --input, --output, and --fa must be provided.")
+    sys.exit(1)
 
 handle1 = SeqIO.parse(fa_file, 'fasta')  # canonical protein sequences
 peptidome = {}
@@ -76,7 +87,7 @@ for record in handle1:
     aa_seq = record.seq
     peptide_list = trypsin_cleavage(str(aa_seq), cleavageMiss)
     for peptide in peptide_list:
-        if len(peptide) in range(min, max + 1):
+        if min_len <= len(peptide) <= max_len:
             if peptide not in peptidome:
                 peptidome[peptide.replace("I", "L")] = 1
 
@@ -88,18 +99,16 @@ handle_list = []
 for f in filelist:
     handle_list.append(SeqIO.parse(f, 'fasta'))  # mutproteins.fasta
 
-output = open(output_file, 'w')
-
 var_peptidome = OrderedDict()
 
 for h in handle_list:
     for record in h:
         proseq = record.seq
         descrip = record.description
-        if len(proseq) >= min:
+        if len(proseq) >= min_len:
             peptide_list = trypsin_cleavage(str(proseq), cleavageMiss)
             for peptide in peptide_list:
-                if len(peptide) in range(min, max + 1):
+                if min_len <= len(peptide) <= max_len:
                     peptide1 = peptide.replace("I", "L")
                     if peptide1 not in peptidome:  # check if the peptides are in canonical protein sequences
                         des_list = descrip.split(":")
@@ -124,8 +133,7 @@ for h in handle_list:
     print("file process done")
 
 print("mut peptide numbers", len(var_peptidome))
-for pep in var_peptidome.keys():
-    acc = ";".join(set(var_peptidome[pep]))
-    output.write(">%s\n%s\n" % (acc, pep))
-
-output.close()
+with open(output_file, 'w', encoding='utf-8') as output:
+    for pep in var_peptidome.keys():
+        acc = ";".join(set(var_peptidome[pep]))
+        output.write(">%s\n%s\n" % (acc, pep))

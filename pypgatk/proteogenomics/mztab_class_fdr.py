@@ -101,12 +101,13 @@ class MzTabClassFdr(ParameterConfiguration):
         start_time = datetime.datetime.now()
         print("Start time :", start_time)
 
-        file = open(input_mztab, "r")
-        list_lines = file.readlines()
+        with open(input_mztab, "r", encoding='utf-8') as file:
+            list_lines = file.readlines()
 
         # Extract psms information
         psm = []
         mtd_dict = dict()
+        psm_cols = None
         for i in list_lines:
             i = i.strip("\n")
             row_list = i.split('\t')
@@ -116,6 +117,9 @@ class MzTabClassFdr(ParameterConfiguration):
                 psm_cols = row_list
             elif row_list[0] == "PSM":
                 psm.append(row_list)
+
+        if psm_cols is None:
+            raise ValueError("PSH (PSM header) row not found in mzTab file")
 
         psm_search_engine = mtd_dict.get("psm_search_engine_score[1]").split("MS:")[1][:7]
         order = self._psm_search_engine_score_order.get(psm_search_engine)

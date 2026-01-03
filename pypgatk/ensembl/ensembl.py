@@ -119,21 +119,20 @@ class EnsemblDataService(ParameterConfiguration):
     :return:
     """
 
-        input_handle = open(input_fasta, 'r')
-        output_handle = open(self._proteindb_output, 'w')
+        with open(input_fasta, 'r', encoding='utf-8') as input_handle:
+            with open(self._proteindb_output, 'w', encoding='utf-8') as output_handle:
+                for record in SeqIO.parse(input_handle, 'fasta'):
+                    seq = record.seq
+                    RF1 = seq.translate(table=self._translation_table)
+                    RF2 = seq[1::].translate(table=self._translation_table)
+                    RF3 = seq[2::].translate(table=self._translation_table)
 
-        for record in SeqIO.parse(input_handle, 'fasta'):
-            seq = record.seq
-            RF1 = seq.translate(table=self._translation_table)
-            RF2 = seq[1::].translate(table=self._translation_table)
-            RF3 = seq[2::].translate(table=self._translation_table)
-
-            if record.id == "":
-                print("skip entries without id", record.description)
-                continue
-            output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF1', RF1))
-            output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF2', RF2))
-            output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF3', RF3))
+                    if record.id == "":
+                        print("skip entries without id", record.description)
+                        continue
+                    output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF1', RF1))
+                    output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF2', RF2))
+                    output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF3', RF3))
 
     @staticmethod
     def get_multiple_options(options_str: str):
@@ -319,7 +318,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         seq_dict = SeqIO.index(input_fasta, "fasta")
 
-        with open(self._proteindb_output, 'w') as prots_fn:
+        with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
             for record_id in seq_dict.keys():
 
                 ref_seq = seq_dict[record_id].seq  # get the seq and desc for the record from the fasta of the gtf
@@ -414,7 +413,7 @@ class EnsemblDataService(ParameterConfiguration):
         BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf + '_all.bed')
 
         muts_dict = {}
-        with open(annotated_vcf + '_all.bed', 'r') as an:
+        with open(annotated_vcf + '_all.bed', 'r', encoding='utf-8') as an:
             for line in an.readlines():
                 sl = line.strip().split('\t')
                 if sl[record_type_index].strip() != 'CDS':
@@ -436,7 +435,7 @@ class EnsemblDataService(ParameterConfiguration):
                 except KeyError:
                     muts_dict['\t'.join(sl[gene_info_index + 1:-1])] = [transcript_id]
 
-        with open(annotated_vcf + '_annotated.vcf', 'w') as ann, open(vcf_file, 'r') as v:
+        with open(annotated_vcf + '_annotated.vcf', 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
             # write vcf headers to the output file
             for line in v.readlines():
                 if line.startswith('#'):
@@ -474,7 +473,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         metadata = []
         data = []
-        with open(vcf_file, 'r') as vcf:
+        with open(vcf_file, 'r', encoding='utf-8') as vcf:
             line = vcf.readline().strip()
             while line:
                 if line.startswith('#'):
@@ -518,7 +517,7 @@ class EnsemblDataService(ParameterConfiguration):
             except IndexError:
                 pass
 
-            'try to extract index of transcript ID and consequence from the VCF metadata in the header'
+            # try to extract index of transcript ID and consequence from the VCF metadata in the header
             try:
                 transcript_index = annotation_cols.index(self._transcript_str.upper())
             except ValueError:
@@ -539,7 +538,7 @@ class EnsemblDataService(ParameterConfiguration):
                 self.get_logger().debug(msg)
 
         else:
-            'in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts'
+            # in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts
             vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
             metadata, vcf_reader = self.vcf_from_file(vcf_file)
             self._annotation_field_name = 'transcriptOverlaps'
@@ -551,8 +550,8 @@ class EnsemblDataService(ParameterConfiguration):
                            '# feature IDs from VCF that are not found in the given FASTA file': 0,
                            '# variants successfully translated': 0}
 
-        with open(self._proteindb_output, 'w') as prots_fn:
-            for idx, record in vcf_reader.iterrows():
+        with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
+            for _, record in vcf_reader.iterrows():
                 trans = False
                 if [x for x in str(record.REF) if x not in 'ACGT']:
                     msg = "Invalid VCF record, skipping: {}".format(record)
@@ -565,7 +564,7 @@ class EnsemblDataService(ParameterConfiguration):
                     if alt is None:
                         continue
                     elif [x for x in str(alt) if x not in 'ACGT']:
-                        'check if all alt alleles are nucleotides'
+                        # check if all alt alleles are nucleotides
                         continue
                     alts.append(alt)
                 if not alts:
@@ -757,67 +756,67 @@ class EnsemblDataService(ParameterConfiguration):
 
     def check_proteindb(self, input_fasta: str = None, add_stop_codon: bool = False, num_aa: int = 6):
 
-        input_handle = open(input_fasta, 'r')
-        output_handle = open(self._proteindb_output, 'w')
-        proteins = []
-        pcount = 0
-        stop_count = 0
-        gap_count = 0
-        no_met = 0
-        less = 0
+        with open(input_fasta, 'r', encoding='utf-8') as input_handle:
+            with open(self._proteindb_output, 'w', encoding='utf-8') as output_handle:
+                proteins = []
+                pcount = 0
+                stop_count = 0
+                gap_count = 0
+                no_met = 0
+                less = 0
 
-        for record in SeqIO.parse(input_handle, 'fasta'):
+                for record in SeqIO.parse(input_handle, 'fasta'):
 
-            seq = str(record.seq)
-            pcount += 1
+                    seq = str(record.seq)
+                    pcount += 1
 
-            # parse the description string into a dictionary
-            new_desc_string = record.description
-            new_desc_string = new_desc_string[new_desc_string.find(' ') + 1:]
-            # test for odd amino acids, stop codons, gaps
-            if not seq.startswith('M'):
-                no_met += 1
-            if seq.endswith('*'):
-                seq = seq[:-1]
-            if '-' in seq:
-                gap_count += 1
-                new_desc_string = new_desc_string + ' (Contains gaps)'
-            if '*' in seq:
-                stop_count += 1
-                if add_stop_codon:
-                    seq_list = seq.split("*")
-                    codon_index = 1
-                    for codon in seq_list:
-                        codon_description = new_desc_string + ' codon ' + str(codon_index)
-                        protein_id = record.id + '_codon_' + str(codon_index)
-                        seq = codon
-                        if len(seq) > num_aa:
-                            proteins = self.add_protein_to_map(seq, codon_description, protein_id, proteins,
-                                                               output_handle)
-                        codon_index = codon_index + 1
-                else:
-                    cut = seq.index('*')
-                    string = ' (Premature stop %s/%s)' % (cut, len(seq))
-                    new_desc_string = new_desc_string + string
-                    seq = seq[:cut]
-                    # save the protein in list
-                    if len(seq) > num_aa:
-                        protein_id = record.id
-                        proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
+                    # parse the description string into a dictionary
+                    new_desc_string = record.description
+                    new_desc_string = new_desc_string[new_desc_string.find(' ') + 1:]
+                    # test for odd amino acids, stop codons, gaps
+                    if not seq.startswith('M'):
+                        no_met += 1
+                    if seq.endswith('*'):
+                        seq = seq[:-1]
+                    if '-' in seq:
+                        gap_count += 1
+                        new_desc_string = new_desc_string + ' (Contains gaps)'
+                    if '*' in seq:
+                        stop_count += 1
+                        if add_stop_codon:
+                            seq_list = seq.split("*")
+                            codon_index = 1
+                            for codon in seq_list:
+                                codon_description = new_desc_string + ' codon ' + str(codon_index)
+                                protein_id = record.id + '_codon_' + str(codon_index)
+                                seq = codon
+                                if len(seq) > num_aa:
+                                    proteins = self.add_protein_to_map(seq, codon_description, protein_id, proteins,
+                                                                       output_handle)
+                                codon_index = codon_index + 1
+                        else:
+                            cut = seq.index('*')
+                            string = ' (Premature stop %s/%s)' % (cut, len(seq))
+                            new_desc_string = new_desc_string + string
+                            seq = seq[:cut]
+                            # save the protein in list
+                            if len(seq) > num_aa:
+                                protein_id = record.id
+                                proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
+                            else:
+                                less += 1
                     else:
-                        less += 1
-            else:
-                if len(seq) > num_aa:
-                    protein_id = record.id
-                    proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
-                else:
-                    less += 1
+                        if len(seq) > num_aa:
+                            protein_id = record.id
+                            proteins = self.add_protein_to_map(seq, new_desc_string, protein_id, proteins, output_handle)
+                        else:
+                            less += 1
 
-        print("   translations that do not start with Met:", no_met)
-        print("   translations that have premature stop codons:", stop_count)
-        print("   translations that contain gaps:", gap_count)
-        print("   total number of input sequences was:", pcount)
-        print("   total number of sequences written was:", len(proteins))
+                print("   translations that do not start with Met:", no_met)
+                print("   translations that have premature stop codons:", stop_count)
+                print("   translations that contain gaps:", gap_count)
+                print("   total number of input sequences was:", pcount)
+                print("   total number of sequences written was:", len(proteins))
         print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
 
     @staticmethod

@@ -66,12 +66,12 @@ pip3 install .
 
 # Usage
 
-The pypgatk design combines multiple modules and tools into one framework. All the possible commands are accessible using the commandline tool `pypgatk_cli.py`.
+The pypgatk design combines multiple modules and tools into one framework. All the possible commands are accessible using the commandline tool `pypgatkc.py`.
 
 The library provides multiple commands to download, translate and generate protein sequence databases from reference and mutation genome databases.
 
 ```
-$: pypgatk_cli -h
+$: pypgatk -h
 
 Usage: pypgatk [OPTIONS] COMMAND [ARGS]...
 

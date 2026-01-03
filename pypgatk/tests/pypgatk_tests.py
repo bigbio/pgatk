@@ -1,6 +1,6 @@
 import unittest
 from click.testing import CliRunner
-from pypgatk.pypgatk_cli import cli
+from pypgatk.pypgatkc import cli
 
 class PypgatkRunnerTests(unittest.TestCase):
 

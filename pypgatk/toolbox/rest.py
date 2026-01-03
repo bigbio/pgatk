@@ -11,7 +11,7 @@ ONE_MINUTE = 60
 @sleep_and_retry
 @limits(calls=1000, period=ONE_MINUTE)
 def call_api(url):
-    response = requests.get(url, headers={"Content-Type": 'application/json'})
+    response = requests.get(url, headers={"Content-Type": 'application/json'}, timeout=30)
 
     if response.status_code != 200:
         raise Exception('API response: {}'.format(response.status_code))
@@ -21,7 +21,7 @@ def call_api(url):
 @sleep_and_retry
 @limits(calls=1000, period=ONE_MINUTE)
 def call_api_raw(url):
-    response = requests.get(url)
+    response = requests.get(url, timeout=30)
 
     if response.status_code != 200:
         raise Exception('API response: {}'.format(response.status_code))
@@ -29,7 +29,7 @@ def call_api_raw(url):
 
 
 def make_rest_request(url):
-    response = requests.get(url, headers={"Content-Type": "application/json"})
+    response = requests.get(url, headers={"Content-Type": "application/json"}, timeout=30)
     if not response.ok:
         response.raise_for_status()
     return response.json()

@@ -1,0 +1,77 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pypgatk"
+version = "0.0.26"
+description = "Python tools for proteogenomics"
+readme = "README.md"
+requires-python = ">=3.6"
+license = {file = "LICENSE.txt"}
+authors = [
+    {name = "PgAtk Team", email = "ypriverol@gmail.com"}
+]
+maintainers = [
+    {name = "PgAtk Team", email = "ypriverol@gmail.com"}
+]
+keywords = ["proteogenomics", "bioinformatics", "proteomics", "genomics"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+]
+dependencies = [
+    "biopython",
+    "Click",
+    "gffutils",
+    "numpy",
+    "pandas",
+    "PyYAML",
+    "requests",
+    "simplejson",
+    "ratelimit",
+    "pyteomics",
+    "pathos",
+    "pybedtools",
+    "pyopenms",
+    "matplotlib",
+    "tqdm",
+    "pyahocorasick",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "flake8",
+    "pytest-cov",
+]
+
+[project.scripts]
+pypgatk = "pypgatk.pypgatkc:main"
+
+[project.urls]
+Homepage = "http://github.com/bigbio/py-pgatk"
+Documentation = "https://pgatk.readthedocs.io/en/latest"
+Repository = "http://github.com/bigbio/py-pgatk"
+Issues = "http://github.com/bigbio/py-pgatk/issues"
+
+[tool.setuptools]
+include-package-data = true
+zip-safe = false
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pypgatk*"]
+exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
+
+[tool.setuptools.package-data]
+pypgatk = ["config/*.yaml", "config/*.json"]
+

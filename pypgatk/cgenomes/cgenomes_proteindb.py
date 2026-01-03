@@ -196,67 +196,66 @@ class CancerGenomesService(ParameterConfiguration):
         if self._filter_column:
             filter_col = header.index(self._filter_column)
 
-        output = open(self._local_output_file, 'w')
-
         mutation_dic = {}
         groups_mutations_dict = {}
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
-        for line in cosmic_input:
-            if line_counter % 10000 == 0:
-                msg = "Number of lines finished -- '{}'".format(line_counter)
-                self.get_logger().debug(msg)
-            line_counter += 1
-            row = line.strip().split("\t")
-            # filter out mutations from unspecified groups
-            if filter_col is not None:
-                if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
+
+        with open(self._local_output_file, 'w', encoding='utf-8') as output:
+            for line in cosmic_input:
+                if line_counter % 10000 == 0:
+                    msg = "Number of lines finished -- '{}'".format(line_counter)
+                    self.get_logger().debug(msg)
+                line_counter += 1
+                row = line.strip().split("\t")
+                # filter out mutations from unspecified groups
+                if filter_col is not None:
+                    if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
+                        continue
+
+                if "coding silent" in row[muttype_col]:
                     continue
 
-            if "coding silent" in row[muttype_col]:
-                continue
-
-            snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
-                      type=row[muttype_col])
-            header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.type.replace(" ", ""))
-            try:
-                this_gene_records = COSMIC_CDS_DB[snp.gene]
-                seqs = []
-                for record in this_gene_records:
-                    seqs.append(record.seq)
-
-            except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
-                continue
-
-            mut_pro_seq = None
-            for seq in seqs:
+                snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
+                          mutation_type=row[muttype_col])
+                header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.type.replace(" ", ""))
                 try:
-                    mut_pro_seq = self.get_mut_pro_seq(snp, seq)
-                except IndexError:
+                    this_gene_records = COSMIC_CDS_DB[snp.gene]
+                    seqs = []
+                    for record in this_gene_records:
+                        seqs.append(record.seq)
+
+                except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
                     continue
-                if mut_pro_seq:
-                    break
 
-            if mut_pro_seq:
-                entry = ">%s\n%s\n" % (header, mut_pro_seq)
-                if header not in mutation_dic:
-                    output.write(entry)
-                    mutation_dic[header] = 1
-
-                if self._split_by_filter_column and filter_col is not None:
+                mut_pro_seq = None
+                for seq in seqs:
                     try:
-                        groups_mutations_dict[row[filter_col]][header] = entry
-                    except KeyError:
-                        groups_mutations_dict[row[filter_col]] = {header: entry}
+                        mut_pro_seq = self.get_mut_pro_seq(snp, seq)
+                    except IndexError:
+                        continue
+                    if mut_pro_seq:
+                        break
+
+                if mut_pro_seq:
+                    entry = ">%s\n%s\n" % (header, mut_pro_seq)
+                    if header not in mutation_dic:
+                        output.write(entry)
+                        mutation_dic[header] = 1
+
+                    if self._split_by_filter_column and filter_col is not None:
+                        try:
+                            groups_mutations_dict[row[filter_col]][header] = entry
+                        except KeyError:
+                            groups_mutations_dict[row[filter_col]] = {header: entry}
 
         for group_name in groups_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group_name) + '.fa', 'w') as fn:
+            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group_name) + '.fa', 'w', encoding='utf-8') as fn:
                 for header in groups_mutations_dict[group_name].keys():
                     fn.write(groups_mutations_dict[group_name][header])
 
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
         cosmic_input.close()
-        output.close()
 
     @staticmethod
     def get_sample_headers(header_line, filter_coumn):
@@ -275,7 +274,7 @@ class CancerGenomesService(ParameterConfiguration):
     def get_value_per_sample(self, local_clinical_sample_file, filter_column):
         sample_value = {}
         if local_clinical_sample_file:
-            with open(local_clinical_sample_file, 'r') as clin_fn:
+            with open(local_clinical_sample_file, 'r', encoding='utf-8') as clin_fn:
                 filter_column_col, sample_id_col = None, None
                 for line in clin_fn.readlines():
                     if line.startswith('#'):
@@ -331,7 +330,7 @@ class CancerGenomesService(ParameterConfiguration):
                 print('No clinical sample file is given therefore no filter could be applied.')
                 return
 
-        with open(self._local_mutation_file, "r") as mutfile, open(self._local_output_file, "w") as output:
+        with open(self._local_mutation_file, "r", encoding='utf-8') as mutfile, open(self._local_output_file, "w", encoding='utf-8') as output:
             for i, line in enumerate(mutfile):
                 row = line.strip().split("\t")
                 if row[0] == '#':
@@ -452,6 +451,6 @@ class CancerGenomesService(ParameterConfiguration):
                             group_mutations_dict[group] = {header: mut_pro_seq}
 
         for group in group_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group) + '.fa', 'w') as fn:
+            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group) + '.fa', 'w', encoding='utf-8') as fn:
                 for header in group_mutations_dict[group].keys():
                     fn.write(">{}\n{}\n".format(header, group_mutations_dict[group][header]))

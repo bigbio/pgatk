@@ -155,103 +155,108 @@ class EnsemblDataDownloadService(ParameterConfiguration):
         if self._grch37:
             self.get_logger().info("gtch37 is only available for human not other species")
 
-        url_file = None
-        if url_file_name is not None:
-            url_file = open(url_file_name, 'w')
-
         total_files = []
         files = []
-        if self._species_list is not None and len(self._species_list) > 0:
-            for species_id in self._species_list:
-                for species in self._ensembl_species:
-                    if species_id == species[self.CONFIG_REST_API_TAXON_ID]:
-                        self.get_logger().debug(
-                            "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
-                        if not self._skip_protein_database:
-                            prot_files = self.get_pep_files(species=species, grch37=grch37, url_file=url_file)
-                            files.extend(prot_files)
-                        if not self._skip_gtf_database:
-                            gtf_files = self.get_gtf_files(species, grch37)
-                            files.extend(gtf_files)
-                        if not self._skip_cds_database:
-                            cds_files = self.get_cds_files(species=species, grch37=grch37)
-                            files.extend(cds_files)
-                        if not self._skip_cdna_database:
-                            cdna_files = self.get_cdna_files(species=species, grch37=grch37)
-                            files.extend(cdna_files)
-                        if not self._skip_ncrna_database:
-                            ncrna_files = self.get_ncrna_files(species=species, grch37=grch37)
-                            files.extend(ncrna_files)
-                        if not self._skip_dna_database:
-                            dna_files = self.get_genome_assembly_files(species=species, grch37=grch37)
-                            files.extend(dna_files)
-                        if not self._skip_vcf_database:
-                            vcf_files = self.get_vcf_files(species=species)
-                            files.extend(vcf_files)
 
-                        self.get_logger().debug("Files downloaded -- " + ",".join(
-                            [x for x in files if x]))
-                        total_files.extend(files)
-        elif self._ensembl_names is not None and len(self._ensembl_names) > 0:
-            for species_name in self._ensembl_names:
-                for species in self._ensembl_species:
-                    if species_name == species[self.CONFIG_REST_API_NAME]:
-                        self.get_logger().debug(
-                            "Downloading the data for the specie --" + species[self.CONFIG_REST_API_NAME])
-                        if not self._skip_protein_database:
-                            prot_files = self.get_pep_files(species=species, url_file=url_file)
-                            files.extend(prot_files)
-                        if not self._skip_gtf_database:
-                            gtf_files = self.get_gtf_files(species=species, url_file=url_file)
-                            files.extend(gtf_files)
-                        if not self._skip_cds_database:
-                            cds_files = self.get_cds_files(species=species, url_file=url_file)
-                            files.extend(cds_files)
-                        if not self._skip_cdna_database:
-                            cdna_files = self.get_cdna_files(species=species, url_file=url_file)
-                            files.extend(cdna_files)
-                        if not self._skip_ncrna_database:
-                            ncrna_files = self.get_ncrna_files(species=species, url_file=url_file)
-                            files.extend(ncrna_files)
-                        if not self._skip_dna_database:
-                            dna_files = self.get_genome_assembly_files(species=species, url_file=url_file)
-                            files.extend(dna_files)
-                        if not self._skip_vcf_database:
-                            vcf_files = self.get_vcf_files(species=species, url_file=url_file)
-                            files.extend(vcf_files)
+        def process_downloads(url_file=None):
+            if self._species_list is not None and len(self._species_list) > 0:
+                for species_id in self._species_list:
+                    for species in self._ensembl_species:
+                        if species_id == species[self.CONFIG_REST_API_TAXON_ID]:
+                            self.get_logger().debug(
+                                "Downloading the data for the specie -- " + species[self.CONFIG_REST_API_TAXON_ID])
+                            if not self._skip_protein_database:
+                                prot_files = self.get_pep_files(species=species, grch37=grch37, url_file=url_file)
+                                files.extend(prot_files)
+                            if not self._skip_gtf_database:
+                                gtf_files = self.get_gtf_files(species, grch37)
+                                files.extend(gtf_files)
+                            if not self._skip_cds_database:
+                                cds_files = self.get_cds_files(species=species, grch37=grch37)
+                                files.extend(cds_files)
+                            if not self._skip_cdna_database:
+                                cdna_files = self.get_cdna_files(species=species, grch37=grch37)
+                                files.extend(cdna_files)
+                            if not self._skip_ncrna_database:
+                                ncrna_files = self.get_ncrna_files(species=species, grch37=grch37)
+                                files.extend(ncrna_files)
+                            if not self._skip_dna_database:
+                                dna_files = self.get_genome_assembly_files(species=species, grch37=grch37)
+                                files.extend(dna_files)
+                            if not self._skip_vcf_database:
+                                vcf_files = self.get_vcf_files(species=species)
+                                files.extend(vcf_files)
 
-                        self.get_logger().debug("Files downloaded -- " + ",".join(
-                            [x for x in files if x]))
-                        total_files.extend(files)
+                            self.get_logger().debug("Files downloaded -- " + ",".join(
+                                [x for x in files if x]))
+                            total_files.extend(files)
+            elif self._ensembl_names is not None and len(self._ensembl_names) > 0:
+                for species_name in self._ensembl_names:
+                    for species in self._ensembl_species:
+                        if species_name == species[self.CONFIG_REST_API_NAME]:
+                            self.get_logger().debug(
+                                "Downloading the data for the specie --" + species[self.CONFIG_REST_API_NAME])
+                            if not self._skip_protein_database:
+                                prot_files = self.get_pep_files(species=species, url_file=url_file)
+                                files.extend(prot_files)
+                            if not self._skip_gtf_database:
+                                gtf_files = self.get_gtf_files(species=species, url_file=url_file)
+                                files.extend(gtf_files)
+                            if not self._skip_cds_database:
+                                cds_files = self.get_cds_files(species=species, url_file=url_file)
+                                files.extend(cds_files)
+                            if not self._skip_cdna_database:
+                                cdna_files = self.get_cdna_files(species=species, url_file=url_file)
+                                files.extend(cdna_files)
+                            if not self._skip_ncrna_database:
+                                ncrna_files = self.get_ncrna_files(species=species, url_file=url_file)
+                                files.extend(ncrna_files)
+                            if not self._skip_dna_database:
+                                dna_files = self.get_genome_assembly_files(species=species, url_file=url_file)
+                                files.extend(dna_files)
+                            if not self._skip_vcf_database:
+                                vcf_files = self.get_vcf_files(species=species, url_file=url_file)
+                                files.extend(vcf_files)
+
+                            self.get_logger().debug("Files downloaded -- " + ",".join(
+                                [x for x in files if x]))
+                            total_files.extend(files)
+            else:
+                for species in self._ensembl_species:
+                    self.get_logger().debug(
+                        "Downloading the data for the specie --" + species[self.CONFIG_REST_API_TAXON_ID])
+                    if not self._skip_protein_database:
+                        prot_files = self.get_pep_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(prot_files)
+                    if not self._skip_gtf_database:
+                        gtf_files = self.get_gtf_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(gtf_files)
+                    if not self._skip_cds_database:
+                        cds_files = self.get_cds_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(cds_files)
+                    if not self._skip_cdna_database:
+                        cdna_files = self.get_cdna_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(cdna_files)
+                    if not self._skip_ncrna_database:
+                        ncrna_files = self.get_ncrna_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(ncrna_files)
+                    if not self._skip_dna_database:
+                        dna_files = self.get_genome_assembly_files(species=species, grch37=grch37, url_file=url_file)
+                        files.extend(dna_files)
+                    if not self._skip_vcf_database:
+                        vcf_files = self.get_vcf_files(species=species, url_file=url_file)
+                        files.extend(vcf_files)
+
+                    self.get_logger().debug("Files downloaded -- " + ",".join(
+                        [x for x in files if x]))
+                    total_files.extend(files)
+                return total_files
+
+        if url_file_name is not None:
+            with open(url_file_name, 'w', encoding='utf-8') as url_file:
+                process_downloads(url_file=url_file)
         else:
-            for species in self._ensembl_species:
-                self.get_logger().debug(
-                    "Downloading the data for the specie --" + species[self.CONFIG_REST_API_TAXON_ID])
-                if not self._skip_protein_database:
-                    prot_files = self.get_pep_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(prot_files)
-                if not self._skip_gtf_database:
-                    gtf_files = self.get_gtf_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(gtf_files)
-                if not self._skip_cds_database:
-                    cds_files = self.get_cds_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(cds_files)
-                if not self._skip_cdna_database:
-                    cdna_files = self.get_cdna_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(cdna_files)
-                if not self._skip_ncrna_database:
-                    ncrna_files = self.get_ncrna_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(ncrna_files)
-                if not self._skip_dna_database:
-                    dna_files = self.get_genome_assembly_files(species=species, grch37=grch37, url_file=url_file)
-                    files.extend(dna_files)
-                if not self._skip_vcf_database:
-                    vcf_files = self.get_vcf_files(species=species, url_file=url_file)
-                    files.extend(vcf_files)
-
-                self.get_logger().debug("Files downloaded -- " + ",".join(
-                    [x for x in files if x]))
-                total_files.extend(files)
+            process_downloads(url_file=None)
 
         return total_files
 
@@ -396,7 +401,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 files.append(self.get_local_path_root_ensembl_repo() + '/' + file_name)
 
         except KeyError:
-            self.get_logger().debug("No valid info is available species: ", species)
+            self.get_logger().debug("No valid info is available species: %s", species)
 
         return files
 
@@ -449,7 +454,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                                                log=self.get_logger(), url_file=url_file))
 
         except KeyError:
-            self.get_logger().debug("No valid info is available species: ", species)
+            self.get_logger().debug("No valid info is available species: %s", species)
 
         return files
 
