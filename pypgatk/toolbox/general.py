@@ -11,6 +11,7 @@ import subprocess
 from typing import List
 from urllib import request
 from urllib.error import URLError, ContentTooShortError
+from urllib.parse import urlparse
 import yaml
 import gzip
 
@@ -195,6 +196,11 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
         url_file.write("{}\t{}\n".format(file_url, file_name))
         return file_name
 
+    # Validate URL scheme to prevent file:// or custom schemes
+    parsed_url = urlparse(file_url)
+    if parsed_url.scheme not in ('http', 'https'):
+        raise ToolBoxException(f"Unsupported URL scheme: {parsed_url.scheme}. Only http:// and https:// are allowed.")
+
     remaining_download_tries = REMAINING_DOWNLOAD_TRIES
     downloaded_file = None
     while remaining_download_tries > 0:
@@ -298,17 +304,25 @@ def gunzip_files(files):
     :param files: list of paths to files that will be un-compressed
     :return: a list of possible failing to uncompress files
     """
-    import shlex
     files_with_error = []
     for file in files:
         if os.path.isfile(file):
+            # Validate file path to prevent path traversal attacks
+            # Normalize the path and check for suspicious patterns
+            abs_file = os.path.abspath(file)
+            normalized_path = os.path.normpath(file)
+            if '..' in normalized_path or not os.path.isfile(abs_file):
+                err_msg = f"SECURITY ERROR: Invalid file path detected: {file}"
+                files_with_error.append((file, err_msg))
+                continue
             try:
-                gunzip_subprocess = subprocess.Popen(['gunzip', file],
+                # Use absolute path for subprocess - path is validated above
+                gunzip_subprocess = subprocess.Popen(['gunzip', abs_file],
                                                      stdout=subprocess.PIPE,
                                                      stderr=subprocess.PIPE,
                                                      shell=False)
                 # Timeout, in seconds, is either 10 seconds or the size of the file in MB * 10, e.g. 1MB -> 10 seconds
-                file_size_mb = os.path.getsize(file) / (1024 * 1024)
+                file_size_mb = os.path.getsize(abs_file) / (1024 * 1024)
                 timeout = max(10, int(file_size_mb))
                 (stdout, stderr) = gunzip_subprocess.communicate(timeout=timeout)
                 if gunzip_subprocess.poll() is not None:

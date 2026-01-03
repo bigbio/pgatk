@@ -10,11 +10,12 @@ RUN apt-get clean && apt-get purge && rm -rf /var/lib/apt/lists/* /tmp/*
 RUN apt-get update && apt-get install -y procps
 
 WORKDIR /data
-RUN mkdir -p /tool/source && cd /tool/source
+RUN mkdir -p /tool/source
 
 RUN git config --global http.sslVerify false
 RUN git clone --depth 1 https://github.com/bigbio/py-pgatk.git /tool/source
-RUN cd /tool/source/ && pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install -e .
+WORKDIR /tool/source
+RUN pip3 install --upgrade pip && pip3 install -r requirements.txt && pip3 install -e .
 
 ENV LC_ALL=C.UTF-8
 ENV LANG=C.UTF-8
