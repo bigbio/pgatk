@@ -82,7 +82,7 @@ class SpectrumAIService(ParameterConfiguration):
         ions.loc[2 * size, "ion"] = "y" + str(size)
 
         ions.loc[:, "ion"] = ions.apply(lambda x: re.sub("[+]", "", x["ion"]), axis=1)
-        ions.loc[:, "pos"] = ions.apply(lambda x: re.sub("[^\d]", "", x["ion"]), axis=1)
+        ions.loc[:, "pos"] = ions.apply(lambda x: re.sub(r"[^\d]", "", x["ion"]), axis=1)
         ions.loc[:, "type"] = ions.apply(lambda x: re.sub("[^a-z]", "", x["ion"]), axis=1)
 
         proton_mono_mass = 1.007276
@@ -159,7 +159,7 @@ class SpectrumAIService(ParameterConfiguration):
         try:
             MzMLFile().load(mzml_file, exp)
             look = SpectrumLookup()
-            look.readSpectra(exp, "((?<SCAN>)\d+$)")
+            look.readSpectra(exp, r"((?<SCAN>)\d+$)")
         except Exception as e:
             print(mzml_file + " has ERROR!")
             print(e)
@@ -325,9 +325,7 @@ class SpectrumAIService(ParameterConfiguration):
             df_output.to_csv(outfile_name, header=True, sep=",", index=None)
         elif outfile_name.endswith(".tsv.gz"):
             df_output.to_csv(outfile_name, header=True, sep="\t", index=None, compression="gzip")
-        elif outfile_name.endswith(".tsv"):
-            df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
-        else:
+        else:  # .tsv or other formats
             df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
 
         end_time = datetime.datetime.now()

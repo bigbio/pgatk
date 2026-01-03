@@ -128,7 +128,7 @@ class MzTabClassFdr(ParameterConfiguration):
         psm = pd.DataFrame(psm, columns=psm_cols)
         psm.loc[:, "SpecFile"] = psm.apply(lambda x: self._get_mzml_name(x["spectra_ref"].split(":")[0], mtd_dict),
                                            axis=1)
-        psm.loc[:, "ScanNum"] = psm.apply(lambda x: re.sub("[^\d]", "", x["spectra_ref"].split(":")[-1].split(" ")[-1]),
+        psm.loc[:, "ScanNum"] = psm.apply(lambda x: re.sub(r"[^\d]", "", x["spectra_ref"].split(":")[-1].split(" ")[-1]),
                                           axis=1)
 
         psm.loc[:, "target"] = psm.apply(lambda x: self._is_decoy(x["accession"]), axis=1)
