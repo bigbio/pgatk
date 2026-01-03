@@ -182,8 +182,8 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--input_cds', 'testdata/test_cbioportal_genes.fa',
                                 '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
                                 '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
-                                '--filter_column', 'CANCER_TYPE'
-                                                   '--split_by_filter_column', '--accepted_values', 'all'])
+                                '--filter_column', 'CANCER_TYPE',
+                                '--split_by_filter_column', '--accepted_values', 'all'])
         self.assertEqual(result.exit_code, 0)
 
     def test_cosmic_to_proteindb(self):
