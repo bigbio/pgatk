@@ -115,3 +115,8 @@ pypgatk/config/private/
 .pypirc
 /pypgatk/test_all.bed
 /pypgatk/test_annotated.vcf
+
+
+#Ignore cursor AI rules
+.cursor/rules/codacy.mdc
+.DS_Store
