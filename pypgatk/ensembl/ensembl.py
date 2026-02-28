@@ -204,8 +204,14 @@ class EnsemblDataService(ParameterConfiguration):
             ref_allele = ref_allele.complement()  # the reverse will be done on return
             var_allele = var_allele.complement()  # the reverse will be done on return
 
-        ref_seq = ref_seq[
-                  start_coding_index:stop_coding_index]  # just keep the coding regions (mostly effective in case of protein-coding genes)
+        if strand == '-' and len(cds_info) == 2:
+            # For minus-strand genes, after reversing the sequence the CDS occupies the
+            # complementary positions: [n - stop_coding_index : n - start_coding_index]
+            n = len(ref_seq)
+            ref_seq = ref_seq[n - stop_coding_index:n - start_coding_index]
+        else:
+            ref_seq = ref_seq[
+                      start_coding_index:stop_coding_index]  # just keep the coding regions (mostly effective in case of protein-coding genes)
         nc_index = 0
         if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
             for feature in features_info:  # for every exon, cds or stop codon
