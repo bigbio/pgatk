@@ -154,7 +154,7 @@ class BlastGetPositionService(ParameterConfiguration):
         pool.close()
         pool.join()
 
-        psm_to_blast["position"] = psm_to_blast["sequence"].map(lambda x: self.blast_dict.get(x))
+        psm_to_blast["position"] = psm_to_blast["sequence"].map(self.blast_dict.get)
 
         second_filter = psm_to_blast[psm_to_blast.position == "canonical"]
         non_filter = psm_to_blast[psm_to_blast.position == "non-canonical"]
