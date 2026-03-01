@@ -335,7 +335,7 @@ class EnsemblDataService(ParameterConfiguration):
                 desc = desc.replace(' ', sep)
                 for value in desc.split(sep):
                     if value.split('=')[0] == 'cds' or value.split(':')[0] == 'cds':
-                        value.replace('cds', 'CDS')
+                        value = value.replace('cds', 'CDS')
                     if '=' in value:
                         key_values[value.split('=')[0]] = value.split('=')[1]
                     elif ':' in value:
@@ -556,6 +556,8 @@ class EnsemblDataService(ParameterConfiguration):
                            '# feature IDs from VCF that are not found in the given FASTA file': 0,
                            '# variants successfully translated': 0}
 
+        self._accepted_filters = [x.upper() for x in self._accepted_filters]
+
         with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
             for _, record in vcf_reader.iterrows():
                 trans = False
@@ -579,7 +581,6 @@ class EnsemblDataService(ParameterConfiguration):
                     self.get_logger().debug(msg)
                     continue
 
-                self._accepted_filters = [x.upper() for x in self._accepted_filters]
                 if not self._ignore_filters and self._accepted_filters != ['ALL']:
                     if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # if not PASS: None and empty means PASS
                         filters = set(record.FILTER.upper().split(','))
@@ -709,7 +710,8 @@ class EnsemblDataService(ParameterConfiguration):
 
                         # for non-CDSs, only consider the exon that actually overlaps the variant
                         try:
-                            overlap_flag = self.check_overlap(int(record.POS), int(record.POS) + len(alt),
+                            overlap_flag = self.check_overlap(int(record.POS),
+                                                              int(record.POS) + len(str(record.REF)) - 1,
                                                               features_info)
                         except TypeError:
                             invalid_records['# variants with invalid record'] += 1
@@ -842,15 +844,14 @@ class EnsemblDataService(ParameterConfiguration):
         if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
             write_i = True
 
+        formatted_desc = " " + desc if desc else ""
         for i, orf in enumerate(seqs):
             if orf in seqs_filter:
                 continue
-            if desc:
-                desc = " " + desc
             if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-                prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), desc, orf))
+                prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), formatted_desc, orf))
             else:
-                prots_fn.write('>{}{}\n{}\n'.format(seq_id, desc, orf))
+                prots_fn.write('>{}{}\n{}\n'.format(seq_id, formatted_desc, orf))
 
 
 if __name__ == '__main__':

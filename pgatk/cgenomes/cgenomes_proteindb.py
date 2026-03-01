@@ -186,25 +186,24 @@ class CancerGenomesService(ParameterConfiguration):
             except KeyError:
                 COSMIC_CDS_DB[record.id] = [record]
 
-        cosmic_input = open(self._local_mutation_file, encoding="latin-1")
-
-        header = cosmic_input.readline().split("\t")
         regex = re.compile('[^a-zA-Z]')
-        gene_col = header.index("Gene name")
-        enst_col = header.index("Accession Number")
-        cds_col = header.index("Mutation CDS")
-        aa_col = header.index("Mutation AA")
-        muttype_col = header.index("Mutation Description")
-        filter_col = None
-        if self._filter_column:
-            filter_col = header.index(self._filter_column)
-
         mutation_dic = {}
         groups_mutations_dict = {}
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
 
-        with open(self._local_output_file, 'w', encoding='utf-8') as output:
+        with open(self._local_mutation_file, encoding="latin-1") as cosmic_input, \
+             open(self._local_output_file, 'w', encoding='utf-8') as output:
+            header = cosmic_input.readline().split("\t")
+            gene_col = header.index("Gene name")
+            enst_col = header.index("Accession Number")
+            cds_col = header.index("Mutation CDS")
+            aa_col = header.index("Mutation AA")
+            muttype_col = header.index("Mutation Description")
+            filter_col = None
+            if self._filter_column:
+                filter_col = header.index(self._filter_column)
+
             for line in cosmic_input:
                 if line_counter % 10000 == 0:
                     msg = "Number of lines finished -- '{}'".format(line_counter)
@@ -263,7 +262,6 @@ class CancerGenomesService(ParameterConfiguration):
                     fn.write(groups_mutations_dict[group_name][header])
 
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
-        cosmic_input.close()
 
     @staticmethod
     def get_sample_headers(header_line, filter_coumn):
@@ -347,6 +345,7 @@ class CancerGenomesService(ParameterConfiguration):
                 # check for header in the mutations file and get column indices
                 if set(header_cols.keys()).issubset(set(row)):
                     header_cols = self.get_mut_header_cols(header_cols, row)
+                    continue
 
                 # check if any is none in header_cols then continue
                 if None in header_cols.values():
