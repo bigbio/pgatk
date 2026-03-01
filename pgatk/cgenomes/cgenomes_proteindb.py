@@ -129,7 +129,10 @@ class CancerGenomesService(ParameterConfiguration):
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index]
                 elif "Insertion - In frame" in snp.type:
-                    index = snp.aa_mut.index("ins")
+                    try:
+                        index = snp.aa_mut.index("ins")
+                    except ValueError:
+                        return ''
                     insert_aa = snp.aa_mut[index + 3:]
                     if insert_aa.isalpha():
                         ins_index1 = int(positions[0])
@@ -232,7 +235,7 @@ class CancerGenomesService(ParameterConfiguration):
                 for seq in seqs:
                     try:
                         mut_pro_seq = self.get_mut_pro_seq(snp, seq)
-                    except IndexError:
+                    except (IndexError, ValueError):
                         continue
                     if mut_pro_seq:
                         break
@@ -248,6 +251,11 @@ class CancerGenomesService(ParameterConfiguration):
                             groups_mutations_dict[row[filter_col]][header] = entry
                         except KeyError:
                             groups_mutations_dict[row[filter_col]] = {header: entry}
+                else:
+                    self.get_logger().warning(
+                        f"Could not parse mutation record: gene={snp.gene}, dna_mut={snp.dna_mut}, "
+                        f"aa_mut={snp.aa_mut}, type={snp.type}"
+                    )
 
         for group_name in groups_mutations_dict.keys():
             with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group_name) + '.fa', 'w', encoding='utf-8') as fn:

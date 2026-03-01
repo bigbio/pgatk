@@ -9,14 +9,14 @@ log = logging.getLogger(__name__)
 
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
-@click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
-@click.option('--input_fasta', help='Path to sequences fasta', required=True)
+@click.option('-c', '--config_file', help='Configuration file for DNA sequence to protein database conversion parameters (e.g., ensembl_config.yaml)')
+@click.option('--input_fasta', help='Path to the FASTA file containing DNA transcript sequences (e.g., generated using gffread from a GTF file and genome FASTA)', required=True)
 @click.option('--translation_table', type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', type=int, help='Number of ORFs (default 3)')
 @click.option('--num_orfs_complement', type=int,
               help='Number of ORFs from the reverse side (default 0)')
-@click.option('--output_proteindb', help="Output file name, exits if already exists")
-@click.option('-p', '--protein_prefix', help="String to add before the variant protein")
+@click.option('--output_proteindb', help="Output file to write the translated protein sequences")
+@click.option('-p', '--protein_prefix', help="String to add as prefix to the translated protein sequences in the output FASTA headers")
 @click.option('--skip_including_all_cds',
               help="By default any transcript that has a defined CDS will be translated, this option disables this features instead it only depends on the biotypes",
               is_flag=True)

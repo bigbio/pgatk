@@ -72,4 +72,3 @@ exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
 
 [tool.setuptools.package-data]
 pgatk = ["config/*.yaml", "config/*.json"]
-
