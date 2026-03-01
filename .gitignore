@@ -116,6 +116,16 @@ pypgatk/config/private/
 /pypgatk/test_all.bed
 /pypgatk/test_annotated.vcf
 
+# Test-generated output files (produced by pypgatk_tests.py)
+pypgatk/testdata/proteindb_from_*.fa
+pypgatk/testdata/output_decoy.fa
+pypgatk/testdata/test_cbioportal_data_mutations_mskcc_proteindb*.fa
+pypgatk/testdata/test_cosmic_mutations_proteindb*.fa
+pypgatk/testdata/test_blast_psms_out.tsv
+pypgatk/testdata/test_blast_validate_psms_out.tsv
+pypgatk/testdata/test_validate_psms_out.tsv
+pypgatk/testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml
+pypgatk/testdata/proteindb_minus_strand_test.fa
 
 #Ignore cursor AI rules
 .cursor/rules/codacy.mdc
