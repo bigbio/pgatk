@@ -127,6 +127,9 @@ pypgatk/testdata/test_validate_psms_out.tsv
 pypgatk/testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml
 pypgatk/testdata/proteindb_minus_strand_test.fa
 
+# Large Ensembl reference files (download at test time, not in git)
+pypgatk/testdata/Meleagris_gallopavo*
+
 #Ignore cursor AI rules
 .cursor/rules/codacy.mdc
 .DS_Store
