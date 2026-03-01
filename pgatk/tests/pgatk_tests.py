@@ -2,7 +2,7 @@ import unittest
 from click.testing import CliRunner
 from pgatk.cli import cli
 
-class PypgatkRunnerTests(unittest.TestCase):
+class PgatkRunnerTests(unittest.TestCase):
 
     def test_vcf_to_proteindb(self):
         """
