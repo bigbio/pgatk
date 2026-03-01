@@ -1,3 +1,5 @@
+import glob
+import os
 import unittest
 from click.testing import CliRunner
 from pgatk.cli import cli
@@ -208,26 +210,38 @@ class PgatkRunnerTests(unittest.TestCase):
 
     def test_download_ensembl_data(self):
         """
-              Test downloading ensembl data for species with taxonomy identifer = 9103
-              :return:
-              """
+        Test downloading ensembl data for Turkey (taxonomy 9103).
+        Verifies that files are actually downloaded and non-empty.
+        """
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['ensembl-downloader', '--config_file', 'config/ensembl_downloader_config.yaml',
                                 '--skip_dna',
                                 '--taxonomy', '9103', '--output_directory', 'testdata'])
-        self.assertEqual(result.exit_code, 0)
+        if result.exit_code != 0:
+            print(f"Error output: {result.output}")
+            print(f"Exception: {result.exception}")
+        self.assertEqual(result.exit_code, 0, f"Command failed with output: {result.output}")
+
+        # Verify that at least the protein FASTA was downloaded (issue #67)
+        pep_files = glob.glob('testdata/**/Meleagris_gallopavo*.pep.all.fa*', recursive=True)
+        self.assertTrue(len(pep_files) > 0, "No protein FASTA file was downloaded for Turkey (9103)")
+        for f in pep_files:
+            self.assertGreater(os.path.getsize(f), 0, f"Downloaded file {f} is empty")
 
     def test_download_ensembl_data_37(self):
         """
-              Test downloading ensembl data for species with taxonomy identifier = 9606
-              :return:
-              """
+        Test downloading ensembl data for Turkey (taxonomy 9103) with GRCh37 flag.
+        GRCh37 is only available for human, so this tests graceful handling for other species.
+        """
         runner = CliRunner()
         result = runner.invoke(cli,
                                ['ensembl-downloader', '--taxonomy', '9103', '--output_directory', 'testdata',
                                 '--grch37'])
-        self.assertEqual(result.exit_code, 0)
+        if result.exit_code != 0:
+            print(f"Error output: {result.output}")
+            print(f"Exception: {result.exception}")
+        self.assertEqual(result.exit_code, 0, f"Command failed with output: {result.output}")
 
     # def test_download_cbioportal_data(self):
     #     """
