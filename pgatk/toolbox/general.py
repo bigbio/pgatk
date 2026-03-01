@@ -70,23 +70,18 @@ class ParameterConfiguration:
                         self._CONFIG_LOGGER_FORMATTER]
 
         self._log_handlers = []
-        log_handlers_prefix = self._ROOT_CONFIG_NAME + '-'
-        log_handlers_extension = '.log'
-
         self._logger = logging.getLogger(__name__)
         self._logger.setLevel(getattr(logging, self._log_level))
         self._log_files = []
+
+        # Log to stderr instead of creating files in CWD
         for llevel, lformat in self._logger_formatters.items():
-            logfile = os.path.join(log_handlers_prefix + llevel.lower() + log_handlers_extension)
             lformatter = logging.Formatter(lformat)
-            lhandler = logging.FileHandler(logfile, mode='w')
+            lhandler = logging.StreamHandler()
             lhandler.setLevel(getattr(logging, llevel))
             lhandler.setFormatter(lformatter)
             self._log_handlers.append(lhandler)
-            # Add the handlers to my own logger
             self._logger.addHandler(lhandler)
-            # Keep the path to the log file
-            self._log_files.append(logfile)
         self.get_logger().debug("Logging system initialized")
 
     def get_pipeline_parameters(self):
