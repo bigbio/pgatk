@@ -265,7 +265,10 @@ class PypgatkRunnerTests(unittest.TestCase):
                                ['blast_get_position', '--input_psm_to_blast', 'testdata/test_blast_psms.tsv',
                                 '--output_psm', 'testdata/test_blast_psms_out.tsv', '--input_reference_database',
                                 'testdata/test_blast_reference_database.fa'])
-        self.assertEqual(result.exit_code, 0)
+        if result.exit_code != 0:
+            print(f"Error output: {result.output}")
+            print(f"Exception: {result.exception}")
+        self.assertEqual(result.exit_code, 0, f"Command failed with output: {result.output}")
 
 if __name__ == '__main__':
     unittest.main()

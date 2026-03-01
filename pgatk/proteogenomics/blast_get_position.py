@@ -1,5 +1,5 @@
 import pandas as pd
-from Bio import pairwise2, SeqIO
+from Bio import SeqIO
 import datetime
 from pathos.multiprocessing import ProcessingPool as Pool
 from multiprocessing import Manager
@@ -25,24 +25,12 @@ def peptide_blast_protein(fasta, peptide):
     length = len(peptide)
     mismatch = []
     if len(fasta) >= length:
-        score = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
-                                                       match=1, mismatch=0, open=-2, extend=-2, score_only=True)
-        if score == length-1:
-            alignment = pairwise2.align.localms(sequenceA=fasta, sequenceB=peptide,
-                                                       match=1, mismatch=0, open=-2, extend=-2)[0]
-            if alignment.end - alignment.start == length:
-                mismatch = get_details(alignment.seqA[alignment.start:alignment.end], alignment.seqB[alignment.start:alignment.end])
-            elif alignment.end - alignment.start == length-1:
-                res = get_details(alignment.seqA[alignment.start:alignment.end+1], alignment.seqB[alignment.start:alignment.end+1])
-                if len(res) == 1:
-                    if res[0].split(">")[1]!="-":
-                        mismatch = res
-                    else:
-                        mismatch = get_details(alignment.seqA[alignment.start-1:alignment.end], alignment.seqB[alignment.start-1:alignment.end])
-                elif len(res) == 0:
-                    mismatch = get_details(alignment.seqA[alignment.start-1:alignment.end], alignment.seqB[alignment.start-1:alignment.end])
-                else:
-                    print("Number of mismatch Error")
+        for i in range(len(fasta) - length + 1):
+            window = fasta[i:i + length]
+            details = get_details(window, peptide)
+            if len(details) == 1:
+                mismatch = details
+                break
     return mismatch
 
 def _blast_set(fasta_dict, peptide):
@@ -166,7 +154,7 @@ class BlastGetPositionService(ParameterConfiguration):
         pool.close()
         pool.join()
 
-        psm_to_blast["position"] = psm.apply(lambda x: self.blast_dict.get(x["sequence"]), axis=1)
+        psm_to_blast["position"] = psm_to_blast["sequence"].map(lambda x: self.blast_dict.get(x))
 
         second_filter = psm_to_blast[psm_to_blast.position == "canonical"]
         non_filter = psm_to_blast[psm_to_blast.position == "non-canonical"]
