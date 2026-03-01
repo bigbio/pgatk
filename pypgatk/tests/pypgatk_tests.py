@@ -1,5 +1,6 @@
 import unittest
 from click.testing import CliRunner
+from Bio import SeqIO
 from pypgatk.pypgatkc import cli
 
 class PypgatkRunnerTests(unittest.TestCase):
@@ -49,6 +50,44 @@ class PypgatkRunnerTests(unittest.TestCase):
                                 '--biotype_str', 'feature_type',
                                 '--include_biotypes', 'mRNA,ncRNA'])
         self.assertEqual(result.exit_code, 0)
+
+    def test_vcf_to_proteindb_minus_strand_sequence(self):
+        """
+        Test that vcf-to-proteindb produces correct amino acid sequences for variants
+        in minus-strand genes (regression test for incorrect CDS slicing on minus strand).
+        The BID gene (ENST00000342111) is on the minus strand with CDS=91-504 in the FASTA.
+        The deletion at position 17740102 causes a frameshift; the output protein should
+        start with the correct BID protein prefix (MDCEVN...) rather than a wrong sequence.
+        :return:
+        """
+        runner = CliRunner()
+        output_file = 'testdata/proteindb_minus_strand_test.fa'
+        result = runner.invoke(cli,
+                               ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                                '--vcf', 'testdata/test.vcf',
+                                '--input_fasta', 'testdata/test.fa',
+                                '--gene_annotations_gtf', 'testdata/test.gtf',
+                                '--protein_prefix', 'ensvar',
+                                '--af_field', 'MAF',
+                                '--output_proteindb', output_file,
+                                '--annotation_field_name', 'CSQ',
+                                '--biotype_str', 'feature_type',
+                                '--include_biotypes', 'mRNA,ncRNA'])
+        self.assertEqual(result.exit_code, 0)
+
+        # Check the output contains the correct protein sequence for the minus-strand transcript
+        # ENST00000342111 (BID gene, minus strand, CDS=91-504)
+        # The variant at 17740102 is a frameshift deletion; the output protein must start
+        # with the correct BID protein sequence (MDCEVN...) not a scrambled/wrong sequence.
+        seqs = {r.id: str(r.seq) for r in SeqIO.parse(output_file, 'fasta')}
+        minus_strand_entries = {k: v for k, v in seqs.items() if 'ENST00000342111' in k}
+        self.assertTrue(len(minus_strand_entries) > 0,
+                        "No entries found for minus-strand transcript ENST00000342111")
+        for seq_id, seq in minus_strand_entries.items():
+            self.assertTrue(seq.startswith('MDCEVN'),
+                            f"Incorrect protein sequence for minus-strand gene {seq_id}: "
+                            f"expected start 'MDCEVN', got '{seq[:6]}'")
+
 
     def test_vcf_to_proteindb_notannotated(self):
         """
