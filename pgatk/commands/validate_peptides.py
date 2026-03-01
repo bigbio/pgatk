@@ -4,7 +4,6 @@ import click
 
 from pgatk.config.registry import load_config
 from pgatk.proteogenomics.spectrumai import SpectrumAIService
-from pgatk.commands.utils import print_help
 
 log = logging.getLogger(__name__)
 
@@ -14,8 +13,8 @@ log = logging.getLogger(__name__)
 @click.option('-c', '--config_file', help='Configuration file for the validate peptides pipeline')
 @click.option('-p', '--mzml_path', help='The mzml file path.You only need to use either mzml_path or mzml_files')
 @click.option('-f', '--mzml_files', help='The mzml files. Different files are separated by ","')
-@click.option('-i', '--infile_name', help='Variant peptide PSMs table')
-@click.option('-o', '--outfile_name', help='Output file for the results')
+@click.option('-i', '--infile_name', help='Variant peptide PSMs table', required=True)
+@click.option('-o', '--outfile_name', help='Output file for the results', required=True)
 @click.option('-ion', '--ions_tolerance', help='MS2 fragment ions mass accuracy')
 @click.option('-n', '--number_of_processes', help='Used to specify the number of processes. Default is 40.')
 @click.option('-r', '--relative', help='When using ppm as ions_tolerance (not Da), it needs to be turned on',
@@ -28,9 +27,8 @@ def spectrumai(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_nam
                number_of_processes, relative, mztab):
     config_data = load_config("ensembl_config", config_file)
 
-    validate_flag = bool(infile_name and (mzml_path or mzml_files) and outfile_name)
-    if not validate_flag:
-        print_help()
+    if not (mzml_path or mzml_files):
+        raise click.UsageError("Either --mzml_path or --mzml_files is required.")
 
     pipeline_arguments = {}
 
@@ -48,5 +46,4 @@ def spectrumai(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_nam
         pipeline_arguments[SpectrumAIService.CONFIG_MZTAB] = mztab
 
     validate_peptides_service = SpectrumAIService(config_data, pipeline_arguments)
-    if validate_flag:
-        validate_peptides_service.validate(infile_name, outfile_name)
+    validate_peptides_service.validate(infile_name, outfile_name)

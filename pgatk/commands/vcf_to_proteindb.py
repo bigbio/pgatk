@@ -2,7 +2,6 @@ import logging
 
 import click
 
-from pgatk.commands.utils import print_help
 from pgatk.ensembl.ensembl import EnsemblDataService
 from pgatk.config.registry import load_config
 
@@ -11,9 +10,9 @@ log = logging.getLogger(__name__)
 
 @click.command('vcf-to-proteindb', short_help="Generate peptides based on DNA variants VCF files")
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
-@click.option('-f', '--input_fasta', help='Path to the transcript sequence')
-@click.option('-v', '--vcf', help='Path to the VCF file')
-@click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file')
+@click.option('-f', '--input_fasta', help='Path to the transcript sequence', required=True)
+@click.option('-v', '--vcf', help='Path to the VCF file', required=True)
+@click.option('-g', '--gene_annotations_gtf', help='Path to the gene annotations file', required=True)
 @click.option('-t', '--translation_table', type=int, help="Translation table (Default 1) ")
 @click.option('-m', '--mito_translation_table', type=int, help='Mito_trans_table (default 2)')
 @click.option('-p', '--protein_prefix', default="var", help="String to add before the variant peptides")
@@ -49,9 +48,6 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      ignore_filters, accepted_filters):
 
     config_data = load_config("ensembl_config", config_file)
-
-    if input_fasta is None or vcf is None or gene_annotations_gtf is None:
-        print_help()
 
     pipeline_arguments = {}
 

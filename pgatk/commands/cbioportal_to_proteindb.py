@@ -3,7 +3,6 @@ import logging
 import click
 
 from pgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
-from pgatk.commands.utils import print_help
 from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
@@ -11,9 +10,9 @@ log = logging.getLogger(__name__)
 
 @click.command('cbioportal-to-proteindb', short_help='Command to translate cbioportal mutation data into proteindb')
 @click.option('-c', '--config_file', help='Configuration for cbioportal to proteindb tool')
-@click.option('-in', '--input_mutation', help='Cbioportal mutation file')
-@click.option('-fa', '--input_cds', help='CDS genes from ENSEMBL database')
-@click.option('-out', '--output_db', help='Protein database including all the mutations')
+@click.option('-in', '--input_mutation', help='Cbioportal mutation file', required=True)
+@click.option('-fa', '--input_cds', help='CDS genes from ENSEMBL database', required=True)
+@click.option('-out', '--output_db', help='Protein database including all the mutations', required=True)
 @click.option('-f', '--filter_column', help='Column in the VCF file to be used for filtering or splitting mutations')
 @click.option('-a', '--accepted_values',
               help='Limit mutations to values (tissue type, sample name, etc) considered for generating proteinDBs, by default mutations from all records are considered (e.g. "")')
@@ -27,9 +26,6 @@ def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_
                             clinical_sample_file, filter_column, accepted_values, split_by_filter_column):
 
     config_data = load_config("cbioportal", config_file)
-
-    if input_mutation is None or input_cds is None or output_db is None:
-        print_help()
 
     pipeline_arguments = {}
 

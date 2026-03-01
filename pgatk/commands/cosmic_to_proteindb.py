@@ -3,7 +3,6 @@ import logging
 import click
 
 from pgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
-from pgatk.commands.utils import print_help
 from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
@@ -12,10 +11,10 @@ log = logging.getLogger(__name__)
 @click.command('cosmic-to-proteindb', short_help='Command to translate Cosmic mutation data into proteindb')
 @click.option('-c', '--config_file',
               help='Configuration file for the cosmic data pipelines')
-@click.option('-in', '--input_mutation', help='Cosmic Mutation data file')
-@click.option('-fa', '--input_genes', help='All Cosmic genes')
+@click.option('-in', '--input_mutation', help='Cosmic Mutation data file', required=True)
+@click.option('-fa', '--input_genes', help='All Cosmic genes', required=True)
 @click.option('-out', '--output_db',
-              help='Protein database including all the mutations')
+              help='Protein database including all the mutations', required=True)
 @click.option('-f', '--filter_column',
               help='Column in the VCF file to be used for filtering or splitting mutations')
 @click.option('-a', '--accepted_values',
@@ -28,9 +27,6 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
                         filter_column, accepted_values, split_by_filter_column):
 
     config_data = load_config("cosmic", config_file)
-
-    if input_mutation is None or input_genes is None or output_db is None:
-        print_help()
 
     pipeline_arguments = {}
 

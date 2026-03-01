@@ -2,7 +2,6 @@ import logging
 
 import click
 
-from pgatk.commands.utils import print_help
 from pgatk.ensembl.ensembl import EnsemblDataService
 from pgatk.config.registry import load_config
 
@@ -11,7 +10,7 @@ log = logging.getLogger(__name__)
 
 @click.command("dnaseq-to-proteindb", short_help="Generate peptides based on DNA sequences")
 @click.option('-c', '--config_file', help='Configuration to perform conversion between ENSEMBL Files')
-@click.option('--input_fasta', help='Path to sequences fasta')
+@click.option('--input_fasta', help='Path to sequences fasta', required=True)
 @click.option('--translation_table', type=int, help='Translation Table (default 1)')
 @click.option('--num_orfs', type=int, help='Number of ORFs (default 3)')
 @click.option('--num_orfs_complement', type=int,
@@ -38,9 +37,6 @@ def dnaseq_to_proteindb(ctx, config_file, input_fasta, translation_table, num_or
                         transcript_description_sep, expression_str, expression_thresh):
 
     config_data = load_config("ensembl_config", config_file)
-
-    if input_fasta is None:
-        print_help()
 
     pipeline_arguments = {}
 

@@ -434,7 +434,7 @@ class OpenmsDataService(ParameterConfiguration):
         idfilter = IDFilter()
         idfilter.removeEmptyIdentifications(new_pep_ids)
         idfilter.updateProteinReferences(new_pep_ids, prot_ids, remove_peptides_without_reference)
-        idxml_parser().store(output_file, prot_ids, pep_ids)
+        idxml_parser().store(output_file, prot_ids, new_pep_ids)
 
     @staticmethod
     def _str_to_int(df: DataFrame):

@@ -189,7 +189,7 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
     if os.path.isfile(file_name):
         return file_name
 
-    if log is not None:
+    if log is None:
         log = logging
 
     if url_file is not None:
@@ -237,20 +237,6 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
             downloaded_file = None
 
     return downloaded_file
-
-    # move the pep file to the desired name
-    # if os.path.isfile(downloaded_file):
-    #     if os.stat(downloaded_file).st_size > 1000:
-    #         shutil.move(downloaded_file, file_name)
-    #         logging.debug("File copy to filesystem -- " + downloaded_file)
-    #         return file_name
-    #     else:
-    #         print("Corrupt File (size<1kb): ", file_url)
-    #         os.remove(downloaded_file)
-    #         return None
-    # else:
-    #     print("Failed to download the file: ", file_url)
-    #     return None
 
 
 def check_create_folders_overwrite(folders):

@@ -2,7 +2,6 @@ import logging
 
 import click
 
-from pgatk.commands.utils import print_help
 from pgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService
 from pgatk.proteomics.models import PGATK_ENZYMES
 from pgatk.config.registry import load_config
@@ -15,7 +14,7 @@ log = logging.getLogger(__name__)
 @click.option('-c', '--config_file', help='Configuration file for the protein database decoy generation')
 @click.option('-out', '--output_database', help='Output file for decoy database')
 @click.option('-in', '--input_database',
-              help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)')
+              help='FASTA file of target proteins sequences for which to create decoys (*.fasta|*.fa)', required=True)
 @click.option('-m', '--method',
               type=click.Choice(['protein-reverse', 'protein-shuffle', 'decoypyrat', 'pgdbdeep'], case_sensitive=False),
               help='The method that would be used to generate the decoys:\n'
@@ -53,9 +52,6 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
     config_data = load_config("protein_decoy", config_file)
 
     pipeline_arguments = {}
-
-    if input_database is None:
-        print_help()
 
     if output_database is not None:
         pipeline_arguments[ProteinDBDecoyService.CONFIG_PROTEINDB_OUTPUT] = output_database

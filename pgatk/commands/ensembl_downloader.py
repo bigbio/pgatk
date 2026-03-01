@@ -4,7 +4,6 @@ import sys
 
 import click
 
-from pgatk.commands.utils import print_help
 from pgatk.ensembl.data_downloader import EnsemblDataDownloadService
 from pgatk.config.registry import load_config
 
@@ -37,7 +36,7 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_pref
     config_data = load_config("ensembl_downloader", config_file)
 
     if taxonomy is None and ensembl_name is None:
-        print_help()
+        raise click.UsageError("Either --taxonomy or --ensembl_name is required.")
 
     # Parse pipelines parameters.
     pipeline_arguments = {}

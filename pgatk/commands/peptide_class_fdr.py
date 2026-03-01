@@ -2,7 +2,6 @@ import logging
 
 import click
 
-from pgatk.commands.utils import print_help
 from pgatk.proteomics.openms import OpenmsDataService
 from pgatk.config.registry import load_config
 from pgatk.toolbox.general import parse_peptide_classes, parse_peptide_groups
@@ -12,8 +11,8 @@ log = logging.getLogger(__name__)
 
 @click.command('peptide-class-fdr', short_help="Command to compute the Peptide class FDR")
 @click.option('-c', '--config_file', help='Configuration to perform Peptide Class FDR')
-@click.option('-in', '--input-file', help='input file with the peptides and proteins')
-@click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins')
+@click.option('-in', '--input-file', help='input file with the peptides and proteins', required=True)
+@click.option('-out', '--output-file', help='idxml from openms with filtered peptides and proteins', required=True)
 @click.option("--file-type", help="File types supported by the tool (TSV (.tsv), IDXML (.idxml), MZTAB (.mztab))")
 @click.option('--min-peptide-length', help='minimum peptide length')
 @click.option('--psm-pep-fdr-cutoff', help="PSM peptide FDR cutoff or threshold")
@@ -53,9 +52,6 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :return:
   """
     config_data = load_config("openms_analysis", config_file)
-
-    if input_file is None or output_file is None:
-        print_help()
 
     pipeline_arguments = {}
 

@@ -25,11 +25,3 @@ def echo_info(text, nl=True):
     click.secho(text, bold=True, nl=nl)
 
 
-def print_help():
-    """
-    Print the help of the tool
-    :return:
-    """
-    ctx = click.get_current_context()
-    click.echo(ctx.get_help())
-    ctx.exit()

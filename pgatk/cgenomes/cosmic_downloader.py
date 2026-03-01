@@ -153,7 +153,7 @@ class CosmicDownloadService(ParameterConfiguration):
                         try:
                             outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('utf-8'))
                         except UnicodeDecodeError:
-                            outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('ISO-8859–1'))
+                            outfile.write(gzip.decompress(open(local_file, 'rb').read()).decode('ISO-8859-1'))
                         os.remove(local_file)
                         local_file = extracted_file
                         msg = "Extracted file '{}'".format(local_file)
