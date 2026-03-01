@@ -21,7 +21,6 @@ Commands:
   ensembl-check            Command to check ensembl database for stop codons, gaps
   ensembl-downloader       Command to download the ensembl information
   generate-decoy           Create decoy protein sequences using multiple methods
-  peptide-class-fdr        Command to compute the Peptide class FDR
   threeframe-translation   Command to perform 3'frame translation
   vcf-to-proteindb         Generate peptides based on DNA variants VCF files
 ```
