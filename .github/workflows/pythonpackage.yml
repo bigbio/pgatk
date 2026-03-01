@@ -46,5 +46,5 @@ jobs:
     - name: Test with unittest
       shell: bash -l {0}
       run: |
-        cd pypgatk
+        cd pgatk
         python -m unittest discover -s tests -p "*_tests.py" -v

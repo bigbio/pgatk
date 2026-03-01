@@ -46,7 +46,7 @@ jobs:
     - name: Test with unittest
       shell: bash -l {0}
       run: |
-        cd pypgatk
+        cd pgatk
         python -m unittest discover -s tests -p "*_tests.py" -v
 
     - name: Update changelog
@@ -67,7 +67,7 @@ jobs:
       shell: bash -l {0}
       run: |
         pip install pytest pytest-cov coverage
-        cd pypgatk
+        cd pgatk
         coverage run -m unittest discover -s tests -p "*_tests.py"
         coverage xml -o coverage.xml
 
