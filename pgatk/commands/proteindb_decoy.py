@@ -5,7 +5,7 @@ import click
 from pgatk.commands.utils import print_help
 from pgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService
 from pgatk.proteomics.models import PGATK_ENZYMES
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -50,9 +50,7 @@ def generate_database(ctx, config_file: str, output_database: str, input_databas
                       max_missed_cleavages: int, min_peptide_length: int, max_peptide_length: int,
                       max_iterations: int, do_not_shuffle: bool, do_not_switch: bool, temp_file: str,
                       no_isobaric: bool, keep_target_hits: bool, memory_save: bool):
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("protein_decoy", config_file)
 
     pipeline_arguments = {}
 

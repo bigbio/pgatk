@@ -3,7 +3,7 @@ import logging
 import click
 
 from pgatk.cgenomes.cbioportal_downloader import CbioPortalDownloadService
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -21,9 +21,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def cbioportal_downloader(ctx, config_file, output_directory, list_studies, download_study, multithreading, url_file):
 
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("cbioportal", config_file)
 
     pipeline_arguments = {}
 

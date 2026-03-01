@@ -2,7 +2,7 @@ import logging
 
 import click
 
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 from pgatk.proteogenomics.spectrumai import SpectrumAIService
 from pgatk.commands.utils import print_help
 
@@ -26,9 +26,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def spectrumai(ctx, config_file, mzml_path, mzml_files, infile_name, outfile_name, ions_tolerance,
                number_of_processes, relative, mztab):
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("ensembl_config", config_file)
 
     validate_flag = bool(infile_name and (mzml_path or mzml_files) and outfile_name)
     if not validate_flag:

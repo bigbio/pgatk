@@ -4,8 +4,8 @@ import click
 
 from pgatk.commands.utils import print_help
 from pgatk.proteomics.openms import OpenmsDataService
-from pgatk.toolbox.general import read_yaml_from_file, parse_peptide_classes, \
-    parse_peptide_groups
+from pgatk.config.registry import load_config
+from pgatk.toolbox.general import parse_peptide_classes, parse_peptide_groups
 
 log = logging.getLogger(__name__)
 
@@ -52,9 +52,7 @@ def peptide_class_fdr(ctx, config_file, input_file, output_file, file_type, min_
   :param disable_class_fdr: Do not compute class FDR and not filtering the PSMs
   :return:
   """
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("openms_analysis", config_file)
 
     if input_file is None or output_file is None:
         print_help()

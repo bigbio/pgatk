@@ -6,7 +6,7 @@ import click
 
 from pgatk.commands.utils import print_help
 from pgatk.ensembl.data_downloader import EnsemblDataDownloadService
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -34,9 +34,7 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_pref
                        ensembl_name, grch37, url_file):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("ensembl_downloader", config_file)
 
     if taxonomy is None and ensembl_name is None:
         print_help()

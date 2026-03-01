@@ -4,7 +4,7 @@ import click
 
 from pgatk.cgenomes.cosmic_downloader import CosmicDownloadService
 
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -20,9 +20,7 @@ log = logging.getLogger(__name__)
 @click.pass_context
 def cosmic_downloader(ctx, config_file, output_directory, username, password, url_file):
 
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("cosmic", config_file)
 
     pipeline_arguments = {}
     if output_directory is not None:

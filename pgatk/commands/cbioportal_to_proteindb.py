@@ -4,7 +4,7 @@ import click
 
 from pgatk.cgenomes.cgenomes_proteindb import CancerGenomesService
 from pgatk.commands.utils import print_help
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +26,7 @@ log = logging.getLogger(__name__)
 def cbioportal_to_proteindb(ctx, config_file, input_mutation, input_cds, output_db,
                             clinical_sample_file, filter_column, accepted_values, split_by_filter_column):
 
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("cbioportal", config_file)
 
     if input_mutation is None or input_cds is None or output_db is None:
         print_help()

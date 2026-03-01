@@ -4,7 +4,7 @@ import click
 
 from pgatk.commands.utils import print_help
 from pgatk.ensembl.ensembl import EnsemblDataService
-from pgatk.toolbox.general import read_yaml_from_file
+from pgatk.config.registry import load_config
 
 log = logging.getLogger(__name__)
 
@@ -48,9 +48,7 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      skip_including_all_cds, include_consequences,
                      ignore_filters, accepted_filters):
 
-    config_data = None
-    if config_file is not None:
-        config_data = read_yaml_from_file(config_file)
+    config_data = load_config("ensembl_config", config_file)
 
     if input_fasta is None or vcf is None or gene_annotations_gtf is None:
         print_help()
