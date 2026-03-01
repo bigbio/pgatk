@@ -1,0 +1,4 @@
+---
+exclude_paths:
+  - "docs/stylesheets/**"
+  - "docs/plans/**"
