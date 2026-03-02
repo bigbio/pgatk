@@ -1,0 +1,407 @@
+"""
+This module implements some useful functions for the pipeline runner.
+
+@author ypriverol
+"""
+from __future__ import annotations
+
+import logging
+import os
+import json
+import shutil
+import subprocess
+from typing import Any, List, Optional
+from urllib import request
+from urllib.error import URLError
+from urllib.parse import urlparse
+import yaml
+import gzip
+
+# Logging defaults
+from requests import HTTPError
+
+from pgatk.toolbox.exceptions import ToolBoxException
+
+REMAINING_DOWNLOAD_TRIES = 4
+
+
+class ParameterConfiguration:
+    """
+    This class is a helper class for those submodules having to manage configuration files themselves, that are specific
+    to them
+    """
+
+    _logger_formatters = {
+        "DEBUG": "%(asctime)s [%(levelname)7s][%(name)28s][%(module)18s, %(lineno)4s] %(message)s",
+        "INFO": "%(asctime)s [%(levelname)7s][%(name)28s] %(message)s"
+    }
+    _log_level = 'DEBUG'
+
+    _CONFIG_LOGGER = 'logger'
+    _CONFIG_LOGGER_FORMATTER = 'formatters'
+    _CONFIG_LOGGER_LEVEL = 'loglevel'
+
+    def __init__(self, root_config_name: str, yaml_configuration: dict, pipeline_parameters: dict) -> None:
+        """
+        This function creates a parameter structure from a yaml config file and the pipeline paramters provdided
+        in the commandline
+        :param yaml_configuration_file: yaml config file
+        :param pipeline_parameters: commandline parameters.
+        """
+
+        self._ROOT_CONFIG_NAME = root_config_name
+
+        if pipeline_parameters is not None:
+            self._pipeline_parameters = pipeline_parameters
+        else:
+            self._pipeline_parameters = {}
+
+        if yaml_configuration is not None:
+            self._default_params = yaml_configuration
+        else:
+            self._default_params = {}
+
+        # Prepare Logging subsystem
+        if self._default_params is not None and self._ROOT_CONFIG_NAME in self._default_params:
+            if self._CONFIG_LOGGER in self._default_params[self._ROOT_CONFIG_NAME]:
+                if self._CONFIG_LOGGER_LEVEL in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
+                    self._log_level = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
+                        self._CONFIG_LOGGER_LEVEL]
+                if self._CONFIG_LOGGER_FORMATTER in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
+                    self._logger_formatters = self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER][
+                        self._CONFIG_LOGGER_FORMATTER]
+
+        self._log_handlers = []
+        self._logger = logging.getLogger(__name__)
+        self._logger.setLevel(getattr(logging, self._log_level))
+        self._log_files = []
+
+        # Log to stderr instead of creating files in CWD
+        for llevel, lformat in self._logger_formatters.items():
+            lformatter = logging.Formatter(lformat)
+            lhandler = logging.StreamHandler()
+            lhandler.setLevel(getattr(logging, llevel))
+            lhandler.setFormatter(lformatter)
+            self._log_handlers.append(lhandler)
+            self._logger.addHandler(lhandler)
+        self.get_logger().debug("Logging system initialized")
+
+    def get_config_value(self, key: str, default: Any = None) -> Any:
+        """Get a configuration value with standard 2-layer fallback.
+
+        Checks pipeline_parameters first (flat lookup), then
+        default_params[_ROOT_CONFIG_NAME][key], then returns default.
+        """
+        # Check pipeline params first (flat lookup by key)
+        if key in self._pipeline_parameters:
+            return self._pipeline_parameters[key]
+        # Then check default config params under root config name
+        root = self._ROOT_CONFIG_NAME
+        if (self._default_params is not None
+                and root in self._default_params
+                and key in self._default_params[root]):
+            return self._default_params[root][key]
+        return default
+
+    def get_pipeline_parameters(self) -> dict:
+        return self._pipeline_parameters
+
+    def get_default_parameters(self) -> dict:
+        return self._default_params
+
+    def get_log_handlers(self) -> list:
+        return self._log_handlers
+
+    def get_logger(self) -> logging.Logger:
+        # Get own logger
+        return self._logger
+
+    def get_session_log_files(self) -> list:
+        log_files = []
+        # Add the application logs
+        log_files.extend(self._log_files)
+        return log_files
+
+    def get_logger_for(self, name: str) -> logging.Logger:
+        """
+        Create a logger on demand
+        :param name: name to be used in the logger
+        :return: a new logger on that name
+        """
+        self.get_logger().debug("Creating logger with name {}".format(name))
+        lg = logging.getLogger(name)
+        for handler in self.get_log_handlers():
+            lg.addHandler(handler)
+        lg.setLevel(self._log_level)
+        return lg
+
+
+def read_json(json_file: str = "json_file_not_specified.json") -> Any:
+    """
+    Reads a json file and it returns its object representation, no extra checks
+    are performed on the file so, in case anything happens, the exception will
+    reach the caller
+    :param json_file: path to the file in json format to read
+    :return: an object representation of the data in the json file
+    """
+    with open(json_file, encoding='utf-8') as jf:
+        return json.load(jf)
+
+
+def read_yaml_from_file(yaml_file: str) -> Optional[dict]:
+    """
+  This function allows to read a yaml file with the configuration
+  :param yaml_file: yaml file.
+  :return: resturn the yaml data.
+  """
+    data = None
+    with open(yaml_file, 'r', encoding='utf-8') as f:
+        data = yaml.safe_load(f.read())
+    return data
+
+
+def read_yaml_from_text(yaml_text: str) -> Any:
+    """
+  Read the content of the yaml text into a data object
+  :param yaml_text: yaml text
+  :return:
+  """
+    return yaml.safe_load(yaml_text)
+
+
+def check_create_folders(folders: List[str]) -> None:
+    """
+    Check if folders exist, create them otherwise
+    :param folders: list of folder paths to check
+    :return: no return value
+    """
+    for folder in folders:
+        if not os.path.exists(folder):
+            try:
+                os.makedirs(folder)
+            except (OSError, PermissionError) as e:
+                raise ToolBoxException(str(e)) from e
+        else:
+            if not os.path.isdir(folder):
+                raise ToolBoxException("'{}' is not a folder".format(folder))
+
+
+def clear_cache() -> None:
+    request.urlcleanup()
+
+
+def download_file(file_url: str, file_name: str, log: logging, url_file: Optional[Any] = None) -> Optional[str]:
+    """
+     Download file_url and move it to file_name, do nothing if file_name already exists.
+
+    :param log: log to be use.
+    :param file_url: file url to be download
+    :param file_name: file name where the data will be downloaded
+    :param url_file: the url file is used to write the urls to be downloaded, if None, the function will download the file
+    :return: name of the file if the file can be download.
+    """
+    if os.path.isfile(file_name):
+        return file_name
+
+    if log is None:
+        log = logging
+
+    if url_file is not None:
+        url_file.write("{}\t{}\n".format(file_url, file_name))
+        return file_name
+
+    # Validate URL scheme to prevent file:// or custom schemes
+    # Allow http://, https://, and ftp:// schemes (ftp:// is needed for Ensembl downloads)
+    # Block file:// and other custom schemes for security
+    parsed_url = urlparse(file_url)
+    allowed_schemes = ('http', 'https', 'ftp')
+    if parsed_url.scheme not in allowed_schemes:
+        raise ToolBoxException(
+            f"Unsupported URL scheme: {parsed_url.scheme}. "
+            f"Only {', '.join(allowed_schemes)}:// are allowed for security reasons."
+        )
+
+    remaining_download_tries = REMAINING_DOWNLOAD_TRIES
+    downloaded_file = None
+    while remaining_download_tries > 0:
+        try:
+            # urlretrieve is safe here because we've validated the scheme above
+            # Only http:// and https:// URLs can reach this point
+            downloaded_file, _ = request.urlretrieve(file_url, file_name)
+            log.debug("File downloaded -- " + downloaded_file)
+            if downloaded_file.endswith('.gz'):
+                extracted_file = downloaded_file.replace('.gz', '')
+                with open(extracted_file, 'wb') as outfile:
+                    with gzip.open(downloaded_file, 'rb') as infile:
+                        shutil.copyfileobj(infile, outfile)
+                    os.remove(downloaded_file)
+                    downloaded_file = extracted_file
+                    log.debug("File extracted-- " + downloaded_file)
+            break
+        except (HTTPError, URLError, OSError) as error:
+            logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(
+                REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
+            log.error("Error code: " + str(error))
+            remaining_download_tries = remaining_download_tries - 1
+            downloaded_file = None
+            continue
+
+    return downloaded_file
+
+
+def check_create_folders_overwrite(folders: List[str]) -> None:
+    """
+    Given a list of folders, this method will create them, overwriting them in case they exist
+    :param folders: list of folders to create
+    :return: no return value
+    :except: if any element in the list of folders is not a folder, an exception will be raised
+    """
+    invalid_folders = []
+    for folder in folders:
+        if os.path.exists(folder):
+            if not os.path.isdir(folder):
+                invalid_folders.append(folder)
+    if invalid_folders:
+        # If there's any invalid folder, we don't make any change, and we report the situation by raising an exception
+        raise ToolBoxException("The following folders ARE NOT FOLDERS - '{}'"
+                               .format(invalid_folders))
+    for folder in folders:
+        try:
+            shutil.rmtree(folder)
+        except FileNotFoundError:
+            # It is find if the folder is not there
+            pass
+    check_create_folders(folders)
+
+
+def create_latest_symlink(destination_path: str) -> None:
+    """
+    Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
+    '/nfs/production/folder', the symlink will be
+            /nfs/production/latest -> /nfs/production/folder
+    :param destination_path: destination path where the symlink will point to
+    :return: no return value
+    """
+    symlink_path = os.path.join(os.path.dirname(destination_path), 'latest')
+    os.symlink(destination_path, symlink_path)
+
+
+def create_latest_symlink_overwrite(destination_path: str) -> None:
+    """
+    Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
+    '/nfs/production/folder', the symlink will be
+            /nfs/production/latest -> /nfs/production/folder
+    If there already is a 'latest' symlink, it will be overwritten
+    :param destination_path: destination path where the symlink will point to
+    :return: no return value
+    """
+    symlink_path = os.path.join(os.path.dirname(destination_path), 'latest')
+    if os.path.islink(symlink_path):
+        os.unlink(symlink_path)
+    os.symlink(destination_path, symlink_path)
+
+
+def gunzip_files(files: List[str]) -> list[tuple[str, str]]:
+    """
+    Given a list of paths for Gzip compressed files, this method will uncompress them, returning a list with the files
+    that could not be gunzipped and the reason why that happened
+    :param files: list of paths to files that will be un-compressed
+    :return: a list of possible failing to uncompress files
+    """
+    files_with_error = []
+    for file in files:
+        if os.path.isfile(file):
+            # Validate file path to prevent path traversal attacks
+            # Normalize the path and check for suspicious patterns
+            normalized_path = os.path.normpath(file)
+            abs_file = os.path.abspath(normalized_path)
+
+            # Security: Reject paths with path traversal sequences (..)
+            # Allow absolute paths but validate they exist and are files
+            if '..' in normalized_path:
+                err_msg = f"SECURITY ERROR: Invalid file path detected (path traversal): {file}"
+                files_with_error.append((file, err_msg))
+                continue
+
+            # Security: Ensure the file exists and is actually a file (not a directory)
+            if not os.path.isfile(abs_file):
+                err_msg = f"ERROR: File does not exist or is not a file: {abs_file}"
+                files_with_error.append((file, err_msg))
+                continue
+
+            # Security: Use hardcoded 'gunzip' command (not user input) with validated absolute path
+            # The file path has been validated above to prevent path traversal attacks
+            try:
+                gunzip_subprocess = subprocess.Popen(['gunzip', abs_file],
+                                                     stdout=subprocess.PIPE,
+                                                     stderr=subprocess.PIPE,
+                                                     shell=False)
+                # Timeout, in seconds, is either 10 seconds or the size of the file in MB * 10, e.g. 1MB -> 10 seconds
+                file_size_mb = os.path.getsize(abs_file) / (1024 * 1024)
+                timeout = max(10, int(file_size_mb))
+                (stdout, stderr) = gunzip_subprocess.communicate(timeout=timeout)
+                if gunzip_subprocess.poll() is not None:
+                    if gunzip_subprocess.returncode != 0:
+                        # ERROR - Report this
+                        err_msg = "ERROR uncompressing file '{}' output from subprocess STDOUT: {}\nSTDERR: {}" \
+                            .format(file, stdout.decode('utf8'), stderr.decode('utf8'))
+                        files_with_error.append((file, err_msg))
+            except subprocess.TimeoutExpired:
+                err_msg = "TIMEOUT ERROR uncompressing file '{}', size {}MB, given timeframe of '{}seconds', output from subprocess STDOUT: {}\nSTDERR: {}" \
+                    .format(file_size_mb,
+                            timeout,
+                            file,
+                            stdout.decode('utf8'),
+                            stderr.decode('utf8'))
+                files_with_error.append((file, err_msg))
+            except (OSError, subprocess.CalledProcessError) as e:
+                err_msg = "UNKNOWN ERROR uncompressing file '{}' ---> {}\nOutput from subprocess STDOUT: {}\nSTDERR: {}" \
+                    .format(file,
+                            e,
+                            stdout.decode('utf8'),
+                            stderr.decode('utf8'))
+                files_with_error.append((file, err_msg))
+        else:
+            files_with_error.append((file, "it IS NOT A FILE"))
+    return files_with_error
+
+
+def parse_peptide_groups(peptide_groups_prefix: str) -> dict:
+    peptide_groups = {}
+    for group in peptide_groups_prefix.split(";"):
+        lt = group.split(":")
+        class_group = lt[0].replace("{", "")
+        classes = [x.replace("[", "").replace("]", "") for x in lt[1].split(",")]
+        peptide_groups[class_group] = classes
+    return peptide_groups
+
+
+def parse_peptide_classes(peptide_classes_prefix: str) -> dict:
+    peptide_groups = {}
+    for class_peptide in peptide_classes_prefix.split(","):
+        peptide_groups[class_peptide] = [class_peptide]
+    return peptide_groups
+
+
+def is_peptide_group(peptide_group_members: list, accessions: list) -> bool:
+    """
+  Given a group of classes and a list of accessions of a peptide. Returns True if all accessions match to exactly one class in the group.
+  :param peptide_group_members: all protein classes
+  :param accessions:  all protein accessions associated with the peptide.
+  :return: True if all protein accessions belows to one of these peptide_group_members.
+  """
+
+    accession_group = 0
+    for accession in accessions:
+        for class_peptide in peptide_group_members:
+            if class_peptide in accession:
+                accession_group += 1
+    return len(accessions) == accession_group
+
+
+def is_peptide_decoy(accessions: list, prefix: str) -> bool:
+    return any(prefix in s for s in accessions)
+
+
+if __name__ == '__main__':
+    print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")

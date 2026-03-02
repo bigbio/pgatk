@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pypgatk"
+name = "pgatk"
 version = "0.0.26"
 description = "Python tools for proteogenomics"
 readme = "README.md"
@@ -37,7 +37,6 @@ dependencies = [
     "simplejson>=3.17,<4.0",
     "ratelimit>=2.2,<3.0",
     "pyteomics>=4.5,<5.0",
-    "pathos>=0.2.8,<1.0",
     "pybedtools>=0.9,<1.0",
     "pyopenms>=3.2,<4.0",
     "matplotlib>=3.3,<4.0",
@@ -53,13 +52,13 @@ dev = [
 ]
 
 [project.scripts]
-pypgatk = "pypgatk.pypgatkc:main"
+pgatk = "pgatk.cli:main"
 
 [project.urls]
-Homepage = "http://github.com/bigbio/py-pgatk"
-Documentation = "https://pgatk.readthedocs.io/en/latest"
-Repository = "http://github.com/bigbio/py-pgatk"
-Issues = "http://github.com/bigbio/py-pgatk/issues"
+Homepage = "http://github.com/bigbio/pgatk"
+Documentation = "https://pgatk.quantms.org"
+Repository = "http://github.com/bigbio/pgatk"
+Issues = "http://github.com/bigbio/pgatk/issues"
 
 [tool.setuptools]
 include-package-data = true
@@ -67,9 +66,8 @@ zip-safe = false
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["pypgatk*"]
+include = ["pgatk*"]
 exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
 
 [tool.setuptools.package-data]
-pypgatk = ["config/*.yaml", "config/*.json"]
-
+pgatk = ["config/*.yaml", "config/*.json"]
