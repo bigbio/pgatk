@@ -1,6 +1,6 @@
 import logging
-import os
 import sqlite3
+from pathlib import Path
 import gffutils
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -406,12 +406,12 @@ class EnsemblDataService(ParameterConfiguration):
         """
     intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
     """
-        annotated_vcf = os.path.abspath(vcf_file.split('/')[-1].replace('.vcf', ''))
+        vcf_stem = str(Path(vcf_file).resolve().stem)
 
-        BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(annotated_vcf + '_all.bed')
+        BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(f"{vcf_stem}_all.bed")
 
         muts_dict = {}
-        with open(annotated_vcf + '_all.bed', 'r', encoding='utf-8') as an:
+        with open(f"{vcf_stem}_all.bed", 'r', encoding='utf-8') as an:
             for line in an.readlines():
                 sl = line.strip().split('\t')
                 if sl[record_type_index].strip() != 'CDS':
@@ -433,7 +433,7 @@ class EnsemblDataService(ParameterConfiguration):
                 except KeyError:
                     muts_dict['\t'.join(sl[gene_info_index + 1:-1])] = [transcript_id]
 
-        with open(annotated_vcf + '_annotated.vcf', 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
+        with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
             # write vcf headers to the output file
             for line in v.readlines():
                 if line.startswith('#'):
@@ -449,7 +449,7 @@ class EnsemblDataService(ParameterConfiguration):
                     except KeyError:
                         ann.write(line)
 
-        return annotated_vcf + '_annotated.vcf'
+        return f"{vcf_stem}_annotated.vcf"
 
     @staticmethod
     def vcf_from_file(vcf_file):
@@ -497,7 +497,7 @@ class EnsemblDataService(ParameterConfiguration):
     :param gene_annotations_gtf:
     :return:
     """
-        db = self.parse_gtf(gene_annotations_gtf, gene_annotations_gtf.replace('.gtf', '.db'))
+        db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
 
         transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
         # handle cases where the transcript has version in the GTF but not in the VCF

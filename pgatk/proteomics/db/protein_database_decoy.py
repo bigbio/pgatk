@@ -1,6 +1,7 @@
 import logging
 import random
 import os
+from pathlib import Path
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from pyteomics.fasta import decoy_sequence
@@ -478,7 +479,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
                                        '*'.join(revprotseq)))
                 decoys.append('*'.join(revprotseq))
 
-            with open(self._output_file.replace('.fa', '') + '_noAlternative.fa', 'w') as noAlternative_outfa:
+            with open(f"{Path(self._output_file).stem}_noAlternative.fa", 'w') as noAlternative_outfa:
                 noAlternative_outfa.write('\n'.join(noAlternative) + '\n')
             self.get_logger().info('Number of skipped tryptic peptides in decoy db (no alternatives): %s',
                                    len(noAlternative))

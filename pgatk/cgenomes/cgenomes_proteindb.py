@@ -1,5 +1,6 @@
 import logging
 import re
+from pathlib import Path
 
 from Bio import SeqIO
 
@@ -258,7 +259,7 @@ class CancerGenomesService(ParameterConfiguration):
                     )
 
         for group_name in groups_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group_name) + '.fa', 'w', encoding='utf-8') as fn:
+            with open(f"{Path(self._local_output_file).stem}_{regex.sub('', group_name)}.fa", 'w', encoding='utf-8') as fn:
                 for header in groups_mutations_dict[group_name].keys():
                     fn.write(groups_mutations_dict[group_name][header])
 
@@ -460,6 +461,6 @@ class CancerGenomesService(ParameterConfiguration):
                             group_mutations_dict[group] = {header: mut_pro_seq}
 
         for group in group_mutations_dict.keys():
-            with open(self._local_output_file.replace('.fa', '') + '_' + regex.sub('', group) + '.fa', 'w', encoding='utf-8') as fn:
+            with open(f"{Path(self._local_output_file).stem}_{regex.sub('', group)}.fa", 'w', encoding='utf-8') as fn:
                 for header in group_mutations_dict[group].keys():
                     fn.write(">{}\n{}\n".format(header, group_mutations_dict[group][header]))
