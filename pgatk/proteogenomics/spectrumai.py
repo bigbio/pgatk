@@ -1,13 +1,256 @@
 import datetime
 import os.path
 import re
+from concurrent.futures import ProcessPoolExecutor
+from functools import partial
+
 import pandas as pd
-from pathos.multiprocessing import ProcessingPool as Pool
-from multiprocessing import Manager
 from pyopenms import (TheoreticalSpectrumGenerator, MSSpectrum,
                       AASequence, Param, MzMLFile, MSExperiment, SpectrumLookup)
 from tqdm import tqdm
 from pgatk.toolbox.general import ParameterConfiguration
+
+
+def _predict_ms2_spectrum(peptide, size, product_ion_charge=1):
+    """Predict MS2 spectrum for a given peptide sequence (module-level for pickling)."""
+    tsg = TheoreticalSpectrumGenerator()
+    spec = MSSpectrum()
+    peptide = AASequence.fromString(peptide)
+
+    p = Param()
+    p.setValue("add_metainfo", "true")
+    p.setValue("add_first_prefix_ion", "true")
+    p.setValue("add_precursor_peaks", "true")
+    tsg.setParameters(p)
+    tsg.getSpectrum(spec, peptide, 1, 1)  # charge range 1:1
+
+    b_y_ions = []
+    for i in spec.getStringDataArrays()[0]:
+        b_y_ions.append(i.decode())
+    mz = []
+    for i in spec:
+        mz.append(i.getMZ())
+
+    ions = pd.DataFrame({"mz": mz, "ion": b_y_ions, "z": 1})
+
+    ions.loc[2 * size - 2, "ion"] = "b" + str(size)
+    ions = ions.drop(2 * size - 1)
+    ions.loc[2 * size, "ion"] = "y" + str(size)
+
+    ions.loc[:, "ion"] = ions.apply(lambda x: re.sub("[+]", "", x["ion"]), axis=1)
+    ions.loc[:, "pos"] = ions.apply(lambda x: re.sub(r"[^\d]", "", x["ion"]), axis=1)
+    ions.loc[:, "type"] = ions.apply(lambda x: re.sub("[^a-z]", "", x["ion"]), axis=1)
+
+    proton_mono_mass = 1.007276
+    if product_ion_charge > 1:
+        ions2 = ions.copy()
+        ions2.loc[:, "mz"] = ions2.apply(lambda x: (x["mz"] + proton_mono_mass) / 2, axis=1)
+        ions2.loc[:, "z"] = 2
+
+        ions = ions.merge(ions2, how='outer')
+
+    ions = ions.reset_index(drop=True)
+
+    return ions
+
+
+def _get_intensity(exp_peak, ion_mz):
+    """Get intensity of the closest peak to the given m/z (module-level for pickling)."""
+    exp_peak.loc[:, "mz_difference"] = exp_peak.apply(lambda x: abs(float(ion_mz) - x["mz"]), axis=1)
+    min_index = exp_peak["mz_difference"].idxmin()
+    return exp_peak.loc[exp_peak["mz_difference"] == exp_peak["mz_difference"].min()].loc[min_index, "intensity"]
+
+
+def _match_exp2predicted(exp_peak, pred_peak, ions_tolerance, relative):
+    """Match experimental peaks to predicted peaks (module-level for pickling)."""
+    pred_peak.loc[:, "error"] = pred_peak.apply(lambda x: min(abs(float(x["mz"]) - exp_peak["mz"])), axis=1)
+    pred_peak.loc[:, "intensity"] = pred_peak.apply(lambda x: _get_intensity(exp_peak, x["mz"]), axis=1)
+    pred_peak.loc[:, "ppm"] = pred_peak.apply(lambda x: round(x["error"] / x["mz"] * 1000000, 2), axis=1)
+
+    if relative:
+        match_ions = pred_peak[pred_peak["ppm"] < ions_tolerance]
+    else:
+        match_ions = pred_peak[pred_peak["error"] < ions_tolerance]
+
+    match_ions = match_ions.reset_index(drop=True)
+
+    return match_ions
+
+
+def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, relative):
+    """Inspect spectrum for a single mzML group (module-level for pickling).
+
+    This is the top-level worker function called by ProcessPoolExecutor. All
+    parameters that would otherwise come from the class instance are passed
+    explicitly so the function can be pickled without issues.
+    """
+    df.loc[:, "peptide_length"] = df.apply(lambda x: len(x["sequence"]), axis=1)
+
+    df["status"] = "skiped"
+
+    df["ions_support"] = "NO"
+    df["support_ions"] = ""
+    df["sum.supportions.intensity"] = float(0)
+
+    df["flanking_ions_support"] = "NO"
+    df["flanking_ions"] = ""
+    df["sum.flanking.ions.intensity"] = float(0)
+
+    df["matched_ions"] = ""
+    df["sum.matchedions.intensity"] = float(0)
+    df["sum.fragmentions.intensity"] = float(0)
+    df["maxintensity"] = float(0)
+    df["average_intensity"] = float(0)
+    df["median_intensity"] = float(0)
+    mzml_file = None
+
+    if mztab:
+        spectra_file = str(df.loc[0, "SpecFile"])
+    else:
+        spectra_file = str(df.loc[0, "reference_file_name"]) + ".mzML"
+
+    if mzml_files and not mzml_path:
+        mzml_list = mzml_files.split(",")
+        for file in mzml_list:
+            if spectra_file in file:
+                mzml_file = file
+                break
+    elif not mzml_files and mzml_path:
+        mzml_file = os.path.join(mzml_path, spectra_file)
+    else:
+        raise ValueError(
+            "You only need to use either '--mzml_path' or '--mzml_files'.")
+
+    exp = MSExperiment()
+    try:
+        MzMLFile().load(mzml_file, exp)
+        look = SpectrumLookup()
+        look.readSpectra(exp, r"((?<SCAN>)\d+$)")
+    except Exception as e:
+        print(mzml_file + " has ERROR!")
+        print(e)
+        df["ions_support"] = "mzML ERROR"
+        return df
+
+    for i in range(df.shape[0]):
+        if mztab:
+            scan_num = int(df.loc[i, "ScanNum"])
+        else:
+            scan_num = int(df.loc[i, "scan_number"])
+
+        seq = df.loc[i, "sequence"]
+        length = df.loc[i, "peptide_length"]
+
+        # get peaks through ScanNum
+        try:
+            index = look.findByScanNumber(scan_num)
+        except Exception as e:
+            print("ERROR: " + str(e) + "; file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
+            continue
+
+        exp_peaks = exp.getSpectrum(index).get_peaks()
+
+        exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
+
+        if mztab:
+            predicted_peaks = _predict_ms2_spectrum(
+                str(df.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
+        else:
+            predicted_peaks = _predict_ms2_spectrum(
+                str(df.loc[i, "peptidoform"]).replace("[","(").replace("]",")").replace("-",""), length, 1)
+        match_ions = _match_exp2predicted(exp_peaks, predicted_peaks, ions_tolerance, relative)
+
+        max_intensity = exp_peaks["intensity"].max()
+        average_intensity = exp_peaks["intensity"].mean()
+        median_intensity = exp_peaks["intensity"].median()
+
+        df.loc[i, "sum.fragmentions.intensity"] = exp_peaks["intensity"].sum()
+        df.loc[i, "maxintensity"] = max_intensity
+        df.loc[i, "average_intensity"] = average_intensity
+        df.loc[i, "median_intensity"] = median_intensity
+
+        if match_ions.shape[0] == 0:
+            continue
+        df.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
+        df.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
+
+        if df.loc[i, "position"] == "canonical":
+            continue
+        if df.loc[i, "position"] == "non-canonical":
+            continue
+        position = int(df.loc[i, "position"])
+        if position == 0:
+            continue
+        if position > length:
+            continue
+
+        df.loc[i, "status"] = "checked"
+        supportions_intensity = 0
+        ions_support = "NO"
+        supportions = ""
+
+        for j in range(match_ions.shape[0]):
+            ion_type = match_ions.loc[j, "type"]
+            pos = int(match_ions.loc[j, "pos"])
+            ion = match_ions.loc[j, "ion"]
+
+            if ion_type == "b" and pos >= position:
+                ions_support = "YES"
+                supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
+                supportions = supportions + ',' + ion
+            elif ion_type == "y" and pos > length - position:
+                ions_support = "YES"
+                supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
+                supportions = supportions + ',' + ion
+
+        df.loc[i, "ions_support"] = ions_support
+        df.loc[i, "support_ions"] = supportions
+        df.loc[i, "sum.supportions.intensity"] = supportions_intensity
+
+        # check if it is a noise peak or isotope peak supporting mutant ions
+        if df.loc[i, "sum.supportions.intensity"] < df.loc[i, "median_intensity"]:
+            df.loc[i, "ions_support"] = "NO"
+
+        flanking_ions_support = "NO"
+        n1 = length
+        n2 = position
+        match_ions_set = set(match_ions["ion"].tolist())
+
+        if n2 == 1:
+            flanking_ions = {"b1", "y" + str(n1 - 1)}
+            flanking_ions = flanking_ions.intersection(match_ions_set)
+            if len(flanking_ions) > 0:
+                flanking_ions_support = "YES"
+        elif n2 == n1:
+            flanking_ions = {"y1", "b" + str(n1 - 1)}
+            flanking_ions = flanking_ions.intersection(match_ions_set)
+            if len(flanking_ions) > 0:
+                flanking_ions_support = "YES"
+        else:
+            flanking_ions_left = {"b" + str(n2 - 1), "y" + str(n1 - n2 + 1)}
+            flanking_ions_right = {"b" + str(n2), "y" + str(n1 - n2)}
+
+            flanking_ions_left = flanking_ions_left.intersection(match_ions_set)
+            flanking_ions_right = flanking_ions_right.intersection(match_ions_set)
+
+            flanking_ions = flanking_ions_left.union(flanking_ions_right)
+            if len(flanking_ions_left) > 0 and len(flanking_ions_right) > 0:
+                flanking_ions_support = "YES"
+
+        df.loc[i, "flanking_ions_support"] = flanking_ions_support
+        df.loc[i, "flanking_ions"] = ",".join(flanking_ions)
+        if flanking_ions:
+            df.loc[i, "sum.flanking.ions.intensity"] = \
+                match_ions[match_ions['ion'].str.contains("|".join(flanking_ions))]["intensity"].sum()
+
+        if df.loc[i, "sum.flanking.ions.intensity"] < df.loc[i, "median_intensity"]:
+            df.loc[i, "flanking_ions_support"] = "NO"
+
+        # fragmentation is not preferable at Cterm side of proline, so only require supporting ions
+        if re.search("P", seq[position - 1:position]):
+            df.loc[i, "flanking_ions_support"] = df.loc[i, "ions_support"]
+
+    return df
 
 
 class SpectrumAIService(ParameterConfiguration):
@@ -44,8 +287,6 @@ class SpectrumAIService(ParameterConfiguration):
         self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
                                                                  default_value=40)
 
-        self.df_list = Manager().list()
-
     def get_validate_parameters(self, variable: str, default_value):
         value_return = default_value
         if variable in self.get_pipeline_parameters():
@@ -56,238 +297,18 @@ class SpectrumAIService(ParameterConfiguration):
         return value_return
 
     def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
-
-        tsg = TheoreticalSpectrumGenerator()
-        spec = MSSpectrum()
-        peptide = AASequence.fromString(peptide)
-
-        p = Param()
-        p.setValue("add_metainfo", "true")
-        p.setValue("add_first_prefix_ion", "true")
-        p.setValue("add_precursor_peaks", "true")
-        tsg.setParameters(p)
-        tsg.getSpectrum(spec, peptide, 1, 1)  # charge range 1:1
-
-        b_y_ions = []
-        for i in spec.getStringDataArrays()[0]:
-            b_y_ions.append(i.decode())
-        mz = []
-        for i in spec:
-            mz.append(i.getMZ())
-
-        ions = pd.DataFrame({"mz": mz, "ion": b_y_ions, "z": 1})
-
-        ions.loc[2 * size - 2, "ion"] = "b" + str(size)
-        ions = ions.drop(2 * size - 1)
-        ions.loc[2 * size, "ion"] = "y" + str(size)
-
-        ions.loc[:, "ion"] = ions.apply(lambda x: re.sub("[+]", "", x["ion"]), axis=1)
-        ions.loc[:, "pos"] = ions.apply(lambda x: re.sub(r"[^\d]", "", x["ion"]), axis=1)
-        ions.loc[:, "type"] = ions.apply(lambda x: re.sub("[^a-z]", "", x["ion"]), axis=1)
-
-        proton_mono_mass = 1.007276
-        if product_ion_charge > 1:
-            ions2 = ions.copy()
-            ions2.loc[:, "mz"] = ions2.apply(lambda x: (x["mz"] + proton_mono_mass) / 2, axis=1)
-            ions2.loc[:, "z"] = 2
-
-            ions = ions.merge(ions2, how='outer')
-
-        ions = ions.reset_index(drop=True)
-
-        return ions
+        return _predict_ms2_spectrum(peptide, size, product_ion_charge)
 
     @staticmethod
     def _get_intensity(exp_peak, ion_mz):
-        exp_peak.loc[:, "mz_difference"] = exp_peak.apply(lambda x: abs(float(ion_mz) - x["mz"]), axis=1)
-        min_index = exp_peak["mz_difference"].idxmin()
-        return exp_peak.loc[exp_peak["mz_difference"] == exp_peak["mz_difference"].min()].loc[min_index, "intensity"]
+        return _get_intensity(exp_peak, ion_mz)
 
     def _match_exp2predicted(self, exp_peak, pred_peak):
-        pred_peak.loc[:, "error"] = pred_peak.apply(lambda x: min(abs(float(x["mz"]) - exp_peak["mz"])), axis=1)
-        pred_peak.loc[:, "intensity"] = pred_peak.apply(lambda x: self._get_intensity(exp_peak, x["mz"]), axis=1)
-        pred_peak.loc[:, "ppm"] = pred_peak.apply(lambda x: round(x["error"] / x["mz"] * 1000000, 2), axis=1)
-
-        if self._relative:
-            match_ions = pred_peak[pred_peak["ppm"] < self._ions_tolerance]
-        else:
-            match_ions = pred_peak[pred_peak["error"] < self._ions_tolerance]
-
-        match_ions = match_ions.reset_index(drop=True)
-
-        return match_ions
+        return _match_exp2predicted(exp_peak, pred_peak, self._ions_tolerance, self._relative)
 
     def _inspect_spectrum(self, df, mzml_path, mzml_files):
-        df.loc[:, "peptide_length"] = df.apply(lambda x: len(x["sequence"]), axis=1)
-
-        df["status"] = "skiped"
-
-        df["ions_support"] = "NO"
-        df["support_ions"] = ""
-        df["sum.supportions.intensity"] = float(0)
-
-        df["flanking_ions_support"] = "NO"
-        df["flanking_ions"] = ""
-        df["sum.flanking.ions.intensity"] = float(0)
-
-        df["matched_ions"] = ""
-        df["sum.matchedions.intensity"] = float(0)
-        df["sum.fragmentions.intensity"] = float(0)
-        df["maxintensity"] = float(0)
-        df["average_intensity"] = float(0)
-        df["median_intensity"] = float(0)
-        mzml_file = None
-
-        if self._mztab:
-            spectra_file = str(df.loc[0, "SpecFile"])
-        else:
-            spectra_file = str(df.loc[0, "reference_file_name"]) + ".mzML"
-
-        if mzml_files and not mzml_path:
-            mzml_list = mzml_files.split(",")
-            for file in mzml_list:
-                if spectra_file in file:
-                    mzml_file = file
-                    break
-        elif not mzml_files and mzml_path:
-            mzml_file = os.path.join(mzml_path, spectra_file)
-        else:
-            raise ValueError(
-                "You only need to use either '--mzml_path' or '--mzml_files'.")
-
-        exp = MSExperiment()
-        try:
-            MzMLFile().load(mzml_file, exp)
-            look = SpectrumLookup()
-            look.readSpectra(exp, r"((?<SCAN>)\d+$)")
-        except Exception as e:
-            print(mzml_file + " has ERROR!")
-            print(e)
-            df["ions_support"] = "mzML ERROR"
-            return df
-
-        for i in range(df.shape[0]):
-            if self._mztab:
-                scan_num = int(df.loc[i, "ScanNum"])
-            else:
-                scan_num = int(df.loc[i, "scan_number"])
-
-            seq = df.loc[i, "sequence"]
-            length = df.loc[i, "peptide_length"]
-
-            # get peaks through ScanNum
-            try:
-                index = look.findByScanNumber(scan_num)
-            except Exception as e:
-                print("ERROR: " + str(e) + "; file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
-                continue
-
-            exp_peaks = exp.getSpectrum(index).get_peaks()
-
-            exp_peaks = pd.DataFrame({"mz": exp_peaks[0], "intensity": exp_peaks[1]})
-
-            if self._mztab:
-                predicted_peaks = self._predict_MS2_spectrum(
-                    str(df.loc[i, "opt_global_cv_MS:1000889_peptidoform_sequence"]), length, 1)
-            else:
-                predicted_peaks = self._predict_MS2_spectrum(
-                    str(df.loc[i, "peptidoform"]).replace("[","(").replace("]",")").replace("-",""), length, 1)
-            match_ions = self._match_exp2predicted(exp_peaks, predicted_peaks)
-
-            max_intensity = exp_peaks["intensity"].max()
-            average_intensity = exp_peaks["intensity"].mean()
-            median_intensity = exp_peaks["intensity"].median()
-
-            df.loc[i, "sum.fragmentions.intensity"] = exp_peaks["intensity"].sum()
-            df.loc[i, "maxintensity"] = max_intensity
-            df.loc[i, "average_intensity"] = average_intensity
-            df.loc[i, "median_intensity"] = median_intensity
-
-            if match_ions.shape[0] == 0:
-                continue
-            df.loc[i, "matched_ions"] = ','.join(match_ions["ion"].unique().tolist())
-            df.loc[i, "sum.matchedions.intensity"] = match_ions["intensity"].sum()
-
-            if df.loc[i, "position"] == "canonical":
-                continue
-            if df.loc[i, "position"] == "non-canonical":
-                continue
-            position = int(df.loc[i, "position"])
-            if position == 0:
-                continue
-            if position > length:
-                continue
-
-            df.loc[i, "status"] = "checked"
-            supportions_intensity = 0
-            ions_support = "NO"
-            supportions = ""
-
-            for j in range(match_ions.shape[0]):
-                ion_type = match_ions.loc[j, "type"]
-                pos = int(match_ions.loc[j, "pos"])
-                ion = match_ions.loc[j, "ion"]
-
-                if ion_type == "b" and pos >= position:
-                    ions_support = "YES"
-                    supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
-                    supportions = supportions + ',' + ion
-                elif ion_type == "y" and pos > length - position:
-                    ions_support = "YES"
-                    supportions_intensity = supportions_intensity + match_ions.loc[j, "intensity"]
-                    supportions = supportions + ',' + ion
-
-            df.loc[i, "ions_support"] = ions_support
-            df.loc[i, "support_ions"] = supportions
-            df.loc[i, "sum.supportions.intensity"] = supportions_intensity
-
-            # check if it is a noise peak or isotope peak supporting mutant ions
-            if df.loc[i, "sum.supportions.intensity"] < df.loc[i, "median_intensity"]:
-                df.loc[i, "ions_support"] = "NO"
-
-            flanking_ions_support = "NO"
-            n1 = length
-            n2 = position
-            match_ions_set = set(match_ions["ion"].tolist())
-
-            if n2 == 1:
-                flanking_ions = {"b1", "y" + str(n1 - 1)}
-                flanking_ions = flanking_ions.intersection(match_ions_set)
-                if len(flanking_ions) > 0:
-                    flanking_ions_support = "YES"
-            elif n2 == n1:
-                flanking_ions = {"y1", "b" + str(n1 - 1)}
-                flanking_ions = flanking_ions.intersection(match_ions_set)
-                if len(flanking_ions) > 0:
-                    flanking_ions_support = "YES"
-            else:
-                flanking_ions_left = {"b" + str(n2 - 1), "y" + str(n1 - n2 + 1)}
-                flanking_ions_right = {"b" + str(n2), "y" + str(n1 - n2)}
-
-                flanking_ions_left = flanking_ions_left.intersection(match_ions_set)
-                flanking_ions_right = flanking_ions_right.intersection(match_ions_set)
-
-                flanking_ions = flanking_ions_left.union(flanking_ions_right)
-                if len(flanking_ions_left) > 0 and len(flanking_ions_right) > 0:
-                    flanking_ions_support = "YES"
-
-            df.loc[i, "flanking_ions_support"] = flanking_ions_support
-            df.loc[i, "flanking_ions"] = ",".join(flanking_ions)
-            if flanking_ions:
-                df.loc[i, "sum.flanking.ions.intensity"] = \
-                    match_ions[match_ions['ion'].str.contains("|".join(flanking_ions))]["intensity"].sum()
-
-            if df.loc[i, "sum.flanking.ions.intensity"] < df.loc[i, "median_intensity"]:
-                df.loc[i, "flanking_ions_support"] = "NO"
-
-            # fragmentation is not preferable at Cterm side of proline, so only require supporting ions
-            if re.search("P", seq[position - 1:position]):
-                df.loc[i, "flanking_ions_support"] = df.loc[i, "ions_support"]
-
-        return df
-
-    def _multiprocess_inspect_spectrum(self, df):
-        self.df_list.append(self._inspect_spectrum(df, self._mzml_path, self._mzml_files))
+        return _inspect_spectrum_worker(df, mzml_path, mzml_files,
+                                        self._mztab, self._ions_tolerance, self._relative)
 
     def validate(self, infile_name, outfile_name: str):
         start_time = datetime.datetime.now()
@@ -311,13 +332,22 @@ class SpectrumAIService(ParameterConfiguration):
 
         list_of_dfs = [group_df.reset_index(drop=True) for name, group_df in grouped_dfs]
 
-        pool = Pool(int(self._number_of_processes))
-        list(tqdm(pool.imap(self._multiprocess_inspect_spectrum, list_of_dfs), total=len(list_of_dfs),
-                  desc="Validate By Each mzMl", unit="mzML"))
-        pool.close()
-        pool.join()
+        worker_fn = partial(
+            _inspect_spectrum_worker,
+            mzml_path=self._mzml_path,
+            mzml_files=self._mzml_files,
+            mztab=self._mztab,
+            ions_tolerance=self._ions_tolerance,
+            relative=self._relative,
+        )
 
-        df_output = pd.concat(self.df_list, axis=0, ignore_index=True)
+        with ProcessPoolExecutor(max_workers=int(self._number_of_processes)) as executor:
+            results = list(tqdm(
+                executor.map(worker_fn, list_of_dfs),
+                total=len(list_of_dfs), desc="Validate By Each mzML", unit="mzML"
+            ))
+
+        df_output = pd.concat(results, axis=0, ignore_index=True)
 
         if outfile_name.endswith(".csv.gz"):
             df_output.to_csv(outfile_name, header=True, sep=",", index=None, compression="gzip")
