@@ -88,6 +88,9 @@ class ProteinDBDecoyService(ParameterConfiguration):
             # loop sequence list
             for i, c in enumerate(revseq):
                 # if value is cleavage site switch with previous amino acid
+                # skip index 0 to avoid wrap-around to revseq[-1]
+                if i == 0:
+                    continue
                 for s in sites:
                     if c == s:
                         aa = revseq[i - 1]

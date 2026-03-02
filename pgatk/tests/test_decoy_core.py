@@ -55,6 +55,21 @@ class TestRevswitch:
         assert result == "K"
         assert len(result) == 1
 
+    def test_cleavage_site_at_cterminus(self):
+        """Protein ending with K/R: cleavage site at index 0 of reversed seq should NOT wrap around."""
+        protein = "MAVK"
+        result = ProteinDBDecoyService.revswitch(protein, noswitch=False, sites=['K', 'R'])
+        # Reversed: "KVAM". K is at index 0 — skip it (no preceding residue to swap with).
+        assert result == "KVAM"
+        assert Counter(result) == Counter(protein)
+
+    def test_cleavage_site_at_cterminus_r(self):
+        """Protein ending with R should not cause wrap-around swap."""
+        protein = "MAVR"
+        result = ProteinDBDecoyService.revswitch(protein, noswitch=False, sites=['K', 'R'])
+        assert result == "RVAM"
+        assert Counter(result) == Counter(protein)
+
     def test_multiple_cleavage_sites(self):
         """Sequence with multiple K/R sites should switch each with its preceding residue."""
         protein = "AKBRC"

@@ -207,31 +207,130 @@ class TestGetAltseqPlusStrand:
 # ---------------------------------------------------------------------------
 
 class TestGetAltseqMinusStrand:
-    """Tests for EnsemblDataService.get_altseq() on the minus strand."""
+    """Tests for EnsemblDataService.get_altseq() on the minus strand.
 
-    def test_snp_on_minus_strand(self):
-        """A SNP on the minus strand complements and reverses correctly."""
+    For minus-strand genes, the transcript sequence is stored in genomic order
+    (5'→3' on the plus strand). The algorithm:
+      1. Reverses ref_seq → puts it in minus-strand reading order
+      2. Complements (not reverse-complements) alleles — the reversal on return
+         completes the reverse-complement operation
+      3. Applies variant using genomic coordinates on the reversed sequence
+      4. Reverses both ref and alt back to genomic order on return
+
+    This means: for a minus-strand gene at positions [10,19], genomic position 10
+    (first in genomic order) is the LAST base of the transcript, so the variant
+    should modify the last character of the returned sequence.
+    """
+
+    def test_snp_at_exon_start(self):
+        """SNP at the first genomic position of a minus-strand exon.
+
+        Position 10 is the first base genomically but the LAST base of the
+        minus-strand transcript. The variant should modify the last character.
+        """
         ref_seq = Seq("ATGCATGCAT")  # 10 bases
         features_info = [[10, 19, 'exon']]
-        ref_allele = Seq("A")
+        ref_allele = Seq("A")   # forward-strand allele at position 10
         var_allele = Seq("C")
-        var_pos = 10  # first position of the exon
+        var_pos = 10
 
         coding_ref, coding_alt = EnsemblDataService.get_altseq(
             ref_seq, ref_allele, var_allele, var_pos, '-', features_info
         )
 
-        # On minus strand: ref_seq is reversed, alleles are complemented
-        # reversed ref_seq = "TACGTAGCTA" (reversed "ATGCATGCAT")
-        # complement of ref_allele 'A' -> 'T'
-        # complement of var_allele 'C' -> 'G'
-        # var_pos=10, feature[0]=10, so var_index_in_cds = 0
-        # c = 1, alt_seq_reversed = '' + 'G' + ref_reversed[1:] = 'G' + 'ACGTAGCTA' = 'GACGTAGCTA'
-        # returned ref is reversed again: 'TACGTAGCTA'[::-1] = 'ATCGATGCAT' -> nope
-        # Let's just verify lengths match and alt_seq is not empty
-        assert len(coding_ref) == len(ref_seq)
-        assert len(coding_alt) == len(ref_seq)
-        assert str(coding_alt) != ""
+        # Reversed ref: TACGTACGTA. complement(A)=T, complement(C)=G
+        # var_index=0 on reversed → base T replaced by G → GACGTACGTA
+        # Returned (reversed back): ref=ATGCATGCAT, alt=ATGCATGCAG
+        assert str(coding_ref) == "ATGCATGCAT"
+        assert str(coding_alt) == "ATGCATGCAG"
+        assert len(coding_alt) == len(coding_ref)
+        # Only the last base changed (position 10 = last in transcript)
+        assert str(coding_ref)[:-1] == str(coding_alt)[:-1]
+        assert str(coding_alt)[-1] == "G"
+
+    def test_snp_at_exon_end(self):
+        """SNP at the last genomic position of a minus-strand exon.
+
+        Position 19 is the last base genomically but the FIRST base of the
+        minus-strand transcript. The variant should modify the first character.
+        """
+        ref_seq = Seq("ATGCATGCAT")  # 10 bases
+        features_info = [[10, 19, 'exon']]
+        ref_allele = Seq("T")   # forward-strand base at position 19
+        var_allele = Seq("C")
+        var_pos = 19
+
+        coding_ref, coding_alt = EnsemblDataService.get_altseq(
+            ref_seq, ref_allele, var_allele, var_pos, '-', features_info
+        )
+
+        # Reversed ref: TACGTACGTA. complement(T)=A, complement(C)=G
+        # var_index = 0 + (19-10) = 9. Base at index 9 of reversed = A.
+        # complement(T)=A matches. Replace with G → TACGTACGTG
+        # Returned (reversed back): ref=ATGCATGCAT, alt=GTGCATGCAT
+        assert str(coding_ref) == "ATGCATGCAT"
+        assert str(coding_alt) == "GTGCATGCAT"
+        assert len(coding_alt) == len(coding_ref)
+        # Only the first base changed (position 19 = first in transcript)
+        assert str(coding_ref)[1:] == str(coding_alt)[1:]
+
+    def test_snp_at_middle_position(self):
+        """SNP at a middle genomic position on minus strand."""
+        ref_seq = Seq("ATGCATGCAT")  # 10 bases
+        features_info = [[10, 19, 'exon']]
+        ref_allele = Seq("A")
+        var_allele = Seq("G")
+        var_pos = 14  # middle of exon
+
+        coding_ref, coding_alt = EnsemblDataService.get_altseq(
+            ref_seq, ref_allele, var_allele, var_pos, '-', features_info
+        )
+
+        # Reversed ref: TACGTACGTA. complement(A)=T, complement(G)=C
+        # var_index = 0 + (14-10) = 4. Base at index 4 = T. Matches complement(A)=T.
+        # Replace with C → TACGCACGTA. Reversed back → ATGCACGCAT
+        assert str(coding_ref) == "ATGCATGCAT"
+        assert str(coding_alt) == "ATGCACGCAT"
+        # Position 14 maps to transcript index (19-14)=5 from the start
+        assert str(coding_ref)[:5] == str(coding_alt)[:5]
+        assert str(coding_alt)[5] == "C"
+        assert str(coding_ref)[6:] == str(coding_alt)[6:]
+
+    def test_insertion_on_minus_strand(self):
+        """Insertion on minus strand: alleles are complemented, sequence lengthens."""
+        ref_seq = Seq("ATGCATGCAT")  # 10 bases
+        features_info = [[10, 19, 'exon']]
+        # Insertion at position 12: ref='G', var='GAA' (forward strand)
+        ref_allele = Seq("G")
+        var_allele = Seq("GAA")
+        var_pos = 12
+
+        coding_ref, coding_alt = EnsemblDataService.get_altseq(
+            ref_seq, ref_allele, var_allele, var_pos, '-', features_info
+        )
+
+        assert len(coding_alt) == len(coding_ref) + 2
+        assert str(coding_ref) == "ATGCATGCAT"
+
+    def test_minus_strand_with_cds_info(self):
+        """SNP on minus strand with explicit CDS coordinates."""
+        ref_seq = Seq("NNNNATGCATGCATNNN")  # 17 bases
+        features_info = [[10, 26, 'exon']]
+        cds_info = [5, 14]  # CDS from position 5 to 14
+
+        ref_allele = Seq("A")
+        var_allele = Seq("G")
+        var_pos = 14  # within the exon
+
+        coding_ref, coding_alt = EnsemblDataService.get_altseq(
+            ref_seq, ref_allele, var_allele, var_pos, '-', features_info, cds_info
+        )
+
+        # CDS: start=4 (0-based), stop=14. n=17.
+        # Minus strand: reversed ref, then ref[17-14:17-4] = ref[3:13]
+        assert len(coding_ref) == 10
+        assert len(coding_alt) == 10
+        assert str(coding_alt) != str(coding_ref)
 
 
 # ---------------------------------------------------------------------------
