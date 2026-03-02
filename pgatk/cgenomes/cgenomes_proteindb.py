@@ -119,16 +119,16 @@ class CancerGenomesService(ParameterConfiguration):
                 positions = re.findall(r'\d+', snp.aa_mut)
                 protein_seq = str(seq.translate(to_stop=False))
 
-                if "Missense" in snp.type:
+                if "Missense" in snp.mutation_type:
                     mut_aa = snp.aa_mut[-1]
                     if not mut_aa.isalpha():
                         return ''
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
-                elif "Nonsense" in snp.type:
+                elif "Nonsense" in snp.mutation_type:
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index]
-                elif "Insertion - In frame" in snp.type:
+                elif "Insertion - In frame" in snp.mutation_type:
                     try:
                         index = snp.aa_mut.index("ins")
                     except ValueError:
@@ -137,7 +137,7 @@ class CancerGenomesService(ParameterConfiguration):
                     if insert_aa.isalpha():
                         ins_index1 = int(positions[0])
                         mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
-                elif "Deletion - In frame" in snp.type:
+                elif "Deletion - In frame" in snp.mutation_type:
                     if len(positions) == 2:
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
@@ -145,7 +145,7 @@ class CancerGenomesService(ParameterConfiguration):
                     elif len(positions) == 1:
                         del_index1 = int(positions[0]) - 1
                         mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index1 + 1:]
-                elif "Complex" in snp.type and "frameshift" not in snp.type:
+                elif "Complex" in snp.mutation_type and "frameshift" not in snp.mutation_type:
                     try:
                         index = snp.aa_mut.index(">")
                     except ValueError:
@@ -153,15 +153,15 @@ class CancerGenomesService(ParameterConfiguration):
                     mut_aa = snp.aa_mut[index + 1:]
                     if not mut_aa.replace('*','').isalpha():
                         return ''
-                    if "deletion" in snp.type:
+                    if "deletion" in snp.mutation_type:
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
                         mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
 
-                    elif "insertion" in snp.type:
+                    elif "insertion" in snp.mutation_type:
                         ins_index1 = int(positions[0]) - 1
                         mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1 + 1:]
-                    elif "compound substitution" in snp.type:
+                    elif "compound substitution" in snp.mutation_type:
                         if "*" not in mut_aa:
                             del_index1 = int(positions[0]) - 1
                             del_index2 = int(positions[1])
@@ -220,7 +220,7 @@ class CancerGenomesService(ParameterConfiguration):
 
                 snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
                           mutation_type=row[muttype_col])
-                header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.type.replace(" ", ""))
+                header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.mutation_type.replace(" ", ""))
                 try:
                     this_gene_records = COSMIC_CDS_DB[snp.gene]
                     seqs = []
@@ -253,7 +253,7 @@ class CancerGenomesService(ParameterConfiguration):
                 else:
                     self.get_logger().warning(
                         f"Could not parse mutation record: gene={snp.gene}, dna_mut={snp.dna_mut}, "
-                        f"aa_mut={snp.aa_mut}, type={snp.type}"
+                        f"aa_mut={snp.aa_mut}, mutation_type={snp.mutation_type}"
                     )
 
         for group_name in groups_mutations_dict.keys():
