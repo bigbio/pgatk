@@ -1,0 +1,39 @@
+clinvar_translation:
+  translation_table: 1
+  mito_translation_table: 2
+  protein_prefix: "clinvar_"
+  proteindb_output_file: "clinvar-peptide-database.fa"
+  report_ref_seq: false
+  num_orfs: 1
+
+  # ClinVar-specific filtering
+  clinical_significance_exclude:
+    - "Benign"
+    - "Likely_benign"
+    - "Benign/Likely_benign"
+
+  # NCBI RefSeq biotypes to include
+  include_biotypes: "protein_coding"
+
+  # Molecular consequences to include (from ClinVar MC field)
+  include_consequences:
+    - "missense_variant"
+    - "nonsense"
+    - "frameshift_variant"
+    - "inframe_insertion"
+    - "inframe_deletion"
+    - "stop_gained"
+    - "stop_lost"
+    - "start_lost"
+    - "splice_donor_variant"
+    - "splice_acceptor_variant"
+
+  # NCBI FTP URLs
+  ncbi_refseq_ftp: "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/"
+  clinvar_ftp: "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/"
+
+  logger:
+    formatters:
+      DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
+      INFO: "%(asctime)s [%(levelname)7s][%(name)48s] %(message)s"
+    loglevel: DEBUG

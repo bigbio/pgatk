@@ -14,6 +14,7 @@ COMMAND_CONFIGS = {
     "cosmic": "cosmic_config.yaml",
     "cbioportal": "cbioportal_config.yaml",
     "protein_decoy": "protein_decoy.yaml",
+    "clinvar": "clinvar_config.yaml",
 }
 
 
