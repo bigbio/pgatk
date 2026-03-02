@@ -288,13 +288,7 @@ class SpectrumAIService(ParameterConfiguration):
                                                                  default_value=40)
 
     def get_validate_parameters(self, variable: str, default_value):
-        value_return = default_value
-        if variable in self.get_pipeline_parameters():
-            value_return = self.get_pipeline_parameters()[variable]
-        elif self.CONFIG_KEY_VALIDATE_PEPTIDES in self.get_default_parameters() and \
-                variable in self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES]:
-            value_return = self.get_default_parameters()[self.CONFIG_KEY_VALIDATE_PEPTIDES][variable]
-        return value_return
+        return self.get_config_value(variable, default_value)
 
     def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
         return _predict_ms2_spectrum(peptide, size, product_ion_charge)

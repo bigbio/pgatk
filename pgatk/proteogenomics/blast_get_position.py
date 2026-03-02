@@ -85,13 +85,7 @@ class BlastGetPositionService(ParameterConfiguration):
         self.blast_dict = {}
 
     def get_blast_parameters(self, variable: str, default_value):
-        value_return = default_value
-        if variable in self.get_pipeline_parameters():
-            value_return = self.get_pipeline_parameters()[variable]
-        elif self.CONFIG_KEY_BlastGetPosition in self.get_default_parameters() and \
-                variable in self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition]:
-            value_return = self.get_default_parameters()[self.CONFIG_KEY_BlastGetPosition][variable]
-        return value_return
+        return self.get_config_value(variable, default_value)
 
     def _blast_canonical(self, df):
         seq_set = set(df["sequence"].to_list())

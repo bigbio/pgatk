@@ -47,19 +47,8 @@ class EnsemblDataService(ParameterConfiguration):
         super(EnsemblDataService, self).__init__(self.CONFIG_KEY_DATA, config_file,
                                                  pipeline_arguments)
 
-        self._proteindb_output = 'peptide-database.fa'
-        if self.PROTEIN_DB_OUTPUT in self.get_pipeline_parameters():
-            self._proteindb_output = self.get_pipeline_parameters()[self.PROTEIN_DB_OUTPUT]
-        elif self.CONFIG_KEY_DATA in self.get_default_parameters() and self.PROTEIN_DB_OUTPUT in \
-                self.get_default_parameters()[self.CONFIG_KEY_DATA]:
-            self._proteindb_output = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.PROTEIN_DB_OUTPUT]
-
-        self._translation_table = 1
-        if self.TRANSLATION_TABLE in self.get_pipeline_parameters():
-            self._translation_table = self.get_pipeline_parameters()[self.TRANSLATION_TABLE]
-        elif self.CONFIG_KEY_DATA in self.get_default_parameters() and self.TRANSLATION_TABLE in \
-                self.get_default_parameters()[self.CONFIG_KEY_DATA]:
-            self._translation_table = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.TRANSLATION_TABLE]
+        self._proteindb_output = self.get_config_value(self.PROTEIN_DB_OUTPUT, 'peptide-database.fa')
+        self._translation_table = self.get_config_value(self.TRANSLATION_TABLE, 1)
 
         self._mito_translation_table = self.get_translation_properties(variable=self.MITO_TRANSLATION_TABLE,
                                                                        default_value=2)

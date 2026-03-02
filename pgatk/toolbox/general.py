@@ -84,6 +84,23 @@ class ParameterConfiguration:
             self._logger.addHandler(lhandler)
         self.get_logger().debug("Logging system initialized")
 
+    def get_config_value(self, key: str, default=None):
+        """Get a configuration value with standard 2-layer fallback.
+
+        Checks pipeline_parameters first (flat lookup), then
+        default_params[_ROOT_CONFIG_NAME][key], then returns default.
+        """
+        # Check pipeline params first (flat lookup by key)
+        if key in self._pipeline_parameters:
+            return self._pipeline_parameters[key]
+        # Then check default config params under root config name
+        root = self._ROOT_CONFIG_NAME
+        if (self._default_params is not None
+                and root in self._default_params
+                and key in self._default_params[root]):
+            return self._default_params[root][key]
+        return default
+
     def get_pipeline_parameters(self):
         return self._pipeline_parameters
 
