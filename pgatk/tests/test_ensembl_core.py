@@ -176,7 +176,7 @@ class TestGetAltseqPlusStrand:
         var_allele = Seq("T")
         var_pos = 5  # outside the exon 10..19
 
-        coding_ref, coding_alt = EnsemblDataService.get_altseq(
+        _coding_ref, coding_alt = EnsemblDataService.get_altseq(
             ref_seq, ref_allele, var_allele, var_pos, '+', features_info
         )
 
@@ -274,5 +274,5 @@ class TestGetOrfsVcf:
         """Stop codons are included in the translation (no to_stop)."""
         ref_seq = Seq("ATGTAATTT")  # M * F  (TAA is stop)
         alt_seq = Seq("ATGTAATTT")
-        ref_orfs, alt_orfs = EnsemblDataService.get_orfs_vcf(ref_seq, alt_seq, 1, num_orfs=1)
+        ref_orfs, _alt_orfs = EnsemblDataService.get_orfs_vcf(ref_seq, alt_seq, 1, num_orfs=1)
         assert "*" in str(ref_orfs[0])
