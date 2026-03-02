@@ -1,17 +1,30 @@
 from __future__ import annotations
 
 import datetime
-import functools
 import logging
+from multiprocessing import Pool
 from typing import Any, Union
 
 import pandas as pd
 from Bio import SeqIO
-from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 import ahocorasick
 
 from pgatk.toolbox.general import ParameterConfiguration
+
+# Module-level global for worker processes (set via pool initializer)
+_worker_fasta_dict: dict | None = None
+
+
+def _init_worker(fasta_dict: dict) -> None:
+    """Initializer for worker processes — stores fasta_dict as a module global."""
+    global _worker_fasta_dict
+    _worker_fasta_dict = fasta_dict
+
+
+def _result_worker(sequence: str) -> tuple[str, Union[list, str]]:
+    """Process a single peptide using the module-level fasta_dict."""
+    return (sequence, _blast_set(_worker_fasta_dict, sequence))
 
 def get_details(fasta: str, peptide: str) -> list:
     res = []
@@ -109,11 +122,6 @@ class BlastGetPositionService(ParameterConfiguration):
         df["position"] = df["sequence"].map(seq_dict)
         return df
 
-    @staticmethod
-    def _result_worker(fasta_dict: dict, sequence: str) -> tuple[str, Union[list, str]]:
-        """Process a single peptide and return (sequence, blast_result)."""
-        return (sequence, _blast_set(fasta_dict, sequence))
-
     def blast(self, input_psm_to_blast: str, output_psm: str) -> None:
         """
         Blast peptide and reference protein database to find variation sites.
@@ -147,9 +155,9 @@ class BlastGetPositionService(ParameterConfiguration):
         seq_set = set(psm_to_blast["sequence"].to_list())
         seq_list = list(seq_set)
 
-        worker = functools.partial(BlastGetPositionService._result_worker, self.fasta_dict)
-        with ProcessPoolExecutor(max_workers=int(self._number_of_processes)) as executor:
-            results = list(tqdm(executor.map(worker, seq_list, chunksize=100),
+        with Pool(processes=int(self._number_of_processes),
+                  initializer=_init_worker, initargs=(self.fasta_dict,)) as pool:
+            results = list(tqdm(pool.imap(_result_worker, seq_list, chunksize=100),
                                 total=len(seq_list), desc="Blast", unit="peptide"))
 
         for sequence, blast_result in results:

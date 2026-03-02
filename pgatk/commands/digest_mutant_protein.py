@@ -1,10 +1,6 @@
-import logging
-
 import click
 
 from pgatk.db.digest_mutant_protein import digest_mutant_proteins
-
-log = logging.getLogger(__name__)
 
 
 @click.command("digest-mutant-protein", short_help="Digest mutant proteins and filter against canonical proteome")

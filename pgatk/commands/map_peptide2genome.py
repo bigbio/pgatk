@@ -1,10 +1,6 @@
-import logging
-
 import click
 
 from pgatk.db.map_peptide2genome import map_peptides_to_genome
-
-log = logging.getLogger(__name__)
 
 
 @click.command("map-peptide2genome", short_help="Map peptides to genomic coordinates (GFF3 output)")

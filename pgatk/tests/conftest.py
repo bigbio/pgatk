@@ -1,6 +1,5 @@
 """Shared pytest fixtures for pgatk tests."""
 
-import os
 from pathlib import Path
 
 import pytest
@@ -24,7 +23,7 @@ def config_dir():
 
 
 @pytest.fixture(autouse=True)
-def _chdir_to_package_root():
+def _chdir_to_package_root(monkeypatch):
     """Set CWD to the pgatk package directory for backward compatibility.
 
     Existing tests reference files with relative paths like
@@ -32,9 +31,6 @@ def _chdir_to_package_root():
     This fixture ensures those paths resolve correctly regardless of
     where pytest is invoked from.
 
-    The original working directory is restored after each test.
+    Uses monkeypatch.chdir for guaranteed cleanup even if teardown is interrupted.
     """
-    original_cwd = os.getcwd()
-    os.chdir(_PACKAGE_DIR)
-    yield
-    os.chdir(original_cwd)
+    monkeypatch.chdir(_PACKAGE_DIR)

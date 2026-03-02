@@ -410,7 +410,7 @@ class EnsemblDataService(ParameterConfiguration):
         """
     intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
     """
-        vcf_stem = str(Path(vcf_file).resolve().stem)
+        vcf_stem = str(Path.cwd() / Path(vcf_file).stem)
 
         BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(f"{vcf_stem}_all.bed")
 

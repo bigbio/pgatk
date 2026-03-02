@@ -483,7 +483,8 @@ class ProteinDBDecoyService(ParameterConfiguration):
                                        '*'.join(revprotseq)))
                 decoys.append('*'.join(revprotseq))
 
-            with open(f"{Path(self._output_file).stem}_noAlternative.fa", 'w') as noAlternative_outfa:
+            output_base = str(Path(self._output_file).with_suffix(''))
+            with open(f"{output_base}_noAlternative.fa", 'w') as noAlternative_outfa:
                 noAlternative_outfa.write('\n'.join(noAlternative) + '\n')
             self.get_logger().info('Number of skipped tryptic peptides in decoy db (no alternatives): %s',
                                    len(noAlternative))
