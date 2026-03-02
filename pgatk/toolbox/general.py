@@ -160,8 +160,8 @@ def check_create_folders(folders: List):
         if not os.path.exists(folder):
             try:
                 os.makedirs(folder)
-            except Exception as e:
-                raise ToolBoxException(str(e))
+            except (OSError, PermissionError) as e:
+                raise ToolBoxException(str(e)) from e
         else:
             if not os.path.isdir(folder):
                 raise ToolBoxException("'{}' is not a folder".format(folder))
@@ -226,7 +226,7 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
             remaining_download_tries = remaining_download_tries - 1
             downloaded_file = None
             continue
-        except Exception as error:
+        except (URLError, ContentTooShortError, OSError, HTTPError) as error:
             remaining_download_tries = remaining_download_tries - 1
             log.error("Error code: " + str(error))
             downloaded_file = None
@@ -339,7 +339,7 @@ def gunzip_files(files):
                             stdout.decode('utf8'),
                             stderr.decode('utf8'))
                 files_with_error.append((file, err_msg))
-            except Exception as e:
+            except (OSError, subprocess.CalledProcessError) as e:
                 err_msg = "UNKNOWN ERROR uncompressing file '{}' ---> {}\nOutput from subprocess STDOUT: {}\nSTDERR: {}" \
                     .format(file,
                             e,

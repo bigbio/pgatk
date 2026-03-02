@@ -1,5 +1,6 @@
 import logging
 import os
+import sqlite3
 import gffutils
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -245,7 +246,7 @@ class EnsemblDataService(ParameterConfiguration):
                                keep_order=True, disable_infer_transcripts=True, disable_infer_genes=True,
                                verbose=True,
                                force=False)
-        except Exception as e:  # already exists
+        except (ValueError, sqlite3.OperationalError) as e:  # already exists
             logging.getLogger(__name__).warning("Database already exists: %s %s", e, gtf_db_file)
 
         db = gffutils.FeatureDB(gtf_db_file)

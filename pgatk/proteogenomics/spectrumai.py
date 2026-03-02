@@ -127,7 +127,7 @@ def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, r
         MzMLFile().load(mzml_file, exp)
         look = SpectrumLookup()
         look.readSpectra(exp, r"((?<SCAN>)\d+$)")
-    except Exception as e:
+    except (OSError, RuntimeError, ValueError) as e:
         logging.getLogger(__name__).error("%s has ERROR! %s", mzml_file, e)
         df["ions_support"] = "mzML ERROR"
         return df
@@ -144,7 +144,7 @@ def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, r
         # get peaks through ScanNum
         try:
             index = look.findByScanNumber(scan_num)
-        except Exception as e:
+        except (RuntimeError, IndexError, KeyError) as e:
             logging.getLogger(__name__).error("%s; file: %s; scan_num: %s", e, mzml_file, scan_num)
             continue
 
