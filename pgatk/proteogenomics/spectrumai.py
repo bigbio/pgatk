@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import datetime
 import logging
 import os.path
 import re
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
+from typing import Any, Optional, Union
 
 import pandas as pd
 from pyopenms import (TheoreticalSpectrumGenerator, MSSpectrum,
@@ -12,7 +15,7 @@ from tqdm import tqdm
 from pgatk.toolbox.general import ParameterConfiguration
 
 
-def _predict_ms2_spectrum(peptide, size, product_ion_charge=1):
+def _predict_ms2_spectrum(peptide: str, size: int, product_ion_charge: int = 1) -> pd.DataFrame:
     """Predict MS2 spectrum for a given peptide sequence (module-level for pickling)."""
     tsg = TheoreticalSpectrumGenerator()
     spec = MSSpectrum()
@@ -55,14 +58,14 @@ def _predict_ms2_spectrum(peptide, size, product_ion_charge=1):
     return ions
 
 
-def _get_intensity(exp_peak, ion_mz):
+def _get_intensity(exp_peak: pd.DataFrame, ion_mz: float) -> float:
     """Get intensity of the closest peak to the given m/z (module-level for pickling)."""
     exp_peak.loc[:, "mz_difference"] = exp_peak.apply(lambda x: abs(float(ion_mz) - x["mz"]), axis=1)
     min_index = exp_peak["mz_difference"].idxmin()
     return exp_peak.loc[exp_peak["mz_difference"] == exp_peak["mz_difference"].min()].loc[min_index, "intensity"]
 
 
-def _match_exp2predicted(exp_peak, pred_peak, ions_tolerance, relative):
+def _match_exp2predicted(exp_peak: pd.DataFrame, pred_peak: pd.DataFrame, ions_tolerance: float, relative: bool) -> pd.DataFrame:
     """Match experimental peaks to predicted peaks (module-level for pickling)."""
     pred_peak.loc[:, "error"] = pred_peak.apply(lambda x: min(abs(float(x["mz"]) - exp_peak["mz"])), axis=1)
     pred_peak.loc[:, "intensity"] = pred_peak.apply(lambda x: _get_intensity(exp_peak, x["mz"]), axis=1)
@@ -78,7 +81,7 @@ def _match_exp2predicted(exp_peak, pred_peak, ions_tolerance, relative):
     return match_ions
 
 
-def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, relative):
+def _inspect_spectrum_worker(df: pd.DataFrame, mzml_path: Union[str, bool], mzml_files: Union[str, bool], mztab: bool, ions_tolerance: float, relative: bool) -> pd.DataFrame:
     """Inspect spectrum for a single mzML group (module-level for pickling).
 
     This is the top-level worker function called by ProcessPoolExecutor. All
@@ -264,7 +267,7 @@ class SpectrumAIService(ParameterConfiguration):
     CONFIG_RELATIVE = 'relative'
     CONFIG_MZTAB = 'mztab'
 
-    def __init__(self, config_data, pipeline_arguments):
+    def __init__(self, config_data: dict, pipeline_arguments: dict) -> None:
         """
       Init the class with the specific parameters.
       :param config_data configuration file
@@ -287,24 +290,24 @@ class SpectrumAIService(ParameterConfiguration):
         self._number_of_processes = self.get_validate_parameters(variable=self.CONFIG_NUMBER_OF_PROCESSES,
                                                                  default_value=40)
 
-    def get_validate_parameters(self, variable: str, default_value):
+    def get_validate_parameters(self, variable: str, default_value: Any) -> Any:
         return self.get_config_value(variable, default_value)
 
-    def _predict_MS2_spectrum(self, peptide, size, product_ion_charge=1):
+    def _predict_MS2_spectrum(self, peptide: str, size: int, product_ion_charge: int = 1) -> pd.DataFrame:
         return _predict_ms2_spectrum(peptide, size, product_ion_charge)
 
     @staticmethod
-    def _get_intensity(exp_peak, ion_mz):
+    def _get_intensity(exp_peak: pd.DataFrame, ion_mz: float) -> float:
         return _get_intensity(exp_peak, ion_mz)
 
-    def _match_exp2predicted(self, exp_peak, pred_peak):
+    def _match_exp2predicted(self, exp_peak: pd.DataFrame, pred_peak: pd.DataFrame) -> pd.DataFrame:
         return _match_exp2predicted(exp_peak, pred_peak, self._ions_tolerance, self._relative)
 
-    def _inspect_spectrum(self, df, mzml_path, mzml_files):
+    def _inspect_spectrum(self, df: pd.DataFrame, mzml_path: Union[str, bool], mzml_files: Union[str, bool]) -> pd.DataFrame:
         return _inspect_spectrum_worker(df, mzml_path, mzml_files,
                                         self._mztab, self._ions_tolerance, self._relative)
 
-    def validate(self, infile_name, outfile_name: str):
+    def validate(self, infile_name: str, outfile_name: str) -> None:
         start_time = datetime.datetime.now()
         self.get_logger().info("Start time: %s", start_time)
 

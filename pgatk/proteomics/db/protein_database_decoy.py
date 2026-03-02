@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 import logging
 import random
 import os
 from pathlib import Path
+from typing import Any
+
 from Bio import SeqIO
 from Bio.SeqIO.FastaIO import SimpleFastaParser
 from pyteomics.fasta import decoy_sequence
@@ -32,7 +36,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
     CONFIG_MEMORY_SAVE = 'memory_save'
     CONFIG_KEEP_TARGET_HITS = 'keep_target_hits'
 
-    def __init__(self, config_file, pipeline_arguments):
+    def __init__(self, config_file: dict, pipeline_arguments: dict) -> None:
         super(ProteinDBDecoyService, self).__init__(self.CONFIG_KEY_PROTEINDB_DECOY, config_file,
                                                     pipeline_arguments)
         self._input_fasta = self.get_pipeline_parameters()[self.CONFIG_INPUT_FILE]
@@ -59,7 +63,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         self._max_missed_cleavages = self.get_default_parameters_decoy(variable=self.CONFIG_MAX_MISSED_CLEAVAGES,
                                                                        default_value=0)
 
-    def get_default_parameters_decoy(self, variable: str, default_value):
+    def get_default_parameters_decoy(self, variable: str, default_value: Any) -> Any:
         value_return = default_value
         if variable in self.get_pipeline_parameters():
             value_return = self.get_pipeline_parameters()[variable]
@@ -69,7 +73,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         return value_return
 
     @staticmethod
-    def revswitch(protein, noswitch, sites):
+    def revswitch(protein: str, noswitch: bool, sites: list) -> str:
         """
     Return a reversed protein sequence with cleavage residues switched with preceding residue. This method is used by
     DecoyPyrat.
@@ -94,7 +98,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         return ''.join(revseq)
 
     @staticmethod
-    def shuffle(peptide):
+    def shuffle(peptide: str) -> str:
         """
     shuffle peptide without moving c-terminal amino acid cleavage site.
     :param peptide sequence
@@ -109,7 +113,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         # return new peptide
         return ''.join(l) + s
 
-    def protein_database_decoy(self, method='reverse'):
+    def protein_database_decoy(self, method: str = 'reverse') -> None:
         """
     The protein decoy function will generate the decoy with two default methods:
      - Reverse: Reverse protein sequence. Reversed databases may overestimate the false positive rate because:
@@ -136,7 +140,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         output_file.close()
 
     @staticmethod
-    def count_aa_in_dictionary(aa_dict: dict, sequence: str):
+    def count_aa_in_dictionary(aa_dict: dict, sequence: str) -> dict:
         """
     This function increase the count of each aminiacid in dictionary aa_dict if present in sequence
     :param aa_dict: dictionary
@@ -148,7 +152,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         return aa_dict
 
     @staticmethod
-    def print_aa_composition_rate(target_aa_composition, decoy_aa_composition):
+    def print_aa_composition_rate(target_aa_composition: dict, decoy_aa_composition: dict) -> None:
         """
     Print the distribution of aminoacid Target/Decoy
     :param target_aa_composition:
@@ -162,7 +166,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
                     "Aminoacid composition rate for %s (Target/Decoy) = %.1f",
                     aa, target_aa_composition[aa] / decoy_aa_composition[aa])
 
-    def print_target_decoy_composition(self):
+    def print_target_decoy_composition(self) -> None:
         """
     Print the number of target peptides vs decoy peptides in a Fasta database
     :return:
@@ -206,7 +210,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         decoy_aa_composition = self.count_aa_in_dictionary(decoy_aa_composition, decoy_seq_accumulated)
         self.print_aa_composition_rate(target_aa_composition, decoy_aa_composition)
 
-    def generate_decoypyrat_database(self):
+    def generate_decoypyrat_database(self) -> None:
         """
     Create a decoy database from a proteomics database this method is presented in manuscript:
     J Proteomics Bioinform. 2016 Jun 27; 9(6): 176–180. PMCID: PMC4941923
@@ -369,7 +373,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
         self.get_logger().info("final decoy peptides: %s", len(dpeps))
 
-    def pgatk_decoy_database(self):
+    def pgatk_decoy_database(self) -> None:
         """
     Create a decoy database from a proteomics database
     target db is digested and only digested peptides > _peptide_length are kept
@@ -486,7 +490,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
             self.get_logger().info('Total number of amino acids in target and decoy databases: %s %s',
                                    len(''.join(targets)), len(''.join(decoys)))
 
-    def decoy_database(self):
+    def decoy_database(self) -> None:
         """
     This method is used to pick the rigth decoy method to generate the decoys.
     :return:

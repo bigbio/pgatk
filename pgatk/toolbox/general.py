@@ -3,12 +3,14 @@ This module implements some useful functions for the pipeline runner.
 
 @author ypriverol
 """
+from __future__ import annotations
+
 import logging
 import os
 import json
 import shutil
 import subprocess
-from typing import List
+from typing import Any, List, Optional
 from urllib import request
 from urllib.error import URLError, ContentTooShortError
 from urllib.parse import urlparse
@@ -39,7 +41,7 @@ class ParameterConfiguration:
     _CONFIG_LOGGER_FORMATTER = 'formatters'
     _CONFIG_LOGGER_LEVEL = 'loglevel'
 
-    def __init__(self, root_config_name, yaml_configuration, pipeline_parameters):
+    def __init__(self, root_config_name: str, yaml_configuration: dict, pipeline_parameters: dict) -> None:
         """
         This function creates a parameter structure from a yaml config file and the pipeline paramters provdided
         in the commandline
@@ -84,7 +86,7 @@ class ParameterConfiguration:
             self._logger.addHandler(lhandler)
         self.get_logger().debug("Logging system initialized")
 
-    def get_config_value(self, key: str, default=None):
+    def get_config_value(self, key: str, default: Any = None) -> Any:
         """Get a configuration value with standard 2-layer fallback.
 
         Checks pipeline_parameters first (flat lookup), then
@@ -101,26 +103,26 @@ class ParameterConfiguration:
             return self._default_params[root][key]
         return default
 
-    def get_pipeline_parameters(self):
+    def get_pipeline_parameters(self) -> dict:
         return self._pipeline_parameters
 
-    def get_default_parameters(self):
+    def get_default_parameters(self) -> dict:
         return self._default_params
 
-    def get_log_handlers(self):
+    def get_log_handlers(self) -> list:
         return self._log_handlers
 
-    def get_logger(self):
+    def get_logger(self) -> logging.Logger:
         # Get own logger
         return self._logger
 
-    def get_session_log_files(self):
+    def get_session_log_files(self) -> list:
         log_files = []
         # Add the application logs
         log_files.extend(self._log_files)
         return log_files
 
-    def get_logger_for(self, name):
+    def get_logger_for(self, name: str) -> logging.Logger:
         """
         Create a logger on demand
         :param name: name to be used in the logger
@@ -134,7 +136,7 @@ class ParameterConfiguration:
         return lg
 
 
-def read_json(json_file="json_file_not_specified.json"):
+def read_json(json_file: str = "json_file_not_specified.json") -> Any:
     """
     Reads a json file and it returns its object representation, no extra checks
     are performed on the file so, in case anything happens, the exception will
@@ -146,7 +148,7 @@ def read_json(json_file="json_file_not_specified.json"):
         return json.load(jf)
 
 
-def read_yaml_from_file(yaml_file):
+def read_yaml_from_file(yaml_file: str) -> Optional[dict]:
     """
   This function allows to read a yaml file with the configuration
   :param yaml_file: yaml file.
@@ -158,7 +160,7 @@ def read_yaml_from_file(yaml_file):
     return data
 
 
-def read_yaml_from_text(yaml_text):
+def read_yaml_from_text(yaml_text: str) -> Any:
     """
   Read the content of the yaml text into a data object
   :param yaml_text: yaml text
@@ -167,7 +169,7 @@ def read_yaml_from_text(yaml_text):
     return yaml.safe_load(yaml_text)
 
 
-def check_create_folders(folders: List):
+def check_create_folders(folders: List[str]) -> None:
     """
     Check if folders exist, create them otherwise
     :param folders: list of folder paths to check
@@ -184,11 +186,11 @@ def check_create_folders(folders: List):
                 raise ToolBoxException("'{}' is not a folder".format(folder))
 
 
-def clear_cache():
+def clear_cache() -> None:
     request.urlcleanup()
 
 
-def download_file(file_url: str, file_name: str, log: logging, url_file=None) -> str:
+def download_file(file_url: str, file_name: str, log: logging, url_file: Optional[Any] = None) -> Optional[str]:
     """
      Download file_url and move it to file_name, do nothing if file_name already exists.
 
@@ -251,7 +253,7 @@ def download_file(file_url: str, file_name: str, log: logging, url_file=None) ->
     return downloaded_file
 
 
-def check_create_folders_overwrite(folders):
+def check_create_folders_overwrite(folders: List[str]) -> None:
     """
     Given a list of folders, this method will create them, overwriting them in case they exist
     :param folders: list of folders to create
@@ -276,7 +278,7 @@ def check_create_folders_overwrite(folders):
     check_create_folders(folders)
 
 
-def create_latest_symlink(destination_path):
+def create_latest_symlink(destination_path: str) -> None:
     """
     Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
     '/nfs/production/folder', the symlink will be
@@ -288,7 +290,7 @@ def create_latest_symlink(destination_path):
     os.symlink(destination_path, symlink_path)
 
 
-def create_latest_symlink_overwrite(destination_path):
+def create_latest_symlink_overwrite(destination_path: str) -> None:
     """
     Create a symlink 'latest' to the given destination_path in its parent folder, i.e. if the given path is
     '/nfs/production/folder', the symlink will be
@@ -303,7 +305,7 @@ def create_latest_symlink_overwrite(destination_path):
     os.symlink(destination_path, symlink_path)
 
 
-def gunzip_files(files):
+def gunzip_files(files: List[str]) -> list[tuple[str, str]]:
     """
     Given a list of paths for Gzip compressed files, this method will uncompress them, returning a list with the files
     that could not be gunzipped and the reason why that happened
@@ -368,7 +370,7 @@ def gunzip_files(files):
     return files_with_error
 
 
-def parse_peptide_groups(peptide_groups_prefix):
+def parse_peptide_groups(peptide_groups_prefix: str) -> dict:
     peptide_groups = {}
     for group in peptide_groups_prefix.split(";"):
         lt = group.split(":")
@@ -378,14 +380,14 @@ def parse_peptide_groups(peptide_groups_prefix):
     return peptide_groups
 
 
-def parse_peptide_classes(peptide_classes_prefix):
+def parse_peptide_classes(peptide_classes_prefix: str) -> dict:
     peptide_groups = {}
     for class_peptide in peptide_classes_prefix.split(","):
         peptide_groups[class_peptide] = [class_peptide]
     return peptide_groups
 
 
-def is_peptide_group(peptide_group_members, accessions):
+def is_peptide_group(peptide_group_members: list, accessions: list) -> bool:
     """
   Given a group of classes and a list of accessions of a peptide. Returns True if all accessions match to exactly one class in the group.
   :param peptide_group_members: all protein classes
@@ -401,7 +403,7 @@ def is_peptide_group(peptide_group_members, accessions):
     return len(accessions) == accession_group
 
 
-def is_peptide_decoy(accessions, prefix):
+def is_peptide_decoy(accessions: list, prefix: str) -> bool:
     return any(prefix in s for s in accessions)
 
 

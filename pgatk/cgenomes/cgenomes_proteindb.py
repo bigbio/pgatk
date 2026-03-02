@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import logging
 import re
 from pathlib import Path
+from typing import Any, Optional
 
 from Bio import SeqIO
 
@@ -21,7 +24,7 @@ class CancerGenomesService(ParameterConfiguration):
     CLINICAL_SAMPLE_FILE = 'clinical_sample_file'
     CONFIG_COSMIC_SERVER = 'cosmic_server'
 
-    def __init__(self, config_file, pipeline_arguments):
+    def __init__(self, config_file: dict, pipeline_arguments: dict) -> None:
         """
         Init the class with the specific parameters.
         :param config_file configuration file
@@ -64,7 +67,7 @@ class CancerGenomesService(ParameterConfiguration):
         if self.CONFIG_OUTPUT_FILE in self.get_pipeline_parameters():
             self._local_output_file = self.get_pipeline_parameters()[self.CONFIG_OUTPUT_FILE]
 
-    def get_mutations_default_options(self, variable: str, default_value):
+    def get_mutations_default_options(self, variable: str, default_value: Any) -> Any:
         return_value = default_value
         if variable in self.get_pipeline_parameters():
             return_value = self.get_pipeline_parameters()[variable]
@@ -76,7 +79,7 @@ class CancerGenomesService(ParameterConfiguration):
         return return_value
 
     @staticmethod
-    def get_multiple_options(options_str: str):
+    def get_multiple_options(options_str: str) -> list[str]:
         """
         This method takes an String like option1, option2, ... and produce and array [option1, option2,... ]
         :param options_str:
@@ -85,7 +88,7 @@ class CancerGenomesService(ParameterConfiguration):
         return list(map(lambda x: x.strip(), options_str.split(",")))
 
     @staticmethod
-    def get_mut_pro_seq(snp, seq):
+    def get_mut_pro_seq(snp: SNP, seq: str) -> Optional[str]:
         nucleotide = ["A", "T", "C", "G"]
         mut_pro_seq = ""
         if "?" not in snp.dna_mut and snp.aa_mut != 'p.?':  # unambiguous DNA change known in CDS sequence
@@ -174,7 +177,7 @@ class CancerGenomesService(ParameterConfiguration):
 
         return mut_pro_seq
 
-    def cosmic_to_proteindb(self):
+    def cosmic_to_proteindb(self) -> None:
         """
         This function translates the mutation file + COSMIC genes into a protein Fasta database. The
         method writes into the file system the output Fasta.
@@ -266,7 +269,7 @@ class CancerGenomesService(ParameterConfiguration):
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
 
     @staticmethod
-    def get_sample_headers(header_line, filter_coumn):
+    def get_sample_headers(header_line: list, filter_coumn: str) -> tuple[Optional[int], Optional[int]]:
         _logger = logging.getLogger(__name__)
         try:
             filter_col = header_line.index(filter_coumn)
@@ -280,7 +283,7 @@ class CancerGenomesService(ParameterConfiguration):
             return None, None
         return filter_col, sample_id_col
 
-    def get_value_per_sample(self, local_clinical_sample_file, filter_column):
+    def get_value_per_sample(self, local_clinical_sample_file: str, filter_column: str) -> dict:
         sample_value = {}
         if local_clinical_sample_file:
             with open(local_clinical_sample_file, 'r', encoding='utf-8') as clin_fn:
@@ -300,13 +303,13 @@ class CancerGenomesService(ParameterConfiguration):
         return sample_value
 
     @staticmethod
-    def get_mut_header_cols(header_cols, row):
+    def get_mut_header_cols(header_cols: dict, row: list) -> dict:
         for col in header_cols.keys():
             header_cols[col] = row.index(col)
 
         return header_cols
 
-    def cbioportal_to_proteindb(self):
+    def cbioportal_to_proteindb(self) -> None:
         """cBioportal studies have a data_clinical_sample.txt file
     that shows the Primary Tumor Site per Sample Identifier
     The sample ID in the clinical file matches Tumor_Sample_Barcode column in the mutations file.

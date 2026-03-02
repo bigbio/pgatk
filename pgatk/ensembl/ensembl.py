@@ -1,6 +1,10 @@
+from __future__ import annotations
+
 import logging
 import sqlite3
 from pathlib import Path
+from typing import Any, Optional
+
 import gffutils
 from Bio import SeqIO
 from Bio.Seq import Seq
@@ -38,7 +42,7 @@ class EnsemblDataService(ParameterConfiguration):
     IGNORE_FILTERS = "ignore_filters"
     ACCEPTED_FILTERS = "accepted_filters"
 
-    def __init__(self, config_file, pipeline_arguments):
+    def __init__(self, config_file: dict, pipeline_arguments: dict) -> None:
         """
     Init the class with the specific parameters.
     :param config_file configuration file
@@ -93,7 +97,7 @@ class EnsemblDataService(ParameterConfiguration):
         self._accepted_filters = self.get_multiple_options(
             self.get_translation_properties(variable=self.ACCEPTED_FILTERS, default_value='PASS'))
 
-    def get_translation_properties(self, variable, default_value):
+    def get_translation_properties(self, variable: str, default_value: Any) -> Any:
         value_return = default_value
         if variable in self.get_pipeline_parameters():
             value_return = self.get_pipeline_parameters()[variable]
@@ -103,7 +107,7 @@ class EnsemblDataService(ParameterConfiguration):
             value_return = self.get_default_parameters()[self.CONFIG_KEY_DATA][self.CONFIG_KEY_VCF][variable]
         return value_return
 
-    def three_frame_translation(self, input_fasta):
+    def three_frame_translation(self, input_fasta: str) -> None:
         """
     This function translate a transcriptome into a 3'frame translation protein sequence database
     :param input_fasta: fasta input file
@@ -126,7 +130,7 @@ class EnsemblDataService(ParameterConfiguration):
                     output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF3', RF3))
 
     @staticmethod
-    def get_multiple_options(options_str: str):
+    def get_multiple_options(options_str: str) -> list[str]:
         """
         This method takes an String like option1, option2, ... and produce and array [option1, option2,... ]
         :param options_str:
@@ -135,7 +139,7 @@ class EnsemblDataService(ParameterConfiguration):
         return list(map(lambda x: x.strip(), options_str.split(",")))
 
     @staticmethod
-    def check_overlap(var_start, var_end, features_info=None):
+    def check_overlap(var_start: int, var_end: int, features_info: Optional[list] = None) -> bool:
         """
     This function returns true when the variant overlaps any of the features
     :param var_start: Start location
@@ -161,7 +165,7 @@ class EnsemblDataService(ParameterConfiguration):
         return False
 
     @staticmethod
-    def get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info=None):
+    def get_altseq(ref_seq: str, ref_allele: str, var_allele: str, var_pos: int, strand: str, features_info: list, cds_info: Optional[list] = None) -> tuple:
         """
     The given sequence in the fasta file represents all exons of the transcript combined.
     for protein coding genes, the CDS is specified therefore the sequence position has to be
@@ -223,7 +227,7 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_seq, alt_seq
 
     @staticmethod
-    def parse_gtf(gene_annotations_gtf, gtf_db_file):
+    def parse_gtf(gene_annotations_gtf: str, gtf_db_file: str) -> gffutils.FeatureDB:
         """
     Convert GTF file into a FeatureDB
     :param gene_annotations_gtf:
@@ -242,7 +246,7 @@ class EnsemblDataService(ParameterConfiguration):
         return db
 
     @staticmethod
-    def get_features(db, feature_id, feature_types=None):
+    def get_features(db: gffutils.FeatureDB, feature_id: str, feature_types: Optional[list] = None) -> tuple:
         """
     Get chr, genomic positions, strand and biotype for feature_id
     also genomic positions for all its elements (exons/cds&start_codon)
@@ -273,7 +277,7 @@ class EnsemblDataService(ParameterConfiguration):
         return feature.chrom, feature.strand, coding_features
 
     @staticmethod
-    def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs=1):
+    def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs: int = 1) -> tuple[list, list]:
         """
     Translate the coding_ref and the coding_alt into ORFs
     :param ref_seq:
@@ -292,7 +296,7 @@ class EnsemblDataService(ParameterConfiguration):
         return ref_orfs, alt_orfs
 
     @staticmethod
-    def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool):
+    def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool) -> list:
         """
     translate the coding_ref into ORFs
     """
@@ -307,7 +311,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         return ref_orfs
 
-    def dnaseq_to_proteindb(self, input_fasta):
+    def dnaseq_to_proteindb(self, input_fasta: str) -> str:
         """
     translates DNA sequences to protein sequences
     :param input_fasta: input fasta file
@@ -394,15 +398,15 @@ class EnsemblDataService(ParameterConfiguration):
         return self._proteindb_output
 
     @staticmethod
-    def get_key(fasta_header):
+    def get_key(fasta_header: str) -> str:
         return fasta_header.split('|')[0].split(' ')[0]
 
     @staticmethod
-    def annoate_vcf(vcf_file, gtf_file,
-                    vcf_info_field_index=7, record_type_index=2,
-                    gene_info_index=8, gene_info_sep=';',
-                    transcript_str='transcript_id', transcript_info_sep=' ',
-                    annotation_str='transcriptOverlaps'):
+    def annoate_vcf(vcf_file: str, gtf_file: str,
+                    vcf_info_field_index: int = 7, record_type_index: int = 2,
+                    gene_info_index: int = 8, gene_info_sep: str = ';',
+                    transcript_str: str = 'transcript_id', transcript_info_sep: str = ' ',
+                    annotation_str: str = 'transcriptOverlaps') -> str:
         """
     intersect vcf and a gtf, add ID of the overlapping transcript to the vcf INFO field
     """
@@ -452,7 +456,7 @@ class EnsemblDataService(ParameterConfiguration):
         return f"{vcf_stem}_annotated.vcf"
 
     @staticmethod
-    def vcf_from_file(vcf_file):
+    def vcf_from_file(vcf_file: str) -> tuple[list, pd.DataFrame]:
         """
     Read a VCF file and return a dataframe for the records
     as well as a list for the metadata
@@ -484,7 +488,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         return metadata, vcf_df
 
-    def vcf_to_proteindb(self, vcf_file, input_fasta, gene_annotations_gtf):
+    def vcf_to_proteindb(self, vcf_file: str, input_fasta: str, gene_annotations_gtf: str) -> str:
         """
     Generate proteins for variants by modifying sequences of affected transcripts.
     In case of already annotated variants it only considers variants within
@@ -747,13 +751,13 @@ class EnsemblDataService(ParameterConfiguration):
         return self._proteindb_output
 
     @staticmethod
-    def add_protein_to_map(seq: str, new_desc_string: str, protein_id: str, proteins, output_handle):
+    def add_protein_to_map(seq: str, new_desc_string: str, protein_id: str, proteins: list, output_handle: Any) -> list:
         protein = {'description': new_desc_string, 'sequence': seq, 'accession': protein_id}
         proteins.append(protein)
         output_handle.write(">{}\t{}\n{}\n".format(protein_id, new_desc_string, seq))
         return proteins
 
-    def check_proteindb(self, input_fasta: str = None, add_stop_codon: bool = False, num_aa: int = 6):
+    def check_proteindb(self, input_fasta: Optional[str] = None, add_stop_codon: bool = False, num_aa: int = 6) -> None:
 
         with open(input_fasta, 'r', encoding='utf-8') as input_handle:
             with open(self._proteindb_output, 'w', encoding='utf-8') as output_handle:
@@ -819,7 +823,7 @@ class EnsemblDataService(ParameterConfiguration):
         self.get_logger().info("   total number of proteins less than %s aminoacids: %s", num_aa, less)
 
     @staticmethod
-    def write_output(seq_id, desc, seqs, prots_fn, seqs_filter=None):
+    def write_output(seq_id: str, desc: str, seqs: list, prots_fn: Any, seqs_filter: Optional[list] = None) -> None:
         """
     write the orfs to the output file
     :param seq_id: Sequence Accession

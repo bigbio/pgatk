@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import datetime
 import functools
 import logging
+from typing import Any, Optional, Union
 
 import pandas as pd
 from Bio import SeqIO
@@ -10,7 +13,7 @@ import ahocorasick
 
 from pgatk.toolbox.general import ParameterConfiguration
 
-def get_details(fasta, peptide):
+def get_details(fasta: str, peptide: str) -> list:
     res = []
     i = 0
     j = 0
@@ -23,7 +26,7 @@ def get_details(fasta, peptide):
             res.append(str(i) + "|" + AA1 + ">" + AA2)
     return res
 
-def peptide_blast_protein(fasta, peptide):
+def peptide_blast_protein(fasta: str, peptide: str) -> list:
     length = len(peptide)
     mismatch = []
     if len(fasta) >= length:
@@ -35,7 +38,7 @@ def peptide_blast_protein(fasta, peptide):
                 break
     return mismatch
 
-def _blast_set(fasta_dict, peptide):
+def _blast_set(fasta_dict: dict, peptide: str) -> Union[list, str]:
     positions = dict()
     for fasta in fasta_dict.keys():
         mismatch = peptide_blast_protein(fasta, peptide)
@@ -62,7 +65,7 @@ class BlastGetPositionService(ParameterConfiguration):
     CONFIG_INPUT_REFERENCE_DATABASE = 'input_reference_database'
     CONFIG_NUMBER_OF_PROCESSES = 'number_of_processes'
 
-    def __init__(self, config_data, pipeline_arguments):
+    def __init__(self, config_data: dict, pipeline_arguments: dict) -> None:
         """
         init the class with the specific parameters.
         :param config_data configuration file
@@ -84,10 +87,10 @@ class BlastGetPositionService(ParameterConfiguration):
                 self.fasta_dict[str(j.seq)] = {j.id}
         self.blast_dict = {}
 
-    def get_blast_parameters(self, variable: str, default_value):
+    def get_blast_parameters(self, variable: str, default_value: Any) -> Any:
         return self.get_config_value(variable, default_value)
 
-    def _blast_canonical(self, df):
+    def _blast_canonical(self, df: pd.DataFrame) -> pd.DataFrame:
         seq_set = set(df["sequence"].to_list())
 
         auto = ahocorasick.Automaton()
@@ -107,11 +110,11 @@ class BlastGetPositionService(ParameterConfiguration):
         return df
 
     @staticmethod
-    def _result_worker(fasta_dict, sequence):
+    def _result_worker(fasta_dict: dict, sequence: str) -> tuple[str, Union[list, str]]:
         """Process a single peptide and return (sequence, blast_result)."""
         return (sequence, _blast_set(fasta_dict, sequence))
 
-    def blast(self, input_psm_to_blast, output_psm):
+    def blast(self, input_psm_to_blast: str, output_psm: str) -> None:
         """
         Blast peptide and reference protein database to find variation sites.
         :param input_psm_to_blast: input PSM table to blast
