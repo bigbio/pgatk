@@ -3,7 +3,7 @@ from __future__ import annotations
 import datetime
 import functools
 import logging
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import pandas as pd
 from Bio import SeqIO

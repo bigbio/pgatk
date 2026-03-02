@@ -6,7 +6,7 @@ import os.path
 import re
 from concurrent.futures import ProcessPoolExecutor
 from functools import partial
-from typing import Any, Optional, Union
+from typing import Any, Union
 
 import pandas as pd
 from pyopenms import (TheoreticalSpectrumGenerator, MSSpectrum,

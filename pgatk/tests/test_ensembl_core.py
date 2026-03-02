@@ -1,6 +1,5 @@
 """Unit tests for EnsemblDataService core static methods."""
 
-import pytest
 from Bio.Seq import Seq
 
 from pgatk.ensembl.ensembl import EnsemblDataService

@@ -12,7 +12,7 @@ import shutil
 import subprocess
 from typing import Any, List, Optional
 from urllib import request
-from urllib.error import URLError, ContentTooShortError
+from urllib.error import URLError
 from urllib.parse import urlparse
 import yaml
 import gzip
@@ -238,17 +238,13 @@ def download_file(file_url: str, file_name: str, log: logging, url_file: Optiona
                     downloaded_file = extracted_file
                     log.debug("File extracted-- " + downloaded_file)
             break
-        except (HTTPError, URLError, ContentTooShortError,) as error:
+        except (HTTPError, URLError, OSError) as error:
             logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(
                 REMAINING_DOWNLOAD_TRIES - remaining_download_tries))
             log.error("Error code: " + str(error))
             remaining_download_tries = remaining_download_tries - 1
             downloaded_file = None
             continue
-        except (URLError, ContentTooShortError, OSError, HTTPError) as error:
-            remaining_download_tries = remaining_download_tries - 1
-            log.error("Error code: " + str(error))
-            downloaded_file = None
 
     return downloaded_file
 

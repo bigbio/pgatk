@@ -1,6 +1,5 @@
 """Unit tests for CancerGenomesService.get_mut_pro_seq()."""
 
-import pytest
 from Bio.Seq import Seq
 
 from pgatk.cgenomes.cgenomes_proteindb import CancerGenomesService

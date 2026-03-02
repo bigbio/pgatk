@@ -3,8 +3,6 @@
 import random
 from collections import Counter
 
-import pytest
-
 from pgatk.proteomics.db.protein_database_decoy import ProteinDBDecoyService
 
 
