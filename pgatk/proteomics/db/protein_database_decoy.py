@@ -167,7 +167,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         target_aa_composition = {i: 0 for i in [aa for aa in PGATK_ALPHABET]}
         decoy_aa_composition = {i: 0 for i in [aa for aa in PGATK_ALPHABET]}
         target_sequence = ''
-        decoy_sequence = ''
+        decoy_seq_accumulated = ''
 
         fasta = SeqIO.parse(self._output_file, 'fasta')
         target_peptides = {}
@@ -177,7 +177,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
             peptides = cleave(sequence=str(record.seq), rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                               missed_cleavages=self._max_missed_cleavages, min_length=self._min_peptide_length)
             if self._decoy_prefix in record.id:
-                decoy_sequence = decoy_sequence + str(record.seq)
+                decoy_seq_accumulated = decoy_seq_accumulated + str(record.seq)
             else:
                 target_sequence = target_sequence + str(record.seq)
             for peptide in peptides:
@@ -200,7 +200,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
             'Number of peptides in Target and Decoy {}, Percentage {:.1f}'.format(pep_count_in_both,
                                                                                   duplicate_percentage))
         target_aa_composition = self.count_aa_in_dictionary(target_aa_composition, target_sequence)
-        decoy_aa_composition = self.count_aa_in_dictionary(decoy_aa_composition, decoy_sequence)
+        decoy_aa_composition = self.count_aa_in_dictionary(decoy_aa_composition, decoy_seq_accumulated)
         self.print_aa_composition_rate(target_aa_composition, decoy_aa_composition)
 
     def generate_decoypyrat_database(self):
