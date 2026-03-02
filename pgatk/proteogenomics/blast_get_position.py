@@ -1,8 +1,9 @@
+import datetime
+import functools
+
 import pandas as pd
 from Bio import SeqIO
-import datetime
-from pathos.multiprocessing import ProcessingPool as Pool
-from multiprocessing import Manager
+from concurrent.futures import ProcessPoolExecutor
 from tqdm import tqdm
 import ahocorasick
 
@@ -82,7 +83,7 @@ class BlastGetPositionService(ParameterConfiguration):
                 self.fasta_dict[str(j.seq)].add(j.id)
             else:
                 self.fasta_dict[str(j.seq)] = {j.id}
-        self.blast_dict = Manager().dict()
+        self.blast_dict = {}
 
     def get_blast_parameters(self, variable: str, default_value):
         value_return = default_value
@@ -112,8 +113,10 @@ class BlastGetPositionService(ParameterConfiguration):
         df["position"] = df["sequence"].map(seq_dict)
         return df
 
-    def _result(self, sequence):
-        self.blast_dict[sequence] = _blast_set(self.fasta_dict, sequence)
+    @staticmethod
+    def _result_worker(fasta_dict, sequence):
+        """Process a single peptide and return (sequence, blast_result)."""
+        return (sequence, _blast_set(fasta_dict, sequence))
 
     def blast(self, input_psm_to_blast, output_psm):
         """
@@ -148,11 +151,13 @@ class BlastGetPositionService(ParameterConfiguration):
         seq_set = set(psm_to_blast["sequence"].to_list())
         seq_list = list(seq_set)
 
-        pool = Pool(int(self._number_of_processes))
-        list(tqdm(pool.imap(self._result, seq_list), total=len(seq_list), desc="Blast", unit="peptide"))
+        worker = functools.partial(BlastGetPositionService._result_worker, self.fasta_dict)
+        with ProcessPoolExecutor(max_workers=int(self._number_of_processes)) as executor:
+            results = list(tqdm(executor.map(worker, seq_list, chunksize=100),
+                                total=len(seq_list), desc="Blast", unit="peptide"))
 
-        pool.close()
-        pool.join()
+        for sequence, blast_result in results:
+            self.blast_dict[sequence] = blast_result
 
         psm_to_blast["position"] = psm_to_blast["sequence"].map(self.blast_dict.get)
 
