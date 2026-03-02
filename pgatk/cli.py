@@ -27,6 +27,7 @@ from pgatk.commands import proteindb_decoy as proteindb_decoy_cmd
 from pgatk.commands import validate_peptides as validate_peptides_cmd
 from pgatk.commands import blast_get_position as blast_get_position_cmd
 from pgatk.commands import digest_mutant_protein as digest_mutant_protein_cmd
+from pgatk.commands import map_peptide2genome as map_peptide2genome_cmd
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -52,6 +53,7 @@ cli.add_command(proteindb_decoy_cmd.generate_database)
 cli.add_command(validate_peptides_cmd.spectrumai)
 cli.add_command(blast_get_position_cmd.blast_get_position)
 cli.add_command(digest_mutant_protein_cmd.digest_mutant_protein)
+cli.add_command(map_peptide2genome_cmd.map_peptide2genome)
 
 
 def main():

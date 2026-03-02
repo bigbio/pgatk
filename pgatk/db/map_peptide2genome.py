@@ -1,16 +1,21 @@
 """
-    this script will map proteomics identified peptides to genome and output an peptide gff3 file with coordinates.
-    The input peptide table should contain minimum two columns, peptide sequence and Ensembl protein ID.
-    Three additional files are required:
-    1. Ensembl protein db (same one used in database search)
-    2. Ensembl GTF annotation
-    3. IDmap file with three columns, first column Ensembl Gene ID, second column Ensembl transcript ID and third Ensembl protein ID.
+Map proteomics-identified peptides to genomic coordinates and output a GFF3 file.
+
+The input peptide table should contain at minimum two columns: peptide sequence
+and Ensembl protein ID.  Three additional files are required:
+
+1. Ensembl protein database (same one used in the database search)
+2. Ensembl GTF annotation
+3. ID-mapping file with three columns: Ensembl Gene ID, Ensembl Transcript ID,
+   and Ensembl Protein ID.
 """
 
-import sys
-import getopt
+import logging
 import re
+
 from Bio import SeqIO
+
+log = logging.getLogger(__name__)
 
 
 class EXON(object):
@@ -82,7 +87,7 @@ def parse_gtf(infile):
     dic = {}
     with open(infile, "r", encoding='utf-8') as infile_object:
         for line in infile_object:
-            if line[0] != "#":  # skip lines commmented out
+            if line[0] != "#":  # skip lines commented out
                 row = line.strip().split("\t")
                 if row[2] == "CDS":
                     attri_list = row[8].split(";")
@@ -99,163 +104,172 @@ def parse_gtf(infile):
     return dic
 
 
-################  Comand-line arguments ################
-# default peptide sequence in first column, protein ID in second column
-pep_col = 1
-prot_col = 2
+def map_peptides_to_genome(
+    input_file: str,
+    gtf_file: str,
+    fasta_file: str,
+    idmap_file: str,
+    output_file: str,
+    pep_col: int = 0,
+    prot_col: int = 1,
+) -> None:
+    """Map identified peptides to genomic coordinates and write a GFF3 file.
 
-if len(sys.argv[1:]) <= 1:  ### Indicates that there are insufficient number of command-line arguments
-    print("Warning! wrong command, please read the mannual")
-    print(
-        "Example: python map_peptide2genome.py --input peptideTable.txt --gtf Homo_sapiens.GRCh37.90.gtf --fasta Homo_sapiens.GRCh37.90.pep.all.fa  --IDmap Ensembl90_IDmap.txt --output output_filename")
-    sys.exit(1)
+    Parameters
+    ----------
+    input_file : str
+        Path to the input peptide identification TSV (header row expected).
+    gtf_file : str
+        Path to the Ensembl GTF gene annotation file.
+    fasta_file : str
+        Path to the Ensembl protein FASTA file.
+    idmap_file : str
+        Path to the protein-to-transcript ID mapping file (Gene / Transcript / Protein columns).
+    output_file : str
+        Path to the output GFF3 file.
+    pep_col : int
+        Zero-based column index for the peptide sequence (default 0).
+    prot_col : int
+        Zero-based column index for the protein accession (default 1).
+    """
+    # Convert to 1-based internally (original script used 1-based columns)
+    _pep_col = pep_col + 1
+    _prot_col = prot_col + 1
 
-# Initialize variables
-input_file = None
-gtf_file = None
-fasta_file = None
-IDmap_file = None
-output_file = None
+    log.info("Reading GTF input file")
+    feature_dic = parse_gtf(gtf_file)
+    log.info("Number of unique transcripts in GTF file: %d", len(feature_dic))
 
-options, remainder = getopt.getopt(sys.argv[1:], '',
-                                   ['input=', 'gtf=', 'fasta=', 'IDmap=', 'output=', 'pep_col=', 'prot_col='])
-for opt, arg in options:
-    if opt == '--input':
-        input_file = arg
-    elif opt == '--gtf':
-        gtf_file = arg
-    elif opt == '--fasta':
-        fasta_file = arg
-    elif opt == '--IDmap':
-        IDmap_file = arg
-    elif opt == '--output':
-        output_file = arg
-    elif opt == '--pep_col':
-        pep_col = int(arg)
-    elif opt == '--prot_col':
-        prot_col = int(arg)
-    else:
-        print("Warning! Command-line argument: %s not recognized. Exiting..." % opt)
+    with open(idmap_file, "r", encoding='utf-8') as IDlist_input:
+        id_dic = {}
+        for line in IDlist_input:
+            row = line.strip().split("\t")
+            if len(row) == 3:
+                enst = row[1]
+                ensp = row[2]
+                if ensp not in id_dic:
+                    id_dic[ensp] = enst
+    log.info("Number of unique ENSP IDs in ID table: %d", len(id_dic))
+
+    pep_dic = {}
+    with open(input_file, 'r', encoding='utf-8') as input_stream:
+        # peptide table with two columns, peptide sequence in first column, protein ID in second column
+        input_stream.readline()
+        for line in input_stream:
+            row = line.strip().split("\t")
+            pep = re.sub(r"[\W\d]", "", row[_pep_col - 1].strip())
+            acc = row[_prot_col - 1].split(";")[0]  # in case there are multiple IDs
+            if pep not in pep_dic:
+                pep_dic[pep] = acc
+
+    seq_dic = SeqIO.index(fasta_file, 'fasta')
+    log.info("Number of unique protein sequences in FASTA file: %d", len(seq_dic))
+
+    non_mapped_pep = 0
+
+    with open(output_file, 'w', encoding='utf-8') as output:
+        for peptide, ensp in pep_dic.items():
+            enst = id_dic[ensp]
+            try:
+                exons = feature_dic[enst]
+            except KeyError:
+                non_mapped_pep += 1
+                continue
+
+            aa_seq = str(seq_dic[ensp].seq)
+            pep_index = aa_seq.index(peptide)
+
+            pep_trans_start = 3 * pep_index + 1
+            pep_trans_end = pep_trans_start + 3 * len(peptide) - 1
+
+            exons = cal_trans_pos(exons)
+
+            pep_chr, pep_strand, pep_chr_start, pep_chr_end, pep_start_exon, pep_end_exon = get_pep_cor(
+                exons, pep_trans_start, pep_trans_end
+            )
+
+            # handle exceptions
+            if pep_chr_start > pep_chr_end:
+                non_mapped_pep += 1
+                continue
+            if pep_chr_start <= 0:
+                non_mapped_pep += 1
+                continue
+
+            pep_chr = "chr" + pep_chr.replace("MT", "M")
+            if pep_start_exon == pep_end_exon:  # if peptide maps to one exon
+                gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
+                                    "ID=" + peptide]
+                gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, pep_chr_end, ".", pep_strand, "0",
+                                    "Parent=" + peptide]
+                output.write("\t".join(map(str, gff_format_line1)) + "\n")
+                output.write("\t".join(map(str, gff_format_line2)) + "\n")
+            elif abs(pep_start_exon - pep_end_exon) == 1:  # splice junction peptide spanning two exons
+                if pep_strand == "+":
+                    gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
+                                        "ID=" + peptide]
+                    gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_start_exon - 1].end, ".",
+                                        pep_strand, "0", "Parent=" + peptide]
+                    gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_end_exon - 1].start, pep_chr_end, ".",
+                                        pep_strand, ".", "Parent=" + peptide]
+                else:
+                    gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
+                                        "ID=" + peptide]
+                    gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_end_exon - 1].end, ".",
+                                        pep_strand, "0", "Parent=" + peptide]
+                    gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_start_exon - 1].start, pep_chr_end, ".",
+                                        pep_strand, ".", "Parent=" + peptide]
+
+                output.write("\t".join(map(str, gff_format_line1)) + "\n")
+                output.write("\t".join(map(str, gff_format_line2)) + "\n")
+                output.write("\t".join(map(str, gff_format_line3)) + "\n")
+            elif abs(pep_start_exon - pep_end_exon) > 1:  # peptide spans multiple exons, rare case
+                if pep_strand == "+":
+                    gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
+                                        "ID=" + peptide]
+                    gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_start_exon - 1].end, ".",
+                                        pep_strand, "0", "Parent=" + peptide]
+                    gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_end_exon - 1].start, pep_chr_end, ".",
+                                        pep_strand, ".", "Parent=" + peptide]
+                else:
+                    gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
+                                        "ID=" + peptide]
+                    gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_end_exon - 1].end, ".",
+                                        pep_strand, "0", "Parent=" + peptide]
+                    gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_start_exon - 1].start, pep_chr_end, ".",
+                                        pep_strand, ".", "Parent=" + peptide]
+
+                output.write("\t".join(map(str, gff_format_line1)) + "\n")
+                output.write("\t".join(map(str, gff_format_line2)) + "\n")
+                for k in range(min(pep_start_exon, pep_end_exon) + 1, max(pep_start_exon, pep_end_exon)):
+                    gff_format_line = [pep_chr, "MS", "CDS", exons[k - 1].start, exons[k - 1].end, ".", pep_strand,
+                                       ".", "Parent=" + peptide]
+                    output.write("\t".join(map(str, gff_format_line)) + "\n")
+
+                output.write("\t".join(map(str, gff_format_line3)) + "\n")
+
+    log.info("Total number of unique peptides: %d", len(pep_dic))
+    log.info("Total number of unmapped peptides: %d", non_mapped_pep)
+
+
+if __name__ == '__main__':
+    import sys
+
+    logging.basicConfig(level=logging.INFO, format='%(levelname)s: %(message)s')
+
+    if len(sys.argv) < 6:
+        print("Usage: python map_peptide2genome.py <input> <gtf> <fasta> <idmap> <output> [pep_col] [prot_col]")
         sys.exit(1)
 
-# Validate required arguments
-if not all([input_file, gtf_file, fasta_file, IDmap_file, output_file]):
-    print("Error: Missing required arguments. All of --input, --gtf, --fasta, --IDmap, and --output must be provided.")
-    sys.exit(1)
+    _pep_col = int(sys.argv[6]) if len(sys.argv) > 6 else 0
+    _prot_col = int(sys.argv[7]) if len(sys.argv) > 7 else 1
 
-print("reading GTF input file")
-feature_dic = parse_gtf(gtf_file)
-print("number of unique transcripts in GTF file", len(feature_dic))
-
-with open(IDmap_file, "r", encoding='utf-8') as IDlist_input:
-    id_dic = {}
-    for line in IDlist_input:
-        row = line.strip().split("\t")
-        if len(row) == 3:
-            enst = row[1]
-            ensp = row[2]
-            if ensp not in id_dic:
-                id_dic[ensp] = enst
-print("number of unique ENSP IDs in ID table", len(id_dic))
-
-pep_dic = {}
-with open(input_file, 'r', encoding='utf-8') as input_stream:
-    # peptide table with two columns, peptide sequence in first column, protein ID in second column
-    input_stream.readline()
-    for line in input_stream:
-        row = line.strip().split("\t")
-        pep = re.sub("[\W\d]", "", row[pep_col - 1].strip())
-        acc = row[prot_col - 1].split(";")[0]  # in case there are multiple IDs
-        if pep not in pep_dic:
-            pep_dic[pep] = acc
-
-seq_dic = SeqIO.index(fasta_file, 'fasta')
-print("number of unique protein sequences in fasta file", len(seq_dic))
-
-non_mapped_pep = 0
-
-with open(output_file, 'w', encoding='utf-8') as output:
-    for peptide, ensp in pep_dic.items():
-        enst = id_dic[ensp]
-        try:
-            exons = feature_dic[enst]
-        except KeyError:
-            non_mapped_pep += 1
-            continue
-
-        aa_seq = str(seq_dic[ensp].seq)
-        pep_index = aa_seq.index(peptide)
-
-        pep_trans_start = 3 * pep_index + 1
-        pep_trans_end = pep_trans_start + 3 * len(peptide) - 1
-
-        exons = cal_trans_pos(exons)
-
-        # print pep_trans_start,pep_trans_end
-        pep_chr, pep_strand, pep_chr_start, pep_chr_end, pep_start_exon, pep_end_exon = get_pep_cor(exons, pep_trans_start,
-                                                                                                    pep_trans_end)
-
-        # handle exceptions
-        if pep_chr_start > pep_chr_end:
-            non_mapped_pep += 1
-            # print peptide,ensp,enst
-            continue
-        if pep_chr_start <= 0:
-            non_mapped_pep += 1
-            # print peptide,ensp,enst,pep_trans_start,pep_trans_end
-            continue
-
-        # print pep_chr_start,pep_chr_end
-        # print pep_start_exon,pep_end_exon
-        pep_chr = "chr" + pep_chr.replace("MT", "M")
-        if pep_start_exon == pep_end_exon:  # if peptide map to one exon
-            gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".", "ID=" + peptide]
-            gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, pep_chr_end, ".", pep_strand, "0", "Parent=" + peptide]
-            output.write("\t".join(map(str, gff_format_line1)) + "\n")
-            output.write("\t".join(map(str, gff_format_line2)) + "\n")
-        elif abs(pep_start_exon - pep_end_exon) == 1:  # if it is a splice junction peptide spanning over two exons
-            if pep_strand == "+":
-                gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
-                                    "ID=" + peptide]
-                gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_start_exon - 1].end, ".", pep_strand,
-                                    "0", "Parent=" + peptide]
-                gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_end_exon - 1].start, pep_chr_end, ".", pep_strand, ".",
-                                    "Parent=" + peptide]
-            else:
-                gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
-                                    "ID=" + peptide]
-                gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_end_exon - 1].end, ".", pep_strand, "0",
-                                    "Parent=" + peptide]
-                gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_start_exon - 1].start, pep_chr_end, ".", pep_strand,
-                                    ".", "Parent=" + peptide]
-
-            output.write("\t".join(map(str, gff_format_line1)) + "\n")
-            output.write("\t".join(map(str, gff_format_line2)) + "\n")
-            output.write("\t".join(map(str, gff_format_line3)) + "\n")
-        elif abs(pep_start_exon - pep_end_exon) > 1:  # if peptide span multiple exons,rare case!
-            if pep_strand == "+":
-                gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
-                                    "ID=" + peptide]
-                gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_start_exon - 1].end, ".", pep_strand,
-                                    "0", "Parent=" + peptide]
-                gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_end_exon - 1].start, pep_chr_end, ".", pep_strand, ".",
-                                    "Parent=" + peptide]
-            else:
-                gff_format_line1 = [pep_chr, "MS", "mRNA", pep_chr_start, pep_chr_end, ".", pep_strand, ".",
-                                    "ID=" + peptide]
-                gff_format_line2 = [pep_chr, "MS", "CDS", pep_chr_start, exons[pep_end_exon - 1].end, ".", pep_strand, "0",
-                                    "Parent=" + peptide]
-                gff_format_line3 = [pep_chr, "MS", "CDS", exons[pep_start_exon - 1].start, pep_chr_end, ".", pep_strand,
-                                    ".", "Parent=" + peptide]
-
-            output.write("\t".join(map(str, gff_format_line1)) + "\n")
-            output.write("\t".join(map(str, gff_format_line2)) + "\n")
-            for k in range(min(pep_start_exon, pep_end_exon) + 1, max(pep_start_exon, pep_end_exon)):
-                gff_format_line = [pep_chr, "MS", "CDS", exons[k - 1].start, exons[k - 1].end, ".", pep_strand, ".",
-                                   "Parent=" + peptide]
-                output.write("\t".join(map(str, gff_format_line)) + "\n")
-
-            output.write("\t".join(map(str, gff_format_line3)) + "\n")
-
-print("total number of unique peptides", len(pep_dic))
-print("total number of unmapped peptides", non_mapped_pep)
+    map_peptides_to_genome(
+        input_file=sys.argv[1],
+        gtf_file=sys.argv[2],
+        fasta_file=sys.argv[3],
+        idmap_file=sys.argv[4],
+        output_file=sys.argv[5],
+        pep_col=_pep_col,
+        prot_col=_prot_col,
+    )
