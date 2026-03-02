@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os.path
 import re
 from concurrent.futures import ProcessPoolExecutor
@@ -127,8 +128,7 @@ def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, r
         look = SpectrumLookup()
         look.readSpectra(exp, r"((?<SCAN>)\d+$)")
     except Exception as e:
-        print(mzml_file + " has ERROR!")
-        print(e)
+        logging.getLogger(__name__).error("%s has ERROR! %s", mzml_file, e)
         df["ions_support"] = "mzML ERROR"
         return df
 
@@ -145,7 +145,7 @@ def _inspect_spectrum_worker(df, mzml_path, mzml_files, mztab, ions_tolerance, r
         try:
             index = look.findByScanNumber(scan_num)
         except Exception as e:
-            print("ERROR: " + str(e) + "; file:" + str(mzml_file) + "; scan_num:" + str(scan_num))
+            logging.getLogger(__name__).error("%s; file: %s; scan_num: %s", e, mzml_file, scan_num)
             continue
 
         exp_peaks = exp.getSpectrum(index).get_peaks()
@@ -312,7 +312,7 @@ class SpectrumAIService(ParameterConfiguration):
 
     def validate(self, infile_name, outfile_name: str):
         start_time = datetime.datetime.now()
-        print("Start time :", start_time)
+        self.get_logger().info("Start time: %s", start_time)
 
         if infile_name.endswith(".csv.gz"):
             df_psm = pd.read_csv(infile_name, header=0, sep=",", compression="gzip")
@@ -359,6 +359,6 @@ class SpectrumAIService(ParameterConfiguration):
             df_output.to_csv(outfile_name, header=True, sep="\t", index=None)
 
         end_time = datetime.datetime.now()
-        print("End time :", end_time)
+        self.get_logger().info("End time: %s", end_time)
         time_taken = end_time - start_time
-        print("Time consumption :", time_taken)
+        self.get_logger().info("Time consumption: %s", time_taken)

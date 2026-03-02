@@ -1,3 +1,4 @@
+import logging
 import re
 
 from Bio import SeqIO
@@ -265,15 +266,16 @@ class CancerGenomesService(ParameterConfiguration):
 
     @staticmethod
     def get_sample_headers(header_line, filter_coumn):
+        _logger = logging.getLogger(__name__)
         try:
             filter_col = header_line.index(filter_coumn)
         except ValueError:
-            print(filter_coumn, ' was not found in the header row:', header_line)
+            _logger.warning('%s was not found in the header row: %s', filter_coumn, header_line)
             return None, None
         try:
             sample_id_col = header_line.index('SAMPLE_ID')
         except ValueError:
-            print('SAMPLE_ID was not found in the header row:', header_line)
+            _logger.warning('SAMPLE_ID was not found in the header row: %s', header_line)
             return None, None
         return filter_col, sample_id_col
 
@@ -292,8 +294,8 @@ class CancerGenomesService(ParameterConfiguration):
                     if filter_column_col is not None and sample_id_col is not None:
                         sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
                     else:
-                        print("No column was found for {}, {} in {}".format(filter_column, 'SAMPLE_ID',
-                                                                            local_clinical_sample_file))
+                        self.get_logger().warning("No column was found for %s, %s in %s", filter_column, 'SAMPLE_ID',
+                                                  local_clinical_sample_file)
         return sample_value
 
     @staticmethod
@@ -329,18 +331,18 @@ class CancerGenomesService(ParameterConfiguration):
         if self._accepted_values != ['all'] or self._split_by_filter_column:
             if self._local_clinical_sample_file:
                 sample_groups_dict = self.get_value_per_sample(self._local_clinical_sample_file, self._filter_column)
-                print('sample_groups_dict', self._local_clinical_sample_file, self._filter_column)
+                self.get_logger().info('sample_groups_dict %s %s', self._local_clinical_sample_file, self._filter_column)
                 if sample_groups_dict == {}:
                     return
             else:
-                print('No clinical sample file is given therefore no filter could be applied.')
+                self.get_logger().warning('No clinical sample file is given therefore no filter could be applied.')
                 return
 
         with open(self._local_mutation_file, "r", encoding='utf-8') as mutfile, open(self._local_output_file, "w", encoding='utf-8') as output:
             for i, line in enumerate(mutfile):
                 row = line.strip().split("\t")
                 if row[0] == '#':
-                    print("skipping line ({}): {}".format(i, row))
+                    self.get_logger().info("skipping line (%s): %s", i, row)
                     continue
                 # check for header in the mutations file and get column indices
                 if set(header_cols.keys()).issubset(set(row)):
@@ -349,7 +351,7 @@ class CancerGenomesService(ParameterConfiguration):
 
                 # check if any is none in header_cols then continue
                 if None in header_cols.values():
-                    print("Incorrect header column is given")
+                    self.get_logger().error("Incorrect header column is given")
                     continue
                 # get filter value and check it
                 group = None
@@ -358,11 +360,11 @@ class CancerGenomesService(ParameterConfiguration):
                         group = sample_groups_dict[row[header_cols['Tumor_Sample_Barcode']]]
                     except KeyError:
                         if self._accepted_values != ['all'] or self._split_by_filter_column:
-                            print("No clinical info was found for sample {}. Skipping (line {}): {}".format(
-                                row[header_cols['Tumor_Sample_Barcode']], i, line))
+                            self.get_logger().warning("No clinical info was found for sample %s. Skipping (line %s): %s",
+                                                      row[header_cols['Tumor_Sample_Barcode']], i, line)
                             continue
                     except IndexError:
-                        print("No sampleID was found in (line {}): {}".format(i, row))
+                        self.get_logger().warning("No sampleID was found in (line %s): %s", i, row)
                 if group not in self._accepted_values and self._accepted_values != ['all']:
                     continue
 
@@ -377,7 +379,7 @@ class CancerGenomesService(ParameterConfiguration):
                     vartype = row[header_cols["Variant_Type"]]
                     varclass = row[header_cols["Variant_Classification"]]
                 except IndexError:
-                    print("Incorrect line (i):", row)
+                    self.get_logger().warning("Incorrect line (%s): %s", i, row)
                     continue
                 if varclass not in mutclass:
                     continue
@@ -385,7 +387,7 @@ class CancerGenomesService(ParameterConfiguration):
                 try:
                     seq = seq_dic[enst]
                 except KeyError:
-                    print("No matching recored for gene ({}) from row {} in FASTA file:".format(enst, row))
+                    self.get_logger().warning("No matching record for gene (%s) from row %s in FASTA file", enst, row)
                     continue
 
                 if ":" in pos:
@@ -397,39 +399,39 @@ class CancerGenomesService(ParameterConfiguration):
                     try:
                         enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
                     except IndexError:
-                        print("Incorrect SNP format or record", i, pos, line)
+                        self.get_logger().warning("Incorrect SNP format or record %s %s %s", i, pos, line)
                         continue
                     idx = pos.index(">")
                     ref_dna = pos[idx - 1]
                     mut_dna = pos[idx + 1]
 
                     if mut_dna not in nucleotide:
-                        print(mut_dna, "is not a nucleotide base", pos)
+                        self.get_logger().warning("%s is not a nucleotide base %s", mut_dna, pos)
                         continue
                     try:
                         if ref_dna == seq[enst_pos - 1]:
                             seq_mut = seq[:enst_pos - 1] + mut_dna + seq[enst_pos:]
                         else:
-                            print("incorrect substitution, unmatched nucleotide", pos, enst)
+                            self.get_logger().warning("incorrect substitution, unmatched nucleotide %s %s", pos, enst)
                     except IndexError:
-                        print("incorrect substitution, out of index", pos)
+                        self.get_logger().warning("incorrect substitution, out of index %s", pos)
                 elif vartype == "DEL":
                     try:
                         enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
                     except IndexError:
-                        print("incorrect del format or record", i, pos, line)
+                        self.get_logger().warning("incorrect del format or record %s %s %s", i, pos, line)
                         continue
                     del_dna = pos.split("del")[1]
                     if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
                         seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + len(del_dna):]
                     else:
-                        print("incorrect deletion, unmatched nucleotide", pos)
+                        self.get_logger().warning("incorrect deletion, unmatched nucleotide %s", pos)
 
                 elif vartype == "INS":
                     try:
                         enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])
                     except IndexError:
-                        print("incorrect ins/dup format or record", i, pos, line)
+                        self.get_logger().warning("incorrect ins/dup format or record %s %s %s", i, pos, line)
                         continue
                     if "ins" in pos:
                         ins_dna = pos.split("ins")[1]
@@ -438,7 +440,7 @@ class CancerGenomesService(ParameterConfiguration):
                         if len(ins_dna) > 1:
                             enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[1])[0])
                     else:
-                        print("unexpected insertion format")
+                        self.get_logger().warning("unexpected insertion format")
                         continue
 
                     seq_mut = seq[:enst_pos] + ins_dna + seq[enst_pos:]

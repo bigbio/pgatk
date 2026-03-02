@@ -1,3 +1,4 @@
+import logging
 import random
 import os
 from Bio import SeqIO
@@ -153,11 +154,12 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :param decoy_aa_composition:
     :return:
     """
+        _logger = logging.getLogger(__name__)
         for aa in target_aa_composition:
             if target_aa_composition[aa] > 0 and decoy_aa_composition[aa] > 0:
-                print(
-                    "Aminoacid composition rate for {} (Target/Decoy) = {:.1f} ".format(aa, target_aa_composition[aa] /
-                                                                                        decoy_aa_composition[aa]))
+                _logger.info(
+                    "Aminoacid composition rate for %s (Target/Decoy) = %.1f",
+                    aa, target_aa_composition[aa] / decoy_aa_composition[aa])
 
     def print_target_decoy_composition(self):
         """
@@ -190,15 +192,15 @@ class ProteinDBDecoyService(ParameterConfiguration):
                     if peptide not in decoy_peptides:
                         target_peptides[peptide] = 'target'
 
-        print('Number of target peptides: {} and Decoy Peptides: {}'.format(len(target_peptides), len(decoy_peptides)))
+        self.get_logger().info('Number of target peptides: %s and Decoy Peptides: %s', len(target_peptides), len(decoy_peptides))
         target_percentage = (len(target_peptides) / (len(target_peptides) + len(decoy_peptides))) * 100
-        print('% Target peptides {:.1f}'.format(target_percentage))
+        self.get_logger().info('%% Target peptides %.1f', target_percentage)
         decoy_percentage = (len(decoy_peptides) / (len(target_peptides) + len(decoy_peptides))) * 100
-        print('% Decoy peptides {:.1f}'.format(decoy_percentage))
+        self.get_logger().info('%% Decoy peptides %.1f', decoy_percentage)
         duplicate_percentage = (pep_count_in_both / (len(target_peptides) + len(decoy_peptides))) * 100
-        print(
-            'Number of peptides in Target and Decoy {}, Percentage {:.1f}'.format(pep_count_in_both,
-                                                                                  duplicate_percentage))
+        self.get_logger().info(
+            'Number of peptides in Target and Decoy %s, Percentage %.1f', pep_count_in_both,
+            duplicate_percentage)
         target_aa_composition = self.count_aa_in_dictionary(target_aa_composition, target_sequence)
         decoy_aa_composition = self.count_aa_in_dictionary(decoy_aa_composition, decoy_seq_accumulated)
         self.print_aa_composition_rate(target_aa_composition, decoy_aa_composition)
@@ -258,8 +260,8 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
         # Summarise the numbers of target and decoy peptides and their intersection
         nonDecoys = set()
-        print("proteins:" + str(dcount))
-        print("target peptides:" + str(len(upeps)))
+        self.get_logger().info("proteins: %s", dcount)
+        self.get_logger().info("target peptides: %s", len(upeps))
 
         # Reloop decoy file in reduced memory mode to store only intersecting decoys
         if self._memory_save:
@@ -276,14 +278,14 @@ class ProteinDBDecoyService(ParameterConfiguration):
                             if p in upeps:
                                 nonDecoys.add(p)
             fin.close()
-            print("decoy peptides: !Memory Saving Made!")
+            self.get_logger().info("decoy peptides: !Memory Saving Made!")
         else:
             # can only report total number in normal memory mode
-            print("decoy peptides:" + str(len(dpeps)))
+            self.get_logger().info("decoy peptides: %s", len(dpeps))
             # find intersecting peptides
             nonDecoys = upeps.intersection(dpeps)
 
-        print("#intersection:" + str(len(nonDecoys)))
+        self.get_logger().info("#intersection: %s", len(nonDecoys))
 
         # if there are decoy peptides that are in the target peptide set
         if len(nonDecoys) > 0 and self._no_suffle == False:
@@ -317,7 +319,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
                 if i == self._max_iterations:
                     noAlternative.append(dPep)
 
-            print(str(len(noAlternative)) + ' have no alternative peptide')
+            self.get_logger().info('%s have no alternative peptide', len(noAlternative))
             # remove peptides with no alternative
             for p in noAlternative:
                 del dAlternative[p]
@@ -364,7 +366,7 @@ class ProteinDBDecoyService(ParameterConfiguration):
         else:
             os.rename(self._temp_file, self._output_file)
 
-        print("final decoy peptides:" + str(len(dpeps)))
+        self.get_logger().info("final decoy peptides: %s", len(dpeps))
 
     def pgatk_decoy_database(self):
         """
@@ -478,10 +480,10 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
             with open(self._output_file.replace('.fa', '') + '_noAlternative.fa', 'w') as noAlternative_outfa:
                 noAlternative_outfa.write('\n'.join(noAlternative) + '\n')
-            print('Number of skipped tryptic peptides in decoy db (no alternatives): {}'.
-                  format(len(noAlternative)))
-            print('Total number of amino acids in target and decoy databases: ',
-                  len(''.join(targets)), len(''.join(decoys)))
+            self.get_logger().info('Number of skipped tryptic peptides in decoy db (no alternatives): %s',
+                                   len(noAlternative))
+            self.get_logger().info('Total number of amino acids in target and decoy databases: %s %s',
+                                   len(''.join(targets)), len(''.join(decoys)))
 
     def decoy_database(self):
         """

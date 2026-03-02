@@ -1,5 +1,6 @@
 import datetime
 import functools
+import logging
 
 import pandas as pd
 from Bio import SeqIO
@@ -44,10 +45,8 @@ def _blast_set(fasta_dict, peptide):
             else:
                 positions[mismatch[0]] = fasta_dict[fasta]
         elif len(mismatch) > 1:
-            print("Number of mismatch > 1")
-            print(peptide)
-            print(fasta)
-            print(mismatch)
+            logging.getLogger(__name__).warning(
+                "Number of mismatch > 1: peptide=%s, fasta=%s, mismatch=%s", peptide, fasta, mismatch)
     if positions:
         res = []
         for key,value in positions.items():
@@ -108,7 +107,7 @@ class BlastGetPositionService(ParameterConfiguration):
         for protein_seq in self.fasta_dict.keys():
             for end_ind, found in auto.iter(protein_seq):
                 seq_dict[found] = "canonical"
-                print("Found", found, "at position", end_ind, "in protein sequence")
+                self.get_logger().info("Found %s at position %s in protein sequence", found, end_ind)
 
         df["position"] = df["sequence"].map(seq_dict)
         return df
@@ -127,7 +126,7 @@ class BlastGetPositionService(ParameterConfiguration):
         """
 
         start_time = datetime.datetime.now()
-        print("Start time :", start_time)
+        self.get_logger().info("Start time: %s", start_time)
 
         if input_psm_to_blast.endswith(".csv.gz"):
             psm = pd.read_csv(input_psm_to_blast, header=0, sep=",", compression="gzip")
@@ -188,6 +187,6 @@ class BlastGetPositionService(ParameterConfiguration):
             all_psm_out.to_csv(output_psm, header=True, sep="\t", index=None)
 
         end_time = datetime.datetime.now()
-        print("End time :", end_time)
+        self.get_logger().info("End time: %s", end_time)
         set_time_taken = end_time - start_time
-        print("Time consumption :", set_time_taken)
+        self.get_logger().info("Time consumption: %s", set_time_taken)

@@ -1,3 +1,4 @@
+import logging
 import os
 import gffutils
 from Bio import SeqIO
@@ -128,7 +129,7 @@ class EnsemblDataService(ParameterConfiguration):
                     RF3 = seq[2::].translate(table=self._translation_table)
 
                     if record.id == "":
-                        print("skip entries without id", record.description)
+                        self.get_logger().warning("skip entries without id %s", record.description)
                         continue
                     output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF1', RF1))
                     output_handle.write("%s\n%s\n" % ('>' + record.id + '_RF2', RF2))
@@ -245,7 +246,7 @@ class EnsemblDataService(ParameterConfiguration):
                                verbose=True,
                                force=False)
         except Exception as e:  # already exists
-            print("Database already exists: " + str(e), gtf_db_file)
+            logging.getLogger(__name__).warning("Database already exists: %s %s", e, gtf_db_file)
 
         db = gffutils.FeatureDB(gtf_db_file)
         return db
@@ -269,9 +270,10 @@ class EnsemblDataService(ParameterConfiguration):
             try:
                 feature = db[feature_id.split('.')[0]]
             except gffutils.exceptions.FeatureNotFoundError:
-                print("""Feature {} found in fasta file but not in gtf file. Check that the fasta file and the gtf files match.
-                          A common issue is when the fasta file have chromosome patches but not the gtf""".format(
-                    feature_id))
+                logging.getLogger(__name__).warning(
+                    "Feature %s found in fasta file but not in gtf file. Check that the fasta file and the "
+                    "gtf files match. A common issue is when the fasta file have chromosome patches but not the gtf",
+                    feature_id)
                 return None, None, None
         coding_features = []
         features = db.children(feature, featuretype=feature_types, order_by='end')
@@ -397,7 +399,7 @@ class EnsemblDataService(ParameterConfiguration):
                         ref_orfs = self.get_orfs_dna(ref_seq, self._translation_table, 1, 0, to_stop=True)
                         self.write_output(seq_id=record_id, desc=desc, seqs=ref_orfs, prots_fn=prots_fn)
                     except (ValueError, IndexError, KeyError):
-                        print("Could not extra cds position from fasta header for: ", record_id, desc)
+                        self.get_logger().warning("Could not extract cds position from fasta header for: %s %s", record_id, desc)
 
         return self._proteindb_output
 
@@ -750,9 +752,8 @@ class EnsemblDataService(ParameterConfiguration):
 
         msg = "Translation summary:\n {}".format(
             '\n'.join([x + ":" + str(invalid_records[x]) for x in invalid_records.keys()]))
-        self.get_logger().debug(msg)
+        self.get_logger().info(msg)
 
-        print(msg)
         return self._proteindb_output
 
     @staticmethod
@@ -820,12 +821,12 @@ class EnsemblDataService(ParameterConfiguration):
                         else:
                             less += 1
 
-                print("   translations that do not start with Met:", no_met)
-                print("   translations that have premature stop codons:", stop_count)
-                print("   translations that contain gaps:", gap_count)
-                print("   total number of input sequences was:", pcount)
-                print("   total number of sequences written was:", len(proteins))
-        print("   total number of proteins less than {} aminoacids: {}".format(num_aa, less))
+                self.get_logger().info("   translations that do not start with Met: %s", no_met)
+                self.get_logger().info("   translations that have premature stop codons: %s", stop_count)
+                self.get_logger().info("   translations that contain gaps: %s", gap_count)
+                self.get_logger().info("   total number of input sequences was: %s", pcount)
+                self.get_logger().info("   total number of sequences written was: %s", len(proteins))
+        self.get_logger().info("   total number of proteins less than %s aminoacids: %s", num_aa, less)
 
     @staticmethod
     def write_output(seq_id, desc, seqs, prots_fn, seqs_filter=None):
@@ -855,4 +856,4 @@ class EnsemblDataService(ParameterConfiguration):
 
 
 if __name__ == '__main__':
-    print("ERROR: This script is part of a pipeline collection and it is not meant to be run in stand alone mode")
+    logging.getLogger(__name__).error("This script is part of a pipeline collection and it is not meant to be run in stand alone mode")
