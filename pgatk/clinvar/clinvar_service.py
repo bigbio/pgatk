@@ -261,91 +261,66 @@ class ClinVarService:
     # ------------------------------------------------------------------
 
     @staticmethod
-    def _annotate_vcf_with_transcripts(
-        vcf_file: str,
+    def _build_overlap_map(
+        vcf_df: pd.DataFrame,
         gtf_file: str,
         chrom_mapper: ChromosomeMapper,
     ) -> dict[str, list[str]]:
         """Find transcripts overlapping each VCF variant via BedTools.
 
-        Steps:
-        1. Read VCF records and create a BED with RefSeq chromosome names.
-        2. Intersect with the GTF (which uses RefSeq names).
-        3. Extract transcript_id from GTF attribute column for CDS features.
+        Builds a BED from an already-loaded DataFrame so the VCF file does not
+        need to be read a second time.
 
         Returns a dict mapping ``"CHROM:POS:REF:ALT"`` variant keys to lists
         of overlapping transcript IDs.
         """
-        # Build a BED from VCF records, converting numeric chroms to RefSeq
         bed_lines: list[str] = []
-        with open(vcf_file, "r", encoding="utf-8") as fh:
-            for line in fh:
-                line = line.strip()
-                if not line or line.startswith("#"):
+        for _, row in vcf_df.iterrows():
+            ref = str(row.REF)
+            if any(c not in "ACGT" for c in ref):
+                continue
+            chrom_numeric = str(row.CHROM)
+            pos = int(row.POS)
+            alt_field = str(row.ALT)
+            chrom_refseq = chrom_mapper.map_chrom(chrom_numeric, "refseq")
+            start = pos - 1  # BED is 0-based half-open
+            end = start + len(ref)
+            for alt in alt_field.split(","):
+                alt = alt.strip()
+                if not alt or not all(c in "ACGT" for c in alt):
                     continue
-                cols = line.split("\t")
-                if len(cols) < 8:
-                    continue
-                chrom_numeric = cols[0]
-                pos = int(cols[1])
-                ref = cols[3]
-                alt_field = cols[4]
-                if any(c not in "ACGT" for c in ref):
-                    continue
-                chrom_refseq = chrom_mapper.map_chrom(chrom_numeric, "refseq")
-                # BED is 0-based half-open: start = pos-1, end = pos-1 + len(ref)
-                start = pos - 1
-                end = start + len(ref)
-                for alt in alt_field.split(","):
-                    alt = alt.strip()
-                    if not alt or not all(c in "ACGT" for c in alt):
-                        continue
-                    variant_key = f"{chrom_numeric}:{pos}:{ref}:{alt}"
-                    bed_lines.append(
-                        f"{chrom_refseq}\t{start}\t{end}\t{variant_key}\n"
-                    )
+                variant_key = f"{chrom_numeric}:{pos}:{ref}:{alt}"
+                bed_lines.append(f"{chrom_refseq}\t{start}\t{end}\t{variant_key}\n")
 
         if not bed_lines:
             return {}
 
-        # Write temporary BED file
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".bed", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".bed", delete=False) as tmp:
             tmp.writelines(bed_lines)
             tmp_bed_path = tmp.name
 
         try:
             vcf_bed = BedTool(tmp_bed_path)
             gtf_bed = BedTool(gtf_file)
-
-            # Intersect: VCF BED (a) with GTF (b), write-all (wo) to get overlap info
             intersection = vcf_bed.intersect(gtf_bed, wo=True)
 
             result: dict[str, list[str]] = {}
             for feature in intersection:
                 fields = str(feature).strip().split("\t")
-                # BED fields (0-3): chrom, start, end, variant_key
-                # GTF fields start at index 4: chrom, source, type, start, end, score, strand, frame, attributes, overlap
                 variant_key = fields[3]
-                gtf_type_idx = 4 + 2  # index 6 = GTF feature type
+                gtf_type_idx = 4 + 2
                 if len(fields) <= gtf_type_idx:
                     continue
-                gtf_type = fields[gtf_type_idx]
-                if gtf_type != "CDS":
+                if fields[gtf_type_idx] != "CDS":
                     continue
-
-                # Parse transcript_id from GTF attributes (index 4+8 = 12)
                 gtf_attrs_idx = 4 + 8
                 if len(fields) <= gtf_attrs_idx:
                     continue
-                attrs = fields[gtf_attrs_idx]
-                transcript_id = _extract_transcript_id(attrs)
+                transcript_id = _extract_transcript_id(fields[gtf_attrs_idx])
                 if transcript_id:
                     result.setdefault(variant_key, [])
                     if transcript_id not in result[variant_key]:
                         result[variant_key].append(transcript_id)
-
             return result
         finally:
             Path(tmp_bed_path).unlink(missing_ok=True)
@@ -378,14 +353,12 @@ class ClinVarService:
             k.split(".")[0]: k for k in transcripts_dict.keys()
         }
 
-        # 4. Find overlapping transcripts via BedTools
-        overlap_map = self._annotate_vcf_with_transcripts(
-            self._vcf_file, self._gtf_file, chrom_mapper
-        )
-        logger.info("Found %d variants with transcript overlaps", len(overlap_map))
-
-        # 5. Read VCF and process each record
+        # 4. Read VCF once into DataFrame
         _metadata, vcf_df = self._read_vcf(self._vcf_file)
+
+        # 5. Find overlapping transcripts via BedTools (from DataFrame)
+        overlap_map = self._build_overlap_map(vcf_df, self._gtf_file, chrom_mapper)
+        logger.info("Found %d variants with transcript overlaps", len(overlap_map))
 
         stats = {
             "variants_processed": 0,

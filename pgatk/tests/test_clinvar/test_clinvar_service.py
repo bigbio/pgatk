@@ -261,3 +261,40 @@ class TestClinVarPipeline:
         with open(output_file, "r") as f:
             content = f.read()
         assert "rs00004" not in content
+
+
+# ---------------------------------------------------------------------------
+# TestBuildOverlapMap
+# ---------------------------------------------------------------------------
+
+
+class TestBuildOverlapMap:
+    """Tests for _build_overlap_map (DataFrame-based BedTools annotation)."""
+
+    @pytest.fixture(autouse=True)
+    def _cleanup_db(self):
+        db_path = Path(MINI_GTF).with_suffix(".db")
+        if db_path.exists():
+            db_path.unlink()
+        yield
+        if db_path.exists():
+            db_path.unlink()
+
+    def test_build_overlap_map_from_dataframe(self):
+        """_build_overlap_map should accept a DataFrame and return overlap dict."""
+        from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
+        chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
+        _meta, vcf_df = ClinVarService._read_vcf(MINI_VCF)
+        overlap_map = ClinVarService._build_overlap_map(vcf_df, MINI_GTF, chrom_mapper)
+        assert isinstance(overlap_map, dict)
+        # rs00001 at chr1:1006 should overlap NM_000001.1 CDS (1000-1299)
+        assert any("1:1006:" in k for k in overlap_map)
+
+    def test_build_overlap_map_empty_df(self):
+        """Empty DataFrame should return empty dict."""
+        import pandas as pd
+        from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
+        chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
+        empty_df = pd.DataFrame(columns=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])
+        overlap_map = ClinVarService._build_overlap_map(empty_df, MINI_GTF, chrom_mapper)
+        assert overlap_map == {}
