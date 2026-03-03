@@ -1,0 +1,6 @@
+NC_000001.11	BestRefSeq	transcript	1000	1299	.	+	.	gene_id "GeneA"; transcript_id "NM_000001.1"; gene_biotype "protein_coding";
+NC_000001.11	BestRefSeq	exon	1000	1299	.	+	.	gene_id "GeneA"; transcript_id "NM_000001.1"; exon_number "1"; gene_biotype "protein_coding";
+NC_000001.11	BestRefSeq	CDS	1000	1299	.	+	0	gene_id "GeneA"; transcript_id "NM_000001.1"; exon_number "1"; gene_biotype "protein_coding";
+NC_000002.12	BestRefSeq	transcript	2000	2299	.	+	.	gene_id "GeneB"; transcript_id "NM_000002.1"; gene_biotype "protein_coding";
+NC_000002.12	BestRefSeq	exon	2000	2299	.	+	.	gene_id "GeneB"; transcript_id "NM_000002.1"; exon_number "1"; gene_biotype "protein_coding";
+NC_000002.12	BestRefSeq	CDS	2000	2299	.	+	0	gene_id "GeneB"; transcript_id "NM_000002.1"; exon_number "1"; gene_biotype "protein_coding";

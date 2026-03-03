@@ -108,14 +108,27 @@ venv.bak/
 .pydevproject
 
 .idea/
-pypgatk/database_ensembl/
-pypgatk/database_cbioportal/
-pypgatk/database_cosmic/
-pypgatk/config/private/
+pgatk/database_ensembl/
+pgatk/database_cbioportal/
+pgatk/database_cosmic/
+pgatk/config/private/
 .pypirc
-/pypgatk/test_all.bed
-/pypgatk/test_annotated.vcf
+/pgatk/test_all.bed
+/pgatk/test_annotated.vcf
 
+# Test-generated output files (produced by pgatk tests)
+pgatk/testdata/proteindb_from_*.fa
+pgatk/testdata/output_decoy.fa
+pgatk/testdata/test_cbioportal_data_mutations_mskcc_proteindb*.fa
+pgatk/testdata/test_cosmic_mutations_proteindb*.fa
+pgatk/testdata/test_blast_psms_out.tsv
+pgatk/testdata/test_blast_validate_psms_out.tsv
+pgatk/testdata/test_validate_psms_out.tsv
+pgatk/testdata/20151020_QE3_UPLC8_DBJ_SA_HCT116_Rep2_46frac_10_consensus_filter.idxml
+pgatk/testdata/proteindb_minus_strand_test.fa
+
+# Large Ensembl reference files (download at test time, not in git)
+pgatk/testdata/Meleagris_gallopavo*
 
 #Ignore cursor AI rules
 .cursor/rules/codacy.mdc

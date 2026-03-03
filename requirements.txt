@@ -7,7 +7,6 @@ requests
 simplejson
 ratelimit
 pyteomics
-pathos
 pybedtools
 pandas
 pyopenms
