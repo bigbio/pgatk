@@ -261,16 +261,7 @@ class ClinVarService:
     @staticmethod
     def _read_vcf(vcf_file: str) -> tuple[list, pd.DataFrame]:
         """Read a VCF file and return metadata lines and a DataFrame of records."""
-        HEADERS = {
-            "CHROM": str,
-            "POS": int,
-            "ID": str,
-            "REF": str,
-            "ALT": str,
-            "QUAL": str,
-            "FILTER": str,
-            "INFO": str,
-        }
+        COLUMNS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
 
         metadata: list[str] = []
         data: list[list[str]] = []
@@ -284,7 +275,7 @@ class ClinVarService:
                 else:
                     data.append(line.split("\t")[0:8])
 
-        vcf_df = pd.DataFrame(data, columns=HEADERS)
+        vcf_df = pd.DataFrame(data, columns=COLUMNS)
         return metadata, vcf_df
 
     # ------------------------------------------------------------------
@@ -400,6 +391,8 @@ class ClinVarService:
             "variants_translated": 0,
         }
 
+        processed_pairs: set[str] = set()
+
         with open(self._output_file, "w", encoding="utf-8") as prots_fn:
             for _, record in vcf_df.iterrows():
                 stats["variants_processed"] += 1
@@ -452,6 +445,11 @@ class ClinVarService:
                         continue
 
                     for transcript_id in transcript_ids:
+                        pair_key = f"{variant_key}:{transcript_id}"
+                        if pair_key in processed_pairs:
+                            continue
+                        processed_pairs.add(pair_key)
+
                         # Resolve transcript in FASTA
                         tid = transcript_id
                         if tid not in transcripts_dict:

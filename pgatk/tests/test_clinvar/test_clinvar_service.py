@@ -335,3 +335,39 @@ class TestBiotypeFiltering:
         # NM_000001 without .1 should still find NM_000001.1
         biotype = ClinVarService._get_transcript_biotype(db, "NM_000001")
         assert biotype == "protein_coding"
+
+
+# ---------------------------------------------------------------------------
+# TestDuplicateGuard
+# ---------------------------------------------------------------------------
+
+
+class TestDuplicateGuard:
+    """Pipeline should not process the same variant-transcript pair twice."""
+
+    @pytest.fixture(autouse=True)
+    def _cleanup_db(self):
+        db_path = Path(MINI_GTF).with_suffix(".db")
+        if db_path.exists():
+            db_path.unlink()
+        yield
+        if db_path.exists():
+            db_path.unlink()
+
+    def test_no_duplicate_fasta_entries(self, tmp_path):
+        """Each variant-transcript combo should appear at most once in output."""
+        output_file = str(tmp_path / "output.fa")
+        service = ClinVarService(
+            vcf_file=MINI_VCF,
+            gtf_file=MINI_GTF,
+            fasta_file=MINI_FASTA,
+            assembly_report=ASSEMBLY_REPORT,
+            output_file=output_file,
+        )
+        service.run()
+        with open(output_file, "r") as f:
+            headers = [line.strip() for line in f if line.startswith(">")]
+        # No duplicate headers
+        assert len(headers) == len(set(headers)), (
+            f"Duplicate FASTA entries found: {headers}"
+        )
