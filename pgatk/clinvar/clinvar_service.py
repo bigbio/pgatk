@@ -272,15 +272,21 @@ class ClinVarService:
                 chrom_numeric = cols[0]
                 pos = int(cols[1])
                 ref = cols[3]
-                alt = cols[4]
+                alt_field = cols[4]
+                if any(c not in "ACGT" for c in ref):
+                    continue
                 chrom_refseq = chrom_mapper.map_chrom(chrom_numeric, "refseq")
                 # BED is 0-based half-open: start = pos-1, end = pos-1 + len(ref)
                 start = pos - 1
                 end = start + len(ref)
-                variant_key = f"{chrom_numeric}:{pos}:{ref}:{alt}"
-                bed_lines.append(
-                    f"{chrom_refseq}\t{start}\t{end}\t{variant_key}\n"
-                )
+                for alt in alt_field.split(","):
+                    alt = alt.strip()
+                    if not alt or not all(c in "ACGT" for c in alt):
+                        continue
+                    variant_key = f"{chrom_numeric}:{pos}:{ref}:{alt}"
+                    bed_lines.append(
+                        f"{chrom_refseq}\t{start}\t{end}\t{variant_key}\n"
+                    )
 
         if not bed_lines:
             return {}
@@ -377,10 +383,14 @@ class ClinVarService:
 
                 # --- Validate alleles ---
                 ref = str(record.REF)
-                alt = str(record.ALT)
-                if any(c not in "ACGT" for c in ref) or any(
-                    c not in "ACGT" for c in alt
-                ):
+                if any(c not in "ACGT" for c in ref):
+                    continue
+                alts = []
+                for a in str(record.ALT).split(","):
+                    a = a.strip()
+                    if a and all(c in "ACGT" for c in a):
+                        alts.append(a)
+                if not alts:
                     continue
 
                 # --- CLNSIG filter ---
@@ -390,125 +400,133 @@ class ClinVarService:
                     stats["variants_filtered_clnsig"] += 1
                     continue
 
+                # --- Parse gene symbol and CLNSIG for description ---
+                gene_symbol, _ = self.parse_geneinfo(
+                    self._get_info_field(info, "GENEINFO")
+                )
+                desc_str = f"{clnsig}|{gene_symbol}" if gene_symbol else clnsig
+
                 # --- Find overlapping transcripts ---
                 chrom = str(record.CHROM)
                 pos = int(record.POS)
-                variant_key = f"{chrom}:{pos}:{ref}:{alt}"
-                transcript_ids = overlap_map.get(variant_key, [])
-                if not transcript_ids:
-                    stats["variants_no_overlap"] += 1
-                    continue
 
                 # Translation table (mito vs standard)
                 trans_table = self._translation_table
                 if chrom.upper() in ("M", "MT"):
                     trans_table = self._mito_translation_table
 
-                for transcript_id in transcript_ids:
-                    # Resolve transcript in FASTA
-                    tid = transcript_id
-                    if tid not in transcripts_dict:
-                        tid = transcript_id_mapping.get(
-                            transcript_id.split(".")[0], transcript_id
-                        )
-                    try:
-                        fasta_record = transcripts_dict[tid]
-                    except KeyError:
-                        logger.debug(
-                            "Transcript %s not found in FASTA", transcript_id
-                        )
+                for alt in alts:
+                    variant_key = f"{chrom}:{pos}:{ref}:{alt}"
+                    transcript_ids = overlap_map.get(variant_key, [])
+                    if not transcript_ids:
+                        stats["variants_no_overlap"] += 1
                         continue
 
-                    ref_seq = fasta_record.seq
-                    desc = str(fasta_record.description)
-
-                    # Determine CDS info and feature types
-                    cds_info: list[int] = []
-                    feature_types = ["exon"]
-                    num_orfs = 3
-                    if "CDS=" in desc:
-                        try:
-                            cds_str = [
-                                p
-                                for p in desc.split()
-                                if p.startswith("CDS=")
-                            ][0]
-                            cds_info = [
-                                int(x)
-                                for x in cds_str.split("=")[1].split("-")
-                            ]
-                            feature_types = ["CDS", "stop_codon"]
-                            num_orfs = self._num_orfs
-                        except (ValueError, IndexError):
-                            logger.debug(
-                                "Could not extract CDS info from header: %s",
-                                desc,
+                    for transcript_id in transcript_ids:
+                        # Resolve transcript in FASTA
+                        tid = transcript_id
+                        if tid not in transcripts_dict:
+                            tid = transcript_id_mapping.get(
+                                transcript_id.split(".")[0], transcript_id
                             )
+                        try:
+                            fasta_record = transcripts_dict[tid]
+                        except KeyError:
+                            logger.debug(
+                                "Transcript %s not found in FASTA", transcript_id
+                            )
+                            continue
 
-                    # Get features from GTF
-                    feat_chrom, strand, features_info = self._get_features(
-                        db, tid, feature_types
-                    )
-                    if feat_chrom is None:
-                        continue
+                        ref_seq = fasta_record.seq
+                        desc = str(fasta_record.description)
 
-                    # Check overlap at feature level
-                    var_end = pos + len(ref) - 1
-                    if not check_overlap(pos, var_end, features_info):
-                        continue
+                        # Determine CDS info and feature types
+                        cds_info: list[int] = []
+                        feature_types = ["exon"]
+                        num_orfs = 3
+                        if "CDS=" in desc:
+                            try:
+                                cds_str = [
+                                    p
+                                    for p in desc.split()
+                                    if p.startswith("CDS=")
+                                ][0]
+                                cds_info = [
+                                    int(x)
+                                    for x in cds_str.split("=")[1].split("-")
+                                ]
+                                feature_types = ["CDS", "stop_codon"]
+                                num_orfs = self._num_orfs
+                            except (ValueError, IndexError):
+                                logger.debug(
+                                    "Could not extract CDS info from header: %s",
+                                    desc,
+                                )
 
-                    # Apply variant
-                    coding_ref_seq, coding_alt_seq = get_altseq(
-                        ref_seq,
-                        Seq(ref),
-                        Seq(alt),
-                        pos,
-                        strand,
-                        features_info,
-                        cds_info,
-                    )
-
-                    if coding_alt_seq == "":
-                        continue
-
-                    # Translate
-                    ref_orfs, alt_orfs = get_orfs_vcf(
-                        coding_ref_seq,
-                        coding_alt_seq,
-                        trans_table,
-                        num_orfs,
-                    )
-
-                    # Build sequence ID
-                    record_id = ""
-                    if record.ID and str(record.ID) != ".":
-                        record_id = "_" + str(record.ID)
-
-                    seq_id = "_".join(
-                        [
-                            self._protein_prefix + str(record_id),
-                            ".".join([chrom, str(pos), ref, alt]),
-                            tid,
-                        ]
-                    )
-
-                    write_output(
-                        seq_id=seq_id,
-                        desc="",
-                        seqs=alt_orfs,
-                        prots_fn=prots_fn,
-                        seqs_filter=ref_orfs,
-                    )
-
-                    stats["variants_translated"] += 1
-
-                    if self._report_ref_seq:
-                        write_output(
-                            seq_id=tid,
-                            desc="",
-                            seqs=ref_orfs,
-                            prots_fn=prots_fn,
+                        # Get features from GTF
+                        feat_chrom, strand, features_info = self._get_features(
+                            db, tid, feature_types
                         )
+                        if feat_chrom is None:
+                            continue
+
+                        # Check overlap at feature level
+                        var_end = pos + len(ref) - 1
+                        if not check_overlap(pos, var_end, features_info):
+                            continue
+
+                        # Apply variant
+                        coding_ref_seq, coding_alt_seq = get_altseq(
+                            ref_seq,
+                            Seq(ref),
+                            Seq(alt),
+                            pos,
+                            strand,
+                            features_info,
+                            cds_info,
+                        )
+
+                        if coding_alt_seq == "":
+                            continue
+
+                        # Translate
+                        ref_orfs, alt_orfs = get_orfs_vcf(
+                            coding_ref_seq,
+                            coding_alt_seq,
+                            trans_table,
+                            num_orfs,
+                        )
+
+                        # Build sequence ID
+                        record_id = ""
+                        if record.ID and str(record.ID) != ".":
+                            record_id = str(record.ID)
+
+                        seq_id = "_".join(
+                            [
+                                self._protein_prefix + record_id,
+                                ".".join([chrom, str(pos), ref, alt]),
+                                tid,
+                            ]
+                        )
+
+                        write_output(
+                            seq_id=seq_id,
+                            desc=desc_str,
+                            seqs=alt_orfs,
+                            prots_fn=prots_fn,
+                            seqs_filter=ref_orfs,
+                        )
+
+                        stats["variants_translated"] += 1
+
+                        if self._report_ref_seq:
+                            write_output(
+                                seq_id=tid,
+                                desc="",
+                                seqs=ref_orfs,
+                                prots_fn=prots_fn,
+                            )
 
         logger.info("ClinVar pipeline complete. Stats: %s", stats)
         return self._output_file
