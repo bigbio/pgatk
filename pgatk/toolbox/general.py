@@ -76,6 +76,10 @@ class ParameterConfiguration:
         self._logger.setLevel(getattr(logging, self._log_level))
         self._log_files = []
 
+        # Clear any handlers left by previous instantiations so stale
+        # StreamHandlers (e.g. referencing Click's closed stderr) are removed.
+        self._logger.handlers.clear()
+
         # Log to stderr instead of creating files in CWD
         for llevel, lformat in self._logger_formatters.items():
             lformatter = logging.Formatter(lformat)
@@ -130,6 +134,7 @@ class ParameterConfiguration:
         """
         self.get_logger().debug("Creating logger with name {}".format(name))
         lg = logging.getLogger(name)
+        lg.handlers.clear()
         for handler in self.get_log_handlers():
             lg.addHandler(handler)
         lg.setLevel(self._log_level)

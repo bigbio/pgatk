@@ -11,6 +11,12 @@ from Bio.Seq import Seq
 from pybedtools import BedTool
 import pandas as pd
 from pgatk.toolbox.general import ParameterConfiguration
+from pgatk.toolbox.vcf_utils import (
+    check_overlap as _check_overlap,
+    get_altseq as _get_altseq,
+    get_orfs_vcf as _get_orfs_vcf,
+    write_output as _write_output,
+)
 
 
 class EnsemblDataService(ParameterConfiguration):
@@ -140,91 +146,13 @@ class EnsemblDataService(ParameterConfiguration):
 
     @staticmethod
     def check_overlap(var_start: int, var_end: int, features_info: Optional[list] = None) -> bool:
-        """
-    This function returns true when the variant overlaps any of the features
-    :param var_start: Start location
-    :param var_end: End location
-    :param features_info: Feature information (default = [[0, 1, 'type']])
-    :return:
-    """
-
-        if features_info is None:
-            features_info = [[0, 1, 'type']]
-        if var_start == -1:
-            return True
-        # check if the var overlaps any of the features
-        for feature_pos in features_info:
-            pep_start = feature_pos[0]
-            pep_end = feature_pos[1]
-            if var_start <= pep_start <= var_end:  # fully contained or partial overlap from the end
-                return True
-            elif var_start <= pep_end <= var_end:  # partial overlap in the begining
-                return True
-            elif pep_start <= var_start and pep_end >= var_end:  # fully covered
-                return True
-        return False
+        """Check if a variant overlaps any of the given features.  Delegates to :func:`pgatk.toolbox.vcf_utils.check_overlap`."""
+        return _check_overlap(var_start, var_end, features_info)
 
     @staticmethod
     def get_altseq(ref_seq: str, ref_allele: str, var_allele: str, var_pos: int, strand: str, features_info: list, cds_info: Optional[list] = None) -> tuple:
-        """
-    The given sequence in the fasta file represents all exons of the transcript combined.
-    for protein coding genes, the CDS is specified therefore the sequence position has to be
-    calculated based on the CDS's positions
-    However, for non-protein coding genes, the whole sequence is used
-    :param ref_seq:
-    :param ref_allele:
-    :param var_allele:
-    :param var_pos:
-    :param strand:
-    :param features_info:
-    :param cds_info:
-    :return:
-    """
-        if cds_info is None:
-            cds_info = []
-        alt_seq = ""
-        if len(cds_info) == 2:
-            start_coding_index = cds_info[0] - 1  # it should be index not pos
-            stop_coding_index = cds_info[1]  # get end position of the  last cds
-        else:
-            start_coding_index = 0
-            total_len = 0
-            for x in features_info:
-                total_len += x[1] - x[0] + 1
-            stop_coding_index = total_len  # the features are sorted by end therefroe the end pos of the last item is the last coding nc
-
-        if strand == '-':  # ge the correct orientation, because exons are oredered based on their position
-            ref_seq = ref_seq[
-                      ::-1]  # in order to calculate from the first base of the first feature (sorted by genomic coordinates)
-            ref_allele = ref_allele.complement()  # the reverse will be done on return
-            var_allele = var_allele.complement()  # the reverse will be done on return
-
-        if strand == '-' and len(cds_info) == 2:
-            # For minus-strand genes, after reversing the sequence the CDS occupies the
-            # complementary positions: [n - stop_coding_index : n - start_coding_index]
-            n = len(ref_seq)
-            ref_seq = ref_seq[n - stop_coding_index:n - start_coding_index]
-        else:
-            ref_seq = ref_seq[
-                      start_coding_index:stop_coding_index]  # just keep the coding regions (mostly effective in case of protein-coding genes)
-        nc_index = 0
-        if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
-            for feature in features_info:  # for every exon, cds or stop codon
-                if var_pos in range(feature[0], feature[
-                                                    1] + 1):  # get index of the var relative to the position of the overlapping feature in the coding region
-                    var_index_in_cds = nc_index + (var_pos - feature[0])
-                    # modify the coding reference sequence accoding to the var_allele
-                    c = len(ref_allele)
-                    alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[
-                                                                         var_index_in_cds + c::]  # variant and ref strand??
-                    if strand == '-':
-                        return ref_seq[::-1], alt_seq[::-1]
-                    else:
-                        return ref_seq, alt_seq
-
-                nc_index += (feature[1] - feature[0] + 1)
-
-        return ref_seq, alt_seq
+        """Modify a reference sequence based on a variant allele.  Delegates to :func:`pgatk.toolbox.vcf_utils.get_altseq`."""
+        return _get_altseq(ref_seq, ref_allele, var_allele, var_pos, strand, features_info, cds_info)
 
     @staticmethod
     def parse_gtf(gene_annotations_gtf: str, gtf_db_file: str) -> gffutils.FeatureDB:
@@ -278,22 +206,8 @@ class EnsemblDataService(ParameterConfiguration):
 
     @staticmethod
     def get_orfs_vcf(ref_seq: str, alt_seq: str, translation_table: int, num_orfs: int = 1) -> tuple[list, list]:
-        """
-    Translate the coding_ref and the coding_alt into ORFs
-    :param ref_seq:
-    :param alt_seq:
-    :param translation_table:
-    :param num_orfs:
-    :return:
-    """
-
-        ref_orfs = []
-        alt_orfs = []
-        for n in range(0, num_orfs):
-            ref_orfs.append(ref_seq[n::].translate(translation_table))
-            alt_orfs.append(alt_seq[n::].translate(translation_table))
-
-        return ref_orfs, alt_orfs
+        """Translate coding ref/alt sequences into ORFs.  Delegates to :func:`pgatk.toolbox.vcf_utils.get_orfs_vcf`."""
+        return _get_orfs_vcf(ref_seq, alt_seq, translation_table, num_orfs)
 
     @staticmethod
     def get_orfs_dna(ref_seq: str, translation_table: int, num_orfs: int, num_orfs_complement: int, to_stop: bool) -> list:
@@ -824,29 +738,8 @@ class EnsemblDataService(ParameterConfiguration):
 
     @staticmethod
     def write_output(seq_id: str, desc: str, seqs: list, prots_fn: Any, seqs_filter: Optional[list] = None) -> None:
-        """
-    write the orfs to the output file
-    :param seq_id: Sequence Accession
-    :param desc: Sequence Description
-    :param seqs: Sequence
-    :param prots_fn:
-    :param seqs_filter: filter orfs/seqs found in this list, used for alt_orfs
-    :return:
-    """
-        if seqs_filter is None:
-            seqs_filter = []
-        write_i = False
-        if len(seqs) > 1:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-            write_i = True
-
-        formatted_desc = " " + desc if desc else ""
-        for i, orf in enumerate(seqs):
-            if orf in seqs_filter:
-                continue
-            if write_i:  # only add _num when multiple ORFs are generated (e.g in 3 ORF)
-                prots_fn.write('>{}{}\n{}\n'.format(seq_id + "_" + str(i + 1), formatted_desc, orf))
-            else:
-                prots_fn.write('>{}{}\n{}\n'.format(seq_id, formatted_desc, orf))
+        """Write ORFs to a FASTA output file handle.  Delegates to :func:`pgatk.toolbox.vcf_utils.write_output`."""
+        _write_output(seq_id, desc, seqs, prots_fn, seqs_filter)
 
 
 if __name__ == '__main__':
