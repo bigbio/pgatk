@@ -298,3 +298,40 @@ class TestBuildOverlapMap:
         empty_df = pd.DataFrame(columns=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])
         overlap_map = ClinVarService._build_overlap_map(empty_df, MINI_GTF, chrom_mapper)
         assert overlap_map == {}
+
+
+# ---------------------------------------------------------------------------
+# TestBiotypeFiltering
+# ---------------------------------------------------------------------------
+
+
+class TestBiotypeFiltering:
+    """Tests for biotype filtering from GTF."""
+
+    @pytest.fixture(autouse=True)
+    def _cleanup_db(self):
+        db_path = Path(MINI_GTF).with_suffix(".db")
+        if db_path.exists():
+            db_path.unlink()
+        yield
+        if db_path.exists():
+            db_path.unlink()
+
+    def test_get_biotype_from_db(self):
+        """_get_transcript_biotype should extract gene_biotype from gffutils DB."""
+        db = ClinVarService._parse_gtf(MINI_GTF)
+        biotype = ClinVarService._get_transcript_biotype(db, "NM_000001.1")
+        assert biotype == "protein_coding"
+
+    def test_get_biotype_missing_returns_empty(self):
+        """Missing transcript returns empty string."""
+        db = ClinVarService._parse_gtf(MINI_GTF)
+        biotype = ClinVarService._get_transcript_biotype(db, "NONEXISTENT")
+        assert biotype == ""
+
+    def test_get_biotype_without_version(self):
+        """Should find transcript even without version number."""
+        db = ClinVarService._parse_gtf(MINI_GTF)
+        # NM_000001 without .1 should still find NM_000001.1
+        biotype = ClinVarService._get_transcript_biotype(db, "NM_000001")
+        assert biotype == "protein_coding"

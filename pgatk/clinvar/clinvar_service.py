@@ -81,6 +81,11 @@ class ClinVarService:
         self._include_consequences = self._cfg.get(
             "include_consequences", ["all"]
         )
+        biotypes_raw = self._cfg.get("include_biotypes", "all")
+        if isinstance(biotypes_raw, str):
+            self._include_biotypes = [b.strip() for b in biotypes_raw.split(",")]
+        else:
+            self._include_biotypes = list(biotypes_raw)
 
     # ------------------------------------------------------------------
     # Static helper methods — ClinVar INFO field parsers
@@ -222,6 +227,32 @@ class ClinVarService:
         for f in db.children(feature, featuretype=feature_types, order_by="end"):
             coding_features.append([f.start, f.end, f.featuretype])
         return feature.chrom, feature.strand, coding_features
+
+    @staticmethod
+    def _get_transcript_biotype(db: gffutils.FeatureDB, transcript_id: str) -> str:
+        """Extract gene_biotype from a gffutils transcript feature.
+
+        Returns empty string if the transcript or attribute is not found.
+        """
+        try:
+            feature = db[transcript_id]
+        except gffutils.exceptions.FeatureNotFoundError:
+            try:
+                feature = db[transcript_id.split(".")[0]]
+            except gffutils.exceptions.FeatureNotFoundError:
+                # Last resort: match by prefix (unversioned -> versioned)
+                base = transcript_id.split(".")[0]
+                feature = None
+                for f in db.all_features(featuretype="transcript"):
+                    if f.id.split(".")[0] == base:
+                        feature = f
+                        break
+                if feature is None:
+                    return ""
+        try:
+            return feature.attributes.get("gene_biotype", [""])[0]
+        except (IndexError, AttributeError):
+            return ""
 
     # ------------------------------------------------------------------
     # VCF reading (pandas, same pattern as EnsemblDataService)
@@ -365,6 +396,7 @@ class ClinVarService:
             "variants_filtered_clnsig": 0,
             "variants_filtered_mc": 0,
             "variants_no_overlap": 0,
+            "transcripts_filtered_biotype": 0,
             "variants_translated": 0,
         }
 
@@ -433,6 +465,13 @@ class ClinVarService:
                                 "Transcript %s not found in FASTA", transcript_id
                             )
                             continue
+
+                        # --- Biotype filter ---
+                        if self._include_biotypes != ["all"]:
+                            biotype = self._get_transcript_biotype(db, tid)
+                            if biotype and biotype not in self._include_biotypes:
+                                stats["transcripts_filtered_biotype"] += 1
+                                continue
 
                         ref_seq = fasta_record.seq
                         desc = str(fasta_record.description)
