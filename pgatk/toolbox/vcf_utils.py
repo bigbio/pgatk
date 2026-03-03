@@ -116,11 +116,33 @@ def get_altseq(
             var_end_genomic = var_pos + len(ref_allele) - 1
             exonic_ref_len = min(var_end_genomic, feature[1]) - var_pos + 1
             c = max(exonic_ref_len, 0)
+            # Clip the ALT allele by the same number of trailing bases that
+            # were removed from REF.  VCF variants are left-aligned, so the
+            # trailing bases correspond to the intronic portion.
+            intronic_ref_len = len(ref_allele) - c
+            if intronic_ref_len > 0:
+                exonic_alt_len = max(len(var_allele) - intronic_ref_len, 0)
+                var_allele = var_allele[:exonic_alt_len]
+                logger.debug(
+                    "Variant at %d extends %d bases past exon boundary "
+                    "(feature %d-%d); clipped REF to %d and ALT to %d bases",
+                    var_pos, intronic_ref_len, feature[0], feature[1],
+                    c, exonic_alt_len,
+                )
             alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[var_index_in_cds + c::]
             if strand == '-':
                 return ref_seq[::-1], alt_seq[::-1]
             else:
                 return ref_seq, alt_seq
+        else:
+            # Log when variant starts outside this feature (intron-start)
+            var_end_genomic = var_pos + len(ref_allele) - 1
+            if var_end_genomic >= feature[0] and var_pos < feature[0]:
+                logger.debug(
+                    "Variant at %d-%d starts before feature %d-%d "
+                    "(intron-start); skipping this feature",
+                    var_pos, var_end_genomic, feature[0], feature[1],
+                )
 
         nc_index += (feature[1] - feature[0] + 1)
 

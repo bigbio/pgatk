@@ -122,9 +122,12 @@ class ClinVarService:
             return False
         # Split compound values and check each component.
         parts = re.split(r"[/,]", clnsig)
-        return not all(p.strip().replace("_", " ").lower() in
+        non_empty = [p.strip() for p in parts if p.strip()]
+        if not non_empty:
+            return True  # delimiter-only or whitespace-only → treat as empty
+        return not all(p.replace("_", " ").lower() in
                        [e.replace("_", " ").lower() for e in exclude_list]
-                       for p in parts if p.strip())
+                       for p in non_empty)
 
     @staticmethod
     def passes_mc_filter(mc_field: str, include_list: list[str]) -> bool:
