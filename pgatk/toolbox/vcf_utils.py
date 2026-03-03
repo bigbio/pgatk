@@ -10,8 +10,6 @@ from __future__ import annotations
 import logging
 from typing import Any, Optional
 
-from Bio.Seq import Seq
-
 logger = logging.getLogger(__name__)
 
 

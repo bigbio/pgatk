@@ -6,7 +6,6 @@ from __future__ import annotations
 
 import logging
 import os
-from pathlib import Path
 
 from pgatk.toolbox.general import download_file, check_create_folders
 
