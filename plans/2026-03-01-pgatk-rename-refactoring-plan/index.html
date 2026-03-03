@@ -1,0 +1,1860 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python tools for proteogenomics data analysis">
+      
+      
+        <meta name="author" content="BigBio Team">
+      
+      
+        <link rel="canonical" href="https://pgatk.quantms.org/plans/2026-03-01-pgatk-rename-refactoring-plan/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+    
+    
+      
+        <title>pgatk Rename & Refactoring Implementation Plan - PGATK - ProteoGenomics Analysis ToolKit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+  
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+  
+  <style>:root{--md-admonition-icon--note:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M1%207.775V2.75C1%201.784%201.784%201%202.75%201h5.025c.464%200%20.91.184%201.238.513l6.25%206.25a1.75%201.75%200%200%201%200%202.474l-5.026%205.026a1.75%201.75%200%200%201-2.474%200l-6.25-6.25A1.75%201.75%200%200%201%201%207.775m1.5%200c0%20.066.026.13.073.177l6.25%206.25a.25.25%200%200%200%20.354%200l5.025-5.025a.25.25%200%200%200%200-.354l-6.25-6.25a.25.25%200%200%200-.177-.073H2.75a.25.25%200%200%200-.25.25ZM6%205a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E');--md-admonition-icon--abstract:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2.5%201.75v11.5c0%20.138.112.25.25.25h3.17a.75.75%200%200%201%200%201.5H2.75A1.75%201.75%200%200%201%201%2013.25V1.75C1%20.784%201.784%200%202.75%200h8.5C12.216%200%2013%20.784%2013%201.75v7.736a.75.75%200%200%201-1.5%200V1.75a.25.25%200%200%200-.25-.25h-8.5a.25.25%200%200%200-.25.25m13.274%209.537zl-4.557%204.45a.75.75%200%200%201-1.055-.008l-1.943-1.95a.75.75%200%200%201%201.062-1.058l1.419%201.425%204.026-3.932a.75.75%200%201%201%201.048%201.074M4.75%204h4.5a.75.75%200%200%201%200%201.5h-4.5a.75.75%200%200%201%200-1.5M4%207.75A.75.75%200%200%201%204.75%207h2a.75.75%200%200%201%200%201.5h-2A.75.75%200%200%201%204%207.75%22/%3E%3C/svg%3E');--md-admonition-icon--info:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M0%208a8%208%200%201%201%2016%200A8%208%200%200%201%200%208m8-6.5a6.5%206.5%200%201%200%200%2013%206.5%206.5%200%200%200%200-13M6.5%207.75A.75.75%200%200%201%207.25%207h1a.75.75%200%200%201%20.75.75v2.75h.25a.75.75%200%200%201%200%201.5h-2a.75.75%200%200%201%200-1.5h.25v-2h-.25a.75.75%200%200%201-.75-.75M8%206a1%201%200%201%201%200-2%201%201%200%200%201%200%202%22/%3E%3C/svg%3E');--md-admonition-icon--tip:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M3.499.75a.75.75%200%200%201%201.5%200v.996C5.9%202.903%206.793%203.65%207.662%204.376l.24.202c-.036-.694.055-1.422.426-2.163C9.1.873%2010.794-.045%2012.622.26%2014.408.558%2016%201.94%2016%204.25c0%201.278-.954%202.575-2.44%202.734l.146.508.065.22c.203.701.412%201.455.476%202.226.142%201.707-.4%203.03-1.487%203.898C11.714%2014.671%2010.27%2015%208.75%2015h-6a.75.75%200%200%201%200-1.5h1.376a4.5%204.5%200%200%201-.563-1.191%203.84%203.84%200%200%201-.05-2.063%204.65%204.65%200%200%201-2.025-.293.75.75%200%200%201%20.525-1.406c1.357.507%202.376-.006%202.698-.318l.009-.01a.747.747%200%200%201%201.06%200%20.75.75%200%200%201-.012%201.074c-.912.92-.992%201.835-.768%202.586.221.74.745%201.337%201.196%201.621H8.75c1.343%200%202.398-.296%203.074-.836.635-.507%201.036-1.31.928-2.602-.05-.603-.216-1.224-.422-1.93l-.064-.221c-.12-.407-.246-.84-.353-1.29a2.4%202.4%200%200%201-.507-.441%203.1%203.1%200%200%201-.633-1.248.75.75%200%200%201%201.455-.364c.046.185.144.436.31.627.146.168.353.305.712.305.738%200%201.25-.615%201.25-1.25%200-1.47-.95-2.315-2.123-2.51-1.172-.196-2.227.387-2.706%201.345-.46.92-.27%201.774.019%203.062l.042.19.01.05c.348.443.666.949.94%201.553a.75.75%200%201%201-1.365.62c-.553-1.217-1.32-1.94-2.3-2.768L6.7%205.527c-.814-.68-1.75-1.462-2.692-2.619a3.7%203.7%200%200%200-1.023.88c-.406.495-.663%201.036-.722%201.508.116.122.306.21.591.239.388.038.797-.06%201.032-.19a.75.75%200%200%201%20.728%201.31c-.515.287-1.23.439-1.906.373-.682-.067-1.473-.38-1.879-1.193L.75%205.677V5.5c0-.984.48-1.94%201.077-2.664.46-.559%201.05-1.055%201.673-1.353z%22/%3E%3C/svg%3E');--md-admonition-icon--success:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M13.78%204.22a.75.75%200%200%201%200%201.06l-7.25%207.25a.75.75%200%200%201-1.06%200L2.22%209.28a.75.75%200%200%201%20.018-1.042.75.75%200%200%201%201.042-.018L6%2010.94l6.72-6.72a.75.75%200%200%201%201.06%200%22/%3E%3C/svg%3E');--md-admonition-icon--question:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M0%208a8%208%200%201%201%2016%200A8%208%200%200%201%200%208m8-6.5a6.5%206.5%200%201%200%200%2013%206.5%206.5%200%200%200%200-13M6.92%206.085h.001a.749.749%200%201%201-1.342-.67c.169-.339.436-.701.849-.977C6.845%204.16%207.369%204%208%204a2.76%202.76%200%200%201%201.637.525c.503.377.863.965.863%201.725%200%20.448-.115.83-.329%201.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6%206%200%200%200-.26.16%201%201%200%200%200-.276.245.75.75%200%200%201-1.248-.832c.184-.264.42-.489.692-.661q.154-.1.313-.195l.007-.004c.1-.061.182-.11.258-.161a1%201%200%200%200%20.277-.245C8.96%206.514%209%206.427%209%206.25a.61.61%200%200%200-.262-.525A1.27%201.27%200%200%200%208%205.5c-.369%200-.595.09-.74.187a1%201%200%200%200-.34.398M9%2011a1%201%200%201%201-2%200%201%201%200%200%201%202%200%22/%3E%3C/svg%3E');--md-admonition-icon--warning:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M6.457%201.047c.659-1.234%202.427-1.234%203.086%200l6.082%2011.378A1.75%201.75%200%200%201%2014.082%2015H1.918a1.75%201.75%200%200%201-1.543-2.575Zm1.763.707a.25.25%200%200%200-.44%200L1.698%2013.132a.25.25%200%200%200%20.22.368h12.164a.25.25%200%200%200%20.22-.368Zm.53%203.996v2.5a.75.75%200%200%201-1.5%200v-2.5a.75.75%200%200%201%201.5%200M9%2011a1%201%200%201%201-2%200%201%201%200%200%201%202%200%22/%3E%3C/svg%3E');--md-admonition-icon--failure:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2.344%202.343za8%208%200%200%201%2011.314%2011.314A8.002%208.002%200%200%201%20.234%2010.089a8%208%200%200%201%202.11-7.746m1.06%2010.253a6.5%206.5%200%201%200%209.108-9.275%206.5%206.5%200%200%200-9.108%209.275M6.03%204.97%208%206.94l1.97-1.97a.749.749%200%200%201%201.275.326.75.75%200%200%201-.215.734L9.06%208l1.97%201.97a.749.749%200%200%201-.326%201.275.75.75%200%200%201-.734-.215L8%209.06l-1.97%201.97a.749.749%200%200%201-1.275-.326.75.75%200%200%201%20.215-.734L6.94%208%204.97%206.03a.75.75%200%200%201%20.018-1.042.75.75%200%200%201%201.042-.018%22/%3E%3C/svg%3E');--md-admonition-icon--danger:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M9.504.43a1.516%201.516%200%200%201%202.437%201.713L10.415%205.5h2.123c1.57%200%202.346%201.909%201.22%203.004l-7.34%207.142a1.25%201.25%200%200%201-.871.354h-.302a1.25%201.25%200%200%201-1.157-1.723L5.633%2010.5H3.462c-1.57%200-2.346-1.909-1.22-3.004zm1.047%201.074L3.286%208.571A.25.25%200%200%200%203.462%209H6.75a.75.75%200%200%201%20.694%201.034l-1.713%204.188%206.982-6.793A.25.25%200%200%200%2012.538%207H9.25a.75.75%200%200%201-.683-1.06l2.008-4.418.003-.006-.004-.009-.006-.006-.008-.001q-.005%200-.009.004%22/%3E%3C/svg%3E');--md-admonition-icon--bug:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M4.72.22a.75.75%200%200%201%201.06%200l1%20.999a3.5%203.5%200%200%201%202.441%200l.999-1a.748.748%200%200%201%201.265.332.75.75%200%200%201-.205.729l-.775.776c.616.63.995%201.493.995%202.444v.327q0%20.15-.025.292c.408.14.764.392%201.029.722l1.968-.787a.75.75%200%200%201%20.556%201.392L13%207.258V9h2.25a.75.75%200%200%201%200%201.5H13v.5q-.002.615-.141%201.186l2.17.868a.75.75%200%200%201-.557%201.392l-2.184-.873A5%205%200%200%201%208%2016a5%205%200%200%201-4.288-2.427l-2.183.873a.75.75%200%200%201-.558-1.392l2.17-.868A5%205%200%200%201%203%2011v-.5H.75a.75.75%200%200%201%200-1.5H3V7.258L.971%206.446a.75.75%200%200%201%20.558-1.392l1.967.787c.265-.33.62-.583%201.03-.722a1.7%201.7%200%200%201-.026-.292V4.5c0-.951.38-1.814.995-2.444L4.72%201.28a.75.75%200%200%201%200-1.06m.53%206.28a.75.75%200%200%200-.75.75V11a3.5%203.5%200%201%200%207%200V7.25a.75.75%200%200%200-.75-.75ZM6.173%205h3.654A.17.17%200%200%200%2010%204.827V4.5a2%202%200%201%200-4%200v.327c0%20.096.077.173.173.173%22/%3E%3C/svg%3E');--md-admonition-icon--example:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M5%205.782V2.5h-.25a.75.75%200%200%201%200-1.5h6.5a.75.75%200%200%201%200%201.5H11v3.282l3.666%205.76C15.619%2013.04%2014.543%2015%2012.767%2015H3.233c-1.776%200-2.852-1.96-1.899-3.458Zm-2.4%206.565a.75.75%200%200%200%20.633%201.153h9.534a.75.75%200%200%200%20.633-1.153L12.225%2010.5h-8.45ZM9.5%202.5h-3V6c0%20.143-.04.283-.117.403L4.73%209h6.54L9.617%206.403A.75.75%200%200%201%209.5%206Z%22/%3E%3C/svg%3E');--md-admonition-icon--quote:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M1.75%202.5h10.5a.75.75%200%200%201%200%201.5H1.75a.75.75%200%200%201%200-1.5m4%205h8.5a.75.75%200%200%201%200%201.5h-8.5a.75.75%200%200%201%200-1.5m0%205h8.5a.75.75%200%200%201%200%201.5h-8.5a.75.75%200%200%201%200-1.5M2.5%207.75v6a.75.75%200%200%201-1.5%200v-6a.75.75%200%200%201%201.5%200%22/%3E%3C/svg%3E');}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../../stylesheets/pgatk-theme.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#pgatk-rename-refactoring-implementation-plan" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="PGATK - ProteoGenomics Analysis ToolKit" class="md-header__button md-logo" aria-label="PGATK - ProteoGenomics Analysis ToolKit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PGATK - ProteoGenomics Analysis ToolKit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              pgatk Rename &amp; Refactoring Implementation Plan
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bigbio/pgatk" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bigbio/pgatk
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../introduction/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../pgatk-cli/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  pgatk CLI
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../formats/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  File Formats
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../support/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Support
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="PGATK - ProteoGenomics Analysis ToolKit" class="md-nav__button md-logo" aria-label="PGATK - ProteoGenomics Analysis ToolKit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PGATK - ProteoGenomics Analysis ToolKit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bigbio/pgatk" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bigbio/pgatk
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../pgatk-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pgatk CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#pr-1-rename-pypgatk-pgatk-branch-refactorrename" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 1: Rename pypgatk → pgatk (branch: refactor/rename)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 1: Rename pypgatk → pgatk (branch: refactor/rename)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-11-rename-the-package-directory-and-cli-module" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.1: Rename the package directory and CLI module
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-12-update-__init__py" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.2: Update __init__.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-13-update-clipy-formerly-pypgatkcpy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.3: Update cli.py (formerly pypgatkc.py)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-14-update-all-python-imports-across-all-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.4: Update all Python imports across all modules
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-15-update-test-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.5: Update test files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-16-update-pyprojecttoml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.6: Update pyproject.toml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-17-update-non-python-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.7: Update non-Python files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-18-update-github-actions-workflows" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.8: Update GitHub Actions workflows
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-19-update-documentation-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.9: Update documentation files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-110-run-tests-and-verify" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 1.10: Run tests and verify
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-2-config-registry-branch-refactorconfig-registry" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 2: Config Registry (branch: refactor/config-registry)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 2: Config Registry (branch: refactor/config-registry)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-21-create-pgatkconfigregistrypy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2.1: Create pgatk/config/registry.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-22-update-command-files-to-use-load_config" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2.2: Update command files to use load_config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-23-update-tests-that-pass-config_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 2.3: Update tests that pass --config_file
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-3-bug-fixes-branch-fixbugs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 3: Bug Fixes (branch: fix/bugs)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 3: Bug Fixes (branch: fix/bugs)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-31-fix-_filter_write_idxml_with_df-writing-unfiltered-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.1: Fix _filter_write_idxml_with_df writing unfiltered data
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-32-fix-iso-8859-encoding-typo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.2: Fix ISO-8859 encoding typo
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-33-fix-download_file-log-inversion-bug" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.3: Fix download_file log inversion bug
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-34-fix-enzyme-name-typos-in-modelspy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.4: Fix enzyme name typos in models.py
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-35-replace-print_help-with-clicks-requiredtrue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.5: Replace print_help() with Click's required=True
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-36-replace-deprecated-biopairwise2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 3.6: Replace deprecated Bio.pairwise2
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pr-4-cleanup-branch-refactorcleanup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PR 4: Cleanup (branch: refactor/cleanup)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="PR 4: Cleanup (branch: refactor/cleanup)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#task-41-remove-dead-species-and-speciesservice-classes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4.1: Remove dead Species and SpeciesService classes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-42-remove-dead-code-after-return-statement" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4.2: Remove dead code after return statement
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-43-dynamic-version-from-package-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4.3: Dynamic version from package metadata
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-44-fix-cwd-log-file-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4.4: Fix CWD log file creation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#task-45-run-full-test-suite-and-commit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Task 4.5: Run full test suite and commit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-branch-and-pr-strategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary: Branch and PR Strategy
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-merge-manual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Merge (Manual)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="pgatk-rename-refactoring-implementation-plan">pgatk Rename &amp; Refactoring Implementation Plan<a class="headerlink" href="#pgatk-rename-refactoring-implementation-plan" title="Anchor link to this section">&para;</a></h1>
+<blockquote>
+<p><strong>For Claude:</strong> REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.</p>
+</blockquote>
+<p><strong>Goal:</strong> Rename <code>py-pgatk</code>/<code>pypgatk</code> to <code>pgatk</code> everywhere, add config auto-loading, fix bugs, and remove dead code.</p>
+<p><strong>Architecture:</strong> 4 independent PRs — PR 1 (rename) merges first, PRs 2-4 are independent of each other. Each PR gets its own branch off <code>dev</code>.</p>
+<p><strong>Tech Stack:</strong> Python 3.9+, Click CLI, PyYAML, BioPython, pyOpenMS, MkDocs Material</p>
+<hr />
+<h2 id="pr-1-rename-pypgatk-pgatk-branch-refactorrename">PR 1: Rename <code>pypgatk</code> → <code>pgatk</code> (branch: <code>refactor/rename</code>)<a class="headerlink" href="#pr-1-rename-pypgatk-pgatk-branch-refactorrename" title="Anchor link to this section">&para;</a></h2>
+<h3 id="task-11-rename-the-package-directory-and-cli-module">Task 1.1: Rename the package directory and CLI module<a class="headerlink" href="#task-11-rename-the-package-directory-and-cli-module" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Rename: <code>pypgatk/</code> → <code>pgatk/</code> (entire directory tree)
+- Rename: <code>pgatk/pypgatkc.py</code> → <code>pgatk/cli.py</code></p>
+<p><strong>Step 1: Rename the directory</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nb">cd</span><span class="w"> </span>/Users/yperez/work/proteogenomics/pgatk
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>git<span class="w"> </span>mv<span class="w"> </span>pypgatk<span class="w"> </span>pgatk
+</span></code></pre></div>
+<p><strong>Step 2: Rename the CLI module</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>git<span class="w"> </span>mv<span class="w"> </span>pgatk/pypgatkc.py<span class="w"> </span>pgatk/cli.py
+</span></code></pre></div>
+<p><strong>Step 3: Verify the rename</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>ls<span class="w"> </span>pgatk/
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="c1"># Should show: __init__.py cli.py cgenomes/ commands/ config/ db/ ensembl/ logs/ proteogenomics/ proteomics/ test_all.bed test_annotated.vcf testdata/ tests/ toolbox/</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-12-update-__init__py">Task 1.2: Update <code>__init__.py</code><a class="headerlink" href="#task-12-update-__init__py" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/__init__.py</code></p>
+<p><strong>Step 1: Update the package name</strong></p>
+<p>Change <code>name = "pypgatk"</code> to <code>name = "pgatk"</code>.</p>
+<hr />
+<h3 id="task-13-update-clipy-formerly-pypgatkcpy">Task 1.3: Update <code>cli.py</code> (formerly <code>pypgatkc.py</code>)<a class="headerlink" href="#task-13-update-clipy-formerly-pypgatkcpy" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/cli.py</code></p>
+<p><strong>Step 1: Update all imports from <code>pypgatk</code> to <code>pgatk</code></strong></p>
+<p>Replace all 14 import lines:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensembl_downloader</span> <span class="k">as</span> <span class="n">ensembl_downloader_cmd</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">ensembl_database</span> <span class="k">as</span> <span class="n">ensembl_database_cmd</span>
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">cosmic_downloader</span> <span class="k">as</span> <span class="n">cosmic_downloader_cmd</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">cbioportal_downloader</span> <span class="k">as</span> <span class="n">cbioportal_downloader_cmd</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">cosmic_to_proteindb</span> <span class="k">as</span> <span class="n">cosmic_to_proteindb_cmd</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">cbioportal_to_proteindb</span> <span class="k">as</span> <span class="n">cbioportal_to_proteindb_cmd</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">threeframe_translation</span> <span class="k">as</span> <span class="n">threeframe_translation_cmd</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">vcf_to_proteindb</span> <span class="k">as</span> <span class="n">vcf_to_proteindb_cmd</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">dnaseq_to_proteindb</span> <span class="k">as</span> <span class="n">dnase_to_proteindb_cmd</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">proteindb_decoy</span> <span class="k">as</span> <span class="n">proteindb_decoy_cmd</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">peptide_class_fdr</span> <span class="k">as</span> <span class="n">peptide_class_fdr_cmd</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">validate_peptides</span> <span class="k">as</span> <span class="n">validate_peptides_cmd</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">mztab_class_fdr</span> <span class="k">as</span> <span class="n">mztab_class_fdr_cmd</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands</span><span class="w"> </span><span class="kn">import</span> <span class="n">blast_get_position</span> <span class="k">as</span> <span class="n">blast_get_position_cmd</span>
+</span></code></pre></div></p>
+<p><strong>Step 2: Update docstring</strong></p>
+<p>Change <code>"py-pgatk"</code> references to <code>"pgatk"</code> in the module docstring and CLI help text.</p>
+<hr />
+<h3 id="task-14-update-all-python-imports-across-all-modules">Task 1.4: Update all Python imports across all modules<a class="headerlink" href="#task-14-update-all-python-imports-across-all-modules" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files (all files under <code>pgatk/</code> that import from <code>pypgatk</code>):</strong></p>
+<p>Use a global find-and-replace: <code>from pypgatk.</code> → <code>from pgatk.</code></p>
+<p>These files need updating:
+- <code>pgatk/commands/blast_get_position.py</code>
+- <code>pgatk/commands/cbioportal_downloader.py</code>
+- <code>pgatk/commands/cbioportal_to_proteindb.py</code>
+- <code>pgatk/commands/cosmic_downloader.py</code>
+- <code>pgatk/commands/cosmic_to_proteindb.py</code>
+- <code>pgatk/commands/dnaseq_to_proteindb.py</code>
+- <code>pgatk/commands/ensembl_database.py</code>
+- <code>pgatk/commands/ensembl_downloader.py</code>
+- <code>pgatk/commands/mztab_class_fdr.py</code>
+- <code>pgatk/commands/peptide_class_fdr.py</code>
+- <code>pgatk/commands/proteindb_decoy.py</code>
+- <code>pgatk/commands/threeframe_translation.py</code>
+- <code>pgatk/commands/validate_peptides.py</code>
+- <code>pgatk/commands/vcf_to_proteindb.py</code>
+- <code>pgatk/cgenomes/cbioportal_downloader.py</code>
+- <code>pgatk/cgenomes/cgenomes_proteindb.py</code>
+- <code>pgatk/cgenomes/cosmic_downloader.py</code>
+- <code>pgatk/ensembl/data_downloader.py</code>
+- <code>pgatk/ensembl/ensembl.py</code>
+- <code>pgatk/ensembl/exceptions.py</code>
+- <code>pgatk/proteogenomics/blast_get_position.py</code>
+- <code>pgatk/proteogenomics/mztab_class_fdr.py</code>
+- <code>pgatk/proteogenomics/spectrumai.py</code>
+- <code>pgatk/proteomics/openms.py</code>
+- <code>pgatk/proteomics/db/protein_database_decoy.py</code>
+- <code>pgatk/toolbox/general.py</code></p>
+<p><strong>Step 1: Run a sed-like replacement across all <code>.py</code> files</strong></p>
+<p>In every <code>.py</code> file under <code>pgatk/</code>, replace <code>from pypgatk.</code> with <code>from pgatk.</code> and <code>import pypgatk</code> with <code>import pgatk</code>.</p>
+<p><strong>Step 2: Verify no remaining references</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>grep<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;pypgatk&quot;</span><span class="w"> </span>pgatk/<span class="w"> </span>--include<span class="o">=</span><span class="s2">&quot;*.py&quot;</span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># Should return nothing (except possibly string literals in help text)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-15-update-test-files">Task 1.5: Update test files<a class="headerlink" href="#task-15-update-test-files" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/tests/pypgatk_tests.py</code>
+- Modify: <code>pgatk/tests/classes_tests.py</code></p>
+<p><strong>Step 1: Update test imports</strong></p>
+<p>In <code>pypgatk_tests.py</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Before</span>
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pypgatk.pypgatkc</span><span class="w"> </span><span class="kn">import</span> <span class="n">cli</span>
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="c1"># After</span>
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.cli</span><span class="w"> </span><span class="kn">import</span> <span class="n">cli</span>
+</span></code></pre></div></p>
+<p>In <code>classes_tests.py</code>:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Before</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pypgatk.proteomics.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">PYGPATK_ENZYMES</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="c1"># After</span>
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.proteomics.models</span><span class="w"> </span><span class="kn">import</span> <span class="n">PYGPATK_ENZYMES</span>
+</span></code></pre></div></p>
+<p><strong>Step 2: Rename the constant <code>PYGPATK_ENZYMES</code> → <code>PGATK_ENZYMES</code></strong></p>
+<p>In <code>pgatk/proteomics/models.py</code>, rename the constant:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># Before</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">PYGPATK_ENZYMES</span> <span class="o">=</span> <span class="o">...</span>
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># After</span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">PGATK_ENZYMES</span> <span class="o">=</span> <span class="o">...</span>
+</span></code></pre></div></p>
+<p>Update all references (in <code>models.py</code>, <code>classes_tests.py</code>, <code>protein_database_decoy.py</code>, and any command files).</p>
+<hr />
+<h3 id="task-16-update-pyprojecttoml">Task 1.6: Update <code>pyproject.toml</code><a class="headerlink" href="#task-16-update-pyprojecttoml" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pyproject.toml</code></p>
+<p><strong>Step 1: Update all references</strong></p>
+<div class="language-toml highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="k">[project]</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pgatk&quot;</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="k">[project.scripts]</span>
+</span><span id="__span-8-5"><a id="__codelineno-8-5" name="__codelineno-8-5" href="#__codelineno-8-5"></a><span class="n">pgatk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;pgatk.cli:main&quot;</span>
+</span><span id="__span-8-6"><a id="__codelineno-8-6" name="__codelineno-8-6" href="#__codelineno-8-6"></a>
+</span><span id="__span-8-7"><a id="__codelineno-8-7" name="__codelineno-8-7" href="#__codelineno-8-7"></a><span class="k">[project.urls]</span>
+</span><span id="__span-8-8"><a id="__codelineno-8-8" name="__codelineno-8-8" href="#__codelineno-8-8"></a><span class="n">Homepage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://github.com/bigbio/pgatk&quot;</span>
+</span><span id="__span-8-9"><a id="__codelineno-8-9" name="__codelineno-8-9" href="#__codelineno-8-9"></a><span class="n">Repository</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://github.com/bigbio/pgatk&quot;</span>
+</span><span id="__span-8-10"><a id="__codelineno-8-10" name="__codelineno-8-10" href="#__codelineno-8-10"></a><span class="n">Issues</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;http://github.com/bigbio/pgatk/issues&quot;</span>
+</span><span id="__span-8-11"><a id="__codelineno-8-11" name="__codelineno-8-11" href="#__codelineno-8-11"></a>
+</span><span id="__span-8-12"><a id="__codelineno-8-12" name="__codelineno-8-12" href="#__codelineno-8-12"></a><span class="k">[tool.setuptools.packages.find]</span>
+</span><span id="__span-8-13"><a id="__codelineno-8-13" name="__codelineno-8-13" href="#__codelineno-8-13"></a><span class="n">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;pgatk*&quot;</span><span class="p">]</span>
+</span><span id="__span-8-14"><a id="__codelineno-8-14" name="__codelineno-8-14" href="#__codelineno-8-14"></a>
+</span><span id="__span-8-15"><a id="__codelineno-8-15" name="__codelineno-8-15" href="#__codelineno-8-15"></a><span class="k">[tool.setuptools.package-data]</span>
+</span><span id="__span-8-16"><a id="__codelineno-8-16" name="__codelineno-8-16" href="#__codelineno-8-16"></a><span class="n">pgatk</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;config/*.yaml&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;config/*.json&quot;</span><span class="p">]</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-17-update-non-python-files">Task 1.7: Update non-Python files<a class="headerlink" href="#task-17-update-non-python-files" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>MANIFEST.in</code>
+- Modify: <code>Dockerfile</code>
+- Modify: <code>.gitignore</code>
+- Modify: <code>conda-enviroment.yaml</code></p>
+<p><strong>Step 1: Update MANIFEST.in</strong></p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>recursive-include pgatk *.json
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>recursive-include pgatk *.yaml
+</span></code></pre></div>
+<p><strong>Step 2: Update Dockerfile</strong></p>
+<p>Replace <code>pypgatk</code> references with <code>pgatk</code>:
+- <code>LABEL software="pgatk"</code>, <code>container="pgatk"</code>
+- <code>ENV PATH=$PATH:/tool/source/pgatk/</code>
+- <code>RUN chmod +x /tool/source/pgatk/cli.py</code>
+- Update git clone URL to <code>bigbio/pgatk</code></p>
+<p><strong>Step 3: Update .gitignore</strong></p>
+<p>Replace <code>pypgatk/testdata/</code> paths with <code>pgatk/testdata/</code>.</p>
+<p><strong>Step 4: Update conda-enviroment.yaml</strong></p>
+<p>Change <code>name: py-pgatk</code> to <code>name: pgatk</code>.</p>
+<hr />
+<h3 id="task-18-update-github-actions-workflows">Task 1.8: Update GitHub Actions workflows<a class="headerlink" href="#task-18-update-github-actions-workflows" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>.github/workflows/pythonapp.yml</code>
+- Modify: <code>.github/workflows/pythonpackage.yml</code></p>
+<p><strong>Step 1: Update test directory references</strong></p>
+<p>In both files, change:
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="c1"># Before</span>
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="l l-Scalar l-Scalar-Plain">cd pypgatk</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="l l-Scalar l-Scalar-Plain"># After</span>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="l l-Scalar l-Scalar-Plain">cd pgatk</span>
+</span></code></pre></div></p>
+<hr />
+<h3 id="task-19-update-documentation-files">Task 1.9: Update documentation files<a class="headerlink" href="#task-19-update-documentation-files" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>mkdocs.yml</code>
+- Modify: <code>README.md</code>
+- Modify: <code>docs/index.md</code>
+- Modify: <code>docs/installation.md</code>
+- Modify: <code>docs/pypgatk.md</code> (rename to <code>docs/pgatk-cli.md</code>)
+- Modify: <code>docs/changelog.md</code></p>
+<p><strong>Step 1: Update mkdocs.yml</strong></p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a><span class="nt">repo_name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">bigbio/pgatk</span>
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="nt">repo_url</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/bigbio/pgatk</span>
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a><span class="c1"># Update nav</span>
+</span><span id="__span-11-4"><a id="__codelineno-11-4" name="__codelineno-11-4" href="#__codelineno-11-4"></a><span class="nt">nav</span><span class="p">:</span>
+</span><span id="__span-11-5"><a id="__codelineno-11-5" name="__codelineno-11-5" href="#__codelineno-11-5"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Home</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">index.md</span>
+</span><span id="__span-11-6"><a id="__codelineno-11-6" name="__codelineno-11-6" href="#__codelineno-11-6"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Introduction</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">introduction.md</span>
+</span><span id="__span-11-7"><a id="__codelineno-11-7" name="__codelineno-11-7" href="#__codelineno-11-7"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Installation</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">installation.md</span>
+</span><span id="__span-11-8"><a id="__codelineno-11-8" name="__codelineno-11-8" href="#__codelineno-11-8"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">pgatk CLI</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">pgatk-cli.md</span>
+</span><span id="__span-11-9"><a id="__codelineno-11-9" name="__codelineno-11-9" href="#__codelineno-11-9"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">File Formats</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">formats.md</span>
+</span><span id="__span-11-10"><a id="__codelineno-11-10" name="__codelineno-11-10" href="#__codelineno-11-10"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Changelog</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">changelog.md</span>
+</span><span id="__span-11-11"><a id="__codelineno-11-11" name="__codelineno-11-11" href="#__codelineno-11-11"></a><span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">Support</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">support.md</span>
+</span><span id="__span-11-12"><a id="__codelineno-11-12" name="__codelineno-11-12" href="#__codelineno-11-12"></a><span class="c1"># Update social links</span>
+</span><span id="__span-11-13"><a id="__codelineno-11-13" name="__codelineno-11-13" href="#__codelineno-11-13"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">icon</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fontawesome/brands/github</span>
+</span><span id="__span-11-14"><a id="__codelineno-11-14" name="__codelineno-11-14" href="#__codelineno-11-14"></a><span class="w">  </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://github.com/bigbio/pgatk</span>
+</span><span id="__span-11-15"><a id="__codelineno-11-15" name="__codelineno-11-15" href="#__codelineno-11-15"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">icon</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">fontawesome/brands/python</span>
+</span><span id="__span-11-16"><a id="__codelineno-11-16" name="__codelineno-11-16" href="#__codelineno-11-16"></a><span class="w">  </span><span class="nt">link</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">https://pypi.org/project/pgatk/</span>
+</span></code></pre></div>
+<p><strong>Step 2: Rename docs/pypgatk.md → docs/pgatk-cli.md</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>git<span class="w"> </span>mv<span class="w"> </span>docs/pypgatk.md<span class="w"> </span>docs/pgatk-cli.md
+</span></code></pre></div>
+<p><strong>Step 3: Update all doc content</strong></p>
+<p>In all doc files, replace:
+- <code>pypgatk</code> (the CLI command) → <code>pgatk</code>
+- <code>py-pgatk</code> (repo name) → <code>pgatk</code>
+- <code>pip install pypgatk</code> → <code>pip install pgatk</code>
+- Badge URLs: <code>bigbio/py-pgatk</code> → <code>bigbio/pgatk</code>
+- PyPI badges: <code>pypgatk</code> → <code>pgatk</code></p>
+<hr />
+<h3 id="task-110-run-tests-and-verify">Task 1.10: Run tests and verify<a class="headerlink" href="#task-110-run-tests-and-verify" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Step 1: Install in editable mode</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a><span class="nb">cd</span><span class="w"> </span>/Users/yperez/work/proteogenomics/pgatk
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+</span></code></pre></div>
+<p><strong>Step 2: Run tests</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">cd</span><span class="w"> </span>pgatk
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;*_tests.py&quot;</span><span class="w"> </span>-v
+</span></code></pre></div>
+<p>Expected: All tests pass.</p>
+<p><strong>Step 3: Verify CLI entry point</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>pgatk<span class="w"> </span>--version
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a><span class="c1"># Expected: pgatk, version 0.0.26</span>
+</span></code></pre></div>
+<p><strong>Step 4: Commit</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>git<span class="w"> </span>add<span class="w"> </span>-A
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;refactor: rename pypgatk to pgatk</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="s2">- Rename package directory pypgatk/ → pgatk/</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="s2">- Rename CLI module pypgatkc.py → cli.py</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="s2">- Update all Python imports from pypgatk to pgatk</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="s2">- Rename constant PYGPATK_ENZYMES → PGATK_ENZYMES</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="s2">- Update pyproject.toml (name, entry point, URLs, package config)</span>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="s2">- Update Dockerfile, MANIFEST.in, .gitignore, conda env</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="s2">- Update GitHub Actions workflows</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="s2">- Update MkDocs documentation</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="s2">- CLI command: pypgatk → pgatk</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="s2">- PyPI package: pypgatk → pgatk&quot;</span>
+</span></code></pre></div>
+<hr />
+<h2 id="pr-2-config-registry-branch-refactorconfig-registry">PR 2: Config Registry (branch: <code>refactor/config-registry</code>)<a class="headerlink" href="#pr-2-config-registry-branch-refactorconfig-registry" title="Anchor link to this section">&para;</a></h2>
+<h3 id="task-21-create-pgatkconfigregistrypy">Task 2.1: Create <code>pgatk/config/registry.py</code><a class="headerlink" href="#task-21-create-pgatkconfigregistrypy" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Create: <code>pgatk/config/registry.py</code></p>
+<p><strong>Step 1: Write the registry module</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="sd">Central config registry: maps config keys to bundled default YAML files.</span>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="sd">Enables auto-loading of defaults when user doesn&#39;t pass -c.</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.toolbox.general</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_yaml_from_file</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="n">CONFIG_DIR</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="n">COMMAND_CONFIGS</span> <span class="o">=</span> <span class="p">{</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a>    <span class="s2">&quot;ensembl_downloader&quot;</span><span class="p">:</span> <span class="s2">&quot;ensembl_downloader_config.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>    <span class="s2">&quot;ensembl_config&quot;</span><span class="p">:</span> <span class="s2">&quot;ensembl_config.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a>    <span class="s2">&quot;cosmic&quot;</span><span class="p">:</span> <span class="s2">&quot;cosmic_config.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a>    <span class="s2">&quot;cbioportal&quot;</span><span class="p">:</span> <span class="s2">&quot;cbioportal_config.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a>    <span class="s2">&quot;protein_decoy&quot;</span><span class="p">:</span> <span class="s2">&quot;protein_decoy.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>    <span class="s2">&quot;openms_analysis&quot;</span><span class="p">:</span> <span class="s2">&quot;openms_analysis.yaml&quot;</span><span class="p">,</span>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="p">}</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a>
+</span><span id="__span-17-21"><a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a><span class="k">def</span><span class="w"> </span><span class="nf">load_config</span><span class="p">(</span><span class="n">config_key</span><span class="p">,</span> <span class="n">user_config_file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+</span><span id="__span-17-22"><a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+</span><span id="__span-17-23"><a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="sd">    Load configuration for a command.</span>
+</span><span id="__span-17-24"><a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a>
+</span><span id="__span-17-25"><a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a><span class="sd">    If user_config_file is provided, loads that file.</span>
+</span><span id="__span-17-26"><a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a><span class="sd">    Otherwise, loads the bundled default config for the given key.</span>
+</span><span id="__span-17-27"><a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a>
+</span><span id="__span-17-28"><a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="sd">    :param config_key: key in COMMAND_CONFIGS</span>
+</span><span id="__span-17-29"><a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a><span class="sd">    :param user_config_file: optional path to user-provided config file</span>
+</span><span id="__span-17-30"><a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a><span class="sd">    :return: parsed YAML config dict, or empty dict if no config found</span>
+</span><span id="__span-17-31"><a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a><span class="sd">    &quot;&quot;&quot;</span>
+</span><span id="__span-17-32"><a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a>    <span class="k">if</span> <span class="n">user_config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-17-33"><a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a>        <span class="k">return</span> <span class="n">read_yaml_from_file</span><span class="p">(</span><span class="n">user_config_file</span><span class="p">)</span>
+</span><span id="__span-17-34"><a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a>
+</span><span id="__span-17-35"><a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a>    <span class="n">default_file</span> <span class="o">=</span> <span class="n">COMMAND_CONFIGS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">config_key</span><span class="p">)</span>
+</span><span id="__span-17-36"><a id="__codelineno-17-36" name="__codelineno-17-36" href="#__codelineno-17-36"></a>    <span class="k">if</span> <span class="n">default_file</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-17-37"><a id="__codelineno-17-37" name="__codelineno-17-37" href="#__codelineno-17-37"></a>        <span class="k">return</span> <span class="p">{}</span>
+</span><span id="__span-17-38"><a id="__codelineno-17-38" name="__codelineno-17-38" href="#__codelineno-17-38"></a>    <span class="k">return</span> <span class="n">read_yaml_from_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CONFIG_DIR</span><span class="p">,</span> <span class="n">default_file</span><span class="p">))</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-22-update-command-files-to-use-load_config">Task 2.2: Update command files to use <code>load_config</code><a class="headerlink" href="#task-22-update-command-files-to-use-load_config" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files (all 14 command files in <code>pgatk/commands/</code>):</strong></p>
+<p>For each command file, replace:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># Before</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.toolbox.general</span><span class="w"> </span><span class="kn">import</span> <span class="n">read_yaml_from_file</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># ... in the command function:</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="n">config_data</span> <span class="o">=</span> <span class="kc">None</span>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="k">if</span> <span class="n">config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a>    <span class="n">config_data</span> <span class="o">=</span> <span class="n">read_yaml_from_file</span><span class="p">(</span><span class="n">config_file</span><span class="p">)</span>
+</span></code></pre></div>
+<p>With:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># After</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.config.registry</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_config</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="c1"># ... in the command function:</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="n">config_data</span> <span class="o">=</span> <span class="n">load_config</span><span class="p">(</span><span class="s2">&quot;&lt;config_key&gt;&quot;</span><span class="p">,</span> <span class="n">config_file</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Config key mapping per command file:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Command file</th>
+<th>Config key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ensembl_downloader.py</code></td>
+<td><code>"ensembl_downloader"</code></td>
+</tr>
+<tr>
+<td><code>ensembl_database.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>vcf_to_proteindb.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>dnaseq_to_proteindb.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>threeframe_translation.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>cosmic_downloader.py</code></td>
+<td><code>"cosmic"</code></td>
+</tr>
+<tr>
+<td><code>cosmic_to_proteindb.py</code></td>
+<td><code>"cosmic"</code></td>
+</tr>
+<tr>
+<td><code>cbioportal_downloader.py</code></td>
+<td><code>"cbioportal"</code></td>
+</tr>
+<tr>
+<td><code>cbioportal_to_proteindb.py</code></td>
+<td><code>"cbioportal"</code></td>
+</tr>
+<tr>
+<td><code>proteindb_decoy.py</code></td>
+<td><code>"protein_decoy"</code></td>
+</tr>
+<tr>
+<td><code>peptide_class_fdr.py</code></td>
+<td><code>"openms_analysis"</code></td>
+</tr>
+<tr>
+<td><code>validate_peptides.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>mztab_class_fdr.py</code></td>
+<td><code>"ensembl_config"</code></td>
+</tr>
+<tr>
+<td><code>blast_get_position.py</code></td>
+<td>(no config needed — uses None)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="task-23-update-tests-that-pass-config_file">Task 2.3: Update tests that pass <code>--config_file</code><a class="headerlink" href="#task-23-update-tests-that-pass-config_file" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/tests/pypgatk_tests.py</code></p>
+<p>Some tests currently pass <code>--config_file</code> explicitly. These should still work (user override).
+Add a new test that runs a command without <code>--config_file</code> to verify auto-loading:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="k">def</span><span class="w"> </span><span class="nf">test_generate_decoy_database_autoconfig</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span><span class="sd">&quot;&quot;&quot;Test that generate-decoy works without explicit --config_file (auto-loads bundled default).&quot;&quot;&quot;</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a>    <span class="n">runner</span> <span class="o">=</span> <span class="n">CliRunner</span><span class="p">()</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a>    <span class="n">result</span> <span class="o">=</span> <span class="n">runner</span><span class="o">.</span><span class="n">invoke</span><span class="p">(</span><span class="n">cli</span><span class="p">,</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a>                           <span class="p">[</span><span class="s1">&#39;generate-decoy&#39;</span><span class="p">,</span> <span class="s1">&#39;-in&#39;</span><span class="p">,</span> <span class="s1">&#39;testdata/test_db.fa&#39;</span><span class="p">,</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a>                            <span class="s1">&#39;-out&#39;</span><span class="p">,</span> <span class="s1">&#39;testdata/output_decoy.fa&#39;</span><span class="p">,</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a>                            <span class="s1">&#39;--method&#39;</span><span class="p">,</span> <span class="s1">&#39;protein-reverse&#39;</span><span class="p">])</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">exit_code</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+</span></code></pre></div>
+<p>Note: <code>test_generate_decoy_database_noconfig</code> already tests this case — verify it still passes.</p>
+<p><strong>Step 1: Run tests</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="nb">cd</span><span class="w"> </span>pgatk
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;*_tests.py&quot;</span><span class="w"> </span>-v
+</span></code></pre></div>
+<p><strong>Step 2: Commit</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>git<span class="w"> </span>add<span class="w"> </span>pgatk/config/registry.py<span class="w"> </span>pgatk/commands/
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;refactor: add config registry for auto-loading bundled defaults</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="s2">- Add pgatk/config/registry.py with central COMMAND_CONFIGS mapping</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="s2">- Update all 14 command files to use load_config()</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="s2">- -c flag is now optional: bundled defaults are loaded automatically</span>
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="s2">- User can still override with -c path/to/custom_config.yaml&quot;</span>
+</span></code></pre></div>
+<hr />
+<h2 id="pr-3-bug-fixes-branch-fixbugs">PR 3: Bug Fixes (branch: <code>fix/bugs</code>)<a class="headerlink" href="#pr-3-bug-fixes-branch-fixbugs" title="Anchor link to this section">&para;</a></h2>
+<h3 id="task-31-fix-_filter_write_idxml_with_df-writing-unfiltered-data">Task 3.1: Fix <code>_filter_write_idxml_with_df</code> writing unfiltered data<a class="headerlink" href="#task-31-fix-_filter_write_idxml_with_df-writing-unfiltered-data" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/proteomics/openms.py:437</code></p>
+<p><strong>Step 1: Fix the store call</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="c1"># Before (line 437)</span>
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="n">idxml_parser</span><span class="p">()</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">prot_ids</span><span class="p">,</span> <span class="n">pep_ids</span><span class="p">)</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="c1"># After</span>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="n">idxml_parser</span><span class="p">()</span><span class="o">.</span><span class="n">store</span><span class="p">(</span><span class="n">output_file</span><span class="p">,</span> <span class="n">prot_ids</span><span class="p">,</span> <span class="n">new_pep_ids</span><span class="p">)</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-32-fix-iso-8859-encoding-typo">Task 3.2: Fix ISO-8859 encoding typo<a class="headerlink" href="#task-32-fix-iso-8859-encoding-typo" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/cgenomes/cosmic_downloader.py:156</code></p>
+<p><strong>Step 1: Fix the encoding name</strong></p>
+<p>The en-dash (U+2013) in <code>'ISO-8859–1'</code> must be replaced with a regular hyphen:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a><span class="c1"># Before (line 156)</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ISO-8859–1&#39;</span><span class="p">))</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="c1"># After</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="n">outfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">gzip</span><span class="o">.</span><span class="n">decompress</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">local_file</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span><span class="o">.</span><span class="n">decode</span><span class="p">(</span><span class="s1">&#39;ISO-8859-1&#39;</span><span class="p">))</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-33-fix-download_file-log-inversion-bug">Task 3.3: Fix <code>download_file</code> log inversion bug<a class="headerlink" href="#task-33-fix-download_file-log-inversion-bug" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/toolbox/general.py:192-193</code></p>
+<p><strong>Step 1: Fix the condition</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a><span class="c1"># Before (line 192-193)</span>
+</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span>
+</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="c1"># After</span>
+</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a>    <span class="n">log</span> <span class="o">=</span> <span class="n">logging</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-34-fix-enzyme-name-typos-in-modelspy">Task 3.4: Fix enzyme name typos in models.py<a class="headerlink" href="#task-34-fix-enzyme-name-typos-in-modelspy" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/proteomics/models.py:21-22</code></p>
+<p><strong>Step 1: Fix the typos</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># Before (lines 21-22 — &quot;cleavege&quot; is misspelled)</span>
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="s1">&#39;Trypsin/P&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cleavage rule&#39;</span><span class="p">:</span> <span class="s1">&#39;(?&lt;=[KRX])&#39;</span><span class="p">,</span> <span class="s1">&#39;PSIID&#39;</span><span class="p">:</span> <span class="s1">&#39;MS:1001313&#39;</span><span class="p">,</span> <span class="s1">&#39;cleavege sites&#39;</span><span class="p">:</span> <span class="s1">&#39;KR&#39;</span><span class="p">},</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="s1">&#39;V8-DE&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cleavage rule&#39;</span><span class="p">:</span> <span class="s1">&#39;(?&lt;=[DBEZX])(?!P)&#39;</span><span class="p">,</span> <span class="s1">&#39;PSIID&#39;</span><span class="p">:</span> <span class="s1">&#39;MS:1001314&#39;</span><span class="p">,</span> <span class="s1">&#39;cleavege sites&#39;</span><span class="p">:</span> <span class="s1">&#39;DBEZX&#39;</span><span class="p">},</span>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># After</span>
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="s1">&#39;Trypsin/P&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cleavage rule&#39;</span><span class="p">:</span> <span class="s1">&#39;(?&lt;=[KRX])&#39;</span><span class="p">,</span> <span class="s1">&#39;PSIID&#39;</span><span class="p">:</span> <span class="s1">&#39;MS:1001313&#39;</span><span class="p">,</span> <span class="s1">&#39;cleavage sites&#39;</span><span class="p">:</span> <span class="s1">&#39;KR&#39;</span><span class="p">},</span>
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="s1">&#39;V8-DE&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;cleavage rule&#39;</span><span class="p">:</span> <span class="s1">&#39;(?&lt;=[DBEZX])(?!P)&#39;</span><span class="p">,</span> <span class="s1">&#39;PSIID&#39;</span><span class="p">:</span> <span class="s1">&#39;MS:1001314&#39;</span><span class="p">,</span> <span class="s1">&#39;cleavage sites&#39;</span><span class="p">:</span> <span class="s1">&#39;DBEZX&#39;</span><span class="p">},</span>
+</span></code></pre></div>
+<p><strong>Important:</strong> Check if <code>'cleavege sites'</code> is used as a dictionary key anywhere — if so, update those references too. Search for <code>cleavege</code> across the codebase.</p>
+<hr />
+<h3 id="task-35-replace-print_help-with-clicks-requiredtrue">Task 3.5: Replace <code>print_help()</code> with Click's <code>required=True</code><a class="headerlink" href="#task-35-replace-print_help-with-clicks-requiredtrue" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files (11 command files):</strong></p>
+<p>For each command file listed below, add <code>required=True</code> to the relevant <code>@click.option()</code> decorators and remove the <code>print_help()</code> check.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Options to make required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ensembl_database.py</code></td>
+<td><code>--input_fasta</code></td>
+</tr>
+<tr>
+<td><code>vcf_to_proteindb.py</code></td>
+<td><code>--input_fasta</code>, <code>--vcf</code>, <code>--gene_annotations_gtf</code></td>
+</tr>
+<tr>
+<td><code>cbioportal_to_proteindb.py</code></td>
+<td><code>--input_mutation</code>, <code>--input_cds</code>, <code>--output_db</code></td>
+</tr>
+<tr>
+<td><code>cosmic_to_proteindb.py</code></td>
+<td><code>--input_mutation</code>, <code>--input_genes</code>, <code>--output_db</code></td>
+</tr>
+<tr>
+<td><code>threeframe_translation.py</code></td>
+<td><code>--input_fasta</code></td>
+</tr>
+<tr>
+<td><code>proteindb_decoy.py</code></td>
+<td><code>--input_database</code></td>
+</tr>
+<tr>
+<td><code>peptide_class_fdr.py</code></td>
+<td><code>--input_file</code>, <code>--output_file</code></td>
+</tr>
+<tr>
+<td><code>dnaseq_to_proteindb.py</code></td>
+<td><code>--input_fasta</code></td>
+</tr>
+<tr>
+<td><code>blast_get_position.py</code></td>
+<td><code>--input_psm_to_blast</code>, <code>--input_reference_database</code>, <code>--output_psm</code></td>
+</tr>
+<tr>
+<td><code>mztab_class_fdr.py</code></td>
+<td><code>--input_mztab</code>, <code>--outfile_name</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Special case: <code>ensembl_downloader.py</code></strong> — This command requires <code>--taxonomy</code> OR <code>--ensembl_name</code> (either one). Can't use <code>required=True</code> directly. Use a Click callback or keep a validation check (but raise <code>click.UsageError</code> instead of <code>print_help()</code>):</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a><span class="k">if</span> <span class="n">taxonomy</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">ensembl_name</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    <span class="k">raise</span> <span class="n">click</span><span class="o">.</span><span class="n">UsageError</span><span class="p">(</span><span class="s2">&quot;Either --taxonomy or --ensembl_name is required.&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Special case: <code>validate_peptides.py</code></strong> — Review the specific validation logic before converting.</p>
+<p><strong>Step 1: For each file, add <code>required=True</code> and remove <code>print_help()</code> import and call</strong></p>
+<p>Example pattern:
+<div class="language-python highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a><span class="c1"># Before</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">pgatk.commands.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_help</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;-in&#39;</span><span class="p">,</span> <span class="s1">&#39;--input_fasta&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;...&#39;</span><span class="p">)</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="k">def</span><span class="w"> </span><span class="nf">command</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">input_fasta</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a>    <span class="k">if</span> <span class="n">input_fasta</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+</span><span id="__span-28-7"><a id="__codelineno-28-7" name="__codelineno-28-7" href="#__codelineno-28-7"></a>        <span class="n">print_help</span><span class="p">()</span>
+</span><span id="__span-28-8"><a id="__codelineno-28-8" name="__codelineno-28-8" href="#__codelineno-28-8"></a>
+</span><span id="__span-28-9"><a id="__codelineno-28-9" name="__codelineno-28-9" href="#__codelineno-28-9"></a><span class="c1"># After (remove print_help import, add required=True)</span>
+</span><span id="__span-28-10"><a id="__codelineno-28-10" name="__codelineno-28-10" href="#__codelineno-28-10"></a><span class="nd">@click</span><span class="o">.</span><span class="n">option</span><span class="p">(</span><span class="s1">&#39;-in&#39;</span><span class="p">,</span> <span class="s1">&#39;--input_fasta&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;...&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-28-11"><a id="__codelineno-28-11" name="__codelineno-28-11" href="#__codelineno-28-11"></a><span class="k">def</span><span class="w"> </span><span class="nf">command</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">config_file</span><span class="p">,</span> <span class="n">input_fasta</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+</span><span id="__span-28-12"><a id="__codelineno-28-12" name="__codelineno-28-12" href="#__codelineno-28-12"></a>    <span class="c1"># print_help() call removed</span>
+</span></code></pre></div></p>
+<p><strong>Step 2: Remove <code>print_help</code> from <code>pgatk/commands/utils.py</code></strong> if no longer used anywhere.</p>
+<p><strong>Step 3: Run tests</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a><span class="nb">cd</span><span class="w"> </span>pgatk
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;*_tests.py&quot;</span><span class="w"> </span>-v
+</span></code></pre></div>
+<hr />
+<h3 id="task-36-replace-deprecated-biopairwise2">Task 3.6: Replace deprecated <code>Bio.pairwise2</code><a class="headerlink" href="#task-36-replace-deprecated-biopairwise2" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/proteogenomics/blast_get_position.py</code></p>
+<p><strong>Step 1: Replace import</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="c1"># Before</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Bio</span><span class="w"> </span><span class="kn">import</span> <span class="n">pairwise2</span><span class="p">,</span> <span class="n">SeqIO</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="c1"># After</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Bio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeqIO</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Bio.Align</span><span class="w"> </span><span class="kn">import</span> <span class="n">PairwiseAligner</span>
+</span></code></pre></div>
+<p><strong>Step 2: Replace usage in <code>peptide_blast_protein</code> function</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="c1"># Before</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="n">score</span> <span class="o">=</span> <span class="n">pairwise2</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">localms</span><span class="p">(</span><span class="n">sequenceA</span><span class="o">=</span><span class="n">fasta</span><span class="p">,</span> <span class="n">sequenceB</span><span class="o">=</span><span class="n">peptide</span><span class="p">,</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a>                                <span class="n">match</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">open</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">extend</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">score_only</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="k">if</span> <span class="n">score</span> <span class="o">==</span> <span class="n">length</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a>    <span class="n">alignment</span> <span class="o">=</span> <span class="n">pairwise2</span><span class="o">.</span><span class="n">align</span><span class="o">.</span><span class="n">localms</span><span class="p">(</span><span class="n">sequenceA</span><span class="o">=</span><span class="n">fasta</span><span class="p">,</span> <span class="n">sequenceB</span><span class="o">=</span><span class="n">peptide</span><span class="p">,</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a>                                        <span class="n">match</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">mismatch</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="nb">open</span><span class="o">=-</span><span class="mi">2</span><span class="p">,</span> <span class="n">extend</span><span class="o">=-</span><span class="mi">2</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a>
+</span><span id="__span-31-8"><a id="__codelineno-31-8" name="__codelineno-31-8" href="#__codelineno-31-8"></a><span class="c1"># After</span>
+</span><span id="__span-31-9"><a id="__codelineno-31-9" name="__codelineno-31-9" href="#__codelineno-31-9"></a><span class="n">aligner</span> <span class="o">=</span> <span class="n">PairwiseAligner</span><span class="p">()</span>
+</span><span id="__span-31-10"><a id="__codelineno-31-10" name="__codelineno-31-10" href="#__codelineno-31-10"></a><span class="n">aligner</span><span class="o">.</span><span class="n">mode</span> <span class="o">=</span> <span class="s1">&#39;local&#39;</span>
+</span><span id="__span-31-11"><a id="__codelineno-31-11" name="__codelineno-31-11" href="#__codelineno-31-11"></a><span class="n">aligner</span><span class="o">.</span><span class="n">match_score</span> <span class="o">=</span> <span class="mi">1</span>
+</span><span id="__span-31-12"><a id="__codelineno-31-12" name="__codelineno-31-12" href="#__codelineno-31-12"></a><span class="n">aligner</span><span class="o">.</span><span class="n">mismatch_score</span> <span class="o">=</span> <span class="mi">0</span>
+</span><span id="__span-31-13"><a id="__codelineno-31-13" name="__codelineno-31-13" href="#__codelineno-31-13"></a><span class="n">aligner</span><span class="o">.</span><span class="n">open_gap_score</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+</span><span id="__span-31-14"><a id="__codelineno-31-14" name="__codelineno-31-14" href="#__codelineno-31-14"></a><span class="n">aligner</span><span class="o">.</span><span class="n">extend_gap_score</span> <span class="o">=</span> <span class="o">-</span><span class="mi">2</span>
+</span><span id="__span-31-15"><a id="__codelineno-31-15" name="__codelineno-31-15" href="#__codelineno-31-15"></a><span class="n">alignments</span> <span class="o">=</span> <span class="n">aligner</span><span class="o">.</span><span class="n">align</span><span class="p">(</span><span class="n">fasta</span><span class="p">,</span> <span class="n">peptide</span><span class="p">)</span>
+</span><span id="__span-31-16"><a id="__codelineno-31-16" name="__codelineno-31-16" href="#__codelineno-31-16"></a><span class="n">score</span> <span class="o">=</span> <span class="n">alignments</span><span class="o">.</span><span class="n">score</span> <span class="k">if</span> <span class="n">alignments</span> <span class="k">else</span> <span class="mi">0</span>
+</span><span id="__span-31-17"><a id="__codelineno-31-17" name="__codelineno-31-17" href="#__codelineno-31-17"></a><span class="k">if</span> <span class="n">score</span> <span class="o">==</span> <span class="n">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+</span><span id="__span-31-18"><a id="__codelineno-31-18" name="__codelineno-31-18" href="#__codelineno-31-18"></a>    <span class="n">alignment</span> <span class="o">=</span> <span class="n">alignments</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</span><span id="__span-31-19"><a id="__codelineno-31-19" name="__codelineno-31-19" href="#__codelineno-31-19"></a>    <span class="c1"># Update attribute access: alignment.aligned gives coordinate pairs</span>
+</span><span id="__span-31-20"><a id="__codelineno-31-20" name="__codelineno-31-20" href="#__codelineno-31-20"></a>    <span class="c1"># Need to adapt get_details() calls to work with new alignment format</span>
+</span></code></pre></div>
+<p><strong>Note:</strong> The <code>PairwiseAligner</code> API differs from <code>pairwise2</code>. The alignment object attributes change:
+- <code>alignment.seqA</code> / <code>alignment.seqB</code> → access via <code>alignment.target</code> / <code>alignment.query</code>
+- <code>alignment.start</code> / <code>alignment.end</code> → access via <code>alignment.aligned</code> coordinate arrays</p>
+<p>Carefully test the <code>get_details()</code> function calls to ensure they still work with the new alignment format.</p>
+<p><strong>Step 3: Commit</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>git<span class="w"> </span>add<span class="w"> </span>-A
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;fix: resolve multiple bugs</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="s2">- Fix _filter_write_idxml_with_df writing unfiltered data (openms.py)</span>
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="s2">- Fix ISO-8859 encoding en-dash typo (cosmic_downloader.py)</span>
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="s2">- Fix download_file log inversion bug (general.py)</span>
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="s2">- Fix enzyme name typos &#39;cleavege&#39; → &#39;cleavage&#39; (models.py)</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a><span class="s2">- Replace print_help() with Click required=True (11 command files)</span>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="s2">- Replace deprecated Bio.pairwise2 with PairwiseAligner (blast_get_position.py)&quot;</span>
+</span></code></pre></div>
+<hr />
+<h2 id="pr-4-cleanup-branch-refactorcleanup">PR 4: Cleanup (branch: <code>refactor/cleanup</code>)<a class="headerlink" href="#pr-4-cleanup-branch-refactorcleanup" title="Anchor link to this section">&para;</a></h2>
+<h3 id="task-41-remove-dead-species-and-speciesservice-classes">Task 4.1: Remove dead <code>Species</code> and <code>SpeciesService</code> classes<a class="headerlink" href="#task-41-remove-dead-species-and-speciesservice-classes" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/ensembl/models.py</code></p>
+<p><strong>Step 1: Verify they are unused</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>grep<span class="w"> </span>-r<span class="w"> </span><span class="s2">&quot;Species\|SpeciesService&quot;</span><span class="w"> </span>pgatk/<span class="w"> </span>--include<span class="o">=</span><span class="s2">&quot;*.py&quot;</span><span class="w"> </span>-l
+</span><span id="__span-33-2"><a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="c1"># Should only show pgatk/ensembl/models.py</span>
+</span></code></pre></div>
+<p><strong>Step 2: Remove both classes</strong> (lines 9-180 approximately). Keep any other code in the file (e.g., imports used elsewhere).</p>
+<hr />
+<h3 id="task-42-remove-dead-code-after-return-statement">Task 4.2: Remove dead code after return statement<a class="headerlink" href="#task-42-remove-dead-code-after-return-statement" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/toolbox/general.py</code></p>
+<p><strong>Step 1: Delete commented-out code</strong> at lines 241-253 (after <code>return downloaded_file</code> in <code>download_file()</code>).</p>
+<hr />
+<h3 id="task-43-dynamic-version-from-package-metadata">Task 4.3: Dynamic version from package metadata<a class="headerlink" href="#task-43-dynamic-version-from-package-metadata" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/cli.py</code></p>
+<p><strong>Step 1: Use importlib.metadata</strong></p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a><span class="c1"># Before</span>
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a><span class="nd">@click</span><span class="o">.</span><span class="n">version_option</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="s1">&#39;0.0.26&#39;</span><span class="p">)</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a>
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="c1"># After</span>
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span><span class="p">,</span> <span class="n">PackageNotFoundError</span>
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a>
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a><span class="k">try</span><span class="p">:</span>
+</span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a>    <span class="n">__version__</span> <span class="o">=</span> <span class="n">version</span><span class="p">(</span><span class="s2">&quot;pgatk&quot;</span><span class="p">)</span>
+</span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="k">except</span> <span class="n">PackageNotFoundError</span><span class="p">:</span>
+</span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a>    <span class="n">__version__</span> <span class="o">=</span> <span class="s2">&quot;dev&quot;</span>
+</span><span id="__span-34-12"><a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a>
+</span><span id="__span-34-13"><a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a><span class="nd">@click</span><span class="o">.</span><span class="n">version_option</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">__version__</span><span class="p">)</span>
+</span><span id="__span-34-14"><a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="k">def</span><span class="w"> </span><span class="nf">cli</span><span class="p">():</span>
+</span></code></pre></div>
+<hr />
+<h3 id="task-44-fix-cwd-log-file-creation">Task 4.4: Fix CWD log file creation<a class="headerlink" href="#task-44-fix-cwd-log-file-creation" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Files:</strong>
+- Modify: <code>pgatk/toolbox/general.py</code></p>
+<p><strong>Step 1: Replace FileHandler with StreamHandler</strong></p>
+<p>In <code>ParameterConfiguration.__init__</code>, replace the file-based logging with stderr-based logging:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a><span class="c1"># Before (lines 72-89)</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="bp">self</span><span class="o">.</span><span class="n">_log_handlers</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="n">log_handlers_prefix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ROOT_CONFIG_NAME</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="n">log_handlers_extension</span> <span class="o">=</span> <span class="s1">&#39;.log&#39;</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_level</span><span class="p">))</span>
+</span><span id="__span-35-8"><a id="__codelineno-35-8" name="__codelineno-35-8" href="#__codelineno-35-8"></a><span class="bp">self</span><span class="o">.</span><span class="n">_log_files</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-35-9"><a id="__codelineno-35-9" name="__codelineno-35-9" href="#__codelineno-35-9"></a><span class="k">for</span> <span class="n">llevel</span><span class="p">,</span> <span class="n">lformat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger_formatters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span id="__span-35-10"><a id="__codelineno-35-10" name="__codelineno-35-10" href="#__codelineno-35-10"></a>    <span class="n">logfile</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_handlers_prefix</span> <span class="o">+</span> <span class="n">llevel</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="n">log_handlers_extension</span><span class="p">)</span>
+</span><span id="__span-35-11"><a id="__codelineno-35-11" name="__codelineno-35-11" href="#__codelineno-35-11"></a>    <span class="n">lformatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">lformat</span><span class="p">)</span>
+</span><span id="__span-35-12"><a id="__codelineno-35-12" name="__codelineno-35-12" href="#__codelineno-35-12"></a>    <span class="n">lhandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="n">logfile</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;w&#39;</span><span class="p">)</span>
+</span><span id="__span-35-13"><a id="__codelineno-35-13" name="__codelineno-35-13" href="#__codelineno-35-13"></a>    <span class="n">lhandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">llevel</span><span class="p">))</span>
+</span><span id="__span-35-14"><a id="__codelineno-35-14" name="__codelineno-35-14" href="#__codelineno-35-14"></a>    <span class="n">lhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">lformatter</span><span class="p">)</span>
+</span><span id="__span-35-15"><a id="__codelineno-35-15" name="__codelineno-35-15" href="#__codelineno-35-15"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_log_handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lhandler</span><span class="p">)</span>
+</span><span id="__span-35-16"><a id="__codelineno-35-16" name="__codelineno-35-16" href="#__codelineno-35-16"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">lhandler</span><span class="p">)</span>
+</span><span id="__span-35-17"><a id="__codelineno-35-17" name="__codelineno-35-17" href="#__codelineno-35-17"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_log_files</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">logfile</span><span class="p">)</span>
+</span><span id="__span-35-18"><a id="__codelineno-35-18" name="__codelineno-35-18" href="#__codelineno-35-18"></a>
+</span><span id="__span-35-19"><a id="__codelineno-35-19" name="__codelineno-35-19" href="#__codelineno-35-19"></a><span class="c1"># After</span>
+</span><span id="__span-35-20"><a id="__codelineno-35-20" name="__codelineno-35-20" href="#__codelineno-35-20"></a><span class="bp">self</span><span class="o">.</span><span class="n">_log_handlers</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-35-21"><a id="__codelineno-35-21" name="__codelineno-35-21" href="#__codelineno-35-21"></a><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+</span><span id="__span-35-22"><a id="__codelineno-35-22" name="__codelineno-35-22" href="#__codelineno-35-22"></a><span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_level</span><span class="p">))</span>
+</span><span id="__span-35-23"><a id="__codelineno-35-23" name="__codelineno-35-23" href="#__codelineno-35-23"></a><span class="bp">self</span><span class="o">.</span><span class="n">_log_files</span> <span class="o">=</span> <span class="p">[]</span>
+</span><span id="__span-35-24"><a id="__codelineno-35-24" name="__codelineno-35-24" href="#__codelineno-35-24"></a>
+</span><span id="__span-35-25"><a id="__codelineno-35-25" name="__codelineno-35-25" href="#__codelineno-35-25"></a><span class="c1"># Log to stderr instead of creating files in CWD</span>
+</span><span id="__span-35-26"><a id="__codelineno-35-26" name="__codelineno-35-26" href="#__codelineno-35-26"></a><span class="k">for</span> <span class="n">llevel</span><span class="p">,</span> <span class="n">lformat</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_logger_formatters</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+</span><span id="__span-35-27"><a id="__codelineno-35-27" name="__codelineno-35-27" href="#__codelineno-35-27"></a>    <span class="n">lformatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">lformat</span><span class="p">)</span>
+</span><span id="__span-35-28"><a id="__codelineno-35-28" name="__codelineno-35-28" href="#__codelineno-35-28"></a>    <span class="n">lhandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+</span><span id="__span-35-29"><a id="__codelineno-35-29" name="__codelineno-35-29" href="#__codelineno-35-29"></a>    <span class="n">lhandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">llevel</span><span class="p">))</span>
+</span><span id="__span-35-30"><a id="__codelineno-35-30" name="__codelineno-35-30" href="#__codelineno-35-30"></a>    <span class="n">lhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">lformatter</span><span class="p">)</span>
+</span><span id="__span-35-31"><a id="__codelineno-35-31" name="__codelineno-35-31" href="#__codelineno-35-31"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_log_handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lhandler</span><span class="p">)</span>
+</span><span id="__span-35-32"><a id="__codelineno-35-32" name="__codelineno-35-32" href="#__codelineno-35-32"></a>    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">lhandler</span><span class="p">)</span>
+</span></code></pre></div>
+<p><strong>Step 2: Clean up <code>get_session_log_files()</code></strong></p>
+<p>This method returns <code>self._log_files</code> which will now be empty. Keep the method (in case downstream code calls it) but it will return <code>[]</code>.</p>
+<hr />
+<h3 id="task-45-run-full-test-suite-and-commit">Task 4.5: Run full test suite and commit<a class="headerlink" href="#task-45-run-full-test-suite-and-commit" title="Anchor link to this section">&para;</a></h3>
+<p><strong>Step 1: Run tests</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a><span class="nb">cd</span><span class="w"> </span>pgatk
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a>python<span class="w"> </span>-m<span class="w"> </span>unittest<span class="w"> </span>discover<span class="w"> </span>-s<span class="w"> </span>tests<span class="w"> </span>-p<span class="w"> </span><span class="s2">&quot;*_tests.py&quot;</span><span class="w"> </span>-v
+</span></code></pre></div>
+<p><strong>Step 2: Commit</strong></p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>git<span class="w"> </span>add<span class="w"> </span>-A
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;refactor: remove dead code and improve logging</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="s2">- Remove unused Species and SpeciesService classes (ensembl/models.py)</span>
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="s2">- Remove commented-out dead code after return (toolbox/general.py)</span>
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="s2">- Use dynamic version from package metadata instead of hardcoded &#39;0.0.26&#39;</span>
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="s2">- Log to stderr instead of creating log files in CWD&quot;</span>
+</span></code></pre></div>
+<hr />
+<h2 id="summary-branch-and-pr-strategy">Summary: Branch and PR Strategy<a class="headerlink" href="#summary-branch-and-pr-strategy" title="Anchor link to this section">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>PR</th>
+<th>Branch</th>
+<th>Base</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>refactor/rename</code></td>
+<td><code>dev</code></td>
+<td>Full rename: pypgatk → pgatk</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>refactor/config-registry</code></td>
+<td><code>refactor/rename</code></td>
+<td>Auto-load bundled config defaults</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>fix/bugs</code></td>
+<td><code>refactor/rename</code></td>
+<td>Fix 6 bugs</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>refactor/cleanup</code></td>
+<td><code>refactor/rename</code></td>
+<td>Remove dead code, fix logging</td>
+</tr>
+</tbody>
+</table>
+<p>PR 1 merges first → then PRs 2, 3, 4 can merge in any order.</p>
+<h2 id="post-merge-manual">Post-Merge (Manual)<a class="headerlink" href="#post-merge-manual" title="Anchor link to this section">&para;</a></h2>
+<ol>
+<li>Rename GitHub repo: Settings → Repository name → <code>pgatk</code></li>
+<li>Publish new <code>pgatk</code> package to PyPI</li>
+<li>Update Bioconda recipe</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2020-2026 BigBio Team
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/bigbio/pgatk" target="_blank" rel="noopener" title="GitHub Repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://pypi.org/project/pgatk/" target="_blank" rel="noopener" title="PyPI Package" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.footer", "navigation.instant", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
