@@ -18,14 +18,14 @@
         <link rel="prev" href="../installation/">
       
       
-        <link rel="next" href="../formats/">
+        <link rel="next" href="../use-cases/">
       
       
         
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.3">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
     
     
       
@@ -367,6 +367,25 @@
   
   
     <li class="md-tabs__item">
+      <a href="../use-cases/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Use Cases
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
       <a href="../formats/" class="md-tabs__link">
         
   
@@ -661,6 +680,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#downloading-ncbi-clinvar-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downloading NCBI / ClinVar Data
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -712,6 +742,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#clinvar-variants-to-protein-sequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClinVar Variants to Protein Sequences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#transcripts-dna-to-protein-sequences" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -738,10 +779,76 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#post-processing-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Processing Utilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Processing Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#digest-and-filter-variant-peptides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Digest and Filter Variant Peptides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-peptides-to-genomic-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map Peptides to Genomic Coordinates
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
       
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -898,6 +1005,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#downloading-ncbi-clinvar-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Downloading NCBI / ClinVar Data
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -949,6 +1067,17 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#clinvar-variants-to-protein-sequences" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ClinVar Variants to Protein Sequences
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#transcripts-dna-to-protein-sequences" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -964,6 +1093,45 @@
     <span class="md-ellipsis">
       
         Generate Decoy Database
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#post-processing-utilities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Post-Processing Utilities
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Post-Processing Utilities">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#digest-and-filter-variant-peptides" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Digest and Filter Variant Peptides
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#map-peptides-to-genomic-coordinates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Map Peptides to Genomic Coordinates
       
     </span>
   </a>
@@ -1017,14 +1185,18 @@
 </span><span id="__span-0-10"><a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>Commands:
 </span><span id="__span-0-11"><a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="w">  </span>cbioportal-downloader<span class="w">    </span>Command<span class="w"> </span>to<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>the<span class="w"> </span>cbioportal<span class="w"> </span>studies
 </span><span id="__span-0-12"><a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="w">  </span>cbioportal-to-proteindb<span class="w">  </span>Command<span class="w"> </span>to<span class="w"> </span>translate<span class="w"> </span>cbioportal<span class="w"> </span>mutation<span class="w"> </span>data<span class="w"> </span>into<span class="w"> </span>proteindb
-</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>cosmic-downloader<span class="w">        </span>Command<span class="w"> </span>to<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>cosmic<span class="w"> </span>mutation<span class="w"> </span>database
-</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span>cosmic-to-proteindb<span class="w">      </span>Command<span class="w"> </span>to<span class="w"> </span>translate<span class="w"> </span>Cosmic<span class="w"> </span>mutation<span class="w"> </span>data<span class="w"> </span>into<span class="w"> </span>proteindb
-</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span>dnaseq-to-proteindb<span class="w">      </span>Generate<span class="w"> </span>peptides<span class="w"> </span>based<span class="w"> </span>on<span class="w"> </span>DNA<span class="w"> </span>sequences
-</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span>ensembl-check<span class="w">            </span>Command<span class="w"> </span>to<span class="w"> </span>check<span class="w"> </span>ensembl<span class="w"> </span>database<span class="w"> </span><span class="k">for</span><span class="w"> </span>stop<span class="w"> </span>codons,<span class="w"> </span>gaps
-</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>ensembl-downloader<span class="w">       </span>Command<span class="w"> </span>to<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>ensembl<span class="w"> </span>information
-</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>generate-decoy<span class="w">           </span>Create<span class="w"> </span>decoy<span class="w"> </span>protein<span class="w"> </span>sequences<span class="w"> </span>using<span class="w"> </span>multiple<span class="w"> </span>methods
-</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>threeframe-translation<span class="w">   </span>Command<span class="w"> </span>to<span class="w"> </span>perform<span class="w"> </span><span class="m">3</span><span class="err">&#39;</span>frame<span class="w"> </span>translation
-</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span>vcf-to-proteindb<span class="w">         </span>Generate<span class="w"> </span>peptides<span class="w"> </span>based<span class="w"> </span>on<span class="w"> </span>DNA<span class="w"> </span>variants<span class="w"> </span>VCF<span class="w"> </span>files
+</span><span id="__span-0-13"><a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a><span class="w">  </span>clinvar-to-proteindb<span class="w">     </span>Generate<span class="w"> </span>protein<span class="w"> </span>database<span class="w"> </span>from<span class="w"> </span>ClinVar<span class="w"> </span>VCF<span class="w"> </span>+<span class="w"> </span>RefSeq<span class="w"> </span>GTF
+</span><span id="__span-0-14"><a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a><span class="w">  </span>cosmic-downloader<span class="w">        </span>Command<span class="w"> </span>to<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>cosmic<span class="w"> </span>mutation<span class="w"> </span>database
+</span><span id="__span-0-15"><a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a><span class="w">  </span>cosmic-to-proteindb<span class="w">      </span>Command<span class="w"> </span>to<span class="w"> </span>translate<span class="w"> </span>Cosmic<span class="w"> </span>mutation<span class="w"> </span>data<span class="w"> </span>into<span class="w"> </span>proteindb
+</span><span id="__span-0-16"><a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="w">  </span>digest-mutant-protein<span class="w">    </span>Digest<span class="w"> </span>mutant<span class="w"> </span>proteins<span class="w"> </span>and<span class="w"> </span>filter<span class="w"> </span>against<span class="w"> </span>canonical<span class="w"> </span>proteome
+</span><span id="__span-0-17"><a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a><span class="w">  </span>dnaseq-to-proteindb<span class="w">      </span>Generate<span class="w"> </span>peptides<span class="w"> </span>based<span class="w"> </span>on<span class="w"> </span>DNA<span class="w"> </span>sequences
+</span><span id="__span-0-18"><a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a><span class="w">  </span>ensembl-check<span class="w">            </span>Command<span class="w"> </span>to<span class="w"> </span>check<span class="w"> </span>ensembl<span class="w"> </span>database<span class="w"> </span><span class="k">for</span><span class="w"> </span>stop<span class="w"> </span>codons,<span class="w"> </span>gaps
+</span><span id="__span-0-19"><a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="w">  </span>ensembl-downloader<span class="w">       </span>Command<span class="w"> </span>to<span class="w"> </span>download<span class="w"> </span>the<span class="w"> </span>ensembl<span class="w"> </span>information
+</span><span id="__span-0-20"><a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a><span class="w">  </span>generate-decoy<span class="w">           </span>Create<span class="w"> </span>decoy<span class="w"> </span>protein<span class="w"> </span>sequences<span class="w"> </span>using<span class="w"> </span>multiple<span class="w"> </span>methods
+</span><span id="__span-0-21"><a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a><span class="w">  </span>map-peptide2genome<span class="w">       </span>Map<span class="w"> </span>peptides<span class="w"> </span>to<span class="w"> </span>genomic<span class="w"> </span>coordinates<span class="w"> </span><span class="o">(</span>GFF3<span class="w"> </span>output<span class="o">)</span>
+</span><span id="__span-0-22"><a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a><span class="w">  </span>ncbi-downloader<span class="w">          </span>Download<span class="w"> </span>NCBI<span class="w"> </span>RefSeq<span class="w"> </span>and<span class="w"> </span>ClinVar<span class="w"> </span>reference<span class="w"> </span>files
+</span><span id="__span-0-23"><a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="w">  </span>threeframe-translation<span class="w">   </span>Command<span class="w"> </span>to<span class="w"> </span>perform<span class="w"> </span><span class="m">3</span><span class="err">&#39;</span>frame<span class="w"> </span>translation
+</span><span id="__span-0-24"><a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a><span class="w">  </span>vcf-to-proteindb<span class="w">         </span>Generate<span class="w"> </span>peptides<span class="w"> </span>based<span class="w"> </span>on<span class="w"> </span>DNA<span class="w"> </span>variants<span class="w"> </span>VCF<span class="w"> </span>files
 </span></code></pre></div>
 <h2 id="data-downloader-tools">Data Downloader Tools<a class="headerlink" href="#data-downloader-tools" title="Anchor link to this section">&para;</a></h2>
 <p>The Data downloader is a set of commands to download data from different Genomics data providers including ENSEMBL, COSMIC and cBioPortal.</p>
@@ -1156,59 +1328,92 @@
 </span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>git<span class="w"> </span>lfs<span class="w"> </span>pull<span class="w"> </span>-I<span class="w"> </span>public<span class="w"> </span>--include<span class="w"> </span><span class="s2">&quot;data_clinical_sample.txt&quot;</span>
 </span><span id="__span-9-5"><a id="__codelineno-9-5" name="__codelineno-9-5" href="#__codelineno-9-5"></a>git<span class="w"> </span>lfs<span class="w"> </span>pull<span class="w"> </span>-I<span class="w"> </span>public<span class="w"> </span>--include<span class="w"> </span><span class="s2">&quot;data_mutations_mskcc.txt&quot;</span>
 </span></code></pre></div>
+<h3 id="downloading-ncbi-clinvar-data">Downloading NCBI / ClinVar Data<a class="headerlink" href="#downloading-ncbi-clinvar-data" title="Anchor link to this section">&para;</a></h3>
+<p>Downloading NCBI RefSeq annotations and ClinVar variants for human (GRCh38) is performed using the command <code>ncbi-downloader</code>. The tool downloads four files:</p>
+<ul>
+<li>RefSeq gene annotations (GTF)</li>
+<li>RefSeq transcript nucleotide sequences (FASTA)</li>
+<li>Assembly report (chromosome name mapping)</li>
+<li>ClinVar variant calls (VCF)</li>
+</ul>
+<h4 id="command-options_3">Command Options<a class="headerlink" href="#command-options_3" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>ncbi-downloader<span class="w"> </span>-h
+</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>ncbi-downloader<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
+</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>-o,<span class="w"> </span>--output-dir<span class="w"> </span>TEXT<span class="w">     </span>Output<span class="w"> </span>directory<span class="w"> </span><span class="k">for</span><span class="w"> </span>downloaded<span class="w"> </span>files
+</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">    </span>Configuration<span class="w"> </span>YAML<span class="w"> </span>file
+</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">    </span>--force<span class="w">                   </span>Re-download<span class="w"> </span>files<span class="w"> </span>even<span class="w"> </span><span class="k">if</span><span class="w"> </span>they<span class="w"> </span>exist
+</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span></code></pre></div>
+<h4 id="examples_3">Examples<a class="headerlink" href="#examples_3" title="Anchor link to this section">&para;</a></h4>
+<ul>
+<li>
+<p>Download all NCBI/ClinVar reference files:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pgatk<span class="w"> </span>ncbi-downloader<span class="w"> </span>-o<span class="w"> </span>ncbi_data
+</span></code></pre></div>
+</li>
+<li>
+<p>Force re-download of all files:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>pgatk<span class="w"> </span>ncbi-downloader<span class="w"> </span>-o<span class="w"> </span>ncbi_data<span class="w"> </span>--force
+</span></code></pre></div>
+</li>
+</ul>
 <h2 id="generate-protein-databases">Generate Protein Databases<a class="headerlink" href="#generate-protein-databases" title="Anchor link to this section">&para;</a></h2>
 <p>The <strong>pgatk</strong> framework provides a set of tools to generate protein databases in <code>FASTA</code> format from DNA sequences, variants, and mutations. Multiple commands are available depending on the data type provided by the user and the public data providers (cBioPortal, COSMIC and ENSEMBL).</p>
 <h3 id="cosmic-mutations-to-protein-sequences">Cosmic Mutations to Protein Sequences<a class="headerlink" href="#cosmic-mutations-to-protein-sequences" title="Anchor link to this section">&para;</a></h3>
 <p><a href="https://cancer.sanger.ac.uk/cosmic/">COSMIC</a> the Catalogue of <strong>Human</strong> Somatic Mutations in Cancer is the world's largest source of expert manually curated somatic mutation information relating to human cancers. The command <code>cosmic-to-proteindb</code> converts the cosmic somatic mutations file into a protein sequence database file.</p>
-<h4 id="command-options_3">Command Options<a class="headerlink" href="#command-options_3" title="Anchor link to this section">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-h
-</span><span id="__span-10-2"><a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</span><span id="__span-10-3"><a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a>
-</span><span id="__span-10-4"><a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
-</span><span id="__span-10-5"><a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="w">    </span>-in,<span class="w"> </span>--input_mutation<span class="w"> </span>TEXT<span class="w">   </span>Cosmic<span class="w"> </span>Mutation<span class="w"> </span>data<span class="w"> </span>file
-</span><span id="__span-10-6"><a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a><span class="w">    </span>-fa,<span class="w"> </span>--input_genes<span class="w"> </span>TEXT<span class="w">      </span>All<span class="w"> </span>Cosmic<span class="w"> </span>genes
-</span><span id="__span-10-7"><a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="w">    </span>-out,<span class="w"> </span>--output_db<span class="w"> </span>TEXT<span class="w">       </span>Protein<span class="w"> </span>database<span class="w"> </span>including<span class="w"> </span>all<span class="w"> </span>the<span class="w"> </span>mutations
-</span><span id="__span-10-8"><a id="__codelineno-10-8" name="__codelineno-10-8" href="#__codelineno-10-8"></a>
-</span><span id="__span-10-9"><a id="__codelineno-10-9" name="__codelineno-10-9" href="#__codelineno-10-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
-</span><span id="__span-10-10"><a id="__codelineno-10-10" name="__codelineno-10-10" href="#__codelineno-10-10"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">       </span>Configuration<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>cosmic<span class="w"> </span>data<span class="w"> </span>pipelines
-</span><span id="__span-10-11"><a id="__codelineno-10-11" name="__codelineno-10-11" href="#__codelineno-10-11"></a><span class="w">    </span>-f,<span class="w"> </span>--filter_column<span class="w">          </span>Column<span class="w"> </span>name<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span><span class="k">for</span><span class="w"> </span>filtering<span class="w"> </span>or<span class="w"> </span>splitting<span class="w"> </span>mutations<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="s2">&quot;Primary site&quot;</span><span class="o">)</span>
-</span><span id="__span-10-12"><a id="__codelineno-10-12" name="__codelineno-10-12" href="#__codelineno-10-12"></a><span class="w">    </span>-a,<span class="w"> </span>--accepted_values<span class="w">        </span>Only<span class="w"> </span>consider<span class="w"> </span>mutations<span class="w"> </span>from<span class="w"> </span>these<span class="w"> </span>groups<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>all<span class="o">)</span>
-</span><span id="__span-10-13"><a id="__codelineno-10-13" name="__codelineno-10-13" href="#__codelineno-10-13"></a><span class="w">    </span>-s,<span class="w"> </span>--split_by_filter_column<span class="w"> </span>Generate<span class="w"> </span>a<span class="w"> </span>proteinDB<span class="w"> </span>output<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>each<span class="w"> </span>group<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>False<span class="o">)</span>
-</span><span id="__span-10-14"><a id="__codelineno-10-14" name="__codelineno-10-14" href="#__codelineno-10-14"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                   </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+<h4 id="command-options_4">Command Options<a class="headerlink" href="#command-options_4" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-h
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>-in,<span class="w"> </span>--input_mutation<span class="w"> </span>TEXT<span class="w">   </span>Cosmic<span class="w"> </span>Mutation<span class="w"> </span>data<span class="w"> </span>file
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>-fa,<span class="w"> </span>--input_genes<span class="w"> </span>TEXT<span class="w">      </span>All<span class="w"> </span>Cosmic<span class="w"> </span>genes
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span>-out,<span class="w"> </span>--output_db<span class="w"> </span>TEXT<span class="w">       </span>Protein<span class="w"> </span>database<span class="w"> </span>including<span class="w"> </span>all<span class="w"> </span>the<span class="w"> </span>mutations
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">       </span>Configuration<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>cosmic<span class="w"> </span>data<span class="w"> </span>pipelines
+</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span>-f,<span class="w"> </span>--filter_column<span class="w">          </span>Column<span class="w"> </span>name<span class="w"> </span>to<span class="w"> </span>use<span class="w"> </span><span class="k">for</span><span class="w"> </span>filtering<span class="w"> </span>or<span class="w"> </span>splitting<span class="w"> </span>mutations<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="s2">&quot;Primary site&quot;</span><span class="o">)</span>
+</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">    </span>-a,<span class="w"> </span>--accepted_values<span class="w">        </span>Only<span class="w"> </span>consider<span class="w"> </span>mutations<span class="w"> </span>from<span class="w"> </span>these<span class="w"> </span>groups<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>all<span class="o">)</span>
+</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">    </span>-s,<span class="w"> </span>--split_by_filter_column<span class="w"> </span>Generate<span class="w"> </span>a<span class="w"> </span>proteinDB<span class="w"> </span>output<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>each<span class="w"> </span>group<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>False<span class="o">)</span>
+</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                   </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
 </span></code></pre></div>
 <p>The file input of the tool <code>-in</code> (<code>--input_mutation</code>) is the cosmic mutation data file. The genes file <code>-fa</code> (<code>--input_genes</code>) contains the original CDS sequence for all genes used by the COSMIC team to annotate the mutations. <a href="#downloading-cosmic-data">Use cosmic-downloader</a> to obtain the input files from COSMIC.</p>
 <p>The output of the tool is a protein fasta file and is written in the path specified by <code>-out</code> (<code>--output_db</code>).</p>
-<h4 id="examples_3">Examples<a class="headerlink" href="#examples_3" title="Anchor link to this section">&para;</a></h4>
+<h4 id="examples_4">Examples<a class="headerlink" href="#examples_4" title="Anchor link to this section">&para;</a></h4>
 <ul>
 <li>
 <p>Generate cancer-type specific protein databases. For each cancer type in COSMIC generate a protein database based on the Primary site:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-in<span class="w"> </span>CosmicMutantExport.tsv<span class="w"> </span>-fa<span class="w"> </span>All_COSMIC_Genes.fasta<span class="w"> </span>-out<span class="w"> </span>cosmic_proteinDB.fa<span class="w"> </span>--split_by_filter_column
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-in<span class="w"> </span>CosmicMutantExport.tsv<span class="w"> </span>-fa<span class="w"> </span>All_COSMIC_Genes.fasta<span class="w"> </span>-out<span class="w"> </span>cosmic_proteinDB.fa<span class="w"> </span>--split_by_filter_column
 </span></code></pre></div>
 </li>
 <li>
 <p>Generate cell-line specific protein databases:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-in<span class="w"> </span>CosmicCLP_MutantExport.tsv<span class="w"> </span>-fa<span class="w"> </span>All_CellLines_Genes.fasta<span class="w"> </span>-out<span class="w"> </span>cosmicCLP_proteinDB.fa<span class="w"> </span>--split_by_filter_column<span class="w"> </span>--filter_column<span class="w"> </span><span class="s1">&#39;Sample name&#39;</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span>-in<span class="w"> </span>CosmicCLP_MutantExport.tsv<span class="w"> </span>-fa<span class="w"> </span>All_CellLines_Genes.fasta<span class="w"> </span>-out<span class="w"> </span>cosmicCLP_proteinDB.fa<span class="w"> </span>--split_by_filter_column<span class="w"> </span>--filter_column<span class="w"> </span><span class="s1">&#39;Sample name&#39;</span>
 </span></code></pre></div>
 </li>
 </ul>
 <h3 id="cbioportal-mutations-to-protein-sequences">cBioPortal Mutations to Protein Sequences<a class="headerlink" href="#cbioportal-mutations-to-protein-sequences" title="Anchor link to this section">&para;</a></h3>
 <p>The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed at <a href="https://www.cbioportal.org/datasets">https://www.cbioportal.org/datasets</a>. The command <code>cbioportal-to-proteindb</code> converts the cBioPortal mutations file into a protein sequence database file.</p>
-<h4 id="command-options_4">Command Options<a class="headerlink" href="#command-options_4" title="Anchor link to this section">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span>-h
-</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>
-</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
-</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">           </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>cBioportal
-</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>-in,<span class="w"> </span>--input_mutation<span class="w"> </span>TEXT<span class="w">       </span>Cbioportal<span class="w"> </span>mutation<span class="w"> </span>file
-</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span>-fa,<span class="w"> </span>--input_cds<span class="w"> </span>TEXT<span class="w">            </span>CDS<span class="w"> </span>genes<span class="w"> </span>from<span class="w"> </span>ENSEMBL<span class="w"> </span>database
-</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span>-out,<span class="w"> </span>--output_db<span class="w"> </span>TEXT<span class="w">           </span>Protein<span class="w"> </span>database<span class="w"> </span>including<span class="w"> </span>the<span class="w"> </span>mutations
-</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a>
-</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
-</span><span id="__span-13-11"><a id="__codelineno-13-11" name="__codelineno-13-11" href="#__codelineno-13-11"></a><span class="w">    </span>-f,<span class="w"> </span>--filter_column<span class="w"> </span>TEXT<span class="w">         </span>Column<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>VCF<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>filtering<span class="w"> </span>or<span class="w"> </span>splitting<span class="w"> </span>mutations
-</span><span id="__span-13-12"><a id="__codelineno-13-12" name="__codelineno-13-12" href="#__codelineno-13-12"></a><span class="w">    </span>-a,<span class="w"> </span>--accepted_values<span class="w"> </span>TEXT<span class="w">       </span>Limit<span class="w"> </span>mutations<span class="w"> </span>to<span class="w"> </span>specific<span class="w"> </span>groups<span class="w"> </span><span class="o">(</span>tissue<span class="w"> </span>type,<span class="w"> </span>sample<span class="w"> </span>name,<span class="w"> </span>etc<span class="o">)</span>
-</span><span id="__span-13-13"><a id="__codelineno-13-13" name="__codelineno-13-13" href="#__codelineno-13-13"></a><span class="w">    </span>-s,<span class="w"> </span>--split_by_filter_column<span class="w">     </span>Generate<span class="w"> </span>a<span class="w"> </span>proteinDB<span class="w"> </span>per<span class="w"> </span>group<span class="w"> </span>as<span class="w"> </span>specified<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>filter_column
-</span><span id="__span-13-14"><a id="__codelineno-13-14" name="__codelineno-13-14" href="#__codelineno-13-14"></a><span class="w">    </span>-cl,<span class="w"> </span>--clinical_sample_file<span class="w"> </span>TEXT<span class="w"> </span>Clinical<span class="w"> </span>sample<span class="w"> </span>file<span class="w"> </span>with<span class="w"> </span>cancer<span class="w"> </span><span class="nb">type</span><span class="w"> </span>per<span class="w"> </span>sample<span class="w"> </span>identifier
-</span><span id="__span-13-15"><a id="__codelineno-13-15" name="__codelineno-13-15" href="#__codelineno-13-15"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                       </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+<h4 id="command-options_5">Command Options<a class="headerlink" href="#command-options_5" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span>-h
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">           </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>cBioportal
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">    </span>-in,<span class="w"> </span>--input_mutation<span class="w"> </span>TEXT<span class="w">       </span>Cbioportal<span class="w"> </span>mutation<span class="w"> </span>file
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="w">    </span>-fa,<span class="w"> </span>--input_cds<span class="w"> </span>TEXT<span class="w">            </span>CDS<span class="w"> </span>genes<span class="w"> </span>from<span class="w"> </span>ENSEMBL<span class="w"> </span>database
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a><span class="w">    </span>-out,<span class="w"> </span>--output_db<span class="w"> </span>TEXT<span class="w">           </span>Protein<span class="w"> </span>database<span class="w"> </span>including<span class="w"> </span>the<span class="w"> </span>mutations
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="w">    </span>-f,<span class="w"> </span>--filter_column<span class="w"> </span>TEXT<span class="w">         </span>Column<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>VCF<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>used<span class="w"> </span><span class="k">for</span><span class="w"> </span>filtering<span class="w"> </span>or<span class="w"> </span>splitting<span class="w"> </span>mutations
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a><span class="w">    </span>-a,<span class="w"> </span>--accepted_values<span class="w"> </span>TEXT<span class="w">       </span>Limit<span class="w"> </span>mutations<span class="w"> </span>to<span class="w"> </span>specific<span class="w"> </span>groups<span class="w"> </span><span class="o">(</span>tissue<span class="w"> </span>type,<span class="w"> </span>sample<span class="w"> </span>name,<span class="w"> </span>etc<span class="o">)</span>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="w">    </span>-s,<span class="w"> </span>--split_by_filter_column<span class="w">     </span>Generate<span class="w"> </span>a<span class="w"> </span>proteinDB<span class="w"> </span>per<span class="w"> </span>group<span class="w"> </span>as<span class="w"> </span>specified<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>filter_column
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a><span class="w">    </span>-cl,<span class="w"> </span>--clinical_sample_file<span class="w"> </span>TEXT<span class="w"> </span>Clinical<span class="w"> </span>sample<span class="w"> </span>file<span class="w"> </span>with<span class="w"> </span>cancer<span class="w"> </span><span class="nb">type</span><span class="w"> </span>per<span class="w"> </span>sample<span class="w"> </span>identifier
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                       </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
 </span></code></pre></div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
@@ -1219,63 +1424,63 @@
 <p class="admonition-title">Note</p>
 <p>The cBioPortal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.</p>
 </div>
-<h4 id="examples_4">Examples<a class="headerlink" href="#examples_4" title="Anchor link to this section">&para;</a></h4>
+<h4 id="examples_5">Examples<a class="headerlink" href="#examples_5" title="Anchor link to this section">&para;</a></h4>
 <ul>
 <li>
 <p>Translate mutations from <code>Bladder</code> samples in studyID <code>blca_mskcc_solit_2014</code>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span>--config_file<span class="w"> </span>config/cbioportal_config.yaml<span class="w"> </span>--input_cds<span class="w"> </span>human_hg19_cds.fa<span class="w"> </span>--input_mutation<span class="w"> </span>data_mutations_mskcc.txt<span class="w"> </span>--clinical_sample_file<span class="w"> </span>data_clinical_sample.txt<span class="w"> </span>--output_db<span class="w"> </span>bladder_proteindb.fa
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>pgatk<span class="w"> </span>cbioportal-to-proteindb<span class="w"> </span>--config_file<span class="w"> </span>config/cbioportal_config.yaml<span class="w"> </span>--input_cds<span class="w"> </span>human_hg19_cds.fa<span class="w"> </span>--input_mutation<span class="w"> </span>data_mutations_mskcc.txt<span class="w"> </span>--clinical_sample_file<span class="w"> </span>data_clinical_sample.txt<span class="w"> </span>--output_db<span class="w"> </span>bladder_proteindb.fa
 </span></code></pre></div>
 </li>
 </ul>
 <h3 id="variants-vcf-to-protein-sequences">Variants (VCF) to Protein Sequences<a class="headerlink" href="#variants-vcf-to-protein-sequences" title="Anchor link to this section">&para;</a></h3>
 <p>Variant Calling Format (VCFv4.1) is a text file representing genomic variants. The <code>vcf-to-proteindb</code> command takes a VCF file and a GTF (Gene annotations) file to translate the genomic variants in the VCF that affect protein-coding transcripts.</p>
-<h4 id="command-options_5">Command Options<a class="headerlink" href="#command-options_5" title="Anchor link to this section">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span>-h
-</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a>
-</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
-</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">             </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>VCF<span class="w"> </span>conversion<span class="w"> </span>parameters
-</span><span id="__span-15-6"><a id="__codelineno-15-6" name="__codelineno-15-6" href="#__codelineno-15-6"></a><span class="w">    </span>-v,<span class="w"> </span>--vcf<span class="w">                          </span>VCF<span class="w"> </span>file<span class="w"> </span>containing<span class="w"> </span>the<span class="w"> </span>genomic<span class="w"> </span>variants
-</span><span id="__span-15-7"><a id="__codelineno-15-7" name="__codelineno-15-7" href="#__codelineno-15-7"></a><span class="w">    </span>-g,<span class="w"> </span>--gene_annotations_gtf<span class="w">         </span>Gene<span class="w"> </span>models<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>GTF<span class="w"> </span>format
-</span><span id="__span-15-8"><a id="__codelineno-15-8" name="__codelineno-15-8" href="#__codelineno-15-8"></a><span class="w">    </span>-f,<span class="w"> </span>--input_fasta<span class="w">                  </span>Fasta<span class="w"> </span>sequences<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>transcripts<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>GTF<span class="w"> </span>file
-</span><span id="__span-15-9"><a id="__codelineno-15-9" name="__codelineno-15-9" href="#__codelineno-15-9"></a><span class="w">    </span>-o,<span class="w"> </span>--output_proteindb<span class="w">             </span>Output<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>write<span class="w"> </span>the<span class="w"> </span>resulting<span class="w"> </span>variant<span class="w"> </span>protein<span class="w"> </span>sequences
-</span><span id="__span-15-10"><a id="__codelineno-15-10" name="__codelineno-15-10" href="#__codelineno-15-10"></a>
-</span><span id="__span-15-11"><a id="__codelineno-15-11" name="__codelineno-15-11" href="#__codelineno-15-11"></a><span class="w">  </span>Options:
-</span><span id="__span-15-12"><a id="__codelineno-15-12" name="__codelineno-15-12" href="#__codelineno-15-12"></a><span class="w">    </span>--translation_table<span class="w"> </span>INTEGER<span class="w">        </span>Translation<span class="w"> </span>table<span class="w"> </span><span class="o">(</span>Default<span class="w"> </span><span class="m">1</span><span class="o">)</span>
-</span><span id="__span-15-13"><a id="__codelineno-15-13" name="__codelineno-15-13" href="#__codelineno-15-13"></a><span class="w">    </span>--mito_translation_table<span class="w"> </span>INTEGER<span class="w">   </span>Mito_trans_table<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">2</span><span class="o">)</span>
-</span><span id="__span-15-14"><a id="__codelineno-15-14" name="__codelineno-15-14" href="#__codelineno-15-14"></a><span class="w">    </span>--var_prefix<span class="w"> </span>TEXT<span class="w">                   </span>String<span class="w"> </span>to<span class="w"> </span>add<span class="w"> </span>as<span class="w"> </span>prefix<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>variant<span class="w"> </span>peptides
-</span><span id="__span-15-15"><a id="__codelineno-15-15" name="__codelineno-15-15" href="#__codelineno-15-15"></a><span class="w">    </span>--report_ref_seq<span class="w">                   </span>Also<span class="w"> </span>report<span class="w"> </span>the<span class="w"> </span>reference<span class="w"> </span>peptide<span class="w"> </span>from<span class="w"> </span>overlapping<span class="w"> </span>transcripts
-</span><span id="__span-15-16"><a id="__codelineno-15-16" name="__codelineno-15-16" href="#__codelineno-15-16"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span>TEXT<span class="w">       </span>Annotation<span class="w"> </span>field<span class="w"> </span>name<span class="w"> </span><span class="k">in</span><span class="w"> </span>INFO<span class="w"> </span>column<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>CSQ<span class="o">)</span>
-</span><span id="__span-15-17"><a id="__codelineno-15-17" name="__codelineno-15-17" href="#__codelineno-15-17"></a><span class="w">    </span>--af_field<span class="w"> </span>TEXT<span class="w">                    </span>Field<span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>variant<span class="w"> </span>allele<span class="w"> </span>frequency<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>none<span class="o">)</span>
-</span><span id="__span-15-18"><a id="__codelineno-15-18" name="__codelineno-15-18" href="#__codelineno-15-18"></a><span class="w">    </span>--af_threshold<span class="w"> </span>FLOAT<span class="w">               </span>Minimum<span class="w"> </span>allele<span class="w"> </span>frequency<span class="w"> </span>threshold
-</span><span id="__span-15-19"><a id="__codelineno-15-19" name="__codelineno-15-19" href="#__codelineno-15-19"></a><span class="w">    </span>--transcript_index<span class="w"> </span>INTEGER<span class="w">         </span>Index<span class="w"> </span>of<span class="w"> </span>transcript<span class="w"> </span>ID<span class="w"> </span><span class="k">in</span><span class="w"> </span>annotation<span class="w"> </span>columns<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">3</span><span class="o">)</span>
-</span><span id="__span-15-20"><a id="__codelineno-15-20" name="__codelineno-15-20" href="#__codelineno-15-20"></a><span class="w">    </span>--consequence_index<span class="w"> </span>INTEGER<span class="w">        </span>Index<span class="w"> </span>of<span class="w"> </span>consequence<span class="w"> </span><span class="k">in</span><span class="w"> </span>annotation<span class="w"> </span>columns<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
-</span><span id="__span-15-21"><a id="__codelineno-15-21" name="__codelineno-15-21" href="#__codelineno-15-21"></a><span class="w">    </span>--include_consequences<span class="w"> </span>TEXT<span class="w">         </span>Consider<span class="w"> </span>variants<span class="w"> </span>with<span class="w"> </span>these<span class="w"> </span>consequences<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>all<span class="o">)</span>
-</span><span id="__span-15-22"><a id="__codelineno-15-22" name="__codelineno-15-22" href="#__codelineno-15-22"></a><span class="w">    </span>--exclude_consequences<span class="w"> </span>TEXT<span class="w">         </span>Exclude<span class="w"> </span>these<span class="w"> </span>consequences<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>downstream_gene_variant,
-</span><span id="__span-15-23"><a id="__codelineno-15-23" name="__codelineno-15-23" href="#__codelineno-15-23"></a><span class="w">                                        </span>upstream_gene_variant,<span class="w"> </span>intergenic_variant,<span class="w"> </span>intron_variant,
-</span><span id="__span-15-24"><a id="__codelineno-15-24" name="__codelineno-15-24" href="#__codelineno-15-24"></a><span class="w">                                        </span>synonymous_variant<span class="o">)</span>
-</span><span id="__span-15-25"><a id="__codelineno-15-25" name="__codelineno-15-25" href="#__codelineno-15-25"></a><span class="w">    </span>--skip_including_all_cds<span class="w">           </span>Disable<span class="w"> </span>automatic<span class="w"> </span>translation<span class="w"> </span>of<span class="w"> </span>transcripts<span class="w"> </span>with<span class="w"> </span>defined<span class="w"> </span>CDS
-</span><span id="__span-15-26"><a id="__codelineno-15-26" name="__codelineno-15-26" href="#__codelineno-15-26"></a><span class="w">    </span>--ignore_filters<span class="w">                   </span>Parse<span class="w"> </span>all<span class="w"> </span>variants<span class="w"> </span>regardless<span class="w"> </span>of<span class="w"> </span>FILTER<span class="w"> </span>field
-</span><span id="__span-15-27"><a id="__codelineno-15-27" name="__codelineno-15-27" href="#__codelineno-15-27"></a><span class="w">    </span>--accepted_filters<span class="w"> </span>TEXT<span class="w">            </span>Accepted<span class="w"> </span>filters<span class="w"> </span><span class="k">for</span><span class="w"> </span>variant<span class="w"> </span>parsing
-</span><span id="__span-15-28"><a id="__codelineno-15-28" name="__codelineno-15-28" href="#__codelineno-15-28"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                         </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+<h4 id="command-options_6">Command Options<a class="headerlink" href="#command-options_6" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span>-h
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">             </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>VCF<span class="w"> </span>conversion<span class="w"> </span>parameters
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span>-v,<span class="w"> </span>--vcf<span class="w">                          </span>VCF<span class="w"> </span>file<span class="w"> </span>containing<span class="w"> </span>the<span class="w"> </span>genomic<span class="w"> </span>variants
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span>-g,<span class="w"> </span>--gene_annotations_gtf<span class="w">         </span>Gene<span class="w"> </span>models<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>GTF<span class="w"> </span>format
+</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span>-f,<span class="w"> </span>--input_fasta<span class="w">                  </span>Fasta<span class="w"> </span>sequences<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>transcripts<span class="w"> </span><span class="k">in</span><span class="w"> </span>the<span class="w"> </span>GTF<span class="w"> </span>file
+</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span>-o,<span class="w"> </span>--output_proteindb<span class="w">             </span>Output<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>write<span class="w"> </span>the<span class="w"> </span>resulting<span class="w"> </span>variant<span class="w"> </span>protein<span class="w"> </span>sequences
+</span><span id="__span-18-10"><a id="__codelineno-18-10" name="__codelineno-18-10" href="#__codelineno-18-10"></a>
+</span><span id="__span-18-11"><a id="__codelineno-18-11" name="__codelineno-18-11" href="#__codelineno-18-11"></a><span class="w">  </span>Options:
+</span><span id="__span-18-12"><a id="__codelineno-18-12" name="__codelineno-18-12" href="#__codelineno-18-12"></a><span class="w">    </span>--translation_table<span class="w"> </span>INTEGER<span class="w">        </span>Translation<span class="w"> </span>table<span class="w"> </span><span class="o">(</span>Default<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+</span><span id="__span-18-13"><a id="__codelineno-18-13" name="__codelineno-18-13" href="#__codelineno-18-13"></a><span class="w">    </span>--mito_translation_table<span class="w"> </span>INTEGER<span class="w">   </span>Mito_trans_table<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">2</span><span class="o">)</span>
+</span><span id="__span-18-14"><a id="__codelineno-18-14" name="__codelineno-18-14" href="#__codelineno-18-14"></a><span class="w">    </span>--var_prefix<span class="w"> </span>TEXT<span class="w">                   </span>String<span class="w"> </span>to<span class="w"> </span>add<span class="w"> </span>as<span class="w"> </span>prefix<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>variant<span class="w"> </span>peptides
+</span><span id="__span-18-15"><a id="__codelineno-18-15" name="__codelineno-18-15" href="#__codelineno-18-15"></a><span class="w">    </span>--report_ref_seq<span class="w">                   </span>Also<span class="w"> </span>report<span class="w"> </span>the<span class="w"> </span>reference<span class="w"> </span>peptide<span class="w"> </span>from<span class="w"> </span>overlapping<span class="w"> </span>transcripts
+</span><span id="__span-18-16"><a id="__codelineno-18-16" name="__codelineno-18-16" href="#__codelineno-18-16"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span>TEXT<span class="w">       </span>Annotation<span class="w"> </span>field<span class="w"> </span>name<span class="w"> </span><span class="k">in</span><span class="w"> </span>INFO<span class="w"> </span>column<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>CSQ<span class="o">)</span>
+</span><span id="__span-18-17"><a id="__codelineno-18-17" name="__codelineno-18-17" href="#__codelineno-18-17"></a><span class="w">    </span>--af_field<span class="w"> </span>TEXT<span class="w">                    </span>Field<span class="w"> </span>name<span class="w"> </span><span class="k">for</span><span class="w"> </span>variant<span class="w"> </span>allele<span class="w"> </span>frequency<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>none<span class="o">)</span>
+</span><span id="__span-18-18"><a id="__codelineno-18-18" name="__codelineno-18-18" href="#__codelineno-18-18"></a><span class="w">    </span>--af_threshold<span class="w"> </span>FLOAT<span class="w">               </span>Minimum<span class="w"> </span>allele<span class="w"> </span>frequency<span class="w"> </span>threshold
+</span><span id="__span-18-19"><a id="__codelineno-18-19" name="__codelineno-18-19" href="#__codelineno-18-19"></a><span class="w">    </span>--transcript_index<span class="w"> </span>INTEGER<span class="w">         </span>Index<span class="w"> </span>of<span class="w"> </span>transcript<span class="w"> </span>ID<span class="w"> </span><span class="k">in</span><span class="w"> </span>annotation<span class="w"> </span>columns<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">3</span><span class="o">)</span>
+</span><span id="__span-18-20"><a id="__codelineno-18-20" name="__codelineno-18-20" href="#__codelineno-18-20"></a><span class="w">    </span>--consequence_index<span class="w"> </span>INTEGER<span class="w">        </span>Index<span class="w"> </span>of<span class="w"> </span>consequence<span class="w"> </span><span class="k">in</span><span class="w"> </span>annotation<span class="w"> </span>columns<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+</span><span id="__span-18-21"><a id="__codelineno-18-21" name="__codelineno-18-21" href="#__codelineno-18-21"></a><span class="w">    </span>--include_consequences<span class="w"> </span>TEXT<span class="w">         </span>Consider<span class="w"> </span>variants<span class="w"> </span>with<span class="w"> </span>these<span class="w"> </span>consequences<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>all<span class="o">)</span>
+</span><span id="__span-18-22"><a id="__codelineno-18-22" name="__codelineno-18-22" href="#__codelineno-18-22"></a><span class="w">    </span>--exclude_consequences<span class="w"> </span>TEXT<span class="w">         </span>Exclude<span class="w"> </span>these<span class="w"> </span>consequences<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>downstream_gene_variant,
+</span><span id="__span-18-23"><a id="__codelineno-18-23" name="__codelineno-18-23" href="#__codelineno-18-23"></a><span class="w">                                        </span>upstream_gene_variant,<span class="w"> </span>intergenic_variant,<span class="w"> </span>intron_variant,
+</span><span id="__span-18-24"><a id="__codelineno-18-24" name="__codelineno-18-24" href="#__codelineno-18-24"></a><span class="w">                                        </span>synonymous_variant<span class="o">)</span>
+</span><span id="__span-18-25"><a id="__codelineno-18-25" name="__codelineno-18-25" href="#__codelineno-18-25"></a><span class="w">    </span>--skip_including_all_cds<span class="w">           </span>Disable<span class="w"> </span>automatic<span class="w"> </span>translation<span class="w"> </span>of<span class="w"> </span>transcripts<span class="w"> </span>with<span class="w"> </span>defined<span class="w"> </span>CDS
+</span><span id="__span-18-26"><a id="__codelineno-18-26" name="__codelineno-18-26" href="#__codelineno-18-26"></a><span class="w">    </span>--ignore_filters<span class="w">                   </span>Parse<span class="w"> </span>all<span class="w"> </span>variants<span class="w"> </span>regardless<span class="w"> </span>of<span class="w"> </span>FILTER<span class="w"> </span>field
+</span><span id="__span-18-27"><a id="__codelineno-18-27" name="__codelineno-18-27" href="#__codelineno-18-27"></a><span class="w">    </span>--accepted_filters<span class="w"> </span>TEXT<span class="w">            </span>Accepted<span class="w"> </span>filters<span class="w"> </span><span class="k">for</span><span class="w"> </span>variant<span class="w"> </span>parsing
+</span><span id="__span-18-28"><a id="__codelineno-18-28" name="__codelineno-18-28" href="#__codelineno-18-28"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                         </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
 </span></code></pre></div>
 <p>The file input <code>--vcf</code> is a VCF file that can be provided by the user or obtained from ENSEMBL using the <a href="#downloading-ensembl-data">ensembl-downloader</a>. The <code>--gene_annotations_gtf</code> file can also be obtained with the ensembl-downloader.</p>
 <p>The <code>--input_fasta</code> file contains the <code>CDS</code> and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the <a href="http://ccb.jhu.edu/software/stringtie/gff.shtml#gffread">gffread</a> tool as follows:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>gffread<span class="w"> </span>-F<span class="w"> </span>-w<span class="w"> </span>input_fasta.fa<span class="w"> </span>-g<span class="w"> </span>genome.fa<span class="w"> </span>gene_annotations_gtf
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>gffread<span class="w"> </span>-F<span class="w"> </span>-w<span class="w"> </span>input_fasta.fa<span class="w"> </span>-g<span class="w"> </span>genome.fa<span class="w"> </span>gene_annotations_gtf
 </span></code></pre></div>
 <p>The output of the tool is a protein fasta file written to the path specified by <code>--output_proteindb</code>.</p>
-<h4 id="examples_5">Examples<a class="headerlink" href="#examples_5" title="Anchor link to this section">&para;</a></h4>
+<h4 id="examples_6">Examples<a class="headerlink" href="#examples_6" title="Anchor link to this section">&para;</a></h4>
 <ul>
 <li>
 <p>Translate human <em>missense</em> variants from ENSEMBL VCFs that have a minimum <em>AF 5%</em>:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a><span class="w">    </span>--vcf<span class="w"> </span>homo_sapiens_incl_consequences.vcf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcripts.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>genes.gtf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="w">    </span>--include_consequences<span class="w"> </span>missense_variant<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="w">    </span>--af_field<span class="w"> </span>MAF<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="w">    </span>--af_threshold<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>var_peptides.fa
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a><span class="w">    </span>--vcf<span class="w"> </span>homo_sapiens_incl_consequences.vcf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-3"><a id="__codelineno-20-3" name="__codelineno-20-3" href="#__codelineno-20-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcripts.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-4"><a id="__codelineno-20-4" name="__codelineno-20-4" href="#__codelineno-20-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>genes.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-5"><a id="__codelineno-20-5" name="__codelineno-20-5" href="#__codelineno-20-5"></a><span class="w">    </span>--include_consequences<span class="w"> </span>missense_variant<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-6"><a id="__codelineno-20-6" name="__codelineno-20-6" href="#__codelineno-20-6"></a><span class="w">    </span>--af_field<span class="w"> </span>MAF<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-7"><a id="__codelineno-20-7" name="__codelineno-20-7" href="#__codelineno-20-7"></a><span class="w">    </span>--af_threshold<span class="w"> </span><span class="m">0</span>.05<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-20-8"><a id="__codelineno-20-8" name="__codelineno-20-8" href="#__codelineno-20-8"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>var_peptides.fa
 </span></code></pre></div>
 </li>
 </ul>
@@ -1289,15 +1494,15 @@
 <ul>
 <li>
 <p>Translate human <em>missense</em> variants or <em>inframe_insertion</em> from gnomAD VCFs that have a minimum 1% allele frequency in control samples:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a><span class="w">    </span>--vcf<span class="w"> </span>gnomad_genome.vcf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>gencode.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>gencode.gtf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a><span class="w">    </span>--include_consequences<span class="w"> </span>missense_variant,frameshift_insert<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span>vep<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="w">    </span>--af_threshold<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-8"><a id="__codelineno-18-8" name="__codelineno-18-8" href="#__codelineno-18-8"></a><span class="w">    </span>--af_field<span class="w"> </span>control_af<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-18-9"><a id="__codelineno-18-9" name="__codelineno-18-9" href="#__codelineno-18-9"></a><span class="w">    </span>--transcript_index<span class="w"> </span><span class="m">6</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a><span class="w">    </span>--vcf<span class="w"> </span>gnomad_genome.vcf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>gencode.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>gencode.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>--include_consequences<span class="w"> </span>missense_variant,frameshift_insert<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span>vep<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>--af_threshold<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a><span class="w">    </span>--af_field<span class="w"> </span>control_af<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">    </span>--transcript_index<span class="w"> </span><span class="m">6</span>
 </span></code></pre></div>
 </li>
 </ul>
@@ -1316,128 +1521,231 @@
 <ul>
 <li>
 <p>Translate human variants from a custom VCF obtained from sequencing of a sample:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>--vcf<span class="w"> </span>sample.vcf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcripts.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>genes.gtf<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>var_peptides.fa
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span>--vcf<span class="w"> </span>sample.vcf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcripts.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span>--gene_annotations_gtf<span class="w"> </span>genes.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">    </span>--annotation_field_name<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>var_peptides.fa
+</span></code></pre></div>
+</li>
+</ul>
+<h3 id="clinvar-variants-to-protein-sequences">ClinVar Variants to Protein Sequences<a class="headerlink" href="#clinvar-variants-to-protein-sequences" title="Anchor link to this section">&para;</a></h3>
+<p><a href="https://www.ncbi.nlm.nih.gov/clinvar/">ClinVar</a> is NCBI's public archive of reports on the relationships among human variations and phenotypes. The command <code>clinvar-to-proteindb</code> generates a variant protein database from ClinVar VCF files using NCBI RefSeq gene models. Unlike <code>vcf-to-proteindb</code>, this command does <strong>not</strong> require VEP annotations.</p>
+<h4 id="command-options_7">Command Options<a class="headerlink" href="#command-options_7" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>clinvar-to-proteindb<span class="w"> </span>-h
+</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>clinvar-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a>
+</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>-v,<span class="w"> </span>--vcf<span class="w"> </span>TEXT<span class="w">              </span>ClinVar<span class="w"> </span>VCF<span class="w"> </span>file<span class="w"> </span>path
+</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>-g,<span class="w"> </span>--gtf<span class="w"> </span>TEXT<span class="w">              </span>NCBI<span class="w"> </span>RefSeq<span class="w"> </span>GTF<span class="w"> </span>file<span class="w"> </span>path
+</span><span id="__span-23-7"><a id="__codelineno-23-7" name="__codelineno-23-7" href="#__codelineno-23-7"></a><span class="w">    </span>-f,<span class="w"> </span>--fasta<span class="w"> </span>TEXT<span class="w">            </span>RefSeq<span class="w"> </span>transcript<span class="w"> </span>nucleotide<span class="w"> </span>FASTA<span class="w"> </span>file<span class="w"> </span>path
+</span><span id="__span-23-8"><a id="__codelineno-23-8" name="__codelineno-23-8" href="#__codelineno-23-8"></a><span class="w">    </span>-a,<span class="w"> </span>--assembly-report<span class="w"> </span>TEXT<span class="w">  </span>NCBI<span class="w"> </span>assembly<span class="w"> </span>report<span class="w"> </span>file<span class="w"> </span>path
+</span><span id="__span-23-9"><a id="__codelineno-23-9" name="__codelineno-23-9" href="#__codelineno-23-9"></a><span class="w">    </span>-o,<span class="w"> </span>--output<span class="w"> </span>TEXT<span class="w">           </span>Output<span class="w"> </span>protein<span class="w"> </span>FASTA<span class="w"> </span>file<span class="w"> </span>path
+</span><span id="__span-23-10"><a id="__codelineno-23-10" name="__codelineno-23-10" href="#__codelineno-23-10"></a>
+</span><span id="__span-23-11"><a id="__codelineno-23-11" name="__codelineno-23-11" href="#__codelineno-23-11"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-23-12"><a id="__codelineno-23-12" name="__codelineno-23-12" href="#__codelineno-23-12"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">      </span>Configuration<span class="w"> </span>YAML<span class="w"> </span>file
+</span><span id="__span-23-13"><a id="__codelineno-23-13" name="__codelineno-23-13" href="#__codelineno-23-13"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                  </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span></code></pre></div>
+<p>The input files can be downloaded using the <a href="#downloading-ncbi--clinvar-data">ncbi-downloader</a> command.</p>
+<h4 id="examples_7">Examples<a class="headerlink" href="#examples_7" title="Anchor link to this section">&para;</a></h4>
+<ul>
+<li>
+<p>Generate a protein database from ClinVar variants:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>pgatk<span class="w"> </span>clinvar-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span>--vcf<span class="w"> </span>ncbi_data/clinvar.vcf.gz<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span>--gtf<span class="w"> </span>ncbi_data/GRCh38_latest_genomic.gtf.gz<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">    </span>--fasta<span class="w"> </span>ncbi_data/GRCh38_latest_rna.fna.gz<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span>--assembly-report<span class="w"> </span>ncbi_data/GRCh38_latest_assembly_report.txt<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span>--output<span class="w"> </span>clinvar_proteins.fa
 </span></code></pre></div>
 </li>
 </ul>
 <h3 id="transcripts-dna-to-protein-sequences">Transcripts (DNA) to Protein Sequences<a class="headerlink" href="#transcripts-dna-to-protein-sequences" title="Anchor link to this section">&para;</a></h3>
 <p>DNA sequences given in a FASTA format can be translated using the <code>dnaseq-to-proteindb</code> tool. This tool allows for translation of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.</p>
 <p>The most suited <code>--input_fasta</code> file can be generated from a given GTF file using the <code>gffread</code> command as follows:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a>gffread<span class="w"> </span>-F<span class="w"> </span>-w<span class="w"> </span>transcript_sequences.fa<span class="w"> </span>-g<span class="w"> </span>genome.fa<span class="w"> </span>gene_annotations_gtf
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>gffread<span class="w"> </span>-F<span class="w"> </span>-w<span class="w"> </span>transcript_sequences.fa<span class="w"> </span>-g<span class="w"> </span>genome.fa<span class="w"> </span>gene_annotations_gtf
 </span></code></pre></div>
 <p>The FASTA file generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. It also specifies the CDS positions for the protein coding transcripts. The <code>dnaseq-to-proteindb</code> command recognizes features such as biotype and expression values in the FASTA header that are taken from the GTF INFO field (if available). However, it is not required to have those in the FASTA header but their presence enables the user to filter by biotype and expression values during the translation step.</p>
-<h4 id="command-options_6">Command Options<a class="headerlink" href="#command-options_6" title="Anchor link to this section">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span>-h
-</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>
-</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
-</span><span id="__span-21-5"><a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">             </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>VCF<span class="w"> </span>conversion<span class="w"> </span>parameters
-</span><span id="__span-21-6"><a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a><span class="w">    </span>--input_fasta<span class="w">                      </span>Fasta<span class="w"> </span>sequences<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>transcripts
-</span><span id="__span-21-7"><a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a><span class="w">    </span>--output_proteindb<span class="w">                 </span>Output<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>write<span class="w"> </span>the<span class="w"> </span>resulting<span class="w"> </span>protein<span class="w"> </span>sequences
-</span><span id="__span-21-8"><a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>
-</span><span id="__span-21-9"><a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
-</span><span id="__span-21-10"><a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a><span class="w">    </span>--translation_table<span class="w"> </span>INTEGER<span class="w">        </span>Translation<span class="w"> </span>Table<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">1</span><span class="o">)</span>
-</span><span id="__span-21-11"><a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a><span class="w">    </span>--num_orfs<span class="w"> </span>INTEGER<span class="w">                 </span>Number<span class="w"> </span>of<span class="w"> </span>ORFs<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">0</span><span class="o">)</span>
-</span><span id="__span-21-12"><a id="__codelineno-21-12" name="__codelineno-21-12" href="#__codelineno-21-12"></a><span class="w">    </span>--num_orfs_complement<span class="w"> </span>INTEGER<span class="w">      </span>Number<span class="w"> </span>of<span class="w"> </span>ORFs<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>reverse<span class="w"> </span>side<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">0</span><span class="o">)</span>
-</span><span id="__span-21-13"><a id="__codelineno-21-13" name="__codelineno-21-13" href="#__codelineno-21-13"></a><span class="w">    </span>--skip_including_all_cds<span class="w">           </span>Disable<span class="w"> </span>automatic<span class="w"> </span>translation<span class="w"> </span>of<span class="w"> </span>transcripts<span class="w"> </span>with<span class="w"> </span>defined<span class="w"> </span>CDS
-</span><span id="__span-21-14"><a id="__codelineno-21-14" name="__codelineno-21-14" href="#__codelineno-21-14"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>TEXT<span class="w">            </span>Translate<span class="w"> </span>sequences<span class="w"> </span>with<span class="w"> </span>specified<span class="w"> </span>biotypes<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>protein<span class="w"> </span>coding<span class="o">)</span>
-</span><span id="__span-21-15"><a id="__codelineno-21-15" name="__codelineno-21-15" href="#__codelineno-21-15"></a><span class="w">    </span>--exclude_biotypes<span class="w"> </span>TEXT<span class="w">            </span>Skip<span class="w"> </span>sequences<span class="w"> </span>with<span class="w"> </span>unwanted<span class="w"> </span>biotypes<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>None<span class="o">)</span>
-</span><span id="__span-21-16"><a id="__codelineno-21-16" name="__codelineno-21-16" href="#__codelineno-21-16"></a><span class="w">    </span>--biotype_str<span class="w"> </span>TEXT<span class="w">                 </span>String<span class="w"> </span>used<span class="w"> </span>to<span class="w"> </span>identify<span class="w"> </span>gene/transcript<span class="w"> </span>biotype<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>transcript_biotype<span class="o">)</span>
-</span><span id="__span-21-17"><a id="__codelineno-21-17" name="__codelineno-21-17" href="#__codelineno-21-17"></a><span class="w">    </span>--expression_str<span class="w"> </span>TEXT<span class="w">              </span>String<span class="w"> </span><span class="k">for</span><span class="w"> </span>extracting<span class="w"> </span>expression<span class="w"> </span>value<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>None<span class="o">)</span>
-</span><span id="__span-21-18"><a id="__codelineno-21-18" name="__codelineno-21-18" href="#__codelineno-21-18"></a><span class="w">    </span>--expression_thresh<span class="w"> </span>FLOAT<span class="w">          </span>Threshold<span class="w"> </span><span class="k">for</span><span class="w"> </span>expression<span class="w"> </span>value<span class="w"> </span>filtering<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">5</span><span class="o">)</span>
-</span><span id="__span-21-19"><a id="__codelineno-21-19" name="__codelineno-21-19" href="#__codelineno-21-19"></a><span class="w">    </span>--var_prefix<span class="w"> </span>TEXT<span class="w">                  </span>Prefix<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>added<span class="w"> </span>to<span class="w"> </span>fasta<span class="w"> </span>headers<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>none<span class="o">)</span>
-</span><span id="__span-21-20"><a id="__codelineno-21-20" name="__codelineno-21-20" href="#__codelineno-21-20"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                         </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+<h4 id="command-options_8">Command Options<a class="headerlink" href="#command-options_8" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span>-h
+</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">             </span>Configuration<span class="w"> </span><span class="k">for</span><span class="w"> </span>VCF<span class="w"> </span>conversion<span class="w"> </span>parameters
+</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">    </span>--input_fasta<span class="w">                      </span>Fasta<span class="w"> </span>sequences<span class="w"> </span><span class="k">for</span><span class="w"> </span>the<span class="w"> </span>transcripts
+</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">    </span>--output_proteindb<span class="w">                 </span>Output<span class="w"> </span>file<span class="w"> </span>to<span class="w"> </span>write<span class="w"> </span>the<span class="w"> </span>resulting<span class="w"> </span>protein<span class="w"> </span>sequences
+</span><span id="__span-26-8"><a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a>
+</span><span id="__span-26-9"><a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-26-10"><a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a><span class="w">    </span>--translation_table<span class="w"> </span>INTEGER<span class="w">        </span>Translation<span class="w"> </span>Table<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+</span><span id="__span-26-11"><a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="w">    </span>--num_orfs<span class="w"> </span>INTEGER<span class="w">                 </span>Number<span class="w"> </span>of<span class="w"> </span>ORFs<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+</span><span id="__span-26-12"><a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a><span class="w">    </span>--num_orfs_complement<span class="w"> </span>INTEGER<span class="w">      </span>Number<span class="w"> </span>of<span class="w"> </span>ORFs<span class="w"> </span>from<span class="w"> </span>the<span class="w"> </span>reverse<span class="w"> </span>side<span class="w"> </span><span class="o">(</span>default<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+</span><span id="__span-26-13"><a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="w">    </span>--skip_including_all_cds<span class="w">           </span>Disable<span class="w"> </span>automatic<span class="w"> </span>translation<span class="w"> </span>of<span class="w"> </span>transcripts<span class="w"> </span>with<span class="w"> </span>defined<span class="w"> </span>CDS
+</span><span id="__span-26-14"><a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>TEXT<span class="w">            </span>Translate<span class="w"> </span>sequences<span class="w"> </span>with<span class="w"> </span>specified<span class="w"> </span>biotypes<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>protein<span class="w"> </span>coding<span class="o">)</span>
+</span><span id="__span-26-15"><a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="w">    </span>--exclude_biotypes<span class="w"> </span>TEXT<span class="w">            </span>Skip<span class="w"> </span>sequences<span class="w"> </span>with<span class="w"> </span>unwanted<span class="w"> </span>biotypes<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>None<span class="o">)</span>
+</span><span id="__span-26-16"><a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a><span class="w">    </span>--biotype_str<span class="w"> </span>TEXT<span class="w">                 </span>String<span class="w"> </span>used<span class="w"> </span>to<span class="w"> </span>identify<span class="w"> </span>gene/transcript<span class="w"> </span>biotype<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>transcript_biotype<span class="o">)</span>
+</span><span id="__span-26-17"><a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a><span class="w">    </span>--expression_str<span class="w"> </span>TEXT<span class="w">              </span>String<span class="w"> </span><span class="k">for</span><span class="w"> </span>extracting<span class="w"> </span>expression<span class="w"> </span>value<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>None<span class="o">)</span>
+</span><span id="__span-26-18"><a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="w">    </span>--expression_thresh<span class="w"> </span>FLOAT<span class="w">          </span>Threshold<span class="w"> </span><span class="k">for</span><span class="w"> </span>expression<span class="w"> </span>value<span class="w"> </span>filtering<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">5</span><span class="o">)</span>
+</span><span id="__span-26-19"><a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a><span class="w">    </span>--var_prefix<span class="w"> </span>TEXT<span class="w">                  </span>Prefix<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>added<span class="w"> </span>to<span class="w"> </span>fasta<span class="w"> </span>headers<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>none<span class="o">)</span>
+</span><span id="__span-26-20"><a id="__codelineno-26-20" name="__codelineno-26-20" href="#__codelineno-26-20"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                         </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
 </span></code></pre></div>
-<h4 id="examples_6">Examples<a class="headerlink" href="#examples_6" title="Anchor link to this section">&para;</a></h4>
+<h4 id="examples_8">Examples<a class="headerlink" href="#examples_8" title="Anchor link to this section">&para;</a></h4>
 <ul>
 <li>
 <p>Generate the canonical protein database (translate all <em>protein_coding</em> transcripts):</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_CDSs_DNAseq.fa
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_CDSs_DNAseq.fa
 </span></code></pre></div>
 </li>
 <li>
 <p>Generate a protein database from lincRNA and canonical proteins:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-2"><a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-3"><a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-4"><a id="__codelineno-23-4" name="__codelineno-23-4" href="#__codelineno-23-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_lincRNA_canonical_sequences.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-5"><a id="__codelineno-23-5" name="__codelineno-23-5" href="#__codelineno-23-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>lincRNA_<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-23-6"><a id="__codelineno-23-6" name="__codelineno-23-6" href="#__codelineno-23-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>lincRNA
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-2"><a id="__codelineno-28-2" name="__codelineno-28-2" href="#__codelineno-28-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-3"><a id="__codelineno-28-3" name="__codelineno-28-3" href="#__codelineno-28-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-4"><a id="__codelineno-28-4" name="__codelineno-28-4" href="#__codelineno-28-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_lincRNA_canonical_sequences.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-5"><a id="__codelineno-28-5" name="__codelineno-28-5" href="#__codelineno-28-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>lincRNA_<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-28-6"><a id="__codelineno-28-6" name="__codelineno-28-6" href="#__codelineno-28-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>lincRNA
 </span></code></pre></div>
 </li>
 <li>
 <p>Generate a protein database from processed pseudogene:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-24-1"><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-2"><a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-3"><a id="__codelineno-24-3" name="__codelineno-24-3" href="#__codelineno-24-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-4"><a id="__codelineno-24-4" name="__codelineno-24-4" href="#__codelineno-24-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_processed_pseudogene.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-5"><a id="__codelineno-24-5" name="__codelineno-24-5" href="#__codelineno-24-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>pseudogene_<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-6"><a id="__codelineno-24-6" name="__codelineno-24-6" href="#__codelineno-24-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-24-7"><a id="__codelineno-24-7" name="__codelineno-24-7" href="#__codelineno-24-7"></a><span class="w">    </span>--skip_including_all_cds
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-29-1"><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-2"><a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-3"><a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-4"><a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_processed_pseudogene.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-5"><a id="__codelineno-29-5" name="__codelineno-29-5" href="#__codelineno-29-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>pseudogene_<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-6"><a id="__codelineno-29-6" name="__codelineno-29-6" href="#__codelineno-29-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-29-7"><a id="__codelineno-29-7" name="__codelineno-29-7" href="#__codelineno-29-7"></a><span class="w">    </span>--skip_including_all_cds
 </span></code></pre></div>
 </li>
 <li>
 <p>Generate alternative ORFs from canonical sequences:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-25-1"><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-2"><a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-3"><a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-4"><a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_altORFs.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-5"><a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>altorf_<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-6"><a id="__codelineno-25-6" name="__codelineno-25-6" href="#__codelineno-25-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>altORFs<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-25-7"><a id="__codelineno-25-7" name="__codelineno-25-7" href="#__codelineno-25-7"></a><span class="w">    </span>--skip_including_all_cds
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-30-1"><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-2"><a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-3"><a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>transcript_sequences.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-4"><a id="__codelineno-30-4" name="__codelineno-30-4" href="#__codelineno-30-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_from_altORFs.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-5"><a id="__codelineno-30-5" name="__codelineno-30-5" href="#__codelineno-30-5"></a><span class="w">    </span>--var_prefix<span class="w"> </span>altorf_<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-6"><a id="__codelineno-30-6" name="__codelineno-30-6" href="#__codelineno-30-6"></a><span class="w">    </span>--include_biotypes<span class="w"> </span>altORFs<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-30-7"><a id="__codelineno-30-7" name="__codelineno-30-7" href="#__codelineno-30-7"></a><span class="w">    </span>--skip_including_all_cds
 </span></code></pre></div>
 </li>
 <li>
 <p>Generate protein sequences (six-frame translation) from a Genome assembly:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-26-1"><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-2"><a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-3"><a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>genome.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-4"><a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_genome.fa<span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-5"><a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a><span class="w">    </span>--biotype_str<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-6"><a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a><span class="w">    </span>--num_orfs<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
-</span><span id="__span-26-7"><a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a><span class="w">    </span>--num_orfs_complement<span class="w"> </span><span class="m">3</span>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-31-1"><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a>pgatk<span class="w"> </span>dnaseq-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-2"><a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-3"><a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="w">    </span>--input_fasta<span class="w"> </span>genome.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-4"><a id="__codelineno-31-4" name="__codelineno-31-4" href="#__codelineno-31-4"></a><span class="w">    </span>--output_proteindb<span class="w"> </span>proteindb_genome.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-5"><a id="__codelineno-31-5" name="__codelineno-31-5" href="#__codelineno-31-5"></a><span class="w">    </span>--biotype_str<span class="w"> </span><span class="s1">&#39;&#39;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-6"><a id="__codelineno-31-6" name="__codelineno-31-6" href="#__codelineno-31-6"></a><span class="w">    </span>--num_orfs<span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-31-7"><a id="__codelineno-31-7" name="__codelineno-31-7" href="#__codelineno-31-7"></a><span class="w">    </span>--num_orfs_complement<span class="w"> </span><span class="m">3</span>
 </span></code></pre></div>
 </li>
 </ul>
 <h3 id="generate-decoy-database">Generate Decoy Database<a class="headerlink" href="#generate-decoy-database" title="Anchor link to this section">&para;</a></h3>
 <p><code>generate-decoy</code> command enables generation of decoy databases for any given protein sequence database. Decoy databases are needed to evaluate significance of spectra-sequence matching scores in proteomics mass spectrometry experiments.</p>
 <p><em>DecoyPYrat</em> is integrated into <code>pgatk</code> as the standard method for generating decoy sequences. In addition to reversing the target sequences, the tool replaces the cleavage with preceding amino acids. Also, it checks for the presence of the reversed sequence in the target sequences and if found, <em>DecoyPYrat</em> shuffles the sequences to avoid target-decoy sequence matches. For more information please read the <em>DecoyPYrat</em> manual available at: <a href="https://www.sanger.ac.uk/science/tools/decoypyrat">https://www.sanger.ac.uk/science/tools/decoypyrat</a>.</p>
-<h4 id="command-options_7">Command Options<a class="headerlink" href="#command-options_7" title="Anchor link to this section">&para;</a></h4>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-27-1"><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span>-h
-</span><span id="__span-27-2"><a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
-</span><span id="__span-27-3"><a id="__codelineno-27-3" name="__codelineno-27-3" href="#__codelineno-27-3"></a>
-</span><span id="__span-27-4"><a id="__codelineno-27-4" name="__codelineno-27-4" href="#__codelineno-27-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
-</span><span id="__span-27-5"><a id="__codelineno-27-5" name="__codelineno-27-5" href="#__codelineno-27-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">          </span>Configuration<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>generation
-</span><span id="__span-27-6"><a id="__codelineno-27-6" name="__codelineno-27-6" href="#__codelineno-27-6"></a><span class="w">    </span>-o,<span class="w"> </span>--output<span class="w"> </span>TEXT<span class="w">               </span>Output<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>database
-</span><span id="__span-27-7"><a id="__codelineno-27-7" name="__codelineno-27-7" href="#__codelineno-27-7"></a><span class="w">    </span>-i,<span class="w"> </span>--input<span class="w"> </span>TEXT<span class="w">                </span>FASTA<span class="w"> </span>file<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>protein<span class="w"> </span>sequences<span class="w"> </span><span class="o">(</span>*.fasta<span class="p">|</span>*.fa<span class="o">)</span>
-</span><span id="__span-27-8"><a id="__codelineno-27-8" name="__codelineno-27-8" href="#__codelineno-27-8"></a>
-</span><span id="__span-27-9"><a id="__codelineno-27-9" name="__codelineno-27-9" href="#__codelineno-27-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
-</span><span id="__span-27-10"><a id="__codelineno-27-10" name="__codelineno-27-10" href="#__codelineno-27-10"></a><span class="w">    </span>-s,<span class="w"> </span>--cleavage_sites<span class="w"> </span>TEXT<span class="w">       </span>Amino<span class="w"> </span>acids<span class="w"> </span>at<span class="w"> </span>which<span class="w"> </span>to<span class="w"> </span>cleave<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>KR<span class="o">)</span>
-</span><span id="__span-27-11"><a id="__codelineno-27-11" name="__codelineno-27-11" href="#__codelineno-27-11"></a><span class="w">    </span>-a,<span class="w"> </span>--anti_cleavage_sites<span class="w"> </span>TEXT<span class="w">  </span>Amino<span class="w"> </span>acids<span class="w"> </span>at<span class="w"> </span>which<span class="w"> </span>not<span class="w"> </span>to<span class="w"> </span>cleave<span class="w"> </span><span class="k">if</span><span class="w"> </span>following<span class="w"> </span>cleavage<span class="w"> </span>site
-</span><span id="__span-27-12"><a id="__codelineno-27-12" name="__codelineno-27-12" href="#__codelineno-27-12"></a><span class="w">    </span>-p,<span class="w"> </span>--cleavage_position<span class="w"> </span>TEXT<span class="w">    </span>Cleavage<span class="w"> </span>position<span class="w"> </span><span class="o">[</span>c,<span class="w"> </span>n<span class="o">]</span><span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>c<span class="o">)</span>
-</span><span id="__span-27-13"><a id="__codelineno-27-13" name="__codelineno-27-13" href="#__codelineno-27-13"></a><span class="w">    </span>-l,<span class="w"> </span>--min_peptide_length<span class="w"> </span>INTEGER<span class="w">  </span>Minimum<span class="w"> </span>peptide<span class="w"> </span>length<span class="w"> </span>to<span class="w"> </span>compare<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="m">5</span><span class="o">)</span>
-</span><span id="__span-27-14"><a id="__codelineno-27-14" name="__codelineno-27-14" href="#__codelineno-27-14"></a><span class="w">    </span>-n,<span class="w"> </span>--max_iterations<span class="w"> </span>INTEGER<span class="w">    </span>Max<span class="w"> </span>shuffle<span class="w"> </span>iterations<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="m">100</span><span class="o">)</span>
-</span><span id="__span-27-15"><a id="__codelineno-27-15" name="__codelineno-27-15" href="#__codelineno-27-15"></a><span class="w">    </span>-x,<span class="w"> </span>--do_not_shuffle<span class="w"> </span>TEXT<span class="w">       </span>Turn<span class="w"> </span>OFF<span class="w"> </span>shuffling<span class="w"> </span>of<span class="w"> </span>decoy<span class="w"> </span>peptides<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
-</span><span id="__span-27-16"><a id="__codelineno-27-16" name="__codelineno-27-16" href="#__codelineno-27-16"></a><span class="w">    </span>-w,<span class="w"> </span>--do_not_switch<span class="w"> </span>TEXT<span class="w">        </span>Turn<span class="w"> </span>OFF<span class="w"> </span>switching<span class="w"> </span>of<span class="w"> </span>cleavage<span class="w"> </span>site<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
-</span><span id="__span-27-17"><a id="__codelineno-27-17" name="__codelineno-27-17" href="#__codelineno-27-17"></a><span class="w">    </span>-d,<span class="w"> </span>--decoy_prefix<span class="w"> </span>TEXT<span class="w">         </span>Accession<span class="w"> </span>prefix<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>proteins<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>DECOY_<span class="o">)</span>
-</span><span id="__span-27-18"><a id="__codelineno-27-18" name="__codelineno-27-18" href="#__codelineno-27-18"></a><span class="w">    </span>-t,<span class="w"> </span>--temp_file<span class="w"> </span>TEXT<span class="w">            </span>Temporary<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoys<span class="w"> </span>prior<span class="w"> </span>to<span class="w"> </span>shuffling
-</span><span id="__span-27-19"><a id="__codelineno-27-19" name="__codelineno-27-19" href="#__codelineno-27-19"></a><span class="w">    </span>-b,<span class="w"> </span>--no_isobaric<span class="w"> </span>TEXT<span class="w">          </span>Do<span class="w"> </span>not<span class="w"> </span>make<span class="w"> </span>decoy<span class="w"> </span>peptides<span class="w"> </span>isobaric<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
-</span><span id="__span-27-20"><a id="__codelineno-27-20" name="__codelineno-27-20" href="#__codelineno-27-20"></a><span class="w">    </span>-m,<span class="w"> </span>--memory_save<span class="w"> </span>TEXT<span class="w">          </span>Slower<span class="w"> </span>but<span class="w"> </span>uses<span class="w"> </span>less<span class="w"> </span>memory<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
-</span><span id="__span-27-21"><a id="__codelineno-27-21" name="__codelineno-27-21" href="#__codelineno-27-21"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                      </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+<h4 id="command-options_9">Command Options<a class="headerlink" href="#command-options_9" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-32-1"><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span>-h
+</span><span id="__span-32-2"><a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-32-3"><a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a>
+</span><span id="__span-32-4"><a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-32-5"><a id="__codelineno-32-5" name="__codelineno-32-5" href="#__codelineno-32-5"></a><span class="w">    </span>-c,<span class="w"> </span>--config_file<span class="w"> </span>TEXT<span class="w">          </span>Configuration<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>generation
+</span><span id="__span-32-6"><a id="__codelineno-32-6" name="__codelineno-32-6" href="#__codelineno-32-6"></a><span class="w">    </span>-o,<span class="w"> </span>--output<span class="w"> </span>TEXT<span class="w">               </span>Output<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>database
+</span><span id="__span-32-7"><a id="__codelineno-32-7" name="__codelineno-32-7" href="#__codelineno-32-7"></a><span class="w">    </span>-i,<span class="w"> </span>--input<span class="w"> </span>TEXT<span class="w">                </span>FASTA<span class="w"> </span>file<span class="w"> </span>of<span class="w"> </span>target<span class="w"> </span>protein<span class="w"> </span>sequences<span class="w"> </span><span class="o">(</span>*.fasta<span class="p">|</span>*.fa<span class="o">)</span>
+</span><span id="__span-32-8"><a id="__codelineno-32-8" name="__codelineno-32-8" href="#__codelineno-32-8"></a>
+</span><span id="__span-32-9"><a id="__codelineno-32-9" name="__codelineno-32-9" href="#__codelineno-32-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-32-10"><a id="__codelineno-32-10" name="__codelineno-32-10" href="#__codelineno-32-10"></a><span class="w">    </span>-s,<span class="w"> </span>--cleavage_sites<span class="w"> </span>TEXT<span class="w">       </span>Amino<span class="w"> </span>acids<span class="w"> </span>at<span class="w"> </span>which<span class="w"> </span>to<span class="w"> </span>cleave<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>KR<span class="o">)</span>
+</span><span id="__span-32-11"><a id="__codelineno-32-11" name="__codelineno-32-11" href="#__codelineno-32-11"></a><span class="w">    </span>-a,<span class="w"> </span>--anti_cleavage_sites<span class="w"> </span>TEXT<span class="w">  </span>Amino<span class="w"> </span>acids<span class="w"> </span>at<span class="w"> </span>which<span class="w"> </span>not<span class="w"> </span>to<span class="w"> </span>cleave<span class="w"> </span><span class="k">if</span><span class="w"> </span>following<span class="w"> </span>cleavage<span class="w"> </span>site
+</span><span id="__span-32-12"><a id="__codelineno-32-12" name="__codelineno-32-12" href="#__codelineno-32-12"></a><span class="w">    </span>-p,<span class="w"> </span>--cleavage_position<span class="w"> </span>TEXT<span class="w">    </span>Cleavage<span class="w"> </span>position<span class="w"> </span><span class="o">[</span>c,<span class="w"> </span>n<span class="o">]</span><span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>c<span class="o">)</span>
+</span><span id="__span-32-13"><a id="__codelineno-32-13" name="__codelineno-32-13" href="#__codelineno-32-13"></a><span class="w">    </span>-l,<span class="w"> </span>--min_peptide_length<span class="w"> </span>INTEGER<span class="w">  </span>Minimum<span class="w"> </span>peptide<span class="w"> </span>length<span class="w"> </span>to<span class="w"> </span>compare<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="m">5</span><span class="o">)</span>
+</span><span id="__span-32-14"><a id="__codelineno-32-14" name="__codelineno-32-14" href="#__codelineno-32-14"></a><span class="w">    </span>-n,<span class="w"> </span>--max_iterations<span class="w"> </span>INTEGER<span class="w">    </span>Max<span class="w"> </span>shuffle<span class="w"> </span>iterations<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="m">100</span><span class="o">)</span>
+</span><span id="__span-32-15"><a id="__codelineno-32-15" name="__codelineno-32-15" href="#__codelineno-32-15"></a><span class="w">    </span>-x,<span class="w"> </span>--do_not_shuffle<span class="w"> </span>TEXT<span class="w">       </span>Turn<span class="w"> </span>OFF<span class="w"> </span>shuffling<span class="w"> </span>of<span class="w"> </span>decoy<span class="w"> </span>peptides<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
+</span><span id="__span-32-16"><a id="__codelineno-32-16" name="__codelineno-32-16" href="#__codelineno-32-16"></a><span class="w">    </span>-w,<span class="w"> </span>--do_not_switch<span class="w"> </span>TEXT<span class="w">        </span>Turn<span class="w"> </span>OFF<span class="w"> </span>switching<span class="w"> </span>of<span class="w"> </span>cleavage<span class="w"> </span>site<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
+</span><span id="__span-32-17"><a id="__codelineno-32-17" name="__codelineno-32-17" href="#__codelineno-32-17"></a><span class="w">    </span>-d,<span class="w"> </span>--decoy_prefix<span class="w"> </span>TEXT<span class="w">         </span>Accession<span class="w"> </span>prefix<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoy<span class="w"> </span>proteins<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span>DECOY_<span class="o">)</span>
+</span><span id="__span-32-18"><a id="__codelineno-32-18" name="__codelineno-32-18" href="#__codelineno-32-18"></a><span class="w">    </span>-t,<span class="w"> </span>--temp_file<span class="w"> </span>TEXT<span class="w">            </span>Temporary<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>decoys<span class="w"> </span>prior<span class="w"> </span>to<span class="w"> </span>shuffling
+</span><span id="__span-32-19"><a id="__codelineno-32-19" name="__codelineno-32-19" href="#__codelineno-32-19"></a><span class="w">    </span>-b,<span class="w"> </span>--no_isobaric<span class="w"> </span>TEXT<span class="w">          </span>Do<span class="w"> </span>not<span class="w"> </span>make<span class="w"> </span>decoy<span class="w"> </span>peptides<span class="w"> </span>isobaric<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
+</span><span id="__span-32-20"><a id="__codelineno-32-20" name="__codelineno-32-20" href="#__codelineno-32-20"></a><span class="w">    </span>-m,<span class="w"> </span>--memory_save<span class="w"> </span>TEXT<span class="w">          </span>Slower<span class="w"> </span>but<span class="w"> </span>uses<span class="w"> </span>less<span class="w"> </span>memory<span class="w"> </span><span class="o">(</span>Default:<span class="w"> </span><span class="nb">false</span><span class="o">)</span>
+</span><span id="__span-32-21"><a id="__codelineno-32-21" name="__codelineno-32-21" href="#__codelineno-32-21"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">                      </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
 </span></code></pre></div>
-<h4 id="examples_7">Examples<a class="headerlink" href="#examples_7" title="Anchor link to this section">&para;</a></h4>
+<h4 id="examples_9">Examples<a class="headerlink" href="#examples_9" title="Anchor link to this section">&para;</a></h4>
 <ul>
 <li>
 <p>Generate decoy sequences for a protein database:</p>
-<div class="language-bash highlight"><pre><span></span><code><span id="__span-28-1"><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span>-c<span class="w"> </span>config/protein_decoy.yaml<span class="w"> </span>--input<span class="w"> </span>proteindb.fa<span class="w"> </span>--output<span class="w"> </span>decoy_proteindb.fa
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-33-1"><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a>pgatk<span class="w"> </span>generate-decoy<span class="w"> </span>-c<span class="w"> </span>config/protein_decoy.yaml<span class="w"> </span>--input<span class="w"> </span>proteindb.fa<span class="w"> </span>--output<span class="w"> </span>decoy_proteindb.fa
+</span></code></pre></div>
+</li>
+</ul>
+<h2 id="post-processing-utilities">Post-Processing Utilities<a class="headerlink" href="#post-processing-utilities" title="Anchor link to this section">&para;</a></h2>
+<h3 id="digest-and-filter-variant-peptides">Digest and Filter Variant Peptides<a class="headerlink" href="#digest-and-filter-variant-peptides" title="Anchor link to this section">&para;</a></h3>
+<p>The <code>digest-mutant-protein</code> command performs <em>in silico</em> tryptic digestion of mutant proteins and filters out any peptides that also appear in a canonical reference proteome. The result is a compact FASTA of variant-specific peptides only.</p>
+<h4 id="command-options_10">Command Options<a class="headerlink" href="#command-options_10" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-34-1"><a id="__codelineno-34-1" name="__codelineno-34-1" href="#__codelineno-34-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>digest-mutant-protein<span class="w"> </span>-h
+</span><span id="__span-34-2"><a id="__codelineno-34-2" name="__codelineno-34-2" href="#__codelineno-34-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>digest-mutant-protein<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-34-3"><a id="__codelineno-34-3" name="__codelineno-34-3" href="#__codelineno-34-3"></a>
+</span><span id="__span-34-4"><a id="__codelineno-34-4" name="__codelineno-34-4" href="#__codelineno-34-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-34-5"><a id="__codelineno-34-5" name="__codelineno-34-5" href="#__codelineno-34-5"></a><span class="w">    </span>-i,<span class="w"> </span>--input<span class="w"> </span>TEXT<span class="w">        </span>Input<span class="w"> </span>mutant<span class="w"> </span>protein<span class="w"> </span>FASTA<span class="w"> </span>file<span class="o">(</span>s<span class="o">)</span>,<span class="w"> </span>comma-separated
+</span><span id="__span-34-6"><a id="__codelineno-34-6" name="__codelineno-34-6" href="#__codelineno-34-6"></a><span class="w">    </span>-f,<span class="w"> </span>--fasta<span class="w"> </span>TEXT<span class="w">        </span>Reference<span class="w"> </span>canonical<span class="w"> </span>protein<span class="w"> </span>FASTA
+</span><span id="__span-34-7"><a id="__codelineno-34-7" name="__codelineno-34-7" href="#__codelineno-34-7"></a><span class="w">    </span>-o,<span class="w"> </span>--output<span class="w"> </span>TEXT<span class="w">       </span>Output<span class="w"> </span>file<span class="w"> </span><span class="k">for</span><span class="w"> </span>unique<span class="w"> </span>variant<span class="w"> </span>peptides
+</span><span id="__span-34-8"><a id="__codelineno-34-8" name="__codelineno-34-8" href="#__codelineno-34-8"></a>
+</span><span id="__span-34-9"><a id="__codelineno-34-9" name="__codelineno-34-9" href="#__codelineno-34-9"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-34-10"><a id="__codelineno-34-10" name="__codelineno-34-10" href="#__codelineno-34-10"></a><span class="w">    </span>--prefix<span class="w"> </span>TEXT<span class="w">           </span>Header<span class="w"> </span>prefix<span class="w"> </span><span class="k">for</span><span class="w"> </span>output<span class="w"> </span>entries<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span>Mutation<span class="o">)</span>
+</span><span id="__span-34-11"><a id="__codelineno-34-11" name="__codelineno-34-11" href="#__codelineno-34-11"></a><span class="w">    </span>--min-len<span class="w"> </span>INTEGER<span class="w">       </span>Minimum<span class="w"> </span>peptide<span class="w"> </span>length<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">7</span><span class="o">)</span>
+</span><span id="__span-34-12"><a id="__codelineno-34-12" name="__codelineno-34-12" href="#__codelineno-34-12"></a><span class="w">    </span>--max-len<span class="w"> </span>INTEGER<span class="w">       </span>Maximum<span class="w"> </span>peptide<span class="w"> </span>length<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">40</span><span class="o">)</span>
+</span><span id="__span-34-13"><a id="__codelineno-34-13" name="__codelineno-34-13" href="#__codelineno-34-13"></a><span class="w">    </span>--missed-cleavages<span class="w"> </span>INTEGER<span class="w">  </span>Number<span class="w"> </span>of<span class="w"> </span>missed<span class="w"> </span>cleavages<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+</span><span id="__span-34-14"><a id="__codelineno-34-14" name="__codelineno-34-14" href="#__codelineno-34-14"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">              </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span></code></pre></div>
+<h4 id="examples_10">Examples<a class="headerlink" href="#examples_10" title="Anchor link to this section">&para;</a></h4>
+<ul>
+<li>
+<p>Digest variant proteins and keep only variant-specific peptides:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-35-1"><a id="__codelineno-35-1" name="__codelineno-35-1" href="#__codelineno-35-1"></a>pgatk<span class="w"> </span>digest-mutant-protein<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-2"><a id="__codelineno-35-2" name="__codelineno-35-2" href="#__codelineno-35-2"></a><span class="w">    </span>--input<span class="w"> </span>variant_proteins.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-3"><a id="__codelineno-35-3" name="__codelineno-35-3" href="#__codelineno-35-3"></a><span class="w">    </span>--fasta<span class="w"> </span>canonical_proteins.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-4"><a id="__codelineno-35-4" name="__codelineno-35-4" href="#__codelineno-35-4"></a><span class="w">    </span>--output<span class="w"> </span>unique_variant_peptides.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-5"><a id="__codelineno-35-5" name="__codelineno-35-5" href="#__codelineno-35-5"></a><span class="w">    </span>--min-len<span class="w"> </span><span class="m">7</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-6"><a id="__codelineno-35-6" name="__codelineno-35-6" href="#__codelineno-35-6"></a><span class="w">    </span>--max-len<span class="w"> </span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-35-7"><a id="__codelineno-35-7" name="__codelineno-35-7" href="#__codelineno-35-7"></a><span class="w">    </span>--missed-cleavages<span class="w"> </span><span class="m">2</span>
+</span></code></pre></div>
+</li>
+<li>
+<p>Combine and filter multiple variant sources:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-36-1"><a id="__codelineno-36-1" name="__codelineno-36-1" href="#__codelineno-36-1"></a>pgatk<span class="w"> </span>digest-mutant-protein<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-36-2"><a id="__codelineno-36-2" name="__codelineno-36-2" href="#__codelineno-36-2"></a><span class="w">    </span>--input<span class="w"> </span>cosmic_proteins.fa,clinvar_proteins.fa,ensembl_variants.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-36-3"><a id="__codelineno-36-3" name="__codelineno-36-3" href="#__codelineno-36-3"></a><span class="w">    </span>--fasta<span class="w"> </span>canonical_proteins.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-36-4"><a id="__codelineno-36-4" name="__codelineno-36-4" href="#__codelineno-36-4"></a><span class="w">    </span>--output<span class="w"> </span>combined_variant_peptides.fa
+</span></code></pre></div>
+</li>
+</ul>
+<h3 id="map-peptides-to-genomic-coordinates">Map Peptides to Genomic Coordinates<a class="headerlink" href="#map-peptides-to-genomic-coordinates" title="Anchor link to this section">&para;</a></h3>
+<p>The <code>map-peptide2genome</code> command maps proteomics-identified peptides to genomic coordinates and produces a GFF3 file suitable for visualization in genome browsers (UCSC, IGV, Ensembl).</p>
+<h4 id="command-options_11">Command Options<a class="headerlink" href="#command-options_11" title="Anchor link to this section">&para;</a></h4>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-37-1"><a id="__codelineno-37-1" name="__codelineno-37-1" href="#__codelineno-37-1"></a>$<span class="w"> </span>pgatk<span class="w"> </span>map-peptide2genome<span class="w"> </span>-h
+</span><span id="__span-37-2"><a id="__codelineno-37-2" name="__codelineno-37-2" href="#__codelineno-37-2"></a>Usage:<span class="w"> </span>pgatk<span class="w"> </span>map-peptide2genome<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span>
+</span><span id="__span-37-3"><a id="__codelineno-37-3" name="__codelineno-37-3" href="#__codelineno-37-3"></a>
+</span><span id="__span-37-4"><a id="__codelineno-37-4" name="__codelineno-37-4" href="#__codelineno-37-4"></a><span class="w">  </span>Required<span class="w"> </span>parameters:
+</span><span id="__span-37-5"><a id="__codelineno-37-5" name="__codelineno-37-5" href="#__codelineno-37-5"></a><span class="w">    </span>-i,<span class="w"> </span>--input<span class="w"> </span>TEXT<span class="w">        </span>Input<span class="w"> </span>peptide<span class="w"> </span>identification<span class="w"> </span>TSV
+</span><span id="__span-37-6"><a id="__codelineno-37-6" name="__codelineno-37-6" href="#__codelineno-37-6"></a><span class="w">    </span>-g,<span class="w"> </span>--gtf<span class="w"> </span>TEXT<span class="w">          </span>GTF<span class="w"> </span>gene<span class="w"> </span>annotation<span class="w"> </span>file
+</span><span id="__span-37-7"><a id="__codelineno-37-7" name="__codelineno-37-7" href="#__codelineno-37-7"></a><span class="w">    </span>-f,<span class="w"> </span>--fasta<span class="w"> </span>TEXT<span class="w">        </span>Protein<span class="w"> </span>FASTA<span class="w"> </span>file
+</span><span id="__span-37-8"><a id="__codelineno-37-8" name="__codelineno-37-8" href="#__codelineno-37-8"></a><span class="w">    </span>-m,<span class="w"> </span>--idmap<span class="w"> </span>TEXT<span class="w">        </span>Protein-to-transcript<span class="w"> </span>ID<span class="w"> </span>mapping<span class="w"> </span>file
+</span><span id="__span-37-9"><a id="__codelineno-37-9" name="__codelineno-37-9" href="#__codelineno-37-9"></a><span class="w">    </span>-o,<span class="w"> </span>--output<span class="w"> </span>TEXT<span class="w">       </span>Output<span class="w"> </span>GFF3<span class="w"> </span>file
+</span><span id="__span-37-10"><a id="__codelineno-37-10" name="__codelineno-37-10" href="#__codelineno-37-10"></a>
+</span><span id="__span-37-11"><a id="__codelineno-37-11" name="__codelineno-37-11" href="#__codelineno-37-11"></a><span class="w">  </span>Optional<span class="w"> </span>parameters:
+</span><span id="__span-37-12"><a id="__codelineno-37-12" name="__codelineno-37-12" href="#__codelineno-37-12"></a><span class="w">    </span>--pep-col<span class="w"> </span>INTEGER<span class="w">       </span>Peptide<span class="w"> </span>column<span class="w"> </span>index,<span class="w"> </span><span class="m">0</span>-based<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">0</span><span class="o">)</span>
+</span><span id="__span-37-13"><a id="__codelineno-37-13" name="__codelineno-37-13" href="#__codelineno-37-13"></a><span class="w">    </span>--prot-col<span class="w"> </span>INTEGER<span class="w">      </span>Protein<span class="w"> </span>column<span class="w"> </span>index,<span class="w"> </span><span class="m">0</span>-based<span class="w"> </span><span class="o">(</span>default:<span class="w"> </span><span class="m">1</span><span class="o">)</span>
+</span><span id="__span-37-14"><a id="__codelineno-37-14" name="__codelineno-37-14" href="#__codelineno-37-14"></a><span class="w">    </span>-h,<span class="w"> </span>--help<span class="w">              </span>Show<span class="w"> </span>this<span class="w"> </span>message<span class="w"> </span>and<span class="w"> </span>exit.
+</span></code></pre></div>
+<h4 id="examples_11">Examples<a class="headerlink" href="#examples_11" title="Anchor link to this section">&para;</a></h4>
+<ul>
+<li>
+<p>Map identified peptides to genomic coordinates:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-38-1"><a id="__codelineno-38-1" name="__codelineno-38-1" href="#__codelineno-38-1"></a>pgatk<span class="w"> </span>map-peptide2genome<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-2"><a id="__codelineno-38-2" name="__codelineno-38-2" href="#__codelineno-38-2"></a><span class="w">    </span>--input<span class="w"> </span>peptide_identifications.tsv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-3"><a id="__codelineno-38-3" name="__codelineno-38-3" href="#__codelineno-38-3"></a><span class="w">    </span>--gtf<span class="w"> </span>genes.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-4"><a id="__codelineno-38-4" name="__codelineno-38-4" href="#__codelineno-38-4"></a><span class="w">    </span>--fasta<span class="w"> </span>proteins.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-5"><a id="__codelineno-38-5" name="__codelineno-38-5" href="#__codelineno-38-5"></a><span class="w">    </span>--idmap<span class="w"> </span>protein_to_transcript.tsv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-38-6"><a id="__codelineno-38-6" name="__codelineno-38-6" href="#__codelineno-38-6"></a><span class="w">    </span>--output<span class="w"> </span>peptides.gff3
 </span></code></pre></div>
 </li>
 </ul>
@@ -1493,13 +1801,13 @@
         
         
           
-          <a href="../formats/" class="md-footer__link md-footer__link--next" aria-label="Next: File Formats">
+          <a href="../use-cases/" class="md-footer__link md-footer__link--next" aria-label="Next: Use Cases">
             <div class="md-footer__title">
               <span class="md-footer__direction">
                 Next
               </span>
               <div class="md-ellipsis">
-                File Formats
+                Use Cases
               </div>
             </div>
             <div class="md-footer__button md-icon">
