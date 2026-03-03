@@ -183,11 +183,11 @@ pgatk ensembl-downloader \
     -o ensembl_human \
     --skip_protein \
     --skip_ncrna \
-    --skip_cdna \
-    --skip_dna
+    --skip_cdna
 ```
 
-This downloads the gene annotation GTF and the VCF file with known variants.
+This downloads the gene annotation GTF, VCF file with known variants, and the
+genome FASTA (needed by gffread to extract transcript sequences).
 
 ### Step 2 -- Generate transcript sequences
 
@@ -797,8 +797,7 @@ pgatk supports any species available in ENSEMBL. For example, rice
 ```bash
 pgatk ensembl-downloader \
     -t 39947 \
-    -o ensembl_rice \
-    --skip_dna
+    -o ensembl_rice
 ```
 
 ### Step 2 -- Generate transcript sequences and canonical proteome
@@ -860,7 +859,7 @@ For model organisms like mouse (*Mus musculus*, taxonomy 10090):
 
 ```bash
 # Download
-pgatk ensembl-downloader -t 10090 -o ensembl_mouse --skip_dna
+pgatk ensembl-downloader -t 10090 -o ensembl_mouse
 
 # Generate transcript sequences
 gffread -F -w ensembl_mouse/transcripts.fa \

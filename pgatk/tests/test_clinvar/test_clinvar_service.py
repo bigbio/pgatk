@@ -71,6 +71,13 @@ class TestClinSigFiltering:
         # '_risk_factor' is not in exclude list, so it's not an excluded component
         assert ClinVarService.passes_clnsig_filter("Benign,_risk_factor", exclude) is True
 
+    def test_delimiter_only_clnsig_passes(self):
+        """CLNSIG with only delimiters (e.g. '/') should pass like empty."""
+        exclude = ["Benign", "Likely_benign"]
+        assert ClinVarService.passes_clnsig_filter("/", exclude) is True
+        assert ClinVarService.passes_clnsig_filter(",", exclude) is True
+        assert ClinVarService.passes_clnsig_filter("/,/", exclude) is True
+
 
 # ---------------------------------------------------------------------------
 # TestMolecularConsequenceParser

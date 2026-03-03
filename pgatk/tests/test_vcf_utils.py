@@ -110,6 +110,54 @@ class TestGetAltseq:
         assert str(coding_ref) == "ATGCATGCAT"
         assert str(coding_alt) == "ATGCATGCAG"
 
+    def test_multibase_ref_extending_past_exon_clips_alt(self):
+        """When REF extends past the exon boundary, ALT should also be clipped.
+
+        Exon: positions 10-14 (5 bases). Variant at pos 13 with REF=ACGT (4 bases,
+        extends to pos 16 -- 2 bases past exon end). Only 2 of 4 REF bases are
+        exonic. ALT=TT (2 bases) should be clipped by the same 2 intronic bases,
+        leaving 0 ALT bases (pure deletion of the 2 exonic REF bases).
+        """
+        #                   positions: 10 11 12 13 14
+        ref_seq = Seq("ATGCA")  # 5 bases, exon is 10-14
+        features_info = [[10, 14, 'exon']]
+        # REF=ACGT at pos 13: exonic portion is AC (pos 13-14), intronic is GT (pos 15-16)
+        # ALT=TT: clipped by 2 (intronic REF bases) → empty
+        coding_ref, coding_alt = get_altseq(
+            ref_seq, Seq("ACGT"), Seq("TT"), 13, '+', features_info
+        )
+        # With ALT clipped to empty, result should be ref minus the 2 exonic bases
+        assert str(coding_ref) == "ATGCA"
+        assert str(coding_alt) == "ATG"  # first 3 bases preserved, last 2 deleted
+
+    def test_multibase_ref_extending_past_exon_partial_alt_clip(self):
+        """ALT longer than intronic portion retains some bases after clipping.
+
+        Exon: positions 10-14. Variant at pos 13 with REF=ACG (extends 1 past exon).
+        Intronic REF = 1 base. ALT=TTT (3 bases) clipped by 1 → TT (2 bases).
+        """
+        ref_seq = Seq("ATGCA")  # exon 10-14
+        features_info = [[10, 14, 'exon']]
+        # REF=ACG at pos 13: exonic = AC (2 bases), intronic = G (1 base)
+        # ALT=TTT clipped by 1 → TT
+        coding_ref, coding_alt = get_altseq(
+            ref_seq, Seq("ACG"), Seq("TTT"), 13, '+', features_info
+        )
+        assert str(coding_ref) == "ATGCA"
+        # ref_seq[0:3] + "TT" + ref_seq[3+2:] = "ATG" + "TT" + "" = "ATGTT"
+        assert str(coding_alt) == "ATGTT"
+
+    def test_ref_within_exon_no_clipping(self):
+        """When REF is entirely within the exon, no clipping occurs."""
+        ref_seq = Seq("ATGCATGCAT")
+        features_info = [[10, 19, 'exon']]
+        # REF=GC at pos 12: entirely within exon 10-19
+        coding_ref, coding_alt = get_altseq(
+            ref_seq, Seq("GC"), Seq("TT"), 12, '+', features_info
+        )
+        assert str(coding_ref) == "ATGCATGCAT"
+        assert str(coding_alt) == "ATTTATGCAT"
+
 
 # ---------------------------------------------------------------------------
 # get_orfs_vcf
