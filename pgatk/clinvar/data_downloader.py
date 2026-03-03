@@ -73,10 +73,15 @@ class NcbiDataDownloader:
 
         for url, name in zip(all_urls, all_names):
             local_path = os.path.join(self._output_dir, name)
+            # download_file extracts .gz and deletes the archive, so also
+            # check for the extracted path to avoid redundant re-downloads.
+            extracted_path = local_path.removesuffix(".gz")
 
-            if os.path.exists(local_path) and not force:
-                logger.info("File already exists, skipping: %s", local_path)
-                downloaded.append(local_path)
+            if not force and (os.path.exists(local_path) or
+                              (extracted_path != local_path and os.path.exists(extracted_path))):
+                existing = local_path if os.path.exists(local_path) else extracted_path
+                logger.info("File already exists, skipping: %s", existing)
+                downloaded.append(existing)
                 continue
 
             logger.info("Downloading %s -> %s", url, local_path)
