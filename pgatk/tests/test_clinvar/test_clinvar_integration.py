@@ -64,3 +64,38 @@ class TestClinVarCLIIntegration:
         assert result.exit_code == 0
         assert "--output-dir" in result.output
         assert "--force" in result.output
+
+    def test_cli_filters_synonymous_variants(self, tmp_path, clinvar_testdata):
+        """Synonymous variants should be filtered by MC even if Pathogenic."""
+        output_file = tmp_path / "clinvar_output.fa"
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "clinvar-to-proteindb",
+            "--vcf", str(clinvar_testdata / "mini_clinvar.vcf"),
+            "--gtf", str(clinvar_testdata / "mini_refseq.gtf"),
+            "--fasta", str(clinvar_testdata / "mini_refseq_protein.faa"),
+            "--assembly-report", str(clinvar_testdata / "mini_assembly_report.txt"),
+            "--output", str(output_file),
+        ])
+        assert result.exit_code == 0
+        content = output_file.read_text()
+        # rs00004 is Pathogenic but synonymous — should NOT appear
+        assert "rs00004" not in content
+        # rs00001 is Pathogenic missense — SHOULD appear
+        assert "rs00001" in content
+
+    def test_pipeline_output_contains_clnsig_in_header(self, tmp_path, clinvar_testdata):
+        """Output FASTA headers should contain CLNSIG and gene symbol."""
+        output_file = tmp_path / "clinvar_output.fa"
+        runner = CliRunner()
+        result = runner.invoke(cli, [
+            "clinvar-to-proteindb",
+            "--vcf", str(clinvar_testdata / "mini_clinvar.vcf"),
+            "--gtf", str(clinvar_testdata / "mini_refseq.gtf"),
+            "--fasta", str(clinvar_testdata / "mini_refseq_protein.faa"),
+            "--assembly-report", str(clinvar_testdata / "mini_assembly_report.txt"),
+            "--output", str(output_file),
+        ])
+        assert result.exit_code == 0
+        content = output_file.read_text()
+        assert "Pathogenic" in content
