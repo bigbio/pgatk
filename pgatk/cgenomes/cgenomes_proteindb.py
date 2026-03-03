@@ -181,8 +181,12 @@ class CancerGenomesService(ParameterConfiguration):
                 protein_seq = str(seq.translate(to_stop=False))
 
                 if "Missense" in snp.mutation_type:
-                    mut_aa = snp.aa_mut[-1]
-                    if not mut_aa.isalpha():
+                    # Extract the mutant residue from HGVS like p.V600E (1-letter)
+                    # or p.Val600Glu (3-letter).  For 1-letter the last char is the
+                    # AA; for 3-letter we need to convert the last triplet.
+                    aa_suffix = re.sub(r'^p\..*\d+', '', snp.aa_mut)
+                    mut_aa = _three_to_one(aa_suffix) if aa_suffix else ''
+                    if not mut_aa or len(mut_aa) != 1 or not mut_aa.isalpha():
                         return ''
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
@@ -194,7 +198,8 @@ class CancerGenomesService(ParameterConfiguration):
                         index = snp.aa_mut.index("ins")
                     except ValueError:
                         return ''
-                    insert_aa = snp.aa_mut[index + 3:]
+                    insert_aa_raw = snp.aa_mut[index + 3:]
+                    insert_aa = _three_to_one(insert_aa_raw)
                     if insert_aa.isalpha():
                         ins_index1 = int(positions[0])
                         mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
@@ -211,7 +216,10 @@ class CancerGenomesService(ParameterConfiguration):
                         index = snp.aa_mut.index(">")
                     except ValueError:
                         return ''
-                    mut_aa = snp.aa_mut[index + 1:]
+                    mut_aa_raw = snp.aa_mut[index + 1:]
+                    mut_aa = _three_to_one(mut_aa_raw.replace('*', ''))
+                    if '*' in mut_aa_raw:
+                        mut_aa += '*'
                     if not mut_aa.replace('*','').isalpha():
                         return ''
                     if "deletion" in snp.mutation_type:

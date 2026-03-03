@@ -23,6 +23,7 @@ See the [Installation](installation.md) page for more options (Bioconda, Docker,
 | [Introduction](introduction.md) | Overview of the proteogenomics field |
 | [Installation](installation.md) | How to install pgatk (pip, Bioconda, Docker, source) |
 | [pgatk CLI](pgatk-cli.md) | Full command-line reference for all tools |
+| [Use Cases](use-cases.md) | End-to-end workflows and recipes for common scenarios |
 | [File Formats](formats.md) | BED, GTF, GCT format specifications |
 | [Changelog](changelog.md) | Version history and release notes |
 | [Support](support.md) | Contributors and how to get help |

@@ -493,9 +493,9 @@ class ClinVarService:
                         if "CDS=" in desc:
                             try:
                                 cds_str = [
-                                    p
+                                    p.strip("[]")
                                     for p in desc.split()
-                                    if p.startswith("CDS=")
+                                    if p.strip("[]").startswith("CDS=")
                                 ][0]
                                 cds_info = [
                                     int(x)

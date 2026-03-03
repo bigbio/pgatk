@@ -109,7 +109,13 @@ def get_altseq(
     for feature in features_info:
         if var_pos in range(feature[0], feature[1] + 1):
             var_index_in_cds = nc_index + (var_pos - feature[0])
-            c = len(ref_allele)
+            # Clip the ref allele length to the portion that falls within
+            # this feature.  When a multi-base variant extends from an exon
+            # into an intron, the intronic bases are absent from the
+            # transcript and must not be counted.
+            var_end_genomic = var_pos + len(ref_allele) - 1
+            exonic_ref_len = min(var_end_genomic, feature[1]) - var_pos + 1
+            c = max(exonic_ref_len, 0)
             alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[var_index_in_cds + c::]
             if strand == '-':
                 return ref_seq[::-1], alt_seq[::-1]
