@@ -517,7 +517,7 @@ class EnsemblDataService(ParameterConfiguration):
                 if str(record.CHROM).lstrip('chr').upper() in ['M', 'MT']:
                     trans_table = self._mito_translation_table
 
-                processed_transcript_allele = []
+                processed_transcript_allele = set()
                 transcript_records = []
                 try:
                     transcript_records = \
@@ -531,7 +531,7 @@ class EnsemblDataService(ParameterConfiguration):
 
                 for transcript_record in transcript_records.split(','):
                     transcript_info = transcript_record.split('|')
-                    if consequence_index:
+                    if consequence_index is not None:
                         try:
                             consequence = transcript_info[consequence_index]
                         except IndexError:
@@ -542,7 +542,7 @@ class EnsemblDataService(ParameterConfiguration):
                             continue
                         except TypeError:
                             pass
-                    if biotype_index:
+                    if biotype_index is not None:
                         try:
                             biotype = transcript_info[biotype_index]
                         except IndexError:
@@ -599,24 +599,24 @@ class EnsemblDataService(ParameterConfiguration):
                     if chrom is None:  # the record info was not found
                         continue
                     # skip transcripts with unwanted consequences
-                    if consequence_index:
+                    if consequence_index is not None:
                         if (consequence in self._exclude_consequences or
                                 (consequence not in self._include_consequences and
                                  self._include_consequences != ['all'])):
                             continue
 
                     # skip transcripts with unwanted biotypes
-                    if biotype_index:
+                    if biotype_index is not None:
                         if (biotype in self._exclude_biotypes or
                                 (biotype not in self._include_biotypes and
                                  self._include_biotypes != ['all'])):
                             continue
 
                     for alt in alts:
-                        if transcript_id + str(record.REF) + str(
-                                alt) in processed_transcript_allele:  # because VEP reports affected transcripts per alt allele
+                        dedup_key = transcript_id + str(record.REF) + str(alt)
+                        if dedup_key in processed_transcript_allele:
                             continue
-                        processed_transcript_allele.append(transcript_id + str(record.REF) + str(alt))
+                        processed_transcript_allele.add(dedup_key)
 
                         # for non-CDSs, only consider the exon that actually overlaps the variant
                         try:

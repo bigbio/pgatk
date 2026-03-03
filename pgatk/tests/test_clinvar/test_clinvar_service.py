@@ -54,6 +54,23 @@ class TestClinSigFiltering:
         exclude = ["Benign", "Likely_benign", "Benign/Likely_benign"]
         assert ClinVarService.passes_clnsig_filter("Likely_pathogenic", exclude) is True
 
+    def test_compound_all_benign_excluded(self):
+        """Compound value with all-benign components should be excluded."""
+        exclude = ["Benign", "Likely_benign", "Benign/Likely_benign"]
+        # Both components are in the exclude list → excluded
+        assert ClinVarService.passes_clnsig_filter("Benign,Likely_benign", exclude) is False
+
+    def test_compound_mixed_passes(self):
+        """Compound value with a non-benign component should pass."""
+        exclude = ["Benign", "Likely_benign", "Benign/Likely_benign"]
+        assert ClinVarService.passes_clnsig_filter("Pathogenic/Likely_benign", exclude) is True
+
+    def test_compound_risk_factor_excluded(self):
+        """Benign with risk_factor — all components benign → excluded."""
+        exclude = ["Benign", "Likely_benign"]
+        # '_risk_factor' is not in exclude list, so it's not an excluded component
+        assert ClinVarService.passes_clnsig_filter("Benign,_risk_factor", exclude) is True
+
 
 # ---------------------------------------------------------------------------
 # TestMolecularConsequenceParser

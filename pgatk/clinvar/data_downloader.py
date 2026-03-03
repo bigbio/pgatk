@@ -21,7 +21,7 @@ _DEFAULT_CLINVAR_BASE = (
 
 _REFSEQ_FILES = [
     "GRCh38_latest_genomic.gtf.gz",
-    "GRCh38_latest_protein.faa.gz",
+    "GRCh38_latest_rna.fna.gz",
     "GRCh38_latest_assembly_report.txt",
 ]
 _CLINVAR_FILES = [
