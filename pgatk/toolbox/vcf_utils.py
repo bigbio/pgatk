@@ -106,18 +106,17 @@ def get_altseq(
         ref_seq = ref_seq[start_coding_index:stop_coding_index]
 
     nc_index = 0
-    if len(ref_allele) == len(var_allele) or ref_allele[0] == var_allele[0]:
-        for feature in features_info:
-            if var_pos in range(feature[0], feature[1] + 1):
-                var_index_in_cds = nc_index + (var_pos - feature[0])
-                c = len(ref_allele)
-                alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[var_index_in_cds + c::]
-                if strand == '-':
-                    return ref_seq[::-1], alt_seq[::-1]
-                else:
-                    return ref_seq, alt_seq
+    for feature in features_info:
+        if var_pos in range(feature[0], feature[1] + 1):
+            var_index_in_cds = nc_index + (var_pos - feature[0])
+            c = len(ref_allele)
+            alt_seq = ref_seq[0:var_index_in_cds] + var_allele + ref_seq[var_index_in_cds + c::]
+            if strand == '-':
+                return ref_seq[::-1], alt_seq[::-1]
+            else:
+                return ref_seq, alt_seq
 
-            nc_index += (feature[1] - feature[0] + 1)
+        nc_index += (feature[1] - feature[0] + 1)
 
     return ref_seq, alt_seq
 

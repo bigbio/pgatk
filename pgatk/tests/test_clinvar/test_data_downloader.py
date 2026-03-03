@@ -15,7 +15,7 @@ class TestNcbiDataDownloader:
         urls = downloader.get_refseq_urls()
         assert len(urls) == 3
         assert any("GRCh38_latest_genomic.gtf.gz" in u for u in urls)
-        assert any("GRCh38_latest_protein.faa.gz" in u for u in urls)
+        assert any("GRCh38_latest_rna.fna.gz" in u for u in urls)
         assert any("assembly_report.txt" in u for u in urls)
 
     def test_build_clinvar_urls(self):
