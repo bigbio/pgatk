@@ -15,12 +15,16 @@ Options:
 Commands:
   cbioportal-downloader    Command to download the the cbioportal studies
   cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
+  clinvar-to-proteindb     Generate protein database from ClinVar VCF + RefSeq GTF
   cosmic-downloader        Command to download the cosmic mutation database
   cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
+  digest-mutant-protein    Digest mutant proteins and filter against canonical proteome
   dnaseq-to-proteindb      Generate peptides based on DNA sequences
   ensembl-check            Command to check ensembl database for stop codons, gaps
   ensembl-downloader       Command to download the ensembl information
   generate-decoy           Create decoy protein sequences using multiple methods
+  map-peptide2genome       Map peptides to genomic coordinates (GFF3 output)
+  ncbi-downloader          Download NCBI RefSeq and ClinVar reference files
   threeframe-translation   Command to perform 3'frame translation
   vcf-to-proteindb         Generate peptides based on DNA variants VCF files
 ```
@@ -170,6 +174,44 @@ git lfs install --local --skip-smudge
 git lfs pull -I public --include "data_clinical_sample.txt"
 git lfs pull -I public --include "data_mutations_mskcc.txt"
 ```
+
+### Downloading NCBI / ClinVar Data
+
+Downloading NCBI RefSeq annotations and ClinVar variants for human (GRCh38) is performed using the command `ncbi-downloader`. The tool downloads four files:
+
+- RefSeq gene annotations (GTF)
+- RefSeq transcript nucleotide sequences (FASTA)
+- Assembly report (chromosome name mapping)
+- ClinVar variant calls (VCF)
+
+#### Command Options
+
+```bash
+$ pgatk ncbi-downloader -h
+Usage: pgatk ncbi-downloader [OPTIONS]
+
+  Required parameters:
+    -o, --output-dir TEXT     Output directory for downloaded files
+
+  Optional parameters:
+    -c, --config_file TEXT    Configuration YAML file
+    --force                   Re-download files even if they exist
+    -h, --help                Show this message and exit.
+```
+
+#### Examples
+
+- Download all NCBI/ClinVar reference files:
+
+    ```bash
+    pgatk ncbi-downloader -o ncbi_data
+    ```
+
+- Force re-download of all files:
+
+    ```bash
+    pgatk ncbi-downloader -o ncbi_data --force
+    ```
 
 ## Generate Protein Databases
 
@@ -355,6 +397,43 @@ The output of the tool is a protein fasta file written to the path specified by 
         --output_proteindb var_peptides.fa
     ```
 
+### ClinVar Variants to Protein Sequences
+
+[ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) is NCBI's public archive of reports on the relationships among human variations and phenotypes. The command `clinvar-to-proteindb` generates a variant protein database from ClinVar VCF files using NCBI RefSeq gene models. Unlike `vcf-to-proteindb`, this command does **not** require VEP annotations.
+
+#### Command Options
+
+```bash
+$ pgatk clinvar-to-proteindb -h
+Usage: pgatk clinvar-to-proteindb [OPTIONS]
+
+  Required parameters:
+    -v, --vcf TEXT              ClinVar VCF file path
+    -g, --gtf TEXT              NCBI RefSeq GTF file path
+    -f, --fasta TEXT            RefSeq transcript nucleotide FASTA file path
+    -a, --assembly-report TEXT  NCBI assembly report file path
+    -o, --output TEXT           Output protein FASTA file path
+
+  Optional parameters:
+    -c, --config_file TEXT      Configuration YAML file
+    -h, --help                  Show this message and exit.
+```
+
+The input files can be downloaded using the [ncbi-downloader](#downloading-ncbi--clinvar-data) command.
+
+#### Examples
+
+- Generate a protein database from ClinVar variants:
+
+    ```bash
+    pgatk clinvar-to-proteindb \
+        --vcf ncbi_data/clinvar.vcf.gz \
+        --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
+        --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
+        --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+        --output clinvar_proteins.fa
+    ```
+
 ### Transcripts (DNA) to Protein Sequences
 
 DNA sequences given in a FASTA format can be translated using the `dnaseq-to-proteindb` tool. This tool allows for translation of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
@@ -488,4 +567,88 @@ Usage: pgatk generate-decoy [OPTIONS]
 
     ```bash
     pgatk generate-decoy -c config/protein_decoy.yaml --input proteindb.fa --output decoy_proteindb.fa
+    ```
+
+## Post-Processing Utilities
+
+### Digest and Filter Variant Peptides
+
+The `digest-mutant-protein` command performs *in silico* tryptic digestion of mutant proteins and filters out any peptides that also appear in a canonical reference proteome. The result is a compact FASTA of variant-specific peptides only.
+
+#### Command Options
+
+```bash
+$ pgatk digest-mutant-protein -h
+Usage: pgatk digest-mutant-protein [OPTIONS]
+
+  Required parameters:
+    -i, --input TEXT        Input mutant protein FASTA file(s), comma-separated
+    -f, --fasta TEXT        Reference canonical protein FASTA
+    -o, --output TEXT       Output file for unique variant peptides
+
+  Optional parameters:
+    --prefix TEXT           Header prefix for output entries (default: Mutation)
+    --min-len INTEGER       Minimum peptide length (default: 7)
+    --max-len INTEGER       Maximum peptide length (default: 40)
+    --missed-cleavages INTEGER  Number of missed cleavages (default: 0)
+    -h, --help              Show this message and exit.
+```
+
+#### Examples
+
+- Digest variant proteins and keep only variant-specific peptides:
+
+    ```bash
+    pgatk digest-mutant-protein \
+        --input variant_proteins.fa \
+        --fasta canonical_proteins.fa \
+        --output unique_variant_peptides.fa \
+        --min-len 7 \
+        --max-len 40 \
+        --missed-cleavages 2
+    ```
+
+- Combine and filter multiple variant sources:
+
+    ```bash
+    pgatk digest-mutant-protein \
+        --input cosmic_proteins.fa,clinvar_proteins.fa,ensembl_variants.fa \
+        --fasta canonical_proteins.fa \
+        --output combined_variant_peptides.fa
+    ```
+
+### Map Peptides to Genomic Coordinates
+
+The `map-peptide2genome` command maps proteomics-identified peptides to genomic coordinates and produces a GFF3 file suitable for visualization in genome browsers (UCSC, IGV, Ensembl).
+
+#### Command Options
+
+```bash
+$ pgatk map-peptide2genome -h
+Usage: pgatk map-peptide2genome [OPTIONS]
+
+  Required parameters:
+    -i, --input TEXT        Input peptide identification TSV
+    -g, --gtf TEXT          GTF gene annotation file
+    -f, --fasta TEXT        Protein FASTA file
+    -m, --idmap TEXT        Protein-to-transcript ID mapping file
+    -o, --output TEXT       Output GFF3 file
+
+  Optional parameters:
+    --pep-col INTEGER       Peptide column index, 0-based (default: 0)
+    --prot-col INTEGER      Protein column index, 0-based (default: 1)
+    -h, --help              Show this message and exit.
+```
+
+#### Examples
+
+- Map identified peptides to genomic coordinates:
+
+    ```bash
+    pgatk map-peptide2genome \
+        --input peptide_identifications.tsv \
+        --gtf genes.gtf \
+        --fasta proteins.fa \
+        --idmap protein_to_transcript.tsv \
+        --output peptides.gff3
     ```

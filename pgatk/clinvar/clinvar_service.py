@@ -7,6 +7,7 @@ a FASTA file of variant protein sequences.  Uses BedTools interval overlap
 from __future__ import annotations
 
 import logging
+import re
 import sqlite3
 import tempfile
 from pathlib import Path
@@ -109,11 +110,24 @@ class ClinVarService:
     def passes_clnsig_filter(clnsig: str, exclude_list: list[str]) -> bool:
         """Return True when *clnsig* should **not** be filtered out.
 
-        An empty or missing CLNSIG always passes.
+        An empty or missing CLNSIG always passes.  Compound values like
+        ``Benign/Likely_benign`` or ``Benign,_risk_factor`` are split on
+        ``/`` and ``,`` so that each component is checked individually.
         """
         if not clnsig:
             return True
-        return clnsig not in exclude_list
+        # Exact match first (covers simple values and compound entries
+        # that are explicitly listed, e.g. "Benign/Likely_benign").
+        if clnsig in exclude_list:
+            return False
+        # Split compound values and check each component.
+        parts = re.split(r"[/,]", clnsig)
+        non_empty = [p.strip() for p in parts if p.strip()]
+        if not non_empty:
+            return True  # delimiter-only or whitespace-only → treat as empty
+        return not all(p.replace("_", " ").lower() in
+                       [e.replace("_", " ").lower() for e in exclude_list]
+                       for p in non_empty)
 
     @staticmethod
     def passes_mc_filter(mc_field: str, include_list: list[str]) -> bool:
@@ -434,7 +448,8 @@ class ClinVarService:
 
                 # Translation table (mito vs standard)
                 trans_table = self._translation_table
-                if chrom.upper() in ("M", "MT"):
+                chrom_bare = chrom.lstrip("chr").upper()
+                if chrom_bare in ("M", "MT"):
                     trans_table = self._mito_translation_table
 
                 for alt in alts:
@@ -481,9 +496,9 @@ class ClinVarService:
                         if "CDS=" in desc:
                             try:
                                 cds_str = [
-                                    p
+                                    p.strip("[]")
                                     for p in desc.split()
-                                    if p.startswith("CDS=")
+                                    if p.strip("[]").startswith("CDS=")
                                 ][0]
                                 cds_info = [
                                     int(x)

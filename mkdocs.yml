@@ -95,6 +95,7 @@ nav:
   - Introduction: introduction.md
   - Installation: installation.md
   - pgatk CLI: pgatk-cli.md
+  - Use Cases: use-cases.md
   - File Formats: formats.md
   - Changelog: changelog.md
   - Support: support.md

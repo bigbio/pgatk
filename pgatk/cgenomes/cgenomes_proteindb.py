@@ -1,14 +1,55 @@
 from __future__ import annotations
 
+import gzip
 import logging
 import re
 from pathlib import Path
 from typing import Any, Optional
 
 from Bio import SeqIO
+from Bio.Data.IUPACData import protein_letters_3to1
+from Bio.Seq import Seq
 
 from pgatk.cgenomes.models import SNP
 from pgatk.toolbox.general import ParameterConfiguration
+
+
+def _open_text(path: str, mode: str = 'r', encoding: str = 'utf-8', **kwargs):
+    """Open a file for text I/O, decompressing automatically if path ends with .gz."""
+    enc = encoding or "utf-8"
+    if path.endswith('.gz'):
+        text_mode = mode if 't' in mode else mode + 't'
+        return gzip.open(path, text_mode, encoding=enc, **kwargs)
+    if enc == "utf-8":
+        return open(path, mode, encoding="utf-8", **kwargs)
+    if enc == "latin-1":
+        return open(path, mode, encoding="latin-1", **kwargs)
+    # Only utf-8 and latin-1 are used; fallback to utf-8 for any other value
+    return open(path, mode, encoding="utf-8", **kwargs)
+
+
+def _three_to_one(aa_str: str) -> str:
+    """Convert a string of 3-letter amino acid codes to 1-letter codes.
+
+    If the string is already in 1-letter codes (all single uppercase letters),
+    it is returned unchanged.  For 3-letter codes (e.g. ``AlaGlyVal``), each
+    triplet is converted using Biopython's mapping.
+    """
+    # Quick check: if all characters are uppercase single letters and the
+    # string length is not a multiple of 3, or it contains lowercase, try
+    # 3-letter conversion.
+    if len(aa_str) >= 3 and any(c.islower() for c in aa_str):
+        result = []
+        for i in range(0, len(aa_str), 3):
+            triplet = aa_str[i:i + 3]
+            # Title-case the triplet for lookup (e.g. "ala" -> "Ala")
+            triplet_title = triplet.capitalize()
+            if triplet_title in protein_letters_3to1:
+                result.append(protein_letters_3to1[triplet_title])
+            else:
+                return aa_str  # not a valid 3-letter sequence, return as-is
+        return "".join(result)
+    return aa_str
 
 
 class CancerGenomesService(ParameterConfiguration):
@@ -88,10 +129,11 @@ class CancerGenomesService(ParameterConfiguration):
         return list(map(lambda x: x.strip(), options_str.split(",")))
 
     @staticmethod
-    def get_mut_pro_seq(snp: SNP, seq: str) -> Optional[str]:
+    def get_mut_pro_seq(snp: SNP, seq: Seq) -> Optional[str]:
         nucleotide = ["A", "T", "C", "G"]
         mut_pro_seq = ""
-        if "?" not in snp.dna_mut and snp.aa_mut != 'p.?':  # unambiguous DNA change known in CDS sequence
+        if (snp.dna_mut is not None and "?" not in snp.dna_mut and
+                snp.aa_mut is not None and snp.aa_mut != 'p.?'):  # unambiguous DNA change known in CDS sequence
             positions = re.findall(r'\d+', snp.dna_mut)
             if ">" in snp.dna_mut and len(positions) == 1:  # Substitution
                 tmplist = snp.dna_mut.split(">")
@@ -100,33 +142,51 @@ class CancerGenomesService(ParameterConfiguration):
                 index = int(positions[0]) - 1
                 if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:  #
                     seq_mut = seq[:index] + mut_dna + seq[index + 1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=False)
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
+            elif "delins" in snp.dna_mut:
+                # Deletion-insertion: delete range then insert new bases
+                insert_dna = snp.dna_mut.split("delins")[1]
+                if insert_dna.isalpha() and len(positions) >= 2:
+                    del_index1 = int(positions[0]) - 1
+                    del_index2 = int(positions[1])
+                    seq_mut = seq[:del_index1] + insert_dna + seq[del_index2:]
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
+                elif insert_dna.isalpha() and len(positions) == 1:
+                    # Single-position delins: replace one base
+                    del_index1 = int(positions[0]) - 1
+                    seq_mut = seq[:del_index1] + insert_dna + seq[del_index1 + 1:]
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
+
             elif "ins" in snp.dna_mut:
                 index = snp.dna_mut.index("ins")
                 insert_dna = snp.dna_mut[index + 3:]
                 if insert_dna.isalpha():
                     ins_index1 = int(positions[0])
                     seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=False)
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
 
             elif "del" in snp.dna_mut:
                 if len(positions) == 2:
                     del_index1 = int(positions[0]) - 1
                     del_index2 = int(positions[1])
                     seq_mut = seq[:del_index1] + seq[del_index2:]
-                    mut_pro_seq = seq_mut.translate(to_stop=False)
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
                 elif len(positions) == 1:
                     del_index1 = int(positions[0]) - 1
                     seq_mut = seq[:del_index1] + seq[del_index1 + 1:]
-                    mut_pro_seq = seq_mut.translate(to_stop=False)
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
         else:
-            if "?" not in snp.aa_mut:  # unambiguous aa change known in protein sequence
+            if snp.aa_mut is not None and "?" not in snp.aa_mut:  # unambiguous aa change known in protein sequence
                 positions = re.findall(r'\d+', snp.aa_mut)
                 protein_seq = str(seq.translate(to_stop=False))
 
                 if "Missense" in snp.mutation_type:
-                    mut_aa = snp.aa_mut[-1]
-                    if not mut_aa.isalpha():
+                    # Extract the mutant residue from HGVS like p.V600E (1-letter)
+                    # or p.Val600Glu (3-letter).  For 1-letter the last char is the
+                    # AA; for 3-letter we need to convert the last triplet.
+                    aa_suffix = re.sub(r'^p\..*\d+', '', snp.aa_mut)
+                    mut_aa = _three_to_one(aa_suffix) if aa_suffix else ''
+                    if not mut_aa or len(mut_aa) != 1 or not mut_aa.isalpha():
                         return ''
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
@@ -138,7 +198,8 @@ class CancerGenomesService(ParameterConfiguration):
                         index = snp.aa_mut.index("ins")
                     except ValueError:
                         return ''
-                    insert_aa = snp.aa_mut[index + 3:]
+                    insert_aa_raw = snp.aa_mut[index + 3:]
+                    insert_aa = _three_to_one(insert_aa_raw)
                     if insert_aa.isalpha():
                         ins_index1 = int(positions[0])
                         mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
@@ -155,7 +216,10 @@ class CancerGenomesService(ParameterConfiguration):
                         index = snp.aa_mut.index(">")
                     except ValueError:
                         return ''
-                    mut_aa = snp.aa_mut[index + 1:]
+                    mut_aa_raw = snp.aa_mut[index + 1:]
+                    mut_aa = _three_to_one(mut_aa_raw.replace('*', ''))
+                    if '*' in mut_aa_raw:
+                        mut_aa += '*'
                     if not mut_aa.replace('*','').isalpha():
                         return ''
                     if "deletion" in snp.mutation_type:
@@ -164,8 +228,8 @@ class CancerGenomesService(ParameterConfiguration):
                         mut_pro_seq = protein_seq[:del_index1] + mut_aa + protein_seq[del_index2:]
 
                     elif "insertion" in snp.mutation_type:
-                        ins_index1 = int(positions[0]) - 1
-                        mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1 + 1:]
+                        ins_index1 = int(positions[0])
+                        mut_pro_seq = protein_seq[:ins_index1] + mut_aa + protein_seq[ins_index1:]
                     elif "compound substitution" in snp.mutation_type:
                         if "*" not in mut_aa:
                             del_index1 = int(positions[0]) - 1
@@ -185,11 +249,12 @@ class CancerGenomesService(ParameterConfiguration):
         """
         self.get_logger().debug("Starting reading All cosmic genes")
         COSMIC_CDS_DB = {}
-        for record in SeqIO.parse(self._local_complete_genes, 'fasta'):
-            try:
-                COSMIC_CDS_DB[record.id].append(record)
-            except KeyError:
-                COSMIC_CDS_DB[record.id] = [record]
+        with _open_text(self._local_complete_genes, encoding='utf-8') as genes_handle:
+            for record in SeqIO.parse(genes_handle, 'fasta'):
+                try:
+                    COSMIC_CDS_DB[record.id].append(record)
+                except KeyError:
+                    COSMIC_CDS_DB[record.id] = [record]
 
         regex = re.compile('[^a-zA-Z]')
         mutation_dic = {}
@@ -197,17 +262,38 @@ class CancerGenomesService(ParameterConfiguration):
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
 
-        with open(self._local_mutation_file, encoding="latin-1") as cosmic_input, \
+        required_columns = ["Gene name", "Accession Number", "Mutation CDS", "Mutation AA", "Mutation Description"]
+        with _open_text(self._local_mutation_file, encoding="latin-1") as cosmic_input, \
              open(self._local_output_file, 'w', encoding='utf-8') as output:
-            header = cosmic_input.readline().split("\t")
-            gene_col = header.index("Gene name")
-            enst_col = header.index("Accession Number")
-            cds_col = header.index("Mutation CDS")
-            aa_col = header.index("Mutation AA")
-            muttype_col = header.index("Mutation Description")
+            header = cosmic_input.readline().strip().split("\t")
+            try:
+                gene_col = header.index("Gene name")
+                enst_col = header.index("Accession Number")
+                cds_col = header.index("Mutation CDS")
+                aa_col = header.index("Mutation AA")
+                muttype_col = header.index("Mutation Description")
+            except ValueError as e:
+                self.get_logger().error(
+                    "COSMIC file missing required columns. Expected %s, got: %s",
+                    required_columns, header
+                )
+                raise ValueError(
+                    f"COSMIC mutation file missing required column: {e}. "
+                    f"Expected columns include: {required_columns}"
+                ) from e
             filter_col = None
             if self._filter_column:
-                filter_col = header.index(self._filter_column)
+                try:
+                    filter_col = header.index(self._filter_column)
+                except ValueError:
+                    self.get_logger().warning(
+                        "Filter column '%s' not found in COSMIC header: %s. Filtering disabled.",
+                        self._filter_column, header
+                    )
+
+            max_col = max(gene_col, enst_col, cds_col, aa_col, muttype_col)
+            if filter_col is not None:
+                max_col = max(max_col, filter_col)
 
             for line in cosmic_input:
                 if line_counter % 10000 == 0:
@@ -215,6 +301,9 @@ class CancerGenomesService(ParameterConfiguration):
                     self.get_logger().debug(msg)
                 line_counter += 1
                 row = line.strip().split("\t")
+                if len(row) <= max_col:
+                    self.get_logger().debug("Skipping malformed row (insufficient columns) at line %s: %s", line_counter, row[:5])
+                    continue
                 # filter out mutations from unspecified groups
                 if filter_col is not None:
                     if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
@@ -270,12 +359,12 @@ class CancerGenomesService(ParameterConfiguration):
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
 
     @staticmethod
-    def get_sample_headers(header_line: list, filter_coumn: str) -> tuple[Optional[int], Optional[int]]:
+    def get_sample_headers(header_line: list, filter_column: str) -> tuple[Optional[int], Optional[int]]:
         _logger = logging.getLogger(__name__)
         try:
-            filter_col = header_line.index(filter_coumn)
+            filter_col = header_line.index(filter_column)
         except ValueError:
-            _logger.warning('%s was not found in the header row: %s', filter_coumn, header_line)
+            _logger.warning('%s was not found in the header row: %s', filter_column, header_line)
             return None, None
         try:
             sample_id_col = header_line.index('SAMPLE_ID')
@@ -296,8 +385,11 @@ class CancerGenomesService(ParameterConfiguration):
                     # check for header and re-assign columns
                     if 'SAMPLE_ID' in sl and filter_column in sl:
                         filter_column_col, sample_id_col = self.get_sample_headers(sl, filter_column)
+                        # Skip adding the header row itself to sample_value
+                        continue
                     if filter_column_col is not None and sample_id_col is not None:
-                        sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
+                        if (sample_id_col < len(sl) and filter_column_col < len(sl)):
+                            sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
                     else:
                         self.get_logger().warning("No column was found for %s, %s in %s", filter_column, 'SAMPLE_ID',
                                                   local_clinical_sample_file)
@@ -320,11 +412,11 @@ class CancerGenomesService(ParameterConfiguration):
         group_mutations_dict = {}
         seq_dic = {}
 
-        fafile = SeqIO.parse(self._local_complete_genes, "fasta")
-        for record in fafile:
-            newacc = record.id.split(".")[0]
-            if newacc not in seq_dic:
-                seq_dic[newacc] = record.seq
+        with _open_text(self._local_complete_genes, encoding='utf-8') as genes_handle:
+            for record in SeqIO.parse(genes_handle, "fasta"):
+                newacc = record.id.split(".")[0]
+                if newacc not in seq_dic:
+                    seq_dic[newacc] = record.seq
 
         header_cols = {"HGVSc": None, "Transcript_ID": None, "Variant_Classification": None,
                        "Variant_Type": None, "HGVSp_Short": None, 'Tumor_Sample_Barcode': None}
@@ -343,7 +435,8 @@ class CancerGenomesService(ParameterConfiguration):
                 self.get_logger().warning('No clinical sample file is given therefore no filter could be applied.')
                 return
 
-        with open(self._local_mutation_file, "r", encoding='utf-8') as mutfile, open(self._local_output_file, "w", encoding='utf-8') as output:
+        with _open_text(self._local_mutation_file, encoding='utf-8') as mutfile, \
+             open(self._local_output_file, "w", encoding='utf-8') as output:
             for i, line in enumerate(mutfile):
                 row = line.strip().split("\t")
                 if row[0] == '#':
@@ -405,6 +498,9 @@ class CancerGenomesService(ParameterConfiguration):
                         enst_pos = int(re.findall(r'\d+', cdna_pos)[0])
                     except IndexError:
                         self.get_logger().warning("Incorrect SNP format or record %s %s %s", i, pos, line)
+                        continue
+                    if ">" not in pos:
+                        self.get_logger().warning("SNP position string missing '>' (line %s): %s", i, pos)
                         continue
                     idx = pos.index(">")
                     ref_dna = pos[idx - 1]
