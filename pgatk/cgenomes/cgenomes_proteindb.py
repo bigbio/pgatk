@@ -20,7 +20,12 @@ def _open_text(path: str, mode: str = 'r', encoding: str = 'utf-8', **kwargs):
     if path.endswith('.gz'):
         text_mode = mode if 't' in mode else mode + 't'
         return gzip.open(path, text_mode, encoding=enc, **kwargs)
-    return open(path, mode, encoding=enc, **kwargs)
+    if enc == "utf-8":
+        return open(path, mode, encoding="utf-8", **kwargs)
+    if enc == "latin-1":
+        return open(path, mode, encoding="latin-1", **kwargs)
+    # Only utf-8 and latin-1 are used; fallback to utf-8 for any other value
+    return open(path, mode, encoding="utf-8", **kwargs)
 
 
 def _three_to_one(aa_str: str) -> str:
