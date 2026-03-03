@@ -328,7 +328,9 @@ class EnsemblDataService(ParameterConfiguration):
 
         BedTool(gtf_file).intersect(BedTool(vcf_file), wo=True).saveas(f"{vcf_stem}_all.bed")
 
-        muts_dict = {}
+        muts_dict: dict[str, list[str]] = {}
+        # VCF columns start after the GTF columns (gene_info_index + 1)
+        vcf_start_col = gene_info_index + 1
         with open(f"{vcf_stem}_all.bed", 'r', encoding='utf-8') as an:
             for line in an.readlines():
                 sl = line.strip().split('\t')
@@ -345,11 +347,17 @@ class EnsemblDataService(ParameterConfiguration):
                 if transcript_id == 'NO_OVERLAP':
                     continue
 
-                # write the mutation line as a key and set the overlapping transcriptID as its value(s)
+                # Use canonical positional key (CHROM:POS:REF:ALT) for reliable
+                # matching between BED output and raw VCF lines.
                 try:
-                    muts_dict['\t'.join(sl[gene_info_index + 1:-1])].append(transcript_id)
-                except KeyError:
-                    muts_dict['\t'.join(sl[gene_info_index + 1:-1])] = [transcript_id]
+                    vcf_chrom = sl[vcf_start_col]
+                    vcf_pos = sl[vcf_start_col + 1]
+                    vcf_ref = sl[vcf_start_col + 3]
+                    vcf_alt = sl[vcf_start_col + 4]
+                    key = f"{vcf_chrom}\t{vcf_pos}\t{vcf_ref}\t{vcf_alt}"
+                except IndexError:
+                    continue
+                muts_dict.setdefault(key, []).append(transcript_id)
 
         with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
             # write vcf headers to the output file
@@ -358,13 +366,17 @@ class EnsemblDataService(ParameterConfiguration):
                     ann.write(line)
                 else:
                     # write the mutations and their overlapping transcript to output file
-                    try:
-                        sl = line.strip().split('\t')
+                    sl = line.strip().split('\t')
+                    if len(sl) < 8:
+                        ann.write(line)
+                        continue
+                    key = f"{sl[0]}\t{sl[1]}\t{sl[3]}\t{sl[4]}"
+                    if key in muts_dict:
                         sl[vcf_info_field_index] = '{};{}={}'.format(
                             sl[vcf_info_field_index].strip(), annotation_str,
-                            ','.join(set(muts_dict[line.strip()])))
+                            ','.join(set(muts_dict[key])))
                         ann.write('\t'.join(sl) + '\n')
-                    except KeyError:
+                    else:
                         ann.write(line)
 
         return f"{vcf_stem}_annotated.vcf"
@@ -503,7 +515,7 @@ class EnsemblDataService(ParameterConfiguration):
                 if self._af_field:
                     # get AF from the INFO field
                     try:
-                        af = float([x.split('=')[1] for x in record.INFO.split(';') if x.startswith(self._af_field)][0])
+                        af = float([x.split('=', 1)[1] for x in record.INFO.split(';') if x.split('=', 1)[0] == self._af_field][0])
                     except (ValueError, IndexError):
                         invalid_records['# variants with invalid record'] += 1
                         continue
@@ -521,8 +533,8 @@ class EnsemblDataService(ParameterConfiguration):
                 transcript_records = []
                 try:
                     transcript_records = \
-                        [x.split('=')[1] for x in record.INFO.split(';') if x.startswith(self._annotation_field_name)][
-                            0]
+                        [x.split('=', 1)[1] for x in record.INFO.split(';')
+                         if x.split('=', 1)[0] == self._annotation_field_name][0]
                 except IndexError:  # no overlapping feature was found
                     invalid_records['# variants with invalid record'] += 1
                     msg = "skipped record {}, no annotation feature was found".format(record)
@@ -586,11 +598,17 @@ class EnsemblDataService(ParameterConfiguration):
                     num_orfs = 3
                     if 'CDS=' in desc:
                         try:
-                            cds_info = [int(x) for x in desc.split(' ')[1].split('=')[1].split('-')]
-                            feature_types = ['CDS', 'stop_codon']
-                            num_orfs = 1
+                            cds_token = next(
+                                (t.strip('[]') for t in desc.split(' ')
+                                 if t.strip('[]').startswith('CDS=')),
+                                None,
+                            )
+                            if cds_token:
+                                cds_info = [int(x) for x in cds_token.split('=')[1].split('-')]
+                                feature_types = ['CDS', 'stop_codon']
+                                num_orfs = 1
                         except (ValueError, IndexError):
-                            msg = "Could not extra cds position from fasta header for: {}".format(desc)
+                            msg = "Could not extract cds position from fasta header for: {}".format(desc)
                             self.get_logger().debug(msg)
 
                     chrom, strand, features_info = self.get_features(db,
