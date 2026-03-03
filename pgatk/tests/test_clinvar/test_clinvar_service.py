@@ -60,6 +60,33 @@ class TestClinSigFiltering:
 # ---------------------------------------------------------------------------
 
 
+class TestMCFiltering:
+    """Tests for MC consequence filtering."""
+
+    def test_passes_mc_filter_matching_consequence(self):
+        include = ["missense_variant", "stop_gained"]
+        mc = "SO:0001583|missense_variant"
+        assert ClinVarService.passes_mc_filter(mc, include) is True
+
+    def test_passes_mc_filter_no_match(self):
+        include = ["missense_variant", "stop_gained"]
+        mc = "SO:0001819|synonymous_variant"
+        assert ClinVarService.passes_mc_filter(mc, include) is False
+
+    def test_passes_mc_filter_multi_consequence_any_match(self):
+        include = ["missense_variant", "stop_gained"]
+        mc = "SO:0001819|synonymous_variant,SO:0001587|stop_gained"
+        assert ClinVarService.passes_mc_filter(mc, include) is True
+
+    def test_passes_mc_filter_empty_mc_passes(self):
+        include = ["missense_variant"]
+        assert ClinVarService.passes_mc_filter("", include) is True
+
+    def test_passes_mc_filter_all_keyword(self):
+        mc = "SO:0001819|synonymous_variant"
+        assert ClinVarService.passes_mc_filter(mc, ["all"]) is True
+
+
 class TestMolecularConsequenceParser:
     """Tests for MC field parsers."""
 
@@ -219,3 +246,18 @@ class TestClinVarPipeline:
             content = f.read()
         # rs00003 is the Likely_pathogenic variant — should appear
         assert "rs00003" in content
+
+    def test_synonymous_variant_excluded(self, tmp_path):
+        """Pathogenic synonymous variant (rs00004) should not appear in output."""
+        output_file = str(tmp_path / "output.fa")
+        service = ClinVarService(
+            vcf_file=MINI_VCF,
+            gtf_file=MINI_GTF,
+            fasta_file=MINI_FASTA,
+            assembly_report=ASSEMBLY_REPORT,
+            output_file=output_file,
+        )
+        service.run()
+        with open(output_file, "r") as f:
+            content = f.read()
+        assert "rs00004" not in content

@@ -78,6 +78,9 @@ class ClinVarService:
             "clinical_significance_exclude",
             ["Benign", "Likely_benign", "Benign/Likely_benign"],
         )
+        self._include_consequences = self._cfg.get(
+            "include_consequences", ["all"]
+        )
 
     # ------------------------------------------------------------------
     # Static helper methods — ClinVar INFO field parsers
@@ -106,6 +109,20 @@ class ClinVarService:
         if not clnsig:
             return True
         return clnsig not in exclude_list
+
+    @staticmethod
+    def passes_mc_filter(mc_field: str, include_list: list[str]) -> bool:
+        """Return True when *mc_field* contains at least one consequence in *include_list*.
+
+        An empty MC field always passes (no information to filter on).
+        The special value ``'all'`` in include_list disables filtering.
+        """
+        if not mc_field:
+            return True
+        if "all" in include_list:
+            return True
+        consequences = ClinVarService.parse_mc_consequences(mc_field)
+        return any(c in include_list for c in consequences)
 
     @staticmethod
     def parse_mc_consequence(mc_field: str) -> str:
@@ -373,6 +390,7 @@ class ClinVarService:
         stats = {
             "variants_processed": 0,
             "variants_filtered_clnsig": 0,
+            "variants_filtered_mc": 0,
             "variants_no_overlap": 0,
             "variants_translated": 0,
         }
@@ -398,6 +416,12 @@ class ClinVarService:
                 clnsig = self._get_info_field(info, "CLNSIG")
                 if not self.passes_clnsig_filter(clnsig, self._clnsig_exclude):
                     stats["variants_filtered_clnsig"] += 1
+                    continue
+
+                # --- MC consequence filter ---
+                mc_field = self._get_info_field(info, "MC")
+                if not self.passes_mc_filter(mc_field, self._include_consequences):
+                    stats["variants_filtered_mc"] += 1
                     continue
 
                 # --- Parse gene symbol and CLNSIG for description ---

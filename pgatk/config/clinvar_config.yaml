@@ -15,7 +15,10 @@ clinvar_translation:
   # NCBI RefSeq biotypes to include
   include_biotypes: "protein_coding"
 
-  # Molecular consequences to include (from ClinVar MC field)
+  # Molecular consequences to include (from ClinVar MC field).
+  # Only consequences that produce modelable protein changes are included.
+  # Splice variants are excluded because the pipeline cannot predict
+  # exon-skipping outcomes — use VEP for those.
   include_consequences:
     - "missense_variant"
     - "nonsense"
@@ -25,8 +28,6 @@ clinvar_translation:
     - "stop_gained"
     - "stop_lost"
     - "start_lost"
-    - "splice_donor_variant"
-    - "splice_acceptor_variant"
 
   # NCBI FTP URLs
   ncbi_refseq_ftp: "https://ftp.ncbi.nlm.nih.gov/refseq/H_sapiens/annotation/GRCh38_latest/refseq_identifiers/"

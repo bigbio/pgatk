@@ -7,3 +7,4 @@
 1	1006	rs00001	C	T	.	.	GENEINFO=GeneA:1234;CLNSIG=Pathogenic;MC=SO:0001583|missense_variant
 1	1054	rs00002	G	A	.	.	GENEINFO=GeneA:1234;CLNSIG=Benign;MC=SO:0001583|missense_variant
 2	2012	rs00003	C	T	.	.	GENEINFO=GeneB:5678;CLNSIG=Likely_pathogenic;MC=SO:0001587|stop_gained
+1	1054	rs00004	G	A	.	.	GENEINFO=GeneA:1234;CLNSIG=Pathogenic;MC=SO:0001819|synonymous_variant
