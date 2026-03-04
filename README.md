@@ -6,7 +6,7 @@
 [![PyPI version](https://badge.fury.io/py/pgatk.svg)](https://badge.fury.io/py/pgatk)
 ![PyPI - Downloads](https://img.shields.io/pypi/dm/pgatk)
 
-**pgatk** is a Python toolkit for building proteogenomics protein sequence databases. It downloads, translates, and combines variant and non-canonical sequences from multiple genomic sources into search-ready FASTA databases compatible with all major proteomics search engines.
+**pgatk** (aka pypgatk) is a Python toolkit for building proteogenomics protein sequence databases. It downloads, translates, and combines variant and non-canonical sequences from multiple genomic sources into search-ready FASTA databases compatible with all major proteomics search engines.
 
 ## Key Features
 
