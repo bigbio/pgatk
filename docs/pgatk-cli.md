@@ -318,7 +318,7 @@ Usage: pgatk vcf-to-proteindb [OPTIONS]
   Options:
     --translation_table INTEGER        Translation table (Default 1)
     --mito_translation_table INTEGER   Mito_trans_table (default 2)
-    --var_prefix TEXT                   String to add as prefix for the variant peptides
+    --protein_prefix TEXT               String to add as prefix for the variant peptides
     --report_ref_seq                   Also report the reference peptide from overlapping transcripts
     --annotation_field_name TEXT       Annotation field name in INFO column (default: CSQ)
     --af_field TEXT                    Field name for variant allele frequency (default: none)
@@ -467,7 +467,7 @@ Usage: pgatk dnaseq-to-proteindb [OPTIONS]
     --biotype_str TEXT                 String used to identify gene/transcript biotype (default: transcript_biotype)
     --expression_str TEXT              String for extracting expression value (default: None)
     --expression_thresh FLOAT          Threshold for expression value filtering (default: 5)
-    --var_prefix TEXT                  Prefix to be added to fasta headers (default: none)
+    --protein_prefix TEXT              Prefix to be added to fasta headers (default: none)
     -h, --help                         Show this message and exit.
 ```
 
@@ -489,7 +489,7 @@ Usage: pgatk dnaseq-to-proteindb [OPTIONS]
         --config_file config/ensembl_config.yaml \
         --input_fasta transcript_sequences.fa \
         --output_proteindb proteindb_from_lincRNA_canonical_sequences.fa \
-        --var_prefix lincRNA_ \
+        --protein_prefix lincRNA_ \
         --include_biotypes lincRNA
     ```
 
@@ -500,7 +500,7 @@ Usage: pgatk dnaseq-to-proteindb [OPTIONS]
         --config_file config/ensembl_config.yaml \
         --input_fasta transcript_sequences.fa \
         --output_proteindb proteindb_from_processed_pseudogene.fa \
-        --var_prefix pseudogene_ \
+        --protein_prefix pseudogene_ \
         --include_biotypes processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene \
         --skip_including_all_cds
     ```
@@ -512,7 +512,7 @@ Usage: pgatk dnaseq-to-proteindb [OPTIONS]
         --config_file config/ensembl_config.yaml \
         --input_fasta transcript_sequences.fa \
         --output_proteindb proteindb_from_altORFs.fa \
-        --var_prefix altorf_ \
+        --protein_prefix altorf_ \
         --include_biotypes altORFs \
         --skip_including_all_cds
     ```

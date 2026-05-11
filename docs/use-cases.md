@@ -57,7 +57,7 @@ detectable peptides. Translate them in three reading frames:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb pseudogene.fa \
-    --var_prefix pseudo_ \
+    --protein_prefix pseudo_ \
     --include_biotypes processed_pseudogene,unprocessed_pseudogene,transcribed_processed_pseudogene,transcribed_unprocessed_pseudogene,translated_processed_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -72,7 +72,7 @@ micropeptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb lncrna.fa \
-    --var_prefix lncrna_ \
+    --protein_prefix lncrna_ \
     --include_biotypes lincRNA,antisense,sense_intronic,sense_overlapping \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -87,7 +87,7 @@ peptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb altorf.fa \
-    --var_prefix altorf_ \
+    --protein_prefix altorf_ \
     --include_biotypes altORFs \
     --skip_including_all_cds
 ```
@@ -546,7 +546,7 @@ them in three reading frames:
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb lincRNA_proteins.fa \
-    --var_prefix lincRNA_ \
+    --protein_prefix lincRNA_ \
     --include_biotypes lincRNA \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -560,7 +560,7 @@ Some pseudogenes are transcribed and may produce functional peptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb pseudogene_proteins.fa \
-    --var_prefix pseudogene_ \
+    --protein_prefix pseudogene_ \
     --include_biotypes processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -575,7 +575,7 @@ discover upstream ORFs (uORFs), overlapping ORFs, and downstream ORFs:
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb altorf_proteins.fa \
-    --var_prefix altorf_ \
+    --protein_prefix altorf_ \
     --include_biotypes altORFs \
     --skip_including_all_cds
 ```
@@ -586,7 +586,7 @@ pgatk dnaseq-to-proteindb \
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb antisense_proteins.fa \
-    --var_prefix antisense_ \
+    --protein_prefix antisense_ \
     --include_biotypes antisense,antisense_RNA \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -979,7 +979,7 @@ pgatk cosmic-to-proteindb \
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_data/transcripts.fa \
     --output_proteindb lincRNA.fa \
-    --var_prefix lincRNA_ \
+    --protein_prefix lincRNA_ \
     --include_biotypes lincRNA \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -988,7 +988,7 @@ pgatk dnaseq-to-proteindb \
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_data/transcripts.fa \
     --output_proteindb pseudogene.fa \
-    --var_prefix pseudogene_ \
+    --protein_prefix pseudogene_ \
     --include_biotypes processed_pseudogene,transcribed_processed_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
