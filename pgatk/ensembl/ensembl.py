@@ -20,6 +20,7 @@ from pgatk.toolbox.vcf_utils import (
 
 
 class _FeatureCache:
+
     """Per-run memoization of get_features() results, keyed by transcript id.
 
     Bounded by a soft maxsize to avoid unbounded growth on whole-genome runs.

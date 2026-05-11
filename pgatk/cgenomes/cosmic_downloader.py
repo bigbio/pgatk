@@ -177,7 +177,37 @@ class CosmicDownloadService(ParameterConfiguration):
         if local_file.endswith('.tar'):
             extract_dir = os.path.dirname(local_file) or '.'
             print("Extracting {}...".format(os.path.basename(local_file)), flush=True)
-            with tarfile.open(local_file, 'r') as tar:
-                tar.extractall(path=extract_dir)
+            self._safe_extract_tar(local_file, extract_dir)
             os.remove(local_file)
             self.get_logger().debug("Extracted archive into '{}'".format(extract_dir))
+
+    @staticmethod
+    def _safe_extract_tar(tar_path, dest_dir):
+        """Extract tar_path into dest_dir, rejecting any member that would
+        escape dest_dir via absolute path or .. traversal (CVE-2007-4559).
+        COSMIC archives are trusted in practice, but defence in depth costs
+        nothing and silences static-analysis warnings.
+        """
+        dest_abs = os.path.realpath(dest_dir)
+        with tarfile.open(tar_path, 'r') as tar:
+            for member in tar.getmembers():
+                member_path = os.path.realpath(os.path.join(dest_abs, member.name))
+                if os.path.commonpath([dest_abs, member_path]) != dest_abs:
+                    raise AppConfigException(
+                        "Refusing to extract tar member {!r}: would escape target dir {!r}"
+                        .format(member.name, dest_abs)
+                    )
+                if member.issym() or member.islnk():
+                    link_target = member.linkname
+                    if os.path.isabs(link_target):
+                        raise AppConfigException(
+                            "Refusing to extract tar member {!r}: absolute symlink/hardlink target {!r}"
+                            .format(member.name, link_target)
+                        )
+                    resolved = os.path.realpath(os.path.join(dest_abs, os.path.dirname(member.name), link_target))
+                    if os.path.commonpath([dest_abs, resolved]) != dest_abs:
+                        raise AppConfigException(
+                            "Refusing to extract tar member {!r}: symlink/hardlink would escape target dir"
+                            .format(member.name)
+                        )
+            tar.extractall(path=dest_abs)
