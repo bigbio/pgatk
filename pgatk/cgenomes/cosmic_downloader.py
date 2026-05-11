@@ -61,16 +61,19 @@ class CosmicDownloadService(ParameterConfiguration):
         self.prepare_local_cosmic_repository()
 
     def get_configuration_default_params(self, variable: str, default_value):
-        return_value = default_value
         if variable in self.get_pipeline_parameters():
-            return_value = self.get_pipeline_parameters()[variable]
-        elif self.CONFIG_KEY_DATA_DOWNLOADER in self.get_default_parameters() \
-                and self.CONFIG_COSMIC_SERVER in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER] \
-                and variable in self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][
-            self.CONFIG_COSMIC_SERVER]:
-            return_value = self.get_default_parameters()[self.CONFIG_KEY_DATA_DOWNLOADER][self.CONFIG_COSMIC_SERVER][
-                variable]
-        return return_value
+            return self.get_pipeline_parameters()[variable]
+        defaults = self.get_default_parameters()
+        if self.CONFIG_KEY_DATA_DOWNLOADER not in defaults:
+            return default_value
+        data = defaults[self.CONFIG_KEY_DATA_DOWNLOADER]
+        # `output_directory` lives at cosmic_data.<var>; everything else under cosmic_data.cosmic_server.<var>.
+        if variable in data and not isinstance(data[variable], dict):
+            return data[variable]
+        server = data.get(self.CONFIG_COSMIC_SERVER, {})
+        if variable in server:
+            return server[variable]
+        return default_value
 
     def prepare_local_cosmic_repository(self):
         self.get_logger().debug("Preparing local cbioportal repository, root folder - '{}'".format(
@@ -148,7 +151,9 @@ class CosmicDownloadService(ParameterConfiguration):
             self.get_logger().error(msg)
             raise AppConfigException(msg)
 
-        self.get_logger().debug("Downloading file from signed URL '{}'".format(download_url))
+        # The presigned URL embeds short-lived AWS credentials in its query string;
+        # log only the path so the secret material doesn't leak into log aggregators.
+        self.get_logger().debug("Downloading file from signed URL (path %s)", download_url.split('?', 1)[0])
         data_response = requests.get(download_url, stream=True, timeout=30)
         if data_response.status_code != 200:
             msg = ("COSMIC S3 download failed: HTTP {} for {}"

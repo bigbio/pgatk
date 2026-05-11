@@ -455,7 +455,10 @@ class EnsemblDataService(ParameterConfiguration):
         # handle cases where the transcript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
         feature_cache = _FeatureCache()
-        seq_cache: dict[str, tuple] = {}
+        # Value is (ref_seq, desc) for a known transcript, or None for a transcript
+        # we've already looked up and confirmed isn't in the FASTA index (avoids re-trying
+        # the disk seek). _MISSING sentinel below distinguishes "not yet looked up".
+        seq_cache: dict[str, Optional[tuple]] = {}
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:

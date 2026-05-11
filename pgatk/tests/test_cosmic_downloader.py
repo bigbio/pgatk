@@ -1,7 +1,11 @@
-"""Unit tests for the COSMIC downloader URL construction.
+"""Unit tests for the COSMIC downloader URL construction and auth token.
 
-No network. Builds a CosmicDownloadService against the shipped default config
-and asserts that the four product API URLs match the expected pattern.
+No network. Two tests:
+  * `test_build_api_url_pattern` — verifies build_api_url() composes the
+    scripted-download endpoint correctly from server, api_endpoint, path
+    and bucket.
+  * `test_basic_auth_token_format` — verifies the base64(user:password)
+    token has no trailing newline (a common pitfall when echo'ing).
 """
 from pgatk.cgenomes.cosmic_downloader import CosmicDownloadService
 from pgatk.config.registry import load_config

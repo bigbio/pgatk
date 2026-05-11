@@ -22,7 +22,11 @@ log = logging.getLogger(__name__)
                    'May be repeated. Overrides the products list in the config file when provided. '
                    'Find available paths at https://cancer.sanger.ac.uk/cosmic/download/cosmic '
                    '(open the "Scripted Download" panel for any product).')
-@click.option("--url_file", help='Add the url to a downloaded file')
+@click.option("--url_file",
+              help='If set, do not download anything. Instead, write a TSV with one row per '
+                   'product (`<api_url>\\t<local_output_path>`) so the downloads can be driven '
+                   'externally (e.g. wget/curl loop). The api_url is the COSMIC scripted-download '
+                   'endpoint URL — fetching it returns JSON containing the actual signed S3 URL.')
 @click.pass_context
 def cosmic_downloader(ctx, config_file, output_directory, username, password, products, url_file):
 
