@@ -190,6 +190,7 @@ class CosmicDownloadService(ParameterConfiguration):
         """
         dest_abs = os.path.realpath(dest_dir)
         with tarfile.open(tar_path, 'r') as tar:
+            safe_members = []
             for member in tar.getmembers():
                 member_path = os.path.realpath(os.path.join(dest_abs, member.name))
                 if os.path.commonpath([dest_abs, member_path]) != dest_abs:
@@ -210,4 +211,6 @@ class CosmicDownloadService(ParameterConfiguration):
                             "Refusing to extract tar member {!r}: symlink/hardlink would escape target dir"
                             .format(member.name)
                         )
-            tar.extractall(path=dest_abs)
+                safe_members.append(member)
+            # nosec B202 - members are validated above; extracting only the validated list
+            tar.extractall(path=dest_abs, members=safe_members)
