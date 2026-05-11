@@ -37,7 +37,6 @@ class _FeatureCache:
 
     def put(self, key: tuple, value: tuple) -> None:
         if len(self._cache) >= self._maxsize:
-            # Soft eviction: drop a fifth at random when full. Cheap and bounded.
             for k in list(self._cache.keys())[: self._maxsize // 5]:
                 del self._cache[k]
         self._cache[key] = value
@@ -460,7 +459,7 @@ class EnsemblDataService(ParameterConfiguration):
         # handle cases where the transcript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
         feature_cache = _FeatureCache()
-        seq_cache: dict[str, tuple] = {}  # transcript_id_v -> (ref_seq, desc); see Task 5
+        seq_cache: dict[str, tuple] = {}  # transcript_id_v -> (ref_seq, desc)
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:
@@ -532,8 +531,7 @@ class EnsemblDataService(ParameterConfiguration):
                         self.get_logger().debug("Invalid VCF record, skipping: %s", record)
                     continue
 
-                # Parse INFO once. Maps each key to its value string, missing keys absent.
-                # Avoids repeated split-and-search list-comprehensions.
+                # Parse INFO once; avoids repeated split-and-search list-comprehensions per variant.
                 info_kv: dict[str, str] = {}
                 for entry in record.INFO.split(';'):
                     k, _, v = entry.partition('=')
@@ -658,16 +656,14 @@ class EnsemblDataService(ParameterConfiguration):
                                 self.get_logger().debug(
                                     "Could not extract cds position from fasta header for: %s", desc)
 
-                    # skip transcripts with unwanted consequences (do this BEFORE
-                    # the expensive get_features() SQL call — both filter inputs
-                    # come from transcript_info, not from get_features)
+                    # Apply consequence/biotype filters before get_features(); both inputs
+                    # come from transcript_info, so we can reject early without SQL.
                     if consequence_index is not None:
                         if (consequence in self._exclude_consequences or
                                 (consequence not in self._include_consequences and
                                  self._include_consequences != ['all'])):
                             continue
 
-                    # skip transcripts with unwanted biotypes
                     if biotype_index is not None:
                         if (biotype in self._exclude_biotypes or
                                 (biotype not in self._include_biotypes and
