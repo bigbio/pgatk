@@ -2,14 +2,31 @@ cosmic_data:
   output_directory: database_cosmic
   cosmic_server:
     cosmic_ftp: https://cancer.sanger.ac.uk
-    mutations_url: cosmic/file_download/GRCh38/cosmic/v94
-    all_cds_genes_file: All_COSMIC_Genes.fasta.gz
-    mutations_file: CosmicMutantExport.tsv.gz
-    mutations_cellline_url: cosmic/file_download/GRCh38/cell_lines/v94
-    mutations_cellline_file: CosmicCLP_MutantExport.tsv.gz
-    all_celllines_genes_file: All_CellLines_Genes.fasta.gz
+    api_endpoint: api/mono/products/v1/downloads/scripted
+    bucket: downloads
     cosmic_user: ''
     cosmic_password: ''
+    # List of COSMIC scripted-download paths to fetch. Each entry is the `path=`
+    # value from the curl command shown on the COSMIC UI's "Scripted Download" panel
+    # for a product (https://cancer.sanger.ac.uk/cosmic/download/cosmic).
+    #
+    # Path format: <assembly>/<area>/<version>/<filename>
+    #   - <assembly> is lowercase (`grch37`, `grch38`)
+    #   - <area> is `cosmic` for the main COSMIC project, `cell_lines` for the
+    #     Cell Lines Project (other projects: `cancer_mutation_census`, `actionability`)
+    #   - <version> is the release (`v103`, etc.)
+    #   - <filename> is the exact .tar archive name shown in the UI
+    #
+    # Add or remove entries to change what gets downloaded. Defaults below cover the
+    # three files the cosmic-to-proteindb pipeline expects (mutations TSV + gene FASTA
+    # for the main COSMIC project, plus cell-line mutations TSV).
+    products:
+      - grch38/cosmic/v103/Cosmic_GenomeScreensMutant_Tsv_v103_GRCh38.tar
+      - grch38/cosmic/v103/Cosmic_CompleteTargetedScreensMutant_Tsv_v103_GRCh38.tar
+      - grch38/cosmic/v103/Cosmic_Genes_Fasta_v103_GRCh38.tar
+      - grch38/cosmic/v103/Cosmic_Transcripts_Tsv_v103_GRCh38.tar
+      - grch38/cell_lines/v103/CellLinesProject_GenomeScreensMutant_Tsv_v103_GRCh38.tar
+      - grch38/cell_lines/v103/CellLinesProject_CompleteCNA_Tsv_v103_GRCh38.tar
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
