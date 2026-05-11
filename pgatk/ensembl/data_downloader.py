@@ -6,7 +6,6 @@ Some use cases for this module:
     2. Given a species ID, collect its GTF data, with the option of decompressing it or not.
 """
 
-# App imports
 from json import loads
 import re
 from pgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
@@ -432,7 +431,6 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                                                 file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                                                 log=self.get_logger(), url_file=url_file)
                 if downloaded_file is not None:
-                    # if chr1 is downloaded then try all others
                     files.append(downloaded_file)
                     for chrN in range(2, 23):  # chr2-22
                         file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)

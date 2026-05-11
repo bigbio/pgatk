@@ -17,7 +17,6 @@ from urllib.parse import urlparse
 import yaml
 import gzip
 
-# Logging defaults
 from requests import HTTPError
 
 from pgatk.toolbox.exceptions import ToolBoxException
@@ -61,7 +60,6 @@ class ParameterConfiguration:
         else:
             self._default_params = {}
 
-        # Prepare Logging subsystem
         if self._default_params is not None and self._ROOT_CONFIG_NAME in self._default_params:
             if self._CONFIG_LOGGER in self._default_params[self._ROOT_CONFIG_NAME]:
                 if self._CONFIG_LOGGER_LEVEL in self._default_params[self._ROOT_CONFIG_NAME][self._CONFIG_LOGGER]:
@@ -96,10 +94,8 @@ class ParameterConfiguration:
         Checks pipeline_parameters first (flat lookup), then
         default_params[_ROOT_CONFIG_NAME][key], then returns default.
         """
-        # Check pipeline params first (flat lookup by key)
         if key in self._pipeline_parameters:
             return self._pipeline_parameters[key]
-        # Then check default config params under root config name
         root = self._ROOT_CONFIG_NAME
         if (self._default_params is not None
                 and root in self._default_params
@@ -117,12 +113,10 @@ class ParameterConfiguration:
         return self._log_handlers
 
     def get_logger(self) -> logging.Logger:
-        # Get own logger
         return self._logger
 
     def get_session_log_files(self) -> list:
         log_files = []
-        # Add the application logs
         log_files.extend(self._log_files)
         return log_files
 
@@ -267,14 +261,12 @@ def check_create_folders_overwrite(folders: List[str]) -> None:
             if not os.path.isdir(folder):
                 invalid_folders.append(folder)
     if invalid_folders:
-        # If there's any invalid folder, we don't make any change, and we report the situation by raising an exception
         raise ToolBoxException("The following folders ARE NOT FOLDERS - '{}'"
                                .format(invalid_folders))
     for folder in folders:
         try:
             shutil.rmtree(folder)
         except FileNotFoundError:
-            # It is find if the folder is not there
             pass
     check_create_folders(folders)
 
@@ -347,7 +339,6 @@ def gunzip_files(files: List[str]) -> list[tuple[str, str]]:
                 (stdout, stderr) = gunzip_subprocess.communicate(timeout=timeout)
                 if gunzip_subprocess.poll() is not None:
                     if gunzip_subprocess.returncode != 0:
-                        # ERROR - Report this
                         err_msg = "ERROR uncompressing file '{}' output from subprocess STDOUT: {}\nSTDERR: {}" \
                             .format(file, stdout.decode('utf8'), stderr.decode('utf8'))
                         files_with_error.append((file, err_msg))

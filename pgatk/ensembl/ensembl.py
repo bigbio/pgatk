@@ -263,10 +263,10 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
             for record_id in seq_dict.keys():
 
-                ref_seq = seq_dict[record_id].seq  # get the seq and desc for the record from the fasta of the gtf
+                ref_seq = seq_dict[record_id].seq
                 desc = str(seq_dict[record_id].description)
 
-                key_values = {}  # extract key=value in the desc into a dict
+                key_values = {}
                 sep = self._transcript_description_sep
                 desc = desc.replace(' ', sep)
                 for value in desc.split(sep):
@@ -290,7 +290,6 @@ class EnsemblDataService(ParameterConfiguration):
                             record_id, desc)
                         self.get_logger().debug(msg)
 
-                # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and (
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
@@ -299,7 +298,6 @@ class EnsemblDataService(ParameterConfiguration):
                                                                           'all']))):
                     continue
 
-                # check wether to filter on expression and if it passes
                 if self._expression_str:
                     try:
                         if float(key_values[self._expression_str]) < self._expression_thresh:
@@ -386,12 +384,10 @@ class EnsemblDataService(ParameterConfiguration):
                 muts_dict.setdefault(key, []).append(transcript_id)
 
         with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
-            # write vcf headers to the output file
             for line in v.readlines():
                 if line.startswith('#'):
                     ann.write(line)
                 else:
-                    # write the mutations and their overlapping transcript to output file
                     sl = line.strip().split('\t')
                     if len(sl) < 8:
                         ann.write(line)
@@ -459,7 +455,7 @@ class EnsemblDataService(ParameterConfiguration):
         # handle cases where the transcript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
         feature_cache = _FeatureCache()
-        seq_cache: dict[str, tuple] = {}  # transcript_id_v -> (ref_seq, desc)
+        seq_cache: dict[str, tuple] = {}
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:
@@ -473,7 +469,6 @@ class EnsemblDataService(ParameterConfiguration):
             except IndexError:
                 pass
 
-            # try to extract index of transcript ID and consequence from the VCF metadata in the header
             try:
                 transcript_index = annotation_cols.index(self._transcript_str.upper())
             except ValueError:
@@ -522,7 +517,6 @@ class EnsemblDataService(ParameterConfiguration):
                     if alt is None:
                         continue
                     elif [x for x in str(alt) if x not in 'ACGT']:
-                        # check if all alt alleles are nucleotides
                         continue
                     alts.append(alt)
                 if not alts:
@@ -538,7 +532,7 @@ class EnsemblDataService(ParameterConfiguration):
                     info_kv[k] = v
 
                 if not self._ignore_filters and self._accepted_filters != ['ALL']:
-                    if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # if not PASS: None and empty means PASS
+                    if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # None and empty means PASS
                         filters = set(record.FILTER.upper().split(','))
                         if ';' in record.FILTER and len(filters) <= 1:
                             filters = set(record.FILTER.upper().split(';'))
@@ -552,7 +546,6 @@ class EnsemblDataService(ParameterConfiguration):
                         invalid_records['# variants with invalid record'] += 1
                         continue
 
-                    # check if the AF passed the threshold
                     if af < self._af_threshold:
                         invalid_records['# variants not passing AF threshold'] += 1
                         continue
@@ -637,7 +630,6 @@ class EnsemblDataService(ParameterConfiguration):
                         ref_seq, desc = cached_row
 
                     feature_types = ['exon']
-                    # check if cds info exists in the fasta header otherwise translate all exons
                     cds_info = []
                     num_orfs = 3
                     if 'CDS=' in desc:
@@ -678,7 +670,7 @@ class EnsemblDataService(ParameterConfiguration):
                         feature_cache.put(cache_key, (chrom, strand, features_info))
                     else:
                         chrom, strand, features_info = cached
-                    if chrom is None:  # the record info was not found
+                    if chrom is None:
                         continue
 
                     for alt in alts:

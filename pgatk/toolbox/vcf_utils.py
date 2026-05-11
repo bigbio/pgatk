@@ -30,7 +30,6 @@ def check_overlap(var_start: int, var_end: int, features_info: Optional[list] = 
         features_info = [[0, 1, 'type']]
     if var_start == -1:
         return True
-    # check if the var overlaps any of the features
     for feature_pos in features_info:
         pep_start = feature_pos[0]
         pep_end = feature_pos[1]

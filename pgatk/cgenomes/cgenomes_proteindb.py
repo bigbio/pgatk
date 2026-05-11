@@ -140,7 +140,7 @@ class CancerGenomesService(ParameterConfiguration):
                 ref_dna = re.sub("[^A-Z]+", "", tmplist[0])
                 mut_dna = re.sub("[^A-Z]+", "", tmplist[1])
                 index = int(positions[0]) - 1
-                if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:  #
+                if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:
                     seq_mut = seq[:index] + mut_dna + seq[index + 1:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
             elif "delins" in snp.dna_mut:
@@ -304,7 +304,6 @@ class CancerGenomesService(ParameterConfiguration):
                 if len(row) <= max_col:
                     self.get_logger().debug("Skipping malformed row (insufficient columns) at line %s: %s", line_counter, row[:5])
                     continue
-                # filter out mutations from unspecified groups
                 if filter_col is not None:
                     if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
                         continue
@@ -382,7 +381,6 @@ class CancerGenomesService(ParameterConfiguration):
                     if line.startswith('#'):
                         continue
                     sl = line.strip().split('\t')
-                    # check for header and re-assign columns
                     if 'SAMPLE_ID' in sl and filter_column in sl:
                         filter_column_col, sample_id_col = self.get_sample_headers(sl, filter_column)
                         # Skip adding the header row itself to sample_value
@@ -442,16 +440,13 @@ class CancerGenomesService(ParameterConfiguration):
                 if row[0] == '#':
                     self.get_logger().info("skipping line (%s): %s", i, row)
                     continue
-                # check for header in the mutations file and get column indices
                 if set(header_cols.keys()).issubset(set(row)):
                     header_cols = self.get_mut_header_cols(header_cols, row)
                     continue
 
-                # check if any is none in header_cols then continue
                 if None in header_cols.values():
                     self.get_logger().error("Incorrect header column is given")
                     continue
-                # get filter value and check it
                 group = None
                 if self._accepted_values != ['all'] or self._split_by_filter_column:
                     try:

@@ -87,7 +87,7 @@ def parse_gtf(infile):
     dic = {}
     with open(infile, "r", encoding='utf-8') as infile_object:
         for line in infile_object:
-            if line[0] != "#":  # skip lines commented out
+            if line[0] != "#":
                 row = line.strip().split("\t")
                 if row[2] == "CDS":
                     attri_list = row[8].split(";")
@@ -153,7 +153,6 @@ def map_peptides_to_genome(
 
     pep_dic = {}
     with open(input_file, 'r', encoding='utf-8') as input_stream:
-        # peptide table with two columns, peptide sequence in first column, protein ID in second column
         input_stream.readline()
         for line in input_stream:
             row = line.strip().split("\t")
@@ -188,7 +187,6 @@ def map_peptides_to_genome(
                 exons, pep_trans_start, pep_trans_end
             )
 
-            # handle exceptions
             if pep_chr_start > pep_chr_end:
                 non_mapped_pep += 1
                 continue

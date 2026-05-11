@@ -372,13 +372,10 @@ class ClinVarService:
         """
         logger.info("Starting ClinVar pipeline")
 
-        # 1. Load chromosome mapper
         chrom_mapper = ChromosomeMapper.from_assembly_report(self._assembly_report)
 
-        # 2. Parse GTF
         db = self._parse_gtf(self._gtf_file)
 
-        # 3. Load transcript FASTA
         transcripts_dict = SeqIO.index(
             self._fasta_file,
             "fasta",
@@ -389,10 +386,8 @@ class ClinVarService:
             k.split(".")[0]: k for k in transcripts_dict.keys()
         }
 
-        # 4. Read VCF once into DataFrame
         _metadata, vcf_df = self._read_vcf(self._vcf_file)
 
-        # 5. Find overlapping transcripts via BedTools (from DataFrame)
         overlap_map = self._build_overlap_map(vcf_df, self._gtf_file, chrom_mapper)
         logger.info("Found %d variants with transcript overlaps", len(overlap_map))
 
@@ -411,7 +406,6 @@ class ClinVarService:
             for _, record in vcf_df.iterrows():
                 stats["variants_processed"] += 1
 
-                # --- Validate alleles ---
                 ref = str(record.REF)
                 if any(c not in "ACGT" for c in ref):
                     continue
@@ -423,26 +417,22 @@ class ClinVarService:
                 if not alts:
                     continue
 
-                # --- CLNSIG filter ---
                 info = str(record.INFO)
                 clnsig = self._get_info_field(info, "CLNSIG")
                 if not self.passes_clnsig_filter(clnsig, self._clnsig_exclude):
                     stats["variants_filtered_clnsig"] += 1
                     continue
 
-                # --- MC consequence filter ---
                 mc_field = self._get_info_field(info, "MC")
                 if not self.passes_mc_filter(mc_field, self._include_consequences):
                     stats["variants_filtered_mc"] += 1
                     continue
 
-                # --- Parse gene symbol and CLNSIG for description ---
                 gene_symbol, _ = self.parse_geneinfo(
                     self._get_info_field(info, "GENEINFO")
                 )
                 desc_str = f"{clnsig}|{gene_symbol}" if gene_symbol else clnsig
 
-                # --- Find overlapping transcripts ---
                 chrom = str(record.CHROM)
                 pos = int(record.POS)
 
@@ -465,7 +455,6 @@ class ClinVarService:
                             continue
                         processed_pairs.add(pair_key)
 
-                        # Resolve transcript in FASTA
                         tid = transcript_id
                         if tid not in transcripts_dict:
                             tid = transcript_id_mapping.get(
@@ -479,7 +468,6 @@ class ClinVarService:
                             )
                             continue
 
-                        # --- Biotype filter ---
                         if self._include_biotypes != ["all"]:
                             biotype = self._get_transcript_biotype(db, tid)
                             if biotype and biotype not in self._include_biotypes:
@@ -489,7 +477,6 @@ class ClinVarService:
                         ref_seq = fasta_record.seq
                         desc = str(fasta_record.description)
 
-                        # Determine CDS info and feature types
                         cds_info: list[int] = []
                         feature_types = ["exon"]
                         num_orfs = 3
@@ -512,19 +499,16 @@ class ClinVarService:
                                     desc,
                                 )
 
-                        # Get features from GTF
                         feat_chrom, strand, features_info = self._get_features(
                             db, tid, feature_types
                         )
                         if feat_chrom is None:
                             continue
 
-                        # Check overlap at feature level
                         var_end = pos + len(ref) - 1
                         if not check_overlap(pos, var_end, features_info):
                             continue
 
-                        # Apply variant
                         coding_ref_seq, coding_alt_seq = get_altseq(
                             ref_seq,
                             Seq(ref),
@@ -538,7 +522,6 @@ class ClinVarService:
                         if coding_alt_seq == "":
                             continue
 
-                        # Translate
                         ref_orfs, alt_orfs = get_orfs_vcf(
                             coding_ref_seq,
                             coding_alt_seq,
@@ -546,7 +529,6 @@ class ClinVarService:
                             num_orfs,
                         )
 
-                        # Build sequence ID
                         record_id = ""
                         if record.ID and str(record.ID) != ".":
                             record_id = str(record.ID)

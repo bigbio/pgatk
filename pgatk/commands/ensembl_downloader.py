@@ -38,7 +38,6 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_pref
     if taxonomy is None and ensembl_name is None:
         raise click.UsageError("Either --taxonomy or --ensembl_name is required.")
 
-    # Parse pipelines parameters.
     pipeline_arguments = {}
 
     if output_directory is not None:
