@@ -19,6 +19,32 @@ from pgatk.toolbox.vcf_utils import (
 )
 
 
+class _FeatureCache:
+    """Per-run memoization of get_features() results, keyed by transcript id.
+
+    Bounded by a soft maxsize to avoid unbounded growth on whole-genome runs.
+    Defaults to 50000, which comfortably covers human ENSEMBL (~250k transcripts
+    across all chromosomes; a single chr is ~10-20k).
+    """
+
+    def __init__(self, maxsize: int = 50000) -> None:
+        self._cache: dict[tuple, tuple] = {}
+        self._maxsize = maxsize
+
+    def get(self, key: tuple) -> Optional[tuple]:
+        return self._cache.get(key)
+
+    def put(self, key: tuple, value: tuple) -> None:
+        if len(self._cache) >= self._maxsize:
+            # Soft eviction: drop a fifth at random when full. Cheap and bounded.
+            for k in list(self._cache.keys())[: self._maxsize // 5]:
+                del self._cache[k]
+        self._cache[key] = value
+
+
+_MISSING = object()
+
+
 class EnsemblDataService(ParameterConfiguration):
     CONFIG_KEY_VCF = "ensembl_translation"
     INPUT_FASTA = "input_fasta"
@@ -432,6 +458,8 @@ class EnsemblDataService(ParameterConfiguration):
         transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
         # handle cases where the transcript has version in the GTF but not in the VCF
         transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
+        feature_cache = _FeatureCache()
+        seq_cache: dict[str, tuple] = {}  # transcript_id_v -> (ref_seq, desc); see Task 5
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:
@@ -481,12 +509,12 @@ class EnsemblDataService(ParameterConfiguration):
         self._accepted_filters = [x.upper() for x in self._accepted_filters]
 
         with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
-            for _, record in vcf_reader.iterrows():
+            for record in vcf_reader.itertuples(index=False, name='VCFRecord'):
                 trans = False
                 if [x for x in str(record.REF) if x not in 'ACGT']:
-                    msg = "Invalid VCF record, skipping: {}".format(record)
                     invalid_records['# variants with invalid record'] += 1
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug("Invalid VCF record, skipping: %s", record)
                     continue
 
                 alts = []
@@ -498,10 +526,17 @@ class EnsemblDataService(ParameterConfiguration):
                         continue
                     alts.append(alt)
                 if not alts:
-                    msg = "Invalid VCF record, skipping: {}".format(record)
                     invalid_records['# variants with invalid record'] += 1
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug("Invalid VCF record, skipping: %s", record)
                     continue
+
+                # Parse INFO once. Maps each key to its value string, missing keys absent.
+                # Avoids repeated split-and-search list-comprehensions.
+                info_kv: dict[str, str] = {}
+                for entry in record.INFO.split(';'):
+                    k, _, v = entry.partition('=')
+                    info_kv[k] = v
 
                 if not self._ignore_filters and self._accepted_filters != ['ALL']:
                     if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # if not PASS: None and empty means PASS
@@ -511,12 +546,10 @@ class EnsemblDataService(ParameterConfiguration):
                         if not filters <= set(self._accepted_filters):
                             invalid_records['# variants not passing Filter'] += 1
                             continue
-                # only process variants above a given allele frequency threshold if the AF string is not empty
                 if self._af_field:
-                    # get AF from the INFO field
                     try:
-                        af = float([x.split('=', 1)[1] for x in record.INFO.split(';') if x.split('=', 1)[0] == self._af_field][0])
-                    except (ValueError, IndexError):
+                        af = float(info_kv[self._af_field])
+                    except (ValueError, KeyError):
                         invalid_records['# variants with invalid record'] += 1
                         continue
 
@@ -530,15 +563,13 @@ class EnsemblDataService(ParameterConfiguration):
                     trans_table = self._mito_translation_table
 
                 processed_transcript_allele = set()
-                transcript_records = []
                 try:
-                    transcript_records = \
-                        [x.split('=', 1)[1] for x in record.INFO.split(';')
-                         if x.split('=', 1)[0] == self._annotation_field_name][0]
-                except IndexError:  # no overlapping feature was found
+                    transcript_records = info_kv[self._annotation_field_name]
+                except KeyError:
                     invalid_records['# variants with invalid record'] += 1
-                    msg = "skipped record {}, no annotation feature was found".format(record)
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug(
+                            "skipped record %s, no annotation feature was found", record)
                     continue
 
                 for transcript_record in transcript_records.split(','):
@@ -548,9 +579,10 @@ class EnsemblDataService(ParameterConfiguration):
                             consequence = transcript_info[consequence_index]
                         except IndexError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Give a valid index for the consequence in the INFO field for: {}".format(
-                                transcript_record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Give a valid index for the consequence in the INFO field for: %s",
+                                    transcript_record)
                             continue
                         except TypeError:
                             pass
@@ -559,9 +591,10 @@ class EnsemblDataService(ParameterConfiguration):
                             biotype = transcript_info[biotype_index]
                         except IndexError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Give a valid index for the biotype in the INFO field for: {}".format(
-                                transcript_record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Give a valid index for the biotype in the INFO field for: %s",
+                                    transcript_record)
                             continue
                         except TypeError:
                             pass
@@ -570,9 +603,10 @@ class EnsemblDataService(ParameterConfiguration):
                         transcript_id = transcript_info[transcript_index]
                     except IndexError:
                         invalid_records['# variants with invalid record'] += 1
-                        msg = "Give a valid index for the Transcript IDs in the INFO field for: {}".format(
-                            transcript_record)
-                        self.get_logger().debug(msg)
+                        if self.get_logger().isEnabledFor(logging.DEBUG):
+                            self.get_logger().debug(
+                                "Give a valid index for the Transcript IDs in the INFO field for: %s",
+                                transcript_record)
                         continue
                     if transcript_id == "":
                         continue
@@ -582,15 +616,26 @@ class EnsemblDataService(ParameterConfiguration):
                     except KeyError:
                         transcript_id_v = transcript_id
 
-                    try:
-                        row = transcripts_dict[transcript_id_v]
-                        ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
-                        desc = str(row.description)
-                    except KeyError:
-                        invalid_records['# feature IDs from VCF that are not found in the given FASTA file'] += 1
-                        msg = "Feature {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
-                        self.get_logger().debug(msg)
+                    cached_row = seq_cache.get(transcript_id_v, _MISSING)
+                    if cached_row is _MISSING:
+                        try:
+                            row = transcripts_dict[transcript_id_v]
+                            ref_seq = row.seq
+                            desc = str(row.description)
+                            seq_cache[transcript_id_v] = (ref_seq, desc)
+                        except KeyError:
+                            invalid_records['# feature IDs from VCF that are not found in the given FASTA file'] += 1
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Feature %s not found in fasta of the GTF file %s",
+                                    transcript_id_v, record)
+                            seq_cache[transcript_id_v] = None
+                            continue
+                    elif cached_row is None:
+                        # already-known-missing; skip without re-counting in the stats
                         continue
+                    else:
+                        ref_seq, desc = cached_row
 
                     feature_types = ['exon']
                     # check if cds info exists in the fasta header otherwise translate all exons
@@ -608,15 +653,13 @@ class EnsemblDataService(ParameterConfiguration):
                                 feature_types = ['CDS', 'stop_codon']
                                 num_orfs = 1
                         except (ValueError, IndexError):
-                            msg = "Could not extract cds position from fasta header for: {}".format(desc)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Could not extract cds position from fasta header for: %s", desc)
 
-                    chrom, strand, features_info = self.get_features(db,
-                                                                     transcript_id_v,
-                                                                     feature_types)
-                    if chrom is None:  # the record info was not found
-                        continue
-                    # skip transcripts with unwanted consequences
+                    # skip transcripts with unwanted consequences (do this BEFORE
+                    # the expensive get_features() SQL call — both filter inputs
+                    # come from transcript_info, not from get_features)
                     if consequence_index is not None:
                         if (consequence in self._exclude_consequences or
                                 (consequence not in self._include_consequences and
@@ -629,6 +672,17 @@ class EnsemblDataService(ParameterConfiguration):
                                 (biotype not in self._include_biotypes and
                                  self._include_biotypes != ['all'])):
                             continue
+
+                    cache_key = (transcript_id_v, tuple(feature_types))
+                    cached = feature_cache.get(cache_key)
+                    if cached is None:
+                        chrom, strand, features_info = self.get_features(
+                            db, transcript_id_v, feature_types)
+                        feature_cache.put(cache_key, (chrom, strand, features_info))
+                    else:
+                        chrom, strand, features_info = cached
+                    if chrom is None:  # the record info was not found
+                        continue
 
                     for alt in alts:
                         dedup_key = transcript_id + str(record.REF) + str(alt)
@@ -643,8 +697,8 @@ class EnsemblDataService(ParameterConfiguration):
                                                               features_info)
                         except TypeError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Wrong VCF record in {}".format(record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug("Wrong VCF record in %s", record)
                             continue
 
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
