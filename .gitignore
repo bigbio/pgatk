@@ -135,3 +135,6 @@ pgatk/testdata/Meleagris_gallopavo*
 .DS_Store
 .codacy/
 .cursor/
+
+# Internal working docs (implementation plans, scratch notes)
+docs/plans/
