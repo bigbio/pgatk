@@ -85,7 +85,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                                        default_value=False)
         self._include_biotypes = self.get_multiple_options(
             self.get_translation_properties(variable=self.INCLUDE_BIOTYPES,
-                                            default_value='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'))
+                                            default_value='protein_coding,protein_coding_CDS_not_defined,protein_coding_LoF,nonsense_mediated_decay,non_stop_decay,translated_processed_pseudogene,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC'))
 
         self._include_consequences = self.get_multiple_options(
             self.get_translation_properties(variable=self.INCLUDE_CONSEQUENCES, default_value='all'))

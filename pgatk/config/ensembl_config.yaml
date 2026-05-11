@@ -11,7 +11,7 @@ ensembl_translation:
     exclude_biotypes: ''
     exclude_consequences: 'downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant'
     skip_including_all_cds: False
-    include_biotypes: 'protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'
+    include_biotypes: 'protein_coding,protein_coding_CDS_not_defined,protein_coding_LoF,nonsense_mediated_decay,non_stop_decay,translated_processed_pseudogene,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC'
     include_consequences: 'all'
     biotype_str: transcript_biotype
     transcript_description_sep: ';'
