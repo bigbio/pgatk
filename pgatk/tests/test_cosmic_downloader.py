@@ -3,8 +3,6 @@
 No network. Builds a CosmicDownloadService against the shipped default config
 and asserts that the four product API URLs match the expected pattern.
 """
-import os
-
 from pgatk.cgenomes.cosmic_downloader import CosmicDownloadService
 from pgatk.config.registry import load_config
 

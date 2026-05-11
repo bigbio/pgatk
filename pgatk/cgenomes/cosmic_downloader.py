@@ -183,14 +183,17 @@ class CosmicDownloadService(ParameterConfiguration):
 
     @staticmethod
     def _safe_extract_tar(tar_path, dest_dir):
-        """Extract tar_path into dest_dir, rejecting any member that would
-        escape dest_dir via absolute path or .. traversal (CVE-2007-4559).
-        COSMIC archives are trusted in practice, but defence in depth costs
-        nothing and silences static-analysis warnings.
+        """Extract tar_path into dest_dir, rejecting unsafe members.
+
+        Guards against path traversal (CVE-2007-4559) via absolute paths or
+        ``..`` components in member names, and ensures any symlink/hardlink
+        targets resolve within dest_dir. COSMIC archives are trusted in
+        practice, but defence in depth costs nothing and silences static
+        analysers.
         """
         dest_abs = os.path.realpath(dest_dir)
         with tarfile.open(tar_path, 'r') as tar:
-            safe_members = []
+            safe_members: list[tarfile.TarInfo] = []
             for member in tar.getmembers():
                 member_path = os.path.realpath(os.path.join(dest_abs, member.name))
                 if os.path.commonpath([dest_abs, member_path]) != dest_abs:
@@ -212,5 +215,6 @@ class CosmicDownloadService(ParameterConfiguration):
                             .format(member.name)
                         )
                 safe_members.append(member)
-            # nosec B202 - members are validated above; extracting only the validated list
-            tar.extractall(path=dest_abs, members=safe_members)
+            # All members in safe_members were validated against dest_abs above:
+            # absolute paths, .. traversal, and unsafe symlink targets all rejected.
+            tar.extractall(path=dest_abs, members=safe_members)  # nosec B202
