@@ -71,3 +71,10 @@ exclude = ["tests*", "*.tests*", "*.tests.*", "tests.*"]
 
 [tool.setuptools.package-data]
 pgatk = ["config/*.yaml", "config/*.json"]
+
+[tool.pydocstyle]
+# D211 conflicts with D203 (which we follow: one blank line before class docstring).
+# D213 conflicts with D212 (which we follow: multi-line summary on the first line).
+# pydocstyle errors when both rules in each pair are enabled; explicitly disable
+# the ones we don't follow.
+add-ignore = ["D211", "D213"]
