@@ -33,7 +33,7 @@ pgatk ensembl-downloader \
 ```bash
 gffread -F -w ensembl_human/transcripts.fa \
     -g ensembl_human/genome.fa \
-    ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz
+    ensembl_human/Homo_sapiens.GRCh38.*.gtf
 ```
 
 ### Step 3 -- Canonical protein-coding sequences
@@ -58,7 +58,7 @@ pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb pseudogene.fa \
     --protein_prefix pseudo_ \
-    --include_biotypes processed_pseudogene,unprocessed_pseudogene,transcribed_processed_pseudogene,transcribed_unprocessed_pseudogene,translated_processed_pseudogene \
+    --include_biotypes pseudogene,processed_pseudogene,unprocessed_pseudogene,transcribed_processed_pseudogene,transcribed_unprocessed_pseudogene,translated_processed_pseudogene,unitary_pseudogene,transcribed_unitary_pseudogene,rRNA_pseudogene,IG_V_pseudogene,TR_V_pseudogene,IG_C_pseudogene,TR_J_pseudogene,IG_J_pseudogene,IG_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -73,7 +73,7 @@ pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb lncrna.fa \
     --protein_prefix lncrna_ \
-    --include_biotypes lincRNA,antisense,sense_intronic,sense_overlapping \
+    --include_biotypes lncRNA \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -98,9 +98,9 @@ Include common human variants from ENSEMBL:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf.gz \
+    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf \
     --input_fasta ensembl_human/transcripts.fa \
-    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz \
+    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf \
     --output_proteindb ensembl_variants.fa
 ```
 
@@ -197,7 +197,7 @@ extract transcript sequences from the GTF and genome FASTA:
 ```bash
 gffread -F -w ensembl_human/transcripts.fa \
     -g ensembl_human/genome.fa \
-    ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz
+    ensembl_human/Homo_sapiens.GRCh38.*.gtf
 ```
 
 ### Step 3 -- Generate the variant protein database
@@ -206,9 +206,9 @@ Translate all ENSEMBL variants that affect protein-coding transcripts:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf.gz \
+    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf \
     --input_fasta ensembl_human/transcripts.fa \
-    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz \
+    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf \
     --output_proteindb ensembl_human/variant_proteins.fa
 ```
 
@@ -255,7 +255,7 @@ Include only variants present in at least 1% of the population:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf homo_sapiens_incl_consequences.vcf.gz \
+    --vcf homo_sapiens_incl_consequences.vcf \
     --input_fasta transcripts.fa \
     --gene_annotations_gtf genes.gtf \
     --af_field MAF \
@@ -270,7 +270,7 @@ detectable by mass spectrometry:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf homo_sapiens_incl_consequences.vcf.gz \
+    --vcf homo_sapiens_incl_consequences.vcf \
     --input_fasta transcripts.fa \
     --gene_annotations_gtf genes.gtf \
     --af_field MAF \
@@ -289,7 +289,7 @@ a specific population:
 pgatk vcf-to-proteindb \
     --vcf gnomad.exomes.v4.1.sites.vcf.bgz \
     --input_fasta gencode_transcripts.fa \
-    --gene_annotations_gtf gencode.v44.annotation.gtf.gz \
+    --gene_annotations_gtf gencode.v44.annotation.gtf \
     --annotation_field_name vep \
     --af_field AF_afr \
     --af_threshold 0.01 \
@@ -324,18 +324,18 @@ pgatk ncbi-downloader -o ncbi_data
 
 This downloads four files to `ncbi_data/`:
 
-- `GRCh38_latest_genomic.gtf.gz` -- RefSeq gene annotations
-- `GRCh38_latest_rna.fna.gz` -- RefSeq transcript nucleotide sequences
+- `GRCh38_latest_genomic.gtf` -- RefSeq gene annotations
+- `GRCh38_latest_rna.fna` -- RefSeq transcript nucleotide sequences
 - `GRCh38_latest_assembly_report.txt` -- Chromosome name mapping
-- `clinvar.vcf.gz` -- ClinVar variant calls
+- `clinvar.vcf` -- ClinVar variant calls
 
 ### Step 2 -- Generate the ClinVar protein database
 
 ```bash
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
+    --vcf ncbi_data/clinvar.vcf \
+    --gtf ncbi_data/GRCh38_latest_genomic.gtf \
+    --fasta ncbi_data/GRCh38_latest_rna.fna \
     --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 ```
@@ -537,17 +537,17 @@ open reading frames (smORFs), micropeptides from lncRNAs, pseudogene-encoded
 proteins, and alternative reading frames. Studies have found that non-canonical
 peptides can account for over 5% of total identifications.
 
-### lincRNA-derived proteins
+### lncRNA-derived proteins
 
-Long intergenic non-coding RNAs (lincRNAs) can encode small proteins. Translate
+Long intergenic non-coding RNAs (lncRNAs) can encode small proteins. Translate
 them in three reading frames:
 
 ```bash
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
-    --output_proteindb lincRNA_proteins.fa \
-    --protein_prefix lincRNA_ \
-    --include_biotypes lincRNA \
+    --output_proteindb lncRNA_proteins.fa \
+    --protein_prefix lncRNA_ \
+    --include_biotypes lncRNA \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -598,7 +598,7 @@ Combine all non-canonical sources with the canonical proteome:
 
 ```bash
 cat canonical_proteins.fa \
-    lincRNA_proteins.fa \
+    lncRNA_proteins.fa \
     pseudogene_proteins.fa \
     altorf_proteins.fa \
     antisense_proteins.fa \
@@ -616,7 +616,7 @@ pgatk generate-decoy \
 
     ```bash
     pgatk digest-mutant-protein \
-        --input lincRNA_proteins.fa,pseudogene_proteins.fa,altorf_proteins.fa \
+        --input lncRNA_proteins.fa,pseudogene_proteins.fa,altorf_proteins.fa \
         --fasta canonical_proteins.fa \
         --output novel_unique_peptides.fa
     ```
@@ -975,12 +975,12 @@ pgatk cosmic-to-proteindb \
     --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
     --output_db cosmic_variants.fa
 
-# Non-coding RNA (lincRNA)
+# Non-coding RNA (lncRNA)
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_data/transcripts.fa \
-    --output_proteindb lincRNA.fa \
-    --protein_prefix lincRNA_ \
-    --include_biotypes lincRNA \
+    --output_proteindb lncRNA.fa \
+    --protein_prefix lncRNA_ \
+    --include_biotypes lncRNA \
     --num_orfs 3 \
     --skip_including_all_cds
 
@@ -1001,7 +1001,7 @@ cat canonical.fa \
     ensembl_variants.fa \
     clinvar_variants.fa \
     cosmic_variants.fa \
-    lincRNA.fa \
+    lncRNA.fa \
     pseudogene.fa \
     > combined_target.fa
 ```
@@ -1027,7 +1027,7 @@ pgatk generate-decoy \
 
 ```bash
 pgatk digest-mutant-protein \
-    --input ensembl_variants.fa,clinvar_variants.fa,cosmic_variants.fa,lincRNA.fa,pseudogene.fa \
+    --input ensembl_variants.fa,clinvar_variants.fa,cosmic_variants.fa,lncRNA.fa,pseudogene.fa \
     --fasta canonical.fa \
     --output unique_variant_peptides.fa \
     --min-len 7 \
