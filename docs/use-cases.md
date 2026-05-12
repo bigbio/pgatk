@@ -6,7 +6,7 @@ a search-ready protein database.
 
 ---
 
-## Cell-Type Specific Non-Canonical Peptide Discovery
+## USE CASE 1: Cell-Type Specific Non-Canonical Peptide Discovery
 
 !!! abstract "Featured workflow"
     This workflow reproduces the analysis from [Umer et al., *Bioinformatics* 2022](https://doi.org/10.1093/bioinformatics/btab838),
@@ -78,6 +78,20 @@ pgatk dnaseq-to-proteindb \
     --skip_including_all_cds
 ```
 
+#### Putative proteins (three-frame)
+
+Protein coding genes without CDs that are not validated but annoated:
+
+```bash
+pgatk dnaseq-to-proteindb \
+    --input_fasta ensembl_human/transcripts.fa \
+    --output_proteindb putative.fa \
+    --protein_prefix putative_ \
+    --include_biotypes protein_coding_CDS_not_defined,TEC,translated_processed_pseudogene \
+    --num_orfs 3 \
+    --skip_including_all_cds
+```
+
 #### Alternative ORFs (exonic out-of-frame translation)
 
 Non-canonical reading frames of protein-coding mRNAs can produce cryptic
@@ -130,6 +144,7 @@ pgatk cosmic-to-proteindb \
 cat canonical.fa \
     pseudogene.fa \
     lncrna.fa \
+    putative.fa \
     altorf.fa \
     ensembl_variants.fa \
     > cell_type_target.fa
@@ -149,7 +164,7 @@ set of non-canonical peptides unique to these novel sources:
 
 ```bash
 pgatk digest-mutant-protein \
-    --input pseudogene.fa,lncrna.fa,altorf.fa,ensembl_variants.fa \
+    --input pseudogene.fa,lncrna.fa,putative.fa,altorf.fa,ensembl_variants.fa \
     --fasta canonical.fa \
     --output non_canonical_peptides.fa \
     --min-len 7 \
@@ -166,7 +181,7 @@ pgatk digest-mutant-protein \
 
 ---
 
-## 1. Human Variant Protein Database from ENSEMBL
+## USE CASE 2: Human Variant Protein Database from ENSEMBL
 
 Build a variant protein database using ENSEMBL population variants (common SNPs
 and indels) for human proteogenomics searches. This is the most common starting
@@ -242,7 +257,7 @@ The file `target_decoy.fa` is ready for database searching.
 
 ---
 
-## 2. Population-Specific Variant Database
+## USE CASE 3: Population-Specific Variant Database
 
 Population-level genetic variants cause amino acid changes that are invisible
 to standard reference database searches. Studies have shown that incorporating
@@ -308,7 +323,7 @@ pgatk vcf-to-proteindb \
 
 ---
 
-## 3. ClinVar Clinical Variant Database
+## USE CASE 4: ClinVar Clinical Variant Database
 
 [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) catalogs the relationship
 between human variants and clinical phenotypes. Building a ClinVar-derived
@@ -356,7 +371,7 @@ pgatk generate-decoy \
 
 ---
 
-## 4. Tumor-Specific Databases for Cancer Proteogenomics
+## USE CASE 5: Condition-Specific Databases for Proteogenomics
 
 Cancer proteogenomics studies (such as those from CPTAC) build
 tumor-specific protein databases to detect somatic mutant peptides, understand
@@ -364,7 +379,7 @@ therapy resistance, and prioritize neoantigen candidates. The databases combine
 somatic mutations from cancer-specific sources (COSMIC, cBioPortal) and/or
 patient-matched whole-exome sequencing.
 
-### 4a. COSMIC somatic mutations by cancer type
+### 4a. Cancer-speific database using COSMIC somatic mutations
 
 Generate one protein database per primary tissue site. This is the standard
 approach for large-scale cancer proteogenomics when patient-level WES is not
@@ -388,7 +403,7 @@ pgatk cosmic-to-proteindb \
 This produces files like `cosmic_proteins_lung.fa`, `cosmic_proteins_breast.fa`,
 etc. Use the tissue-matched database for your cancer type of interest.
 
-### 4b. Single cancer type
+### 4b. Cancer-type speific database using COSMIC somatic mutations
 
 Build a focused database for one cancer type (e.g. lung):
 
@@ -400,7 +415,7 @@ pgatk cosmic-to-proteindb \
     --accepted_values "lung"
 ```
 
-### 4c. Cell-line proteogenomics
+### 4c. Cell-type specific databases
 
 When analyzing cell-line proteomes, use cell-line-specific mutations. COSMIC
 provides a dedicated cell-line export with mutations annotated per sample:
@@ -475,7 +490,7 @@ pgatk generate-decoy \
 
 ---
 
-## 5. Patient-Specific Database from WGS/WES
+## USE CASE 6: Patient-Specific Database from WGS/WES
 
 When matched whole-genome or whole-exome sequencing data is available for
 a sample, build a personalized protein database from the patient's own
@@ -530,7 +545,7 @@ pgatk vcf-to-proteindb \
 
 ---
 
-## 6. Novel ORF and Micropeptide Discovery
+## USE CASE 7: Novel ORF and Micropeptide Discovery
 
 Proteogenomics is a key approach for discovering novel coding regions: small
 open reading frames (smORFs), micropeptides from lncRNAs, pseudogene-encoded
@@ -1002,6 +1017,7 @@ cat canonical.fa \
     clinvar_variants.fa \
     cosmic_variants.fa \
     lncRNA.fa \
+    putative.fa \
     pseudogene.fa \
     > combined_target.fa
 ```
