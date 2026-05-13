@@ -52,24 +52,59 @@ def _safe_chrom(chrom: str) -> str:
     return re.sub(r'[^A-Za-z0-9._-]', '_', str(chrom))
 
 
-def _split_vcf_by_chrom(vcf_file: str) -> tuple[list[str], dict[str, list[str]]]:
-    """Read vcf_file once; return (header_lines, {chrom: [data_lines]}).
+def _ensure_fasta_index(input_fasta: str) -> str:
+    """Return the path to a `.idx` SQLite index for input_fasta, building it
+    if absent or stale. Stale means: the .idx exists but the FASTA's mtime
+    is newer than the .idx's. The index is keyed by `EnsemblDataService.get_key`.
+    """
+    idx_path = input_fasta + ".idx"
+    if os.path.exists(idx_path):
+        if os.path.getmtime(idx_path) >= os.path.getmtime(input_fasta):
+            return idx_path
+        try:
+            os.remove(idx_path)
+        except OSError:
+            pass
+    # Build the index. SeqIO.index_db materialises the SQLite file on disk
+    # as a side effect; we don't need to keep the returned handle here.
+    SeqIO.index_db(idx_path, [input_fasta], "fasta", key_function=EnsemblDataService.get_key)
+    return idx_path
 
-    Preserves line ordering within each chromosome. Headers retain trailing newlines;
-    data lines retain trailing newlines. Empty/whitespace-only data lines are skipped.
+
+def _split_vcf_by_chrom(vcf_file: str, output_dir: str) -> dict[str, str]:
+    """Stream `vcf_file` once, writing per-chromosome VCFs into `output_dir`.
+
+    Each output file is `<output_dir>/chunk_<safe_chrom>.vcf` and contains the
+    full VCF header followed by only the data lines for that chromosome.
+    Preserves line ordering within each chromosome.
+
+    Returns a mapping `{chrom: chunk_path}`. Constant memory — holds at most
+    one open file handle per chromosome seen so far.
     """
     header: list[str] = []
-    buckets: dict[str, list[str]] = {}
-    with open(vcf_file, 'r', encoding='utf-8') as f:
-        for line in f:
-            if line.startswith('#'):
-                header.append(line)
-                continue
-            if not line.strip():
-                continue
-            chrom = line.split('\t', 1)[0]
-            buckets.setdefault(chrom, []).append(line)
-    return header, buckets
+    handles: dict[str, Any] = {}
+    chunk_paths: dict[str, str] = {}
+    try:
+        with open(vcf_file, 'r', encoding='utf-8') as f:
+            for line in f:
+                if line.startswith('#'):
+                    header.append(line)
+                    continue
+                if not line.strip():
+                    continue
+                chrom = line.split('\t', 1)[0]
+                handle = handles.get(chrom)
+                if handle is None:
+                    chunk_path = os.path.join(output_dir, "chunk_" + _safe_chrom(chrom) + ".vcf")
+                    handle = open(chunk_path, 'w', encoding='utf-8')
+                    handle.writelines(header)
+                    handles[chrom] = handle
+                    chunk_paths[chrom] = chunk_path
+                handle.write(line)
+    finally:
+        for h in handles.values():
+            h.close()
+    return chunk_paths
 
 
 def _vcf_to_proteindb_worker(default_params, pipeline_args, vcf_file,
@@ -497,9 +532,12 @@ class EnsemblDataService(ParameterConfiguration):
     """
         db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
 
-        transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
+        idx_path = _ensure_fasta_index(input_fasta)
+        transcripts_dict = SeqIO.index_db(idx_path, [input_fasta], "fasta",
+                                          key_function=self.get_key)
         # handle cases where the transcript has version in the GTF but not in the VCF
-        transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
+        # Built lazily on the first KeyError to avoid iterating 207k keys up-front.
+        transcript_id_mapping: Optional[dict[str, str]] = None
         feature_cache = _FeatureCache()
         # Value is (ref_seq, desc) for a known transcript, or None for a transcript
         # we've already looked up and confirmed isn't in the FASTA index (avoids re-trying
@@ -659,9 +697,16 @@ class EnsemblDataService(ParameterConfiguration):
                         continue
 
                     try:
-                        transcript_id_v = transcript_id_mapping[transcript_id]
-                    except KeyError:
-                        transcript_id_v = transcript_id
+                        transcript_id_v = transcript_id_mapping[transcript_id]  # type: ignore[index]
+                    except (KeyError, TypeError):
+                        if transcript_id_mapping is None:
+                            transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
+                            try:
+                                transcript_id_v = transcript_id_mapping[transcript_id]
+                            except KeyError:
+                                transcript_id_v = transcript_id
+                        else:
+                            transcript_id_v = transcript_id
 
                     cached_row = seq_cache.get(transcript_id_v, _MISSING)
                     if cached_row is _MISSING:
@@ -808,8 +853,9 @@ class EnsemblDataService(ParameterConfiguration):
             vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
             self._annotation_field_name = 'transcriptOverlaps'
 
-        # Read VCF text once. Header lines + per-chrom buckets.
-        header_lines, chrom_to_lines = _split_vcf_by_chrom(vcf_file)
+        # Build the FASTA index ONCE in the main process so all workers share it
+        # instead of each re-scanning the FASTA (~14 s × N workers wasted).
+        _ensure_fasta_index(input_fasta)
 
         # Parallel — split into per-chrom temp VCFs, fan out to a Pool.
         import multiprocessing as mp
@@ -817,13 +863,18 @@ class EnsemblDataService(ParameterConfiguration):
         import tempfile
 
         with tempfile.TemporaryDirectory(prefix='pgatk_v2p_') as tmpdir:
+            # Stream-split VCF by chromosome directly to per-chrom files (constant memory).
+            chunk_paths = _split_vcf_by_chrom(vcf_file, tmpdir)
+
+            if len(chunk_paths) <= 1:
+                # Only one chromosome — run sequentially on the original file.
+                return self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf,
+                                                    self._proteindb_output)
+
             tasks = []
-            for chrom in sorted(chrom_to_lines.keys()):
-                chunk_vcf = os.path.join(tmpdir, f"chunk_{_safe_chrom(chrom)}.vcf")
+            for chrom in sorted(chunk_paths.keys()):
+                chunk_vcf = chunk_paths[chrom]
                 chunk_out = os.path.join(tmpdir, f"out_{_safe_chrom(chrom)}.fa")
-                with open(chunk_vcf, 'w', encoding='utf-8') as f:
-                    f.writelines(header_lines)
-                    f.writelines(chrom_to_lines[chrom])
                 pa = dict(self.get_pipeline_parameters())
                 pa[EnsemblDataService.PROTEIN_DB_OUTPUT] = chunk_out
                 # Force annotated mode for workers (annoate_vcf already ran in main):
