@@ -451,7 +451,7 @@ class CancerGenomesService(ParameterConfiguration):
                               sample_id_column: str = 'SAMPLE_ID') -> dict:
         sample_value = {}
         if local_clinical_sample_file:
-            with open(local_clinical_sample_file, 'r', encoding='utf-8') as clin_fn:
+            with _open_text(local_clinical_sample_file, encoding='utf-8') as clin_fn:
                 filter_column_col, sample_id_col = None, None
                 for line in clin_fn.readlines():
                     if line.startswith('#'):
