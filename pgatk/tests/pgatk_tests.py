@@ -178,7 +178,8 @@ class PgatkRunnerTests(unittest.TestCase):
                                 '--input_mutation', 'testdata/test_cosmic_mutations.tsv',
                                 '--input_genes', 'testdata/test_cosmic_genes.fa',
                                 '--output_db', 'testdata/test_cosmic_mutations_proteindb.fa',
-                                '--filter_column', 'Primary site',
+                                '--clinical_sample_file', 'testdata/test_cosmic_classification.tsv',
+                                '--filter_column', 'PRIMARY_SITE',
                                 '--split_by_filter_column', '--accepted_values', 'all'])
         if result.exit_code != 0:
             print(result.exception)

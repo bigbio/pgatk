@@ -128,3 +128,130 @@ print(mut_prot[218])  # 'F' — mutant Phenylalanine
 | `TestGetMutProSeqEdgeCases` | Mutation beyond sequence length, ambiguous `p.?` returns `""`, non-alpha last char in aa_mut returns `""`, DNA ref-allele mismatch returns `""` |
 
 These tests are fast to run and isolate individual code paths without requiring reference files.
+
+---
+
+# 2. COSMIC Integration Pipeline Tests
+
+## 2.1 COSMIC v103 Schema and Data Model
+
+COSMIC v103 introduced two breaking changes from earlier releases:
+
+**Column name changes** — all columns are now `UPPERCASE_UNDERSCORE`:
+
+| Old (v2/v98) | New (v103) |
+|---|---|
+| `Gene name` | `GENE_SYMBOL` |
+| `Accession Number` | `TRANSCRIPT_ACCESSION` |
+| `CDS mutation` | `MUTATION_CDS` |
+| `AA Mutation` | `MUTATION_AA` |
+| `Type` | `MUTATION_DESCRIPTION` |
+| `Primary site` | *(moved to Classification file)* |
+
+**Tissue-type data architecture** — `PRIMARY_SITE` (tissue of origin) is no longer a column in the mutation export. It lives in a separate **Classification file** (`Cosmic_Classification_Tsv_v103_GRCh38.tar`) and is joined via `COSMIC_PHENOTYPE_ID`:
+
+```
+mutation_file.COSMIC_PHENOTYPE_ID (e.g. COSO1001)
+    → Cosmic_Classification_v103_GRCh38.tsv.COSMIC_PHENOTYPE_ID
+    → PRIMARY_SITE (e.g. upper_aerodigestive_tract)
+```
+
+`COSMIC_PHENOTYPE_ID` is present at column 6 in both `Cosmic_CompleteTargetedScreensMutant` and `Cosmic_GenomeScreensMutant` files. No hop through the Sample file is needed.
+
+> **Note**: The Sample file (`Cosmic_Sample_Tsv_v103_GRCh38.tsv`) contains 34 columns covering sequencing metadata (`SAMPLE_NAME`, `COSMIC_SAMPLE_ID`, `TUMOUR_ID`, etc.) but does **not** contain `PRIMARY_SITE`. The Classification file is the authoritative source for tissue and histology.
+
+---
+
+## 2.2 Integration Test (`test_cosmic_to_proteindb`)
+
+**Test file**: `pgatk/tests/pgatk_tests.py::PgatkRunnerTests::test_cosmic_to_proteindb`
+
+The test runs the full `cosmic-to-proteindb` pipeline end-to-end using small testdata files that mirror the real v103 schema:
+
+| File | Purpose |
+|---|---|
+| `testdata/test_cosmic_mutations.tsv` | 12 HRAS mutation rows in v103 27-column format; covers `missense_variant`, `stop_gained`, `inframe_deletion`, `synonymous_variant` (filtered), `frameshift_variant` (`p.?`, skipped) |
+| `testdata/test_cosmic_genes.fa` | HRAS CDS FASTA from `Cosmic_Genes_v103_GRCh38.fasta` |
+| `testdata/test_cosmic_classification.tsv` | 8 rows mapping `COSMIC_PHENOTYPE_ID` (COSO1001–COSO1008) to `PRIMARY_SITE`; covers `upper_aerodigestive_tract`, `skin`, `bone`, `thyroid`, `liver`, `haematopoietic_and_lymphoid_tissue` |
+
+CLI invocation used in the test:
+
+```
+cosmic-to-proteindb
+  --config_file config/cosmic_config.yaml
+  --input_mutation testdata/test_cosmic_mutations.tsv
+  --input_genes testdata/test_cosmic_genes.fa
+  --output_db testdata/test_cosmic_mutations_proteindb.fa
+  --clinical_sample_file testdata/test_cosmic_classification.tsv
+  --filter_column PRIMARY_SITE
+  --split_by_filter_column
+  --accepted_values all
+```
+
+Expected output files (split per `PRIMARY_SITE`):
+
+```
+testdata/test_cosmic_mutations_proteindb_bone.fa
+testdata/test_cosmic_mutations_proteindb_liver.fa
+testdata/test_cosmic_mutations_proteindb_skin.fa
+testdata/test_cosmic_mutations_proteindb_thyroid.fa
+testdata/test_cosmic_mutations_proteindb_upperaerodigestivetract.fa
+```
+
+The `synonymous_variant` row (COSO1006) is pre-filtered and produces no output. The `frameshift_variant` row carrying `p.?` (COSO1008) is skipped by the `p.?` guard. The consolidated `testdata/test_cosmic_mutations_proteindb.fa` contains all non-filtered mutations regardless of tissue type.
+
+---
+
+## 2.3 `--clinical_sample_file` CLI Option
+
+The `--clinical_sample_file` / `-cl` option accepts any TSV file that maps a sample/phenotype ID column to the `--filter_column` value. For COSMIC, this is the Classification file:
+
+| Argument | COSMIC v103 value |
+|---|---|
+| `--clinical_sample_file` | `Cosmic_Classification_v103_GRCh38.tsv` (or `.gz`) |
+| `--filter_column` | `PRIMARY_SITE` |
+| Join key used internally | `COSMIC_PHENOTYPE_ID` (auto-detected for COSMIC) |
+
+For **cBioportal**, the equivalent is the clinical sample file with `SAMPLE_ID` as the join key — the `--clinical_sample_file` option uses `SAMPLE_ID` by default and switches to `COSMIC_PHENOTYPE_ID` only when invoked via `cosmic-to-proteindb`.
+
+---
+
+## 2.4 Independent Validation with Real COSMIC Files
+
+After downloading COSMIC v103 files into `use-cases/use-case2/cosmic_data/`, run the pipeline against a subset of real mutations:
+
+```bash
+# Extract 500 actionable mutations (skip intronic/UTR/synonymous)
+zcat use-cases/use-case2/cosmic_data/Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv.gz \
+  | head -1 > /tmp/cosmic_test.tsv
+zcat use-cases/use-case2/cosmic_data/Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv.gz \
+  | grep -E "missense_variant|stop_gained|inframe_deletion|inframe_insertion|frameshift" \
+  | head -500 >> /tmp/cosmic_test.tsv
+
+pgatk cosmic-to-proteindb \
+  --config_file pgatk/config/cosmic_config.yaml \
+  --input_mutation /tmp/cosmic_test.tsv \
+  --input_genes <(zcat use-cases/use-case2/cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz) \
+  --output_db /tmp/cosmic_out.fa \
+  --clinical_sample_file <(zcat use-cases/use-case2/cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz) \
+  --filter_column PRIMARY_SITE \
+  --split_by_filter_column \
+  --accepted_values all
+```
+
+Expected: ~27 per-tissue output files, including canonical COSMIC tissue types (`lung`, `breast`, `large_intestine`, `skin`, `haematopoietic_and_lymphoid_tissue`, etc.). FASTA headers follow the format:
+
+```
+>COSMIC:GENE_SYMBOL:p.MutAA:SO_term
+```
+
+To verify the join is working (i.e. phenotype IDs are resolving to tissue names):
+
+```bash
+# Count sequences per tissue file
+for f in /tmp/cosmic_out_*.fa; do
+  echo "$f: $(grep -c '^>' $f) sequences"
+done
+```
+
+A file named `cosmic_out_NS.fa` is expected for phenotypes where tissue is not specified in the Classification file — these are retained rather than silently dropped.

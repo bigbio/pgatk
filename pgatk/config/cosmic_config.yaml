@@ -27,6 +27,7 @@ cosmic_data:
       - grch38/cosmic/v103/Cosmic_Transcripts_Tsv_v103_GRCh38.tar
       - grch38/cell_lines/v103/CellLinesProject_GenomeScreensMutant_Tsv_v103_GRCh38.tar
       - grch38/cell_lines/v103/CellLinesProject_CompleteCNA_Tsv_v103_GRCh38.tar
+      - grch38/cosmic/v103/Cosmic_Classification_Tsv_v103_GRCh38.tar
   logger:
     formatters:
       DEBUG: "%(asctime)s [%(levelname)7s][%(name)48s][%(module)32s, %(lineno)4s] %(message)s"
@@ -34,7 +35,7 @@ cosmic_data:
     loglevel: DEBUG
 proteindb:
    filter_info:
-      filter_column: 'Primary site'
+      filter_column: 'PRIMARY_SITE'
       accepted_values: "all"
       split_by_filter_column: False
       clinical_sample_file: ''

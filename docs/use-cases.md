@@ -117,10 +117,11 @@ pgatk cosmic-downloader \
     -o cosmic_data
 
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicCLP_MutantExport.tsv.gz \
-    --input_genes cosmic_data/All_CellLines_Genes.fasta.gz \
+    --input_mutation cosmic_data/CellLinesProject_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_cellline.fa \
-    --filter_column "Sample name" \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
@@ -144,7 +145,7 @@ pgatk generate-decoy \
     --decoy_prefix DECOY_
 ```
 
-### Step 8 -- Extract non-canonical unique peptides
+### Step 7 -- Extract non-canonical unique peptides
 
 After database searching with your search engine, you can also pre-compute the
 set of non-canonical peptides unique to these novel sources:
@@ -381,14 +382,22 @@ pgatk cosmic-downloader \
 
 # Generate per-tissue databases
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_proteins.fa \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
 This produces files like `cosmic_proteins_lung.fa`, `cosmic_proteins_breast.fa`,
 etc. Use the tissue-matched database for your cancer type of interest.
+
+!!! note "COSMIC v103 tissue annotation"
+    In COSMIC v103, `PRIMARY_SITE` is not a column in the mutation file. It lives
+    in the separate Classification file (`Cosmic_Classification_v103_GRCh38.tsv.gz`)
+    and is joined via `COSMIC_PHENOTYPE_ID`. Pass the Classification file via
+    `--clinical_sample_file` whenever tissue-type filtering or splitting is needed.
 
 ### 4b. Cancer-type speific database using COSMIC somatic mutations
 
@@ -396,9 +405,11 @@ Build a focused database for one cancer type (e.g. lung):
 
 ```bash
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_lung_proteins.fa \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --accepted_values "lung"
 ```
 
@@ -409,10 +420,11 @@ provides a dedicated cell-line export with mutations annotated per sample:
 
 ```bash
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicCLP_MutantExport.tsv.gz \
-    --input_genes cosmic_data/All_CellLines_Genes.fasta.gz \
+    --input_mutation cosmic_data/CellLinesProject_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_cellline_proteins.fa \
-    --filter_column "Sample name" \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
@@ -446,15 +458,16 @@ pgatk cbioportal-to-proteindb \
 ### 4e. Combined cancer database for immunopeptidomics
 
 For HLA immunopeptidomics / neoantigen discovery, a broad mutation database
-maximizes the chance of detecting mutant HLA-presented peptides. Studies have
-shown that COSMIC-derived databases can identify 5x more mutant immunopeptides
-than patient WES alone. Combine COSMIC with ClinVar:
+maximizes the chance of detecting mutant HLA-presented peptides. COSMIC-derived
+databases have been shown to identify 5x more mutant HLA-I immunopeptides than
+patient WES alone ([Wang et al., *J Transl Med* 2024](https://doi.org/10.1186/s12967-023-04821-0)).
+Combine COSMIC with ClinVar:
 
 ```bash
 # Generate COSMIC mutations
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_proteins.fa
 
 # Generate ClinVar mutations
@@ -973,8 +986,8 @@ pgatk clinvar-to-proteindb \
 
 # COSMIC somatic mutations
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_variants.fa
 
 # Non-coding RNA (lncRNA)

@@ -287,6 +287,23 @@ class CancerGenomesService(ParameterConfiguration):
                 except KeyError:
                     COSMIC_CDS_DB[record.id] = [record]
 
+        # Build phenotype-to-group mapping from the classification file if provided.
+        # COSMIC_PHENOTYPE_ID is present directly in the mutation file (column 6) and
+        # is the join key to the Cosmic_Classification file where PRIMARY_SITE lives.
+        sample_groups_dict = {}
+        if self._local_clinical_sample_file and self._filter_column:
+            sample_groups_dict = self.get_value_per_sample(
+                self._local_clinical_sample_file,
+                self._filter_column,
+                sample_id_column='COSMIC_PHENOTYPE_ID',
+            )
+            if not sample_groups_dict:
+                self.get_logger().warning(
+                    "clinical_sample_file '%s' produced no phenotype mappings; "
+                    "falling back to direct filter-column lookup in the mutation file.",
+                    self._local_clinical_sample_file,
+                )
+
         regex = re.compile('[^a-zA-Z]')
         mutation_dic = {}
         groups_mutations_dict = {}
@@ -296,55 +313,81 @@ class CancerGenomesService(ParameterConfiguration):
         required_columns = ["GENE_SYMBOL", "TRANSCRIPT_ACCESSION", "MUTATION_CDS", "MUTATION_AA", "MUTATION_DESCRIPTION"]
         with _open_text(self._local_mutation_file, encoding="latin-1") as cosmic_input, \
              open(self._local_output_file, 'w', encoding='utf-8') as output:
-            header = cosmic_input.readline().strip().split("\t")
+            col_header = cosmic_input.readline().strip().split("\t")
             try:
-                gene_col = header.index("GENE_SYMBOL")
-                enst_col = header.index("TRANSCRIPT_ACCESSION")
-                cds_col = header.index("MUTATION_CDS")
-                aa_col = header.index("MUTATION_AA")
-                muttype_col = header.index("MUTATION_DESCRIPTION")
+                gene_col = col_header.index("GENE_SYMBOL")
+                enst_col = col_header.index("TRANSCRIPT_ACCESSION")
+                cds_col = col_header.index("MUTATION_CDS")
+                aa_col = col_header.index("MUTATION_AA")
+                muttype_col = col_header.index("MUTATION_DESCRIPTION")
             except ValueError as e:
                 self.get_logger().error(
                     "COSMIC file missing required columns. Expected %s, got: %s",
-                    required_columns, header
+                    required_columns, col_header
                 )
                 raise ValueError(
                     f"COSMIC mutation file missing required column: {e}. "
                     f"Expected columns include: {required_columns}"
                 ) from e
+
+            # COSMIC_PHENOTYPE_ID is the direct join key to the classification file.
+            try:
+                phenotype_id_col = col_header.index("COSMIC_PHENOTYPE_ID")
+            except ValueError:
+                phenotype_id_col = None
+                if sample_groups_dict:
+                    self.get_logger().warning(
+                        "COSMIC_PHENOTYPE_ID not found in mutation file header; classification file join will be skipped."
+                    )
+
+            # Fall back to a direct filter column in the mutation file when no classification file is provided.
             filter_col = None
-            if self._filter_column:
+            if not sample_groups_dict and self._filter_column:
                 try:
-                    filter_col = header.index(self._filter_column)
+                    filter_col = col_header.index(self._filter_column)
                 except ValueError:
                     self.get_logger().warning(
-                        "Filter column '%s' not found in COSMIC header: %s. Filtering disabled.",
-                        self._filter_column, header
+                        "Filter column '%s' not found in COSMIC header. Filtering disabled.",
+                        self._filter_column,
                     )
 
             max_col = max(gene_col, enst_col, cds_col, aa_col, muttype_col)
             if filter_col is not None:
                 max_col = max(max_col, filter_col)
+            if phenotype_id_col is not None and sample_groups_dict:
+                max_col = max(max_col, phenotype_id_col)
 
             for line in cosmic_input:
                 if line_counter % 10000 == 0:
-                    msg = "Number of lines finished -- '{}'".format(line_counter)
-                    self.get_logger().debug(msg)
+                    self.get_logger().debug("Number of lines finished -- '%s'", line_counter)
                 line_counter += 1
                 row = line.strip().split("\t")
                 if len(row) <= max_col:
                     self.get_logger().debug("Skipping malformed row (insufficient columns) at line %s: %s", line_counter, row[:5])
                     continue
-                if filter_col is not None:
-                    if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
+
+                # Determine the group (e.g. primary site) for this mutation.
+                group = None
+                if sample_groups_dict and phenotype_id_col is not None:
+                    group = sample_groups_dict.get(row[phenotype_id_col])
+                    if group is None and (self._accepted_values != ['all'] or self._split_by_filter_column):
+                        self.get_logger().warning(
+                            "No classification found for COSMIC_PHENOTYPE_ID '%s'; skipping row.",
+                            row[phenotype_id_col],
+                        )
                         continue
+                elif filter_col is not None:
+                    group = row[filter_col]
+
+                if group is not None and group not in self._accepted_values and self._accepted_values != ['all']:
+                    continue
 
                 if "coding silent" in row[muttype_col] or "synonymous_variant" in row[muttype_col]:
                     continue
 
                 snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
                           mutation_type=row[muttype_col])
-                header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.mutation_type.replace(" ", ""))
+                fasta_header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.mutation_type.replace(" ", ""))
                 try:
                     this_gene_records = COSMIC_CDS_DB[snp.gene]
                     seqs = []
@@ -364,16 +407,16 @@ class CancerGenomesService(ParameterConfiguration):
                         break
 
                 if mut_pro_seq:
-                    entry = ">%s\n%s\n" % (header, mut_pro_seq)
-                    if header not in mutation_dic:
+                    entry = ">%s\n%s\n" % (fasta_header, mut_pro_seq)
+                    if fasta_header not in mutation_dic:
                         output.write(entry)
-                        mutation_dic[header] = 1
+                        mutation_dic[fasta_header] = 1
 
-                    if self._split_by_filter_column and filter_col is not None:
+                    if self._split_by_filter_column and group is not None:
                         try:
-                            groups_mutations_dict[row[filter_col]][header] = entry
+                            groups_mutations_dict[group][fasta_header] = entry
                         except KeyError:
-                            groups_mutations_dict[row[filter_col]] = {header: entry}
+                            groups_mutations_dict[group] = {fasta_header: entry}
                 else:
                     self.get_logger().warning(
                         f"Could not parse mutation record: gene={snp.gene}, dna_mut={snp.dna_mut}, "
@@ -383,13 +426,14 @@ class CancerGenomesService(ParameterConfiguration):
         for group_name in groups_mutations_dict.keys():
             output_base = str(Path(self._local_output_file).with_suffix(''))
             with open(f"{output_base}_{regex.sub('', group_name)}.fa", 'w', encoding='utf-8') as fn:
-                for header in groups_mutations_dict[group_name].keys():
-                    fn.write(groups_mutations_dict[group_name][header])
+                for fasta_hdr in groups_mutations_dict[group_name].keys():
+                    fn.write(groups_mutations_dict[group_name][fasta_hdr])
 
         self.get_logger().debug("COSMIC contains in total {} non redundant mutations".format(len(mutation_dic)))
 
     @staticmethod
-    def get_sample_headers(header_line: list, filter_column: str) -> tuple[Optional[int], Optional[int]]:
+    def get_sample_headers(header_line: list, filter_column: str,
+                           sample_id_column: str = 'SAMPLE_ID') -> tuple[Optional[int], Optional[int]]:
         _logger = logging.getLogger(__name__)
         try:
             filter_col = header_line.index(filter_column)
@@ -397,13 +441,14 @@ class CancerGenomesService(ParameterConfiguration):
             _logger.warning('%s was not found in the header row: %s', filter_column, header_line)
             return None, None
         try:
-            sample_id_col = header_line.index('SAMPLE_ID')
+            sample_id_col = header_line.index(sample_id_column)
         except ValueError:
-            _logger.warning('SAMPLE_ID was not found in the header row: %s', header_line)
+            _logger.warning('%s was not found in the header row: %s', sample_id_column, header_line)
             return None, None
         return filter_col, sample_id_col
 
-    def get_value_per_sample(self, local_clinical_sample_file: str, filter_column: str) -> dict:
+    def get_value_per_sample(self, local_clinical_sample_file: str, filter_column: str,
+                              sample_id_column: str = 'SAMPLE_ID') -> dict:
         sample_value = {}
         if local_clinical_sample_file:
             with open(local_clinical_sample_file, 'r', encoding='utf-8') as clin_fn:
@@ -412,16 +457,17 @@ class CancerGenomesService(ParameterConfiguration):
                     if line.startswith('#'):
                         continue
                     sl = line.strip().split('\t')
-                    if 'SAMPLE_ID' in sl and filter_column in sl:
-                        filter_column_col, sample_id_col = self.get_sample_headers(sl, filter_column)
-                        # Skip adding the header row itself to sample_value
+                    if sample_id_column in sl and filter_column in sl:
+                        filter_column_col, sample_id_col = self.get_sample_headers(
+                            sl, filter_column, sample_id_column
+                        )
                         continue
                     if filter_column_col is not None and sample_id_col is not None:
                         if (sample_id_col < len(sl) and filter_column_col < len(sl)):
                             sample_value[sl[sample_id_col]] = sl[filter_column_col].strip().replace(' ', '_')
                     else:
-                        self.get_logger().warning("No column was found for %s, %s in %s", filter_column, 'SAMPLE_ID',
-                                                  local_clinical_sample_file)
+                        self.get_logger().warning("No column was found for %s, %s in %s", filter_column,
+                                                  sample_id_column, local_clinical_sample_file)
         return sample_value
 
     @staticmethod
