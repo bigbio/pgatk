@@ -144,15 +144,24 @@ class CancerGenomesService(ParameterConfiguration):
                     seq_mut = seq[:index] + mut_dna + seq[index + 1:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
             elif "delins" in snp.dna_mut:
-                # Deletion-insertion: delete range then insert new bases
-                insert_dna = snp.dna_mut.split("delins")[1]
-                if insert_dna.isalpha() and len(positions) >= 2:
-                    del_index1 = int(positions[0]) - 1
-                    del_index2 = int(positions[1])
+                # HGVS delins: one or more nucleotides replaced by one or more other nucleotides.
+                coord_part, insert_raw = snp.dna_mut.split("delins", 1)
+                insert_dna = insert_raw.upper()
+                if re.search(r'\d[+-]|\*|-\d', coord_part):
+                    # Intronic (c.N+X, c.N-X), 5'UTR (c.-N) or 3'UTR (c.*N) offsets
+                    # cannot be mapped onto a CDS-only FASTA sequence; skip.
+                    pass
+                elif not insert_dna.isalpha():
+                    # Unknown ('?'), N[n], or conversion-notation insertions cannot be resolved.
+                    pass
+                elif len(positions) >= 2:
+                    # Range delins: delete positions[0]..positions[1] (1-indexed, inclusive).
+                    del_index1 = int(positions[0]) - 1  # 0-indexed start
+                    del_index2 = int(positions[1])      # 0-indexed exclusive end
                     seq_mut = seq[:del_index1] + insert_dna + seq[del_index2:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
-                elif insert_dna.isalpha() and len(positions) == 1:
-                    # Single-position delins: replace one base
+                elif len(positions) == 1:
+                    # Single-position delins: replace the one nucleotide at positions[0].
                     del_index1 = int(positions[0]) - 1
                     seq_mut = seq[:del_index1] + insert_dna + seq[del_index1 + 1:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
@@ -163,6 +172,20 @@ class CancerGenomesService(ParameterConfiguration):
                 if insert_dna.isalpha():
                     ins_index1 = int(positions[0])
                     seq_mut = seq[:ins_index1] + insert_dna + seq[ins_index1:]
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
+
+            elif "dup" in snp.dna_mut:
+                # Tandem duplication: re-insert the duplicated range after its end position.
+                if len(positions) == 2:
+                    dup_start = int(positions[0]) - 1
+                    dup_end = int(positions[1])
+                    dup_seq = str(seq[dup_start:dup_end])
+                    seq_mut = seq[:dup_end] + dup_seq + seq[dup_end:]
+                    mut_pro_seq = str(seq_mut.translate(to_stop=False))
+                elif len(positions) == 1:
+                    dup_pos = int(positions[0])
+                    dup_seq = str(seq[dup_pos - 1:dup_pos])
+                    seq_mut = seq[:dup_pos] + dup_seq + seq[dup_pos:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
 
             elif "del" in snp.dna_mut:
@@ -180,7 +203,7 @@ class CancerGenomesService(ParameterConfiguration):
                 positions = re.findall(r'\d+', snp.aa_mut)
                 protein_seq = str(seq.translate(to_stop=False))
 
-                if "Missense" in snp.mutation_type:
+                if "Missense" in snp.mutation_type or "missense_variant" in snp.mutation_type:
                     # Extract the mutant residue from HGVS like p.V600E (1-letter)
                     # or p.Val600Glu (3-letter).  For 1-letter the last char is the
                     # AA; for 3-letter we need to convert the last triplet.
@@ -190,20 +213,27 @@ class CancerGenomesService(ParameterConfiguration):
                         return ''
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index] + mut_aa + protein_seq[index + 1:]
-                elif "Nonsense" in snp.mutation_type:
+                elif "Nonsense" in snp.mutation_type or "stop_gained" in snp.mutation_type:
                     index = int(positions[0]) - 1
                     mut_pro_seq = protein_seq[:index]
-                elif "Insertion - In frame" in snp.mutation_type:
-                    try:
-                        index = snp.aa_mut.index("ins")
-                    except ValueError:
-                        return ''
-                    insert_aa_raw = snp.aa_mut[index + 3:]
-                    insert_aa = _three_to_one(insert_aa_raw)
-                    if insert_aa.isalpha():
-                        ins_index1 = int(positions[0])
-                        mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
-                elif "Deletion - In frame" in snp.mutation_type:
+                elif "Insertion - In frame" in snp.mutation_type or "inframe_insertion" in snp.mutation_type:
+                    if "dup" in snp.aa_mut:
+                        # Protein-level tandem dup: re-insert the duplicated residues after the range.
+                        dup_start = int(positions[0]) - 1
+                        dup_end = int(positions[-1])
+                        dup_aa = protein_seq[dup_start:dup_end]
+                        mut_pro_seq = protein_seq[:dup_end] + dup_aa + protein_seq[dup_end:]
+                    else:
+                        try:
+                            index = snp.aa_mut.index("ins")
+                        except ValueError:
+                            return ''
+                        insert_aa_raw = snp.aa_mut[index + 3:]
+                        insert_aa = _three_to_one(insert_aa_raw)
+                        if insert_aa.isalpha():
+                            ins_index1 = int(positions[0])
+                            mut_pro_seq = protein_seq[:ins_index1] + insert_aa + protein_seq[ins_index1:]
+                elif "Deletion - In frame" in snp.mutation_type or "inframe_deletion" in snp.mutation_type:
                     if len(positions) == 2:
                         del_index1 = int(positions[0]) - 1
                         del_index2 = int(positions[1])
@@ -211,7 +241,8 @@ class CancerGenomesService(ParameterConfiguration):
                     elif len(positions) == 1:
                         del_index1 = int(positions[0]) - 1
                         mut_pro_seq = protein_seq[:del_index1] + protein_seq[del_index1 + 1:]
-                elif "Complex" in snp.mutation_type and "frameshift" not in snp.mutation_type:
+                elif ("Complex" in snp.mutation_type or "protein_altering_variant" in snp.mutation_type) \
+                        and "frameshift" not in snp.mutation_type:
                     try:
                         index = snp.aa_mut.index(">")
                     except ValueError:
@@ -262,16 +293,16 @@ class CancerGenomesService(ParameterConfiguration):
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
 
-        required_columns = ["Gene name", "Accession Number", "Mutation CDS", "Mutation AA", "Mutation Description"]
+        required_columns = ["GENE_SYMBOL", "TRANSCRIPT_ACCESSION", "MUTATION_CDS", "MUTATION_AA", "MUTATION_DESCRIPTION"]
         with _open_text(self._local_mutation_file, encoding="latin-1") as cosmic_input, \
              open(self._local_output_file, 'w', encoding='utf-8') as output:
             header = cosmic_input.readline().strip().split("\t")
             try:
-                gene_col = header.index("Gene name")
-                enst_col = header.index("Accession Number")
-                cds_col = header.index("Mutation CDS")
-                aa_col = header.index("Mutation AA")
-                muttype_col = header.index("Mutation Description")
+                gene_col = header.index("GENE_SYMBOL")
+                enst_col = header.index("TRANSCRIPT_ACCESSION")
+                cds_col = header.index("MUTATION_CDS")
+                aa_col = header.index("MUTATION_AA")
+                muttype_col = header.index("MUTATION_DESCRIPTION")
             except ValueError as e:
                 self.get_logger().error(
                     "COSMIC file missing required columns. Expected %s, got: %s",
@@ -308,7 +339,7 @@ class CancerGenomesService(ParameterConfiguration):
                     if row[filter_col] not in self._accepted_values and self._accepted_values != ['all']:
                         continue
 
-                if "coding silent" in row[muttype_col]:
+                if "coding silent" in row[muttype_col] or "synonymous_variant" in row[muttype_col]:
                     continue
 
                 snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
