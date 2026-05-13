@@ -32,7 +32,7 @@ pgatk ensembl-downloader \
 
 ```bash
 gffread -F -w ensembl_human/transcripts.fa \
-    -g ensembl_human/genome.fa \
+    -g ensembl_human/Homo_sapiens.GRCh38.dna_sm.toplevel.fa \
     ensembl_human/Homo_sapiens.GRCh38.*.gtf
 ```
 
@@ -106,19 +106,7 @@ pgatk dnaseq-to-proteindb \
     --skip_including_all_cds
 ```
 
-### Step 5 -- Population variant proteins
-
-Include common human variants from ENSEMBL:
-
-```bash
-pgatk vcf-to-proteindb \
-    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf \
-    --input_fasta ensembl_human/transcripts.fa \
-    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf \
-    --output_proteindb ensembl_variants.fa
-```
-
-### Step 6 -- COSMIC somatic mutations (optional, for cancer cell lines)
+### Step 5 -- COSMIC somatic mutations (optional, for cancer cell lines)
 
 For cancer cell-line studies, add cell-line-specific somatic mutations:
 
@@ -136,7 +124,7 @@ pgatk cosmic-to-proteindb \
     --split_by_filter_column
 ```
 
-### Step 7 -- Combine and generate target-decoy database
+### Step 6 -- Combine and generate target-decoy database
 
 ```bash
 # Combine all components
@@ -146,7 +134,6 @@ cat canonical.fa \
     lncrna.fa \
     putative.fa \
     altorf.fa \
-    ensembl_variants.fa \
     > cell_type_target.fa
 
 # Generate decoy sequences
@@ -211,7 +198,7 @@ extract transcript sequences from the GTF and genome FASTA:
 
 ```bash
 gffread -F -w ensembl_human/transcripts.fa \
-    -g ensembl_human/genome.fa \
+    -g ensembl_human/Homo_sapiens.GRCh38.dna_sm.toplevel.fa \
     ensembl_human/Homo_sapiens.GRCh38.*.gtf
 ```
 
