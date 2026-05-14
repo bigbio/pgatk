@@ -138,3 +138,8 @@ pgatk/testdata/Meleagris_gallopavo*
 
 # Internal working docs (implementation plans, scratch notes)
 docs/plans/
+
+# BioPython SeqIO.index_db SQLite indexes — built lazily on first use,
+# rebuilt automatically when the source FASTA changes (mtime check).
+*.fa.idx
+*.fasta.idx
