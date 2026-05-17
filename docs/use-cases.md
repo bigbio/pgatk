@@ -288,16 +288,54 @@ gnomAD provides allele frequencies stratified by ancestry (African, East Asian,
 South Asian, European, Latino, etc.). Build a database using variants common in
 a specific population:
 
+#### Obtaining GENCODE reference annotation and transcript sequences
+
+gnomAD v4 VEP annotations are built against the GRCh38 assembly using GENCODE/Ensembl
+transcript coordinates. Download the matching GENCODE v44 GTF and pre-built transcript
+FASTA (GENCODE v44 = Ensembl release 111, fully compatible with gnomAD v4.1.1):
+
+```bash
+# Annotation GTF
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.annotation.gtf.gz
+gunzip gencode.v44.annotation.gtf.gz
+
+# Pre-built transcript sequences
+wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz
+gunzip gencode.v44.transcripts.fa.gz
+```
+
+!!! note "GENCODE transcript ID versioning"
+    GENCODE FASTA headers include a version suffix (e.g. `ENST00000456328.2`).
+    pgatk automatically strips the suffix when matching against VCF transcript IDs,
+    so gnomAD VEP entries (which use bare IDs like `ENST00000456328`) resolve correctly.
+
+#### Obtaining the gnomAD exomes sites VCF
+
+Exomes **sites** VCFs are distributed **one file per chromosome** (bgzip-compressed
+VCF plus tabix index) from the gnomAD v4 downloads. Browse the file list and
+direct HTTPS links on the official page: [gnomAD downloads](https://gnomad.broadinstitute.org/downloads)
+(open **v4 Downloads**, then **Variants** → **Exomes**). The current exomes patch
+release uses paths under `release/4.1.1/vcf/exomes/` with names like
+`gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz` (replace `chr22` with the chromosome you need).
+
+```bash
+wget https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1.1/vcf/exomes/gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz
+wget https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1.1/vcf/exomes/gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz.tbi
+```
+
+#### Translate the variants from the gnomAD chr22 to proteins
+
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf gnomad.exomes.v4.1.sites.vcf.bgz \
-    --input_fasta gencode_transcripts.fa \
+    --vcf gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz \
+    --input_fasta gencode.v44.transcripts.fa \
     --gene_annotations_gtf gencode.v44.annotation.gtf \
     --annotation_field_name vep \
     --af_field AF_afr \
     --af_threshold 0.01 \
-    --include_consequences missense_variant,inframe_insertion,inframe_deletion \
-    --biotype_str transcript_type \
+    --include_consequences missense_variant,inframe_insertion,inframe_deletion,stop_gained \
+    --biotype_str biotype \
+    --include_biotypes protein_coding \
     --output_proteindb gnomad_afr_proteins.fa
 ```
 
@@ -306,8 +344,14 @@ pgatk vcf-to-proteindb \
     - `--af_field` -- Use population-specific AF fields: `AF_afr` (African),
       `AF_eas` (East Asian), `AF_sas` (South Asian), `AF_nfe` (Non-Finnish European),
       `AF_amr` (Latino), or `controls_AF` (all controls)
-    - `--biotype_str transcript_type` -- GENCODE uses `transcript_type` instead
-      of ENSEMBL's `transcript_biotype`
+    - `--biotype_str biotype` -- gnomAD's VEP format names the biotype column
+      `BIOTYPE`; this is distinct from GENCODE/Ensembl GTF attribute names
+      (`transcript_type` / `transcript_biotype`) which only apply to the
+      `dnaseq-to-proteindb` command
+    - `--include_biotypes protein_coding` -- restrict translation to
+      protein-coding transcripts only; without this, retained introns,
+      pseudogenes, and other non-coding biotypes annotated in the VEP field
+      would also be processed
 
 ---
 
@@ -322,10 +366,10 @@ validating pathogenic variants at the protein level.
 ### Step 1 -- Download NCBI / ClinVar files
 
 ```bash
-pgatk ncbi-downloader -o ncbi_data
+pgatk ncbi-downloader -o ncbi_clinvar
 ```
 
-This downloads four files to `ncbi_data/`:
+This downloads four files to `ncbi_clinvar/`:
 
 - `GRCh38_latest_genomic.gtf` -- RefSeq gene annotations
 - `GRCh38_latest_rna.fna` -- RefSeq transcript nucleotide sequences
@@ -336,10 +380,10 @@ This downloads four files to `ncbi_data/`:
 
 ```bash
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf \
-    --fasta ncbi_data/GRCh38_latest_rna.fna \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf \
+    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf \
+    --fasta ncbi_clinvar/GRCh38_latest_rna.fna \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 ```
 
@@ -472,10 +516,10 @@ pgatk cosmic-to-proteindb \
 
 # Generate ClinVar mutations
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf.gz \
+    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf.gz \
+    --fasta ncbi_clinvar/GRCh38_latest_rna.fna.gz \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 
 # Extract variant-unique peptides (undigested -- HLA peptides are not tryptic)
@@ -947,7 +991,7 @@ to maximize the discovery of non-canonical peptides.
 pgatk ensembl-downloader -t 9606 -o ensembl_data
 
 # NCBI / ClinVar
-pgatk ncbi-downloader -o ncbi_data
+pgatk ncbi-downloader -o ncbi_clinvar
 
 # COSMIC (requires account)
 pgatk cosmic-downloader -u user@example.com -p password -o cosmic_data
@@ -978,10 +1022,10 @@ pgatk vcf-to-proteindb \
 
 # ClinVar clinical variants
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf.gz \
+    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf.gz \
+    --fasta ncbi_clinvar/GRCh38_latest_rna.fna.gz \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_variants.fa
 
 # COSMIC somatic mutations

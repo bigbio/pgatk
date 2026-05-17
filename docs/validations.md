@@ -255,3 +255,227 @@ done
 ```
 
 A file named `cosmic_out_NS.fa` is expected for phenotypes where tissue is not specified in the Classification file — these are retained rather than silently dropped.
+
+---
+
+# 3. Variant Translation Tests - Ensembl vcf-to-proteindb
+
+## 3.1 Testdata Files
+
+Small, self-contained testdata covering 10 representative variants across all consequence types. All variants are real (sourced from Ensembl GRCh38.115 release 115, chr22) and involve two genes:
+
+- **OR11H1** (`ENST00000643195`, mRNA, single-exon olfactory receptor gene, CDS 948 nt / 315 AA + stop) — used for all coding consequence types
+- **BID** (`ENST00000550946`, ncRNA/retained_intron on chr22) — used for the non-coding transcript example
+
+| File | Role |
+|---|---|
+| `pgatk/testdata/test_ensembl_v2p.vcf` | 10 variants covering 9 consequence types (Ensembl v115 VCF format) |
+| `pgatk/testdata/test_ensembl_v2p.fa` | Transcript sequences for ENST00000643195 and ENST00000550946 |
+| `pgatk/testdata/test_ensembl_v2p.gtf` | Gene models for both transcripts (GRCh38.p14) |
+| `pgatk/testdata/test_ensembl_v2p_proteindb.fa` | Expected output — 10 sequences (7 mRNA + 3 ncRNA frames) |
+
+The wild-type OR11H1 protein (ENST00000643195) used as comparison baseline:
+
+```
+MNVSEPNSSFAFVNEFILQGFSCEWTIQIFLFSLFTTTYALTITGNGAIAFVLW...KVLGSSNII*   (316 chars incl. stop)
+```
+
+---
+
+## 3.2 CSQ Annotation Field Format
+
+The VCF `##INFO` header declares the consequence annotation format:
+
+```
+##INFO=<ID=CSQ,...,Description="...Format=Allele|Consequence|Feature_type|Feature|Amino_acids|SIFT">
+```
+
+Each variant can carry multiple comma-separated CSQ entries (one per overlapping transcript). The pipeline selects entries where `Feature_type` matches `--include_biotypes` and `Consequence` is not in `--exclude_consequences`.
+
+---
+
+## 3.3 Filtering Logic
+
+| Parameter | Default value | Effect |
+|---|---|---|
+| `--include_biotypes` | `protein_coding,...` | Only transcripts whose `Feature_type` matches are processed |
+| `--exclude_consequences` | `downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant` | Variants with these consequences produce no output |
+| `--af_field` | *(empty)* | If set, variants with MAF below `--af_threshold` (default 0.01) are skipped |
+| `--num_orfs` | `3` | For ncRNA transcripts, all 3 reading frames are translated and emitted separately |
+
+---
+
+## 3.4 Validated Variant Examples
+
+All mRNA examples use `ENST00000643195` (OR11H1 gene, chr22). The ncRNA example uses `ENST00000550946` (BID gene, chr22).
+
+### Actionable Types (produce output sequences)
+
+| Consequence | rsID | Position | REF→ALT | VCF `Amino_acids` | Expected assertion |
+|---|---|---|---|---|---|
+| `start_lost` | rs1211697244 | 22:15528192 | A→G | `M/V` | First AA is `V` (not `M`); length unchanged |
+| `missense_variant` | rs1410655344 | 22:15528195 | A→G | `N/D` | Position 1 (0-based) is `D`; length unchanged (316 chars) |
+| `frameshift_variant` | rs1402769459 | 22:15528197 | TG→T | `V/X` | Frame shifts after position 1; entire downstream sequence differs from WT |
+| `stop_gained` | rs1420478920 | 22:15528234 | G→T | `E/*` | Position 14 (0-based) is `*`; protein truncated there |
+| `inframe_deletion` | rs1203023715 | 22:15528914 | CTTC→C | `AFS/AS` | `AFS` → `AS`; length is 315 chars (1 AA shorter than WT) |
+| `protein_altering_variant` | rs1986039639 | 22:15528961 | G→GCTG | `SS/SCS` | `SS` → `SCS`; length is 317 chars (1 AA longer than WT) |
+| `stop_lost` | rs1986046473 | 22:15529137 | T→A | `*/K` | Ends with `K` (not `*`); length is 316 chars (stop replaced by K) |
+| `non_coding_transcript_exon_variant` | rs147461488 | 22:17740102 | GGCCACGCTCAACT→G | — | 3 output sequences (`_1`, `_2`, `_3`) for all reading frames |
+
+### No-Output Types
+
+| Consequence | rsID | Position | REF→ALT | VCF `Amino_acids` | Reason no output sequence |
+|---|---|---|---|---|---|
+| `synonymous_variant` | rs1394965478 | 22:15528197 | T→C | `N/N` | In `--exclude_consequences` by default |
+| `stop_retained_variant` | rs1986046579 | 22:15529138 | A→G | `*/*` | Stop codon TAA→TGA: protein unchanged, no distinct variant sequence written |
+
+---
+
+## 3.5 Output FASTA Header Format
+
+```
+>var_<rsid>_<chrom>.<pos>.<REF>.<ALT>_<transcript_id>[_<frame>]
+```
+
+- **mRNA transcripts** — no frame suffix; the annotated CDS frame is used:
+  ```
+  >var_rs1410655344_22.15528195.A.G_ENST00000643195
+  ```
+- **ncRNA transcripts** — three entries per variant with suffixes `_1`, `_2`, `_3` (one per reading frame, controlled by `--num_orfs 3`):
+  ```
+  >var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_1
+  >var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_2
+  >var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_3
+  ```
+
+---
+
+## 3.6 Independent Validation
+
+### 1. Run the pipeline on testdata
+
+```bash
+cd pgatk/  # package root
+
+pgatk vcf-to-proteindb \
+  --config_file config/ensembl_config.yaml \
+  --vcf testdata/test_ensembl_v2p.vcf \
+  --input_fasta testdata/test_ensembl_v2p.fa \
+  --gene_annotations_gtf testdata/test_ensembl_v2p.gtf \
+  --output_proteindb /tmp/v2p_out.fa \
+  --protein_prefix var \
+  --annotation_field_name CSQ \
+  --biotype_str feature_type \
+  --include_biotypes mRNA,ncRNA
+```
+
+Expected `Translation summary` log:
+```
+# variants with invalid record:0
+# variants not passing Filter:0
+# variants not passing AF threshold:0
+# feature IDs from VCF that are not found in the given FASTA file:0
+# variants successfully translated:9
+```
+
+Expected output: **10 sequences** (7 mRNA + 3 ncRNA frames). The `synonymous_variant` and `stop_retained_variant` produce no output sequence.
+
+### 2. Verify headers in output
+
+```bash
+OUTPUT=/tmp/v2p_out.fa
+
+# All 8 actionable mRNA variants should appear
+for rsid in rs1211697244 rs1410655344 rs1402769459 rs1420478920 rs1203023715 rs1986039639 rs1986046473; do
+  count=$(grep -c "^>var_${rsid}" $OUTPUT)
+  echo "$rsid: $count  (expected 1)"
+done
+
+# ncRNA variant: 3 frame sequences
+grep -c "^>var_rs147461488" $OUTPUT
+# Expected: 3
+
+# Synonymous must NOT appear
+grep -c "^>var_rs1394965478" $OUTPUT
+# Expected: 0
+
+# Stop-retained must NOT appear (stop codon unchanged → protein identical to reference)
+grep -c "^>var_rs1986046579" $OUTPUT
+# Expected: 0
+```
+
+### 3. Confirm amino acid changes
+
+```python
+from Bio import SeqIO
+
+records = SeqIO.to_dict(SeqIO.parse("/tmp/v2p_out.fa", "fasta"))
+
+# start_lost (M/V): position 0 is V, not M
+sl = str(records["var_rs1211697244_22.15528192.A.G_ENST00000643195"].seq)
+assert sl[0] == "V", f"Expected V at pos 0, got {sl[0]}"
+
+# missense (N/D): position 1 is D; length = 316 (WT reference)
+mut = str(records["var_rs1410655344_22.15528195.A.G_ENST00000643195"].seq)
+assert mut[1] == "D", f"Expected D at pos 1, got {mut[1]}"
+wt_len = len(mut)  # 316 — used as reference length below
+
+# stop_gained (E/*): stop at position 14
+trunc = str(records["var_rs1420478920_22.15528234.G.T_ENST00000643195"].seq)
+assert trunc[14] == "*", f"Expected * at pos 14, got {trunc[14]}"
+
+# inframe_deletion (AFS/AS): 1 AA shorter
+del_seq = str(records["var_rs1203023715_22.15528914.CTTC.C_ENST00000643195"].seq)
+assert len(del_seq) == wt_len - 1, f"Expected {wt_len-1}, got {len(del_seq)}"
+
+# protein_altering (SS/SCS): 1 AA longer
+ins_seq = str(records["var_rs1986039639_22.15528961.G.GCTG_ENST00000643195"].seq)
+assert len(ins_seq) == wt_len + 1, f"Expected {wt_len+1}, got {len(ins_seq)}"
+
+# stop_lost (*/K): ends with K, not *; same length as WT (stop replaced by K)
+ext = str(records["var_rs1986046473_22.15529137.T.A_ENST00000643195"].seq)
+assert ext[-1] == "K", f"Expected K at end, got {ext[-1]}"
+assert len(ext) == wt_len, f"Expected {wt_len}, got {len(ext)}"
+
+# ncRNA: 3 frames present
+for frame in ["1", "2", "3"]:
+    key = f"var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_{frame}"
+    assert key in records, f"Missing ncRNA frame {frame}"
+
+print("All assertions passed.")
+```
+
+### 4. Compare output against committed reference
+
+```bash
+# The committed expected output can be diff'd against a fresh pipeline run
+diff <(grep "^>" testdata/test_ensembl_v2p_proteindb.fa | sort) \
+     <(grep "^>" /tmp/v2p_out.fa | sort)
+# Expected: no output (headers match exactly)
+
+diff testdata/test_ensembl_v2p_proteindb.fa /tmp/v2p_out.fa
+# Expected: no output (files identical)
+```
+
+### 5. Extended validation with AF filtering
+
+To test the `--af_field MAF` filter (the testdata VCF includes a `MAF` field):
+
+```bash
+# With AF threshold: only variants with MAF ≥ 0.01 are translated
+# rs1410655344 MAF=0.012 → passes; rs1394965478 MAF=0.008 → filtered (also excluded by consequence)
+pgatk vcf-to-proteindb \
+  --config_file config/ensembl_config.yaml \
+  --vcf testdata/test_ensembl_v2p.vcf \
+  --input_fasta testdata/test_ensembl_v2p.fa \
+  --gene_annotations_gtf testdata/test_ensembl_v2p.gtf \
+  --output_proteindb /tmp/v2p_af.fa \
+  --protein_prefix var \
+  --annotation_field_name CSQ \
+  --biotype_str feature_type \
+  --include_biotypes mRNA,ncRNA \
+  --af_field MAF
+
+grep -c "^>" /tmp/v2p_af.fa
+# Expected: 4  (missense MAF=0.012, ncRNA MAF=0.168 → 1 mRNA + 3 ncRNA frames)
+```

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import gzip
 import logging
 import os
-import re
 import sqlite3
 from pathlib import Path
 from typing import Any, Optional
@@ -46,10 +46,33 @@ class _FeatureCache:
 
 _MISSING = object()
 
+# Number of VCF data lines per variant-batch chunk.  Tune up for very large
+# VCFs (whole-genome) or down when memory per worker is constrained.
+_VARIANT_BATCH_SIZE = 50_000
 
-def _safe_chrom(chrom: str) -> str:
-    """Sanitise a chromosome identifier into a filesystem-safe filename component."""
-    return re.sub(r'[^A-Za-z0-9._-]', '_', str(chrom))
+# Per-worker state populated once by _worker_init and reused across all tasks
+# assigned to that worker process.
+_worker_state: dict = {}
+
+
+def _worker_init(default_params: dict, pipeline_args: dict,
+                 input_fasta: str, gtf_path: str,
+                 annotation_indices: Optional[tuple] = None) -> None:
+    """Pool initializer: open the GTF database and FASTA index once per worker
+    process rather than once per task, amortising startup cost across all
+    variant-batch chunks handled by that worker.
+    annotation_indices is pre-computed by the main process to avoid re-parsing
+    the VCF ##INFO header for every batch.
+    """
+    svc = EnsemblDataService(default_params, pipeline_args)
+    db_path = str(Path(gtf_path).with_suffix('.db'))
+    db = svc.parse_gtf(gtf_path, db_path)
+    idx_path = _ensure_fasta_index(input_fasta)
+    transcripts_dict = SeqIO.index_db(
+        idx_path, [input_fasta], "fasta", key_function=EnsemblDataService.get_key
+    )
+    _worker_state.update({'svc': svc, 'db': db, 'transcripts_dict': transcripts_dict,
+                          'annotation_indices': annotation_indices})
 
 
 def _ensure_fasta_index(input_fasta: str) -> str:
@@ -71,19 +94,23 @@ def _ensure_fasta_index(input_fasta: str) -> str:
     return idx_path
 
 
-def _split_vcf_by_chrom(vcf_file: str, output_dir: str) -> dict[str, str]:
-    """Stream `vcf_file` once, writing per-chromosome VCFs into `output_dir`.
+def _split_vcf_into_batches(vcf_file: str, output_dir: str,
+                             batch_size: int = _VARIANT_BATCH_SIZE) -> list[str]:
+    """Stream `vcf_file` once, writing fixed-size variant-count batches into
+    `output_dir`.
 
-    Each output file is `<output_dir>/chunk_<safe_chrom>.vcf` and contains the
-    full VCF header followed by only the data lines for that chromosome.
-    Preserves line ordering within each chromosome.
+    Each output file is `<output_dir>/batch_<NNNN>.vcf` and contains the full
+    VCF header followed by at most `batch_size` data lines.  Batches may span
+    chromosome boundaries — the per-variant chromosome check inside
+    `_vcf_to_proteindb_chunk` handles cross-chromosome records correctly.
 
-    Returns a mapping `{chrom: chunk_path}`. Constant memory — holds at most
-    one open file handle per chromosome seen so far.
+    Returns an ordered list of chunk paths.  Constant memory — holds exactly
+    one open file handle at a time.
     """
     header: list[str] = []
-    handles: dict[str, Any] = {}
-    chunk_paths: dict[str, str] = {}
+    batch_paths: list[str] = []
+    handle = None
+    count = 0
     try:
         with open(vcf_file, 'r', encoding='utf-8') as f:
             for line in f:
@@ -92,30 +119,37 @@ def _split_vcf_by_chrom(vcf_file: str, output_dir: str) -> dict[str, str]:
                     continue
                 if not line.strip():
                     continue
-                chrom = line.split('\t', 1)[0]
-                handle = handles.get(chrom)
-                if handle is None:
-                    chunk_path = os.path.join(output_dir, "chunk_" + _safe_chrom(chrom) + ".vcf")
+                if handle is None or count >= batch_size:
+                    if handle is not None:
+                        handle.close()
+                    chunk_path = os.path.join(output_dir, f"batch_{len(batch_paths):04d}.vcf")
                     handle = open(chunk_path, 'w', encoding='utf-8')
                     handle.writelines(header)
-                    handles[chrom] = handle
-                    chunk_paths[chrom] = chunk_path
+                    batch_paths.append(chunk_path)
+                    count = 0
                 handle.write(line)
+                count += 1
     finally:
-        for h in handles.values():
-            h.close()
-    return chunk_paths
+        if handle is not None:
+            handle.close()
+    return batch_paths
 
 
-def _vcf_to_proteindb_worker(default_params, pipeline_args, vcf_file,
-                              input_fasta, gene_annotations_gtf, output_path):
+def _vcf_to_proteindb_worker(vcf_file: str, output_path: str) -> None:
     """Module-level worker for multiprocessing.Pool.starmap.
 
-    Re-constructs an EnsemblDataService in the worker process from the
-    pickled config dict + pipeline args, then runs the chunk pipeline.
+    Uses the GTF DB, FASTA index, and EnsemblDataService instance opened once
+    per worker process by _worker_init rather than re-constructing them per task.
     """
-    svc = EnsemblDataService(default_params, pipeline_args)
-    svc._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf, output_path)
+    svc = _worker_state['svc']
+    _, stats = svc._vcf_to_proteindb_chunk(
+        vcf_file, None, None, output_path,
+        db=_worker_state['db'],
+        transcripts_dict=_worker_state['transcripts_dict'],
+        log_summary=False,
+        annotation_indices=_worker_state.get('annotation_indices'),
+    )
+    return stats
 
 
 class EnsemblDataService(ParameterConfiguration):
@@ -503,7 +537,9 @@ class EnsemblDataService(ParameterConfiguration):
 
         metadata = []
         data = []
-        with open(vcf_file, 'r', encoding='utf-8') as vcf:
+        _compressed = vcf_file.endswith('.gz') or vcf_file.endswith('.bgz')
+        _opener = gzip.open(vcf_file, 'rt', encoding='utf-8') if _compressed else open(vcf_file, 'r', encoding='utf-8')
+        with _opener as vcf:
             line = vcf.readline().strip()
             while line:
                 if line.startswith('#'):
@@ -516,7 +552,48 @@ class EnsemblDataService(ParameterConfiguration):
 
         return metadata, vcf_df
 
-    def _vcf_to_proteindb_chunk(self, vcf_file: str, input_fasta: str, gene_annotations_gtf: str, output_path: str) -> str:
+    def _parse_annotation_indices(self, metadata: list, vcf_file: str = "") -> tuple:
+        """Resolve transcript/consequence/biotype column positions from VCF ##INFO metadata.
+
+        Takes already-read metadata lines (from vcf_from_file) so the file is not
+        re-opened.  Returns (transcript_index, consequence_index, biotype_index); any
+        value may be None if the corresponding field is absent from the CSQ FORMAT.
+        transcript_index falls back to 0 when no structured FORMAT declaration exists.
+        """
+        annotation_cols: list[str] = []
+        try:
+            raw_cols = \
+                [x for x in metadata if x.startswith('##INFO=<ID={}'.format(self._annotation_field_name))][
+                    0].upper().split('FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
+            annotation_cols = [c.strip(' ">\n\r') for c in raw_cols]
+        except IndexError:
+            pass
+
+        ti = ci = bi = None
+        try:
+            ti = annotation_cols.index(self._transcript_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._transcript_str, annotation_cols, vcf_file)
+        try:
+            ci = annotation_cols.index(self._consequence_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._consequence_str, annotation_cols, vcf_file)
+        try:
+            bi = annotation_cols.index(self._biotype_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._biotype_str, annotation_cols, vcf_file)
+        if ti is None:
+            ti = 0
+        return ti, ci, bi
+
+    def _vcf_to_proteindb_chunk(self, vcf_file: str, input_fasta: Optional[str],
+                                gene_annotations_gtf: Optional[str], output_path: str,
+                                *, db=None, transcripts_dict=None,
+                                log_summary: bool = True,
+                                annotation_indices: Optional[tuple] = None) -> tuple[str, dict]:
         """
     Generate proteins for variants by modifying sequences of affected transcripts.
     In case of already annotated variants it only considers variants within
@@ -525,16 +602,19 @@ class EnsemblDataService(ParameterConfiguration):
     In case of not annotated variants, it considers all variants overlapping
     transcripts from the selected biotypes.
     :param vcf_file:
-    :param input_fasta:
-    :param gene_annotations_gtf:
+    :param input_fasta: path to the FASTA file (required when db/transcripts_dict are None)
+    :param gene_annotations_gtf: path to the GTF file (required when db is None)
     :param output_path: path for writing the output FASTA
+    :param db: pre-opened gffutils.FeatureDB (supplied by pool initializer in parallel runs)
+    :param transcripts_dict: pre-opened SeqIO index (supplied by pool initializer in parallel runs)
     :return:
     """
-        db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
-
-        idx_path = _ensure_fasta_index(input_fasta)
-        transcripts_dict = SeqIO.index_db(idx_path, [input_fasta], "fasta",
-                                          key_function=self.get_key)
+        if db is None:
+            db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
+        if transcripts_dict is None:
+            idx_path = _ensure_fasta_index(input_fasta)
+            transcripts_dict = SeqIO.index_db(idx_path, [input_fasta], "fasta",
+                                              key_function=self.get_key)
         # handle cases where the transcript has version in the GTF but not in the VCF
         # Built lazily on the first KeyError to avoid iterating 207k keys up-front.
         transcript_id_mapping: Optional[dict[str, str]] = None
@@ -546,40 +626,14 @@ class EnsemblDataService(ParameterConfiguration):
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:
-            metadata, vcf_reader = self.vcf_from_file(vcf_file)
-            annotation_cols = []
-            try:
-                annotation_cols = \
-                    [x for x in metadata if x.startswith('##INFO=<ID={}'.format(self._annotation_field_name))][
-                        0].upper().split(
-                        'FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
-            except IndexError:
-                pass
-
-            try:
-                transcript_index = annotation_cols.index(self._transcript_str.upper())
-            except ValueError:
-                msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(
-                    self._transcript_str,
-                    self._consequence_str,
-                    annotation_cols, vcf_file)
-                self.get_logger().debug(msg)
-
-            try:
-                consequence_index = annotation_cols.index(self._consequence_str.upper())
-                biotype_index = annotation_cols.index(self._biotype_str.upper())
-            except ValueError:
-                msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(
-                    self._transcript_str,
-                    self._consequence_str,
-                    annotation_cols, vcf_file)
-                self.get_logger().debug(msg)
-
-            # Fall back to index 0 when no structured ##INFO header was found (e.g.
-            # transcriptOverlaps-annotated VCFs produced by annoate_vcf, which write
-            # plain transcript IDs without a pipe-delimited FORMAT declaration).
-            if transcript_index is None:
-                transcript_index = 0
+            if annotation_indices is not None:
+                # Pre-computed by the parallel orchestrator — skip per-batch header re-parsing.
+                transcript_index, consequence_index, biotype_index = annotation_indices
+                _, vcf_reader = self.vcf_from_file(vcf_file)
+            else:
+                metadata, vcf_reader = self.vcf_from_file(vcf_file)
+                transcript_index, consequence_index, biotype_index = \
+                    self._parse_annotation_indices(metadata, vcf_file)
 
         else:
             # in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts
@@ -596,7 +650,7 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._accepted_filters = [x.upper() for x in self._accepted_filters]
 
-        with open(output_path, 'w', encoding='utf-8') as prots_fn:
+        with open(output_path, 'w', buffering=1 << 20, encoding='utf-8') as prots_fn:
             for record in vcf_reader.itertuples(index=False, name='VCFRecord'):
                 trans = False
                 if [x for x in str(record.REF) if x not in 'ACGT']:
@@ -708,6 +762,21 @@ class EnsemblDataService(ParameterConfiguration):
                         else:
                             transcript_id_v = transcript_id
 
+                    # Apply consequence/biotype filters before any I/O (FASTA lookup,
+                    # get_features DB query).  Both values come from transcript_info
+                    # which is already parsed above.
+                    if consequence_index is not None:
+                        if (consequence in self._exclude_consequences or
+                                (consequence not in self._include_consequences and
+                                 self._include_consequences != ['all'])):
+                            continue
+
+                    if biotype_index is not None:
+                        if (biotype in self._exclude_biotypes or
+                                (biotype not in self._include_biotypes and
+                                 self._include_biotypes != ['all'])):
+                            continue
+
                     cached_row = seq_cache.get(transcript_id_v, _MISSING)
                     if cached_row is _MISSING:
                         try:
@@ -747,20 +816,6 @@ class EnsemblDataService(ParameterConfiguration):
                             if self.get_logger().isEnabledFor(logging.DEBUG):
                                 self.get_logger().debug(
                                     "Could not extract cds position from fasta header for: %s", desc)
-
-                    # Apply consequence/biotype filters before get_features(); both inputs
-                    # come from transcript_info, so we can reject early without SQL.
-                    if consequence_index is not None:
-                        if (consequence in self._exclude_consequences or
-                                (consequence not in self._include_consequences and
-                                 self._include_consequences != ['all'])):
-                            continue
-
-                    if biotype_index is not None:
-                        if (biotype in self._exclude_biotypes or
-                                (biotype not in self._include_biotypes and
-                                 self._include_biotypes != ['all'])):
-                            continue
 
                     cache_key = (transcript_id_v, tuple(feature_types))
                     cached = feature_cache.get(cache_key)
@@ -819,18 +874,19 @@ class EnsemblDataService(ParameterConfiguration):
                 if trans:
                     invalid_records['# variants successfully translated'] += 1
 
-        msg = "Translation summary:\n {}".format(
-            '\n'.join([x + ":" + str(invalid_records[x]) for x in invalid_records.keys()]))
-        self.get_logger().info(msg)
+        if log_summary:
+            msg = "Translation summary:\n {}".format(
+                '\n'.join([x + ":" + str(invalid_records[x]) for x in invalid_records.keys()]))
+            self.get_logger().info(msg)
 
-        return output_path
+        return output_path, invalid_records
 
     def vcf_to_proteindb(self, vcf_file: str, input_fasta: str, gene_annotations_gtf: str, workers=None) -> str:
         """Generate proteins for variants by modifying sequences of affected transcripts.
 
         If workers is None, falls back to self._workers (config) which defaults
-        to 1 (sequential, backward-compatible). Pass workers > 1 to fan out per
-        chromosome via multiprocessing.Pool.
+        to 1 (sequential, backward-compatible). Pass workers > 1 to split the VCF
+        into fixed-size variant batches and fan out via multiprocessing.Pool.
         :param vcf_file:
         :param input_fasta:
         :param gene_annotations_gtf:
@@ -844,7 +900,8 @@ class EnsemblDataService(ParameterConfiguration):
         # For sequential runs we do NOT pre-annotate here; _vcf_to_proteindb_chunk handles that
         # in its else-branch so that transcript_index=0 is set correctly for unannotated VCFs.
         if workers <= 1:
-            return self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf, self._proteindb_output)
+            output_path, _ = self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf, self._proteindb_output)
+            return output_path
 
         # Parallel path: pre-annotate unannotated VCFs in the main process. This avoids each
         # worker racing on the same bedtools-output bed file (which annoate_vcf writes to cwd)
@@ -853,49 +910,71 @@ class EnsemblDataService(ParameterConfiguration):
             vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
             self._annotation_field_name = 'transcriptOverlaps'
 
-        # Build the FASTA index ONCE in the main process so all workers share it
-        # instead of each re-scanning the FASTA (~14 s × N workers wasted).
+        # Build the FASTA index and GTF database ONCE in the main process so all
+        # workers find them ready.  Without this, N workers spawned simultaneously
+        # would race to create the same .db file via gffutils.create_db, with losers
+        # catching a sqlite3.OperationalError on a partially-written file.
         _ensure_fasta_index(input_fasta)
+        self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
 
-        # Parallel — split into per-chrom temp VCFs, fan out to a Pool.
+        # Parallel — split into fixed-size variant-batch VCFs, fan out to a Pool.
         import multiprocessing as mp
         import shutil
         import tempfile
 
+        # Pipeline args forwarded to the pool initializer (annotation field already set above).
+        pa = dict(self.get_pipeline_parameters())
+        pa[EnsemblDataService.ANNOTATION_FIELD_NAME] = self._annotation_field_name
+
+        # Parse annotation column indices ONCE from the (now-annotated) VCF so workers
+        # skip re-parsing the identical header for every batch.
+        _ann_meta, _ = self.vcf_from_file(vcf_file)
+        _annotation_indices = self._parse_annotation_indices(_ann_meta, vcf_file)
+
         with tempfile.TemporaryDirectory(prefix='pgatk_v2p_') as tmpdir:
-            # Stream-split VCF by chromosome directly to per-chrom files (constant memory).
-            chunk_paths = _split_vcf_by_chrom(vcf_file, tmpdir)
+            # Stream-split VCF into fixed-size variant-count batches (constant memory).
+            # Batches may span chromosome boundaries; _vcf_to_proteindb_chunk handles this.
+            batch_paths = _split_vcf_into_batches(vcf_file, tmpdir)
 
-            if len(chunk_paths) <= 1:
-                # Only one chromosome — run sequentially on the original file.
-                return self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf,
-                                                    self._proteindb_output)
+            if len(batch_paths) <= 1:
+                # Entire VCF fits in one batch — run sequentially without pool overhead.
+                output_path, _ = self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf,
+                                                               self._proteindb_output)
+                return output_path
 
-            tasks = []
-            for chrom in sorted(chunk_paths.keys()):
-                chunk_vcf = chunk_paths[chrom]
-                chunk_out = os.path.join(tmpdir, f"out_{_safe_chrom(chrom)}.fa")
-                pa = dict(self.get_pipeline_parameters())
-                pa[EnsemblDataService.PROTEIN_DB_OUTPUT] = chunk_out
-                # Force annotated mode for workers (annoate_vcf already ran in main):
-                pa[EnsemblDataService.ANNOTATION_FIELD_NAME] = self._annotation_field_name
-                tasks.append((self.get_default_parameters(), pa, chunk_vcf,
-                              input_fasta, gene_annotations_gtf, chunk_out))
+            tasks = [(bp, os.path.join(tmpdir, f"out_{i:04d}.fa"))
+                     for i, bp in enumerate(batch_paths)]
 
             self.get_logger().info(
-                "vcf-to-proteindb: dispatching %d chromosome chunk(s) across %d worker(s)",
+                "vcf-to-proteindb: dispatching %d variant-batch chunk(s) across %d worker(s)",
                 len(tasks), min(workers, len(tasks)))
 
-            with mp.get_context('spawn').Pool(min(workers, len(tasks))) as pool:
-                pool.starmap(_vcf_to_proteindb_worker, tasks)
+            # Pool initializer opens the GTF DB and FASTA index once per worker process,
+            # not once per task — all batches handled by the same worker reuse them.
+            with mp.get_context('spawn').Pool(
+                min(workers, len(tasks)),
+                initializer=_worker_init,
+                initargs=(self.get_default_parameters(), pa, input_fasta, gene_annotations_gtf,
+                          _annotation_indices),
+            ) as pool:
+                all_stats = pool.starmap(_vcf_to_proteindb_worker, tasks)
 
-            # Concatenate the per-chunk FASTAs into the final output.
+            # Concatenate the per-batch FASTAs into the final output.
             with open(self._proteindb_output, 'wb') as out:
-                for task in tasks:
-                    chunk_out = task[5]
-                    if os.path.exists(chunk_out):
-                        with open(chunk_out, 'rb') as f:
+                for _, batch_out in tasks:
+                    if os.path.exists(batch_out):
+                        with open(batch_out, 'rb') as f:
                             shutil.copyfileobj(f, out)
+
+            # Aggregate per-batch counters and emit a single combined summary.
+            combined: dict[str, int] = {}
+            for stats in all_stats:
+                for k, v in stats.items():
+                    combined[k] = combined.get(k, 0) + v
+            msg = "Translation summary ({} batch(es)):\n {}".format(
+                len(all_stats),
+                '\n'.join([x + ":" + str(combined[x]) for x in combined]))
+            self.get_logger().info(msg)
 
         return self._proteindb_output
 
