@@ -52,6 +52,28 @@ def _three_to_one(aa_str: str) -> str:
     return aa_str
 
 
+def _substitution_mismatch_detail(snp, seqs) -> str:
+    """Return a human-readable string explaining a REF mismatch for substitution variants."""
+    if ">" not in (snp.dna_mut or ""):
+        return ""
+    try:
+        positions = re.findall(r'\d+', snp.dna_mut)
+        if not positions:
+            return ""
+        tmplist = snp.dna_mut.split(">")
+        expected_ref = re.sub("[^A-Z]+", "", tmplist[0])
+        index = int(positions[0]) - 1
+        found_bases = set()
+        for seq in seqs:
+            if index < len(seq):
+                found_bases.add(str(seq[index]).upper())
+        if found_bases:
+            return f" [expected REF={expected_ref}, found={'/'.join(sorted(found_bases))} at pos {index + 1}]"
+    except Exception:  # noqa: BLE001
+        pass
+    return ""
+
+
 class CancerGenomesService(ParameterConfiguration):
     CONFIG_CANCER_GENOMES_MUTATION_FILE = 'mutation_file'
     CONFIG_COMPLETE_GENES_FILE = "all_cds_genes_file"
@@ -132,6 +154,13 @@ class CancerGenomesService(ParameterConfiguration):
     def get_mut_pro_seq(snp: SNP, seq: Seq) -> Optional[str]:
         nucleotide = ["A", "T", "C", "G"]
         mut_pro_seq = ""
+        # A small number of COSMIC gene FASTA entries have a leading N (masked
+        # nucleotide) before the real CDS start.  HGVS c. positions count from
+        # the first coding base, so strip any leading non-ACGT characters to
+        # keep position lookups consistent with the annotation.
+        leading = len(seq) - len(str(seq).lstrip('Nn'))
+        if leading:
+            seq = seq[leading:]
         if (snp.dna_mut is not None and "?" not in snp.dna_mut and
                 snp.aa_mut is not None and snp.aa_mut != 'p.?'):  # unambiguous DNA change known in CDS sequence
             positions = re.findall(r'\d+', snp.dna_mut)
@@ -143,6 +172,8 @@ class CancerGenomesService(ParameterConfiguration):
                 if ref_dna == str(seq[index]).upper() and mut_dna in nucleotide:
                     seq_mut = seq[:index] + mut_dna + seq[index + 1:]
                     mut_pro_seq = str(seq_mut.translate(to_stop=False))
+                else:
+                    return None  # REF base doesn't match FASTA — transcript version mismatch
             elif "delins" in snp.dna_mut:
                 # HGVS delins: one or more nucleotides replaced by one or more other nucleotides.
                 coord_part, insert_raw = snp.dna_mut.split("delins", 1)
@@ -307,6 +338,8 @@ class CancerGenomesService(ParameterConfiguration):
         regex = re.compile('[^a-zA-Z]')
         mutation_dic = {}
         groups_mutations_dict = {}
+        ref_mismatch_count = 0
+        unsupported_count = 0
         self.get_logger().debug("Reading input CosmicMutantExport.tsv ...")
         line_counter = 1
 
@@ -385,6 +418,12 @@ class CancerGenomesService(ParameterConfiguration):
                 if "coding silent" in row[muttype_col] or "synonymous_variant" in row[muttype_col]:
                     continue
 
+                # Skip non-coding mutations with unknown protein consequence (UTR,
+                # intronic, splice-region variants etc.). These can never produce
+                # a mutant protein sequence so there is nothing useful to warn about.
+                if row[aa_col] == 'p.?':
+                    continue
+
                 snp = SNP(gene=row[gene_col], mrna=row[enst_col], dna_mut=row[cds_col], aa_mut=row[aa_col],
                           mutation_type=row[muttype_col])
                 fasta_header = "COSMIC:%s:%s:%s" % (snp.gene, snp.aa_mut, snp.mutation_type.replace(" ", ""))
@@ -397,13 +436,19 @@ class CancerGenomesService(ParameterConfiguration):
                 except KeyError:  # geneID is not in All_COSMIC_Genes.fasta
                     continue
 
-                mut_pro_seq = None
+                failure_reason = "unsupported"
+                mut_pro_seq = ""
                 for seq in seqs:
                     try:
-                        mut_pro_seq = self.get_mut_pro_seq(snp, seq)
+                        result = self.get_mut_pro_seq(snp, seq)
                     except (IndexError, ValueError):
+                        failure_reason = "ref_mismatch"
                         continue
-                    if mut_pro_seq:
+                    if result is None:
+                        failure_reason = "ref_mismatch"
+                        continue
+                    if result:
+                        mut_pro_seq = result
                         break
 
                 if mut_pro_seq:
@@ -418,10 +463,36 @@ class CancerGenomesService(ParameterConfiguration):
                         except KeyError:
                             groups_mutations_dict[group] = {fasta_header: entry}
                 else:
-                    self.get_logger().warning(
-                        f"Could not parse mutation record: gene={snp.gene}, dna_mut={snp.dna_mut}, "
-                        f"aa_mut={snp.aa_mut}, mutation_type={snp.mutation_type}"
-                    )
+                    if failure_reason == "ref_mismatch":
+                        ref_mismatch_count += 1
+                        if self.get_logger().isEnabledFor(logging.DEBUG):
+                            detail = _substitution_mismatch_detail(snp, seqs)
+                            self.get_logger().debug(
+                                "Skipped (REF mismatch): gene=%s, dna_mut=%s, "
+                                "aa_mut=%s, mutation_type=%s%s",
+                                snp.gene, snp.dna_mut, snp.aa_mut, snp.mutation_type,
+                                detail,
+                            )
+                    else:
+                        unsupported_count += 1
+                        self.get_logger().debug(
+                            "Skipped (unsupported HGVS): gene=%s, dna_mut=%s, "
+                            "aa_mut=%s, mutation_type=%s",
+                            snp.gene, snp.dna_mut, snp.aa_mut, snp.mutation_type,
+                        )
+
+        if ref_mismatch_count:
+            self.get_logger().warning(
+                "%d mutation records skipped: REF base in COSMIC does not match the "
+                "gene FASTA (transcript version mismatch); run with DEBUG logging to see details.",
+                ref_mismatch_count,
+            )
+        if unsupported_count:
+            self.get_logger().warning(
+                "%d mutation records skipped: HGVS notation not supported by the parser; "
+                "run with DEBUG logging to see details.",
+                unsupported_count,
+            )
 
         for group_name in groups_mutations_dict.keys():
             output_base = str(Path(self._local_output_file).with_suffix(''))

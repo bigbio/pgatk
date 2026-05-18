@@ -14,9 +14,14 @@ class TestNcbiDataDownloader:
         downloader = NcbiDataDownloader(output_dir="/tmp/test")
         urls = downloader.get_refseq_urls()
         assert len(urls) == 3
-        assert any("GRCh38_latest_genomic.gtf.gz" in u for u in urls)
-        assert any("GRCh38_latest_rna.fna.gz" in u for u in urls)
+        assert any("GRCh38_latest_genomic.fna.gz" in u for u in urls)
+        assert any("GRCh38_latest_genomic.gff.gz" in u for u in urls), (
+            "GFF3 is required for gffread; GTF lacks the parent hierarchy"
+        )
         assert any("assembly_report.txt" in u for u in urls)
+        assert not any("GRCh38_latest_genomic.gtf.gz" in u for u in urls), (
+            "GTF no longer downloaded; use GFF3 for gffread transcript generation"
+        )
 
     def test_build_clinvar_urls(self):
         downloader = NcbiDataDownloader(output_dir="/tmp/test")
@@ -27,7 +32,7 @@ class TestNcbiDataDownloader:
     def test_expected_files_list(self):
         downloader = NcbiDataDownloader(output_dir="/tmp/test")
         files = downloader.expected_files()
-        assert len(files) == 5  # 3 refseq + 2 clinvar
+        assert len(files) == 5  # 3 refseq (genomic.fna, genomic.gff, assembly_report) + 2 clinvar
 
     def test_output_dir_created(self, tmp_path):
         out_dir = tmp_path / "ncbi_data"

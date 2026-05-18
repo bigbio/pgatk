@@ -11,7 +11,7 @@ from pgatk.clinvar.clinvar_service import ClinVarService
 
 TESTDATA_DIR = Path(__file__).resolve().parent.parent.parent / "testdata" / "clinvar"
 MINI_VCF = str(TESTDATA_DIR / "mini_clinvar.vcf")
-MINI_GTF = str(TESTDATA_DIR / "mini_refseq.gtf")
+MINI_GFF = str(TESTDATA_DIR / "mini_refseq.gff")
 MINI_FASTA = str(TESTDATA_DIR / "mini_refseq_protein.faa")
 ASSEMBLY_REPORT = str(TESTDATA_DIR / "mini_assembly_report.txt")
 
@@ -200,7 +200,7 @@ class TestClinVarPipeline:
     @pytest.fixture(autouse=True)
     def _cleanup_db(self):
         """Remove gffutils DB before/after test to ensure fresh state."""
-        db_path = Path(MINI_GTF).with_suffix(".db")
+        db_path = Path(MINI_GFF).with_suffix(".db")
         if db_path.exists():
             db_path.unlink()
         yield
@@ -212,7 +212,7 @@ class TestClinVarPipeline:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,
@@ -228,7 +228,7 @@ class TestClinVarPipeline:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,
@@ -244,7 +244,7 @@ class TestClinVarPipeline:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,
@@ -260,7 +260,7 @@ class TestClinVarPipeline:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,
@@ -276,7 +276,7 @@ class TestClinVarPipeline:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,
@@ -297,7 +297,7 @@ class TestBuildOverlapMap:
 
     @pytest.fixture(autouse=True)
     def _cleanup_db(self):
-        db_path = Path(MINI_GTF).with_suffix(".db")
+        db_path = Path(MINI_GFF).with_suffix(".db")
         if db_path.exists():
             db_path.unlink()
         yield
@@ -309,10 +309,10 @@ class TestBuildOverlapMap:
         from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
         chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
         _meta, vcf_df = ClinVarService._read_vcf(MINI_VCF)
-        overlap_map = ClinVarService._build_overlap_map(vcf_df, MINI_GTF, chrom_mapper)
+        overlap_map = ClinVarService._build_overlap_map(vcf_df, MINI_GFF, chrom_mapper)
         assert isinstance(overlap_map, dict)
-        # rs00001 at chr1:1006 should overlap NM_000001.1 CDS (1000-1299)
-        assert any("1:1006:" in k for k in overlap_map)
+        # rs00001 at chr1:69500 should overlap NM_001005484.2 CDS (69037-70008)
+        assert any("1:69500:" in k for k in overlap_map)
 
     def test_build_overlap_map_empty_df(self):
         """Empty DataFrame should return empty dict."""
@@ -320,7 +320,7 @@ class TestBuildOverlapMap:
         from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
         chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
         empty_df = pd.DataFrame(columns=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])
-        overlap_map = ClinVarService._build_overlap_map(empty_df, MINI_GTF, chrom_mapper)
+        overlap_map = ClinVarService._build_overlap_map(empty_df, MINI_GFF, chrom_mapper)
         assert overlap_map == {}
 
 
@@ -334,7 +334,7 @@ class TestBiotypeFiltering:
 
     @pytest.fixture(autouse=True)
     def _cleanup_db(self):
-        db_path = Path(MINI_GTF).with_suffix(".db")
+        db_path = Path(MINI_GFF).with_suffix(".db")
         if db_path.exists():
             db_path.unlink()
         yield
@@ -343,21 +343,21 @@ class TestBiotypeFiltering:
 
     def test_get_biotype_from_db(self):
         """_get_transcript_biotype should extract gene_biotype from gffutils DB."""
-        db = ClinVarService._parse_gtf(MINI_GTF)
-        biotype = ClinVarService._get_transcript_biotype(db, "NM_000001.1")
+        db = ClinVarService._parse_gtf(MINI_GFF)
+        biotype = ClinVarService._get_transcript_biotype(db, "NM_001005484.2")
         assert biotype == "protein_coding"
 
     def test_get_biotype_missing_returns_empty(self):
         """Missing transcript returns empty string."""
-        db = ClinVarService._parse_gtf(MINI_GTF)
+        db = ClinVarService._parse_gtf(MINI_GFF)
         biotype = ClinVarService._get_transcript_biotype(db, "NONEXISTENT")
         assert biotype == ""
 
     def test_get_biotype_without_version(self):
         """Should find transcript even without version number."""
-        db = ClinVarService._parse_gtf(MINI_GTF)
-        # NM_000001 without .1 should still find NM_000001.1
-        biotype = ClinVarService._get_transcript_biotype(db, "NM_000001")
+        db = ClinVarService._parse_gtf(MINI_GFF)
+        # NM_001005484 without .2 should still find NM_001005484.2
+        biotype = ClinVarService._get_transcript_biotype(db, "NM_001005484")
         assert biotype == "protein_coding"
 
 
@@ -371,7 +371,7 @@ class TestDuplicateGuard:
 
     @pytest.fixture(autouse=True)
     def _cleanup_db(self):
-        db_path = Path(MINI_GTF).with_suffix(".db")
+        db_path = Path(MINI_GFF).with_suffix(".db")
         if db_path.exists():
             db_path.unlink()
         yield
@@ -383,7 +383,7 @@ class TestDuplicateGuard:
         output_file = str(tmp_path / "output.fa")
         service = ClinVarService(
             vcf_file=MINI_VCF,
-            gtf_file=MINI_GTF,
+            gff_file=MINI_GFF,
             fasta_file=MINI_FASTA,
             assembly_report=ASSEMBLY_REPORT,
             output_file=output_file,

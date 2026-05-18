@@ -286,57 +286,68 @@ pgatk vcf-to-proteindb \
 
 gnomAD provides allele frequencies stratified by ancestry (African, East Asian,
 South Asian, European, Latino, etc.). Build a database using variants common in
-a specific population:
+a specific population.
 
-#### Obtaining GENCODE reference annotation and transcript sequences
+gnomAD v4.1.1 provides **exome** VCFs annotated with **GENCODE v39**
+(GRCh38). All three steps below use pgatk commands.
 
-gnomAD v4 VEP annotations are built against the GRCh38 assembly using GENCODE/Ensembl
-transcript coordinates. Download the matching GENCODE v44 GTF and pre-built transcript
-FASTA (GENCODE v44 = Ensembl release 111, fully compatible with gnomAD v4.1.1):
+#### Step 1 — Download GENCODE v39 and generate CDS-annotated transcripts
 
 ```bash
-# Annotation GTF
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.annotation.gtf.gz
-gunzip gencode.v44.annotation.gtf.gz
-
-# Pre-built transcript sequences
-wget https://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_44/gencode.v44.transcripts.fa.gz
-gunzip gencode.v44.transcripts.fa.gz
+pgatk gencode-downloader \
+    -o gencode_data \
+    --release 39 \
+    --generate-transcripts
 ```
+
+This downloads `gencode.v39.annotation.gtf` and `GRCh38.primary_assembly.genome.fa`,
+then runs `gffread -F` to produce `gencode_data/transcripts.fa` with `CDS=` coordinate
+headers.  The `CDS=` headers are required for 1-frame CDS translation; the pre-built
+GENCODE transcript FASTA does **not** include them.
 
 !!! note "GENCODE transcript ID versioning"
     GENCODE FASTA headers include a version suffix (e.g. `ENST00000456328.2`).
     pgatk automatically strips the suffix when matching against VCF transcript IDs,
     so gnomAD VEP entries (which use bare IDs like `ENST00000456328`) resolve correctly.
 
-#### Obtaining the gnomAD exomes sites VCF
-
-Exomes **sites** VCFs are distributed **one file per chromosome** (bgzip-compressed
-VCF plus tabix index) from the gnomAD v4 downloads. Browse the file list and
-direct HTTPS links on the official page: [gnomAD downloads](https://gnomad.broadinstitute.org/downloads)
-(open **v4 Downloads**, then **Variants** → **Exomes**). The current exomes patch
-release uses paths under `release/4.1.1/vcf/exomes/` with names like
-`gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz` (replace `chr22` with the chromosome you need).
+#### Step 2 — Download gnomAD v4.1.1 exome VCFs (all chromosomes in parallel)
 
 ```bash
-wget https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1.1/vcf/exomes/gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz
-wget https://storage.googleapis.com/gcp-public-data--gnomad/release/4.1.1/vcf/exomes/gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz.tbi
+pgatk gnomad-vcf-downloader \
+    -o gnomad_vcf \
+    --version 4.1.1 \
+    --dataset exomes \
+    --workers 8
 ```
 
-#### Translate the variants from the gnomAD chr22 to proteins
+This fetches one `.vcf.bgz` + `.vcf.bgz.tbi` pair per chromosome (48 files total)
+from the gnomAD Google Cloud Storage bucket in parallel.  Use `--chromosomes chr22`
+to download a single chromosome for testing.
+
+#### Step 3 — Translate variants for all chromosomes and merge
+
+Process each chromosome independently, then concatenate the per-chromosome outputs
+into a single protein database:
 
 ```bash
-pgatk vcf-to-proteindb \
-    --vcf gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz \
-    --input_fasta gencode.v44.transcripts.fa \
-    --gene_annotations_gtf gencode.v44.annotation.gtf \
-    --annotation_field_name vep \
-    --af_field AF_afr \
-    --af_threshold 0.01 \
-    --include_consequences missense_variant,inframe_insertion,inframe_deletion,stop_gained \
-    --biotype_str biotype \
-    --include_biotypes protein_coding \
-    --output_proteindb gnomad_afr_proteins.fa
+for chrom in chr{1..22} chrX chrY; do
+    pgatk vcf-to-proteindb \
+        --vcf gnomad_vcf/gnomad.exomes.v4.1.1.sites.${chrom}.vcf.bgz \
+        --input_fasta gencode_data/transcripts.fa \
+        --gene_annotations_gtf gencode_data/gencode.v39.annotation.gtf \
+        --annotation_field_name vep \
+        --transcript_str Feature \
+        --consequence_str Consequence \
+        --biotype_str BIOTYPE \
+        --include_biotypes protein_coding \
+        --af_field AF_afr \
+        --af_threshold 0.01 \
+        --include_consequences missense_variant,inframe_insertion,inframe_deletion,stop_gained \
+        --output_proteindb gnomad_vcf/gnomad_afr_proteins_${chrom}.fa
+done
+
+# Merge all chromosomes into one database
+cat gnomad_vcf/gnomad_afr_proteins_chr*.fa > gnomad_afr_proteins_all.fa
 ```
 
 !!! tip "gnomAD-specific parameters"
@@ -344,7 +355,7 @@ pgatk vcf-to-proteindb \
     - `--af_field` -- Use population-specific AF fields: `AF_afr` (African),
       `AF_eas` (East Asian), `AF_sas` (South Asian), `AF_nfe` (Non-Finnish European),
       `AF_amr` (Latino), or `controls_AF` (all controls)
-    - `--biotype_str biotype` -- gnomAD's VEP format names the biotype column
+    - `--biotype_str BIOTYPE` -- gnomAD's VEP INFO field names the biotype column
       `BIOTYPE`; this is distinct from GENCODE/Ensembl GTF attribute names
       (`transcript_type` / `transcript_biotype`) which only apply to the
       `dnaseq-to-proteindb` command
@@ -352,6 +363,13 @@ pgatk vcf-to-proteindb \
       protein-coding transcripts only; without this, retained introns,
       pseudogenes, and other non-coding biotypes annotated in the VEP field
       would also be processed
+
+!!! warning "GENCODE version must match the gnomAD VCF"
+    pgatk automatically checks that the GENCODE version in the VCF header
+    (`##gencode_version=`) matches the release number embedded in the GTF
+    (`##description: ... version N ...`) and emits a warning on mismatch.
+    Check your VCF header with `zcat file.vcf.bgz | grep gencode_version | head -1`
+    to confirm the correct release before running `gencode-downloader`.
 
 ---
 
@@ -369,25 +387,51 @@ validating pathogenic variants at the protein level.
 pgatk ncbi-downloader -o ncbi_clinvar
 ```
 
-This downloads four files to `ncbi_clinvar/`:
+This downloads three RefSeq files and the ClinVar VCF to `ncbi_clinvar/`:
 
-- `GRCh38_latest_genomic.gtf` -- RefSeq gene annotations
-- `GRCh38_latest_rna.fna` -- RefSeq transcript nucleotide sequences
+- `GRCh38_latest_genomic.fna` -- Human genomic DNA (needed by gffread)
+- `GRCh38_latest_genomic.gff` -- RefSeq gene annotations in GFF3 format
 - `GRCh38_latest_assembly_report.txt` -- Chromosome name mapping
 - `clinvar.vcf` -- ClinVar variant calls
 
-### Step 2 -- Generate the ClinVar protein database
+### Step 2 -- Extract transcript sequences with CDS annotations
+
+Use `--generate-transcripts` with `ncbi-downloader` to run gffread automatically
+and produce `transcripts.fa` with `CDS=` coordinate headers in a single step:
+
+```bash
+pgatk ncbi-downloader -o ncbi_clinvar --generate-transcripts
+```
+
+Or run gffread manually:
+
+```bash
+gffread -F \
+    -w ncbi_clinvar/transcripts.fa \
+    -g ncbi_clinvar/GRCh38_latest_genomic.fna \
+    ncbi_clinvar/GRCh38_latest_genomic.gff
+```
+
+!!! note
+    GFF3 format is required. The NCBI RefSeq GTF leaves `transcript_id` empty
+    for many records, so gffread cannot link CDS features to their parent
+    transcripts and produces no valid output. GFF3 uses explicit `ID=`/`Parent=`
+    linkage that gffread handles correctly.
+    The `-F` flag embeds `CDS=start-end` coordinates in each FASTA header,
+    enabling 1-frame CDS translation in `clinvar-to-proteindb`.
+
+### Step 3 -- Generate the ClinVar protein database
 
 ```bash
 pgatk clinvar-to-proteindb \
     --vcf ncbi_clinvar/clinvar.vcf \
-    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf \
-    --fasta ncbi_clinvar/GRCh38_latest_rna.fna \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
     --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 ```
 
-### Step 3 -- Add decoy sequences
+### Step 4 -- Add decoy sequences
 
 ```bash
 pgatk generate-decoy \
@@ -514,11 +558,11 @@ pgatk cosmic-to-proteindb \
     --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_proteins.fa
 
-# Generate ClinVar mutations
+# Generate ClinVar mutations (transcripts.fa generated via gffread -F; see USE CASE 4)
 pgatk clinvar-to-proteindb \
     --vcf ncbi_clinvar/clinvar.vcf.gz \
-    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_clinvar/GRCh38_latest_rna.fna.gz \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
     --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 
@@ -1000,9 +1044,15 @@ pgatk cosmic-downloader -u user@example.com -p password -o cosmic_data
 ### Step 2 -- Prepare transcript sequences
 
 ```bash
+# ENSEMBL transcripts (canonical + variants)
 gffread -F -w ensembl_data/transcripts.fa \
     -g ensembl_data/genome.fa \
     ensembl_data/Homo_sapiens.GRCh38.*.gtf.gz
+
+# NCBI/ClinVar transcripts with CDS= headers (required by clinvar-to-proteindb)
+gffread -F -w ncbi_clinvar/transcripts.fa \
+    -g ncbi_clinvar/GRCh38_latest_genomic.fna \
+    ncbi_clinvar/GRCh38_latest_genomic.gff
 ```
 
 ### Step 3 -- Generate all protein databases
@@ -1023,8 +1073,8 @@ pgatk vcf-to-proteindb \
 # ClinVar clinical variants
 pgatk clinvar-to-proteindb \
     --vcf ncbi_clinvar/clinvar.vcf.gz \
-    --gtf ncbi_clinvar/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_clinvar/GRCh38_latest_rna.fna.gz \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
     --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_variants.fa
 

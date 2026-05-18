@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import logging
 import os
+import shutil
+import subprocess
 
 from pgatk.toolbox.general import download_file, check_create_folders
 
@@ -20,8 +22,8 @@ _DEFAULT_CLINVAR_BASE = (
 )
 
 _REFSEQ_FILES = [
-    "GRCh38_latest_genomic.gtf.gz",
-    "GRCh38_latest_rna.fna.gz",
+    "GRCh38_latest_genomic.fna.gz",
+    "GRCh38_latest_genomic.gff.gz",
     "GRCh38_latest_assembly_report.txt",
 ]
 _CLINVAR_FILES = [
@@ -92,3 +94,49 @@ class NcbiDataDownloader:
                 logger.error("Failed to download: %s", url)
 
         return downloaded
+
+    @staticmethod
+    def generate_transcripts(genome_fna: str, gff_file: str, output_fasta: str) -> str:
+        """Run gffread to generate a transcript FASTA with CDS= coordinate headers.
+
+        This is required before running ``clinvar-to-proteindb`` because NCBI's
+        pre-built ``GRCh38_latest_rna.fna`` does not include ``CDS=`` annotations.
+        gffread extracts transcript sequences from the genomic FASTA using the GFF3
+        annotation and embeds ``CDS=start-end`` in each header, enabling 1-frame CDS
+        translation instead of 3-frame exon translation.
+
+        The NCBI GTF (``GRCh38_latest_genomic.gtf``) lacks the gene → transcript
+        parent hierarchy that gffread requires; the GFF3 (``GRCh38_latest_genomic.gff``)
+        uses explicit ``ID=``/``Parent=`` linkage and works correctly.
+
+        Parameters
+        ----------
+        genome_fna : str
+            Path to the genomic FASTA (``GRCh38_latest_genomic.fna``).
+        gff_file : str
+            Path to the GFF3 annotation file (``GRCh38_latest_genomic.gff``).
+        output_fasta : str
+            Output path for the generated transcript FASTA (e.g. ``transcripts.fa``).
+
+        Returns
+        -------
+        str
+            Path to the generated FASTA file.
+
+        Raises
+        ------
+        FileNotFoundError
+            If ``gffread`` is not found in PATH.
+        subprocess.CalledProcessError
+            If gffread exits with a non-zero status.
+        """
+        if not shutil.which("gffread"):
+            raise FileNotFoundError(
+                "gffread not found in PATH. "
+                "Install it with: conda install -c bioconda gffread"
+            )
+        cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_fna, gff_file]
+        logger.info("Running: %s", " ".join(cmd))
+        subprocess.run(cmd, check=True)
+        logger.info("Transcripts written to %s", output_fasta)
+        return output_fasta

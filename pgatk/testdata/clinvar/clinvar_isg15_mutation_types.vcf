@@ -1,0 +1,15 @@
+##fileformat=VCFv4.1
+##fileDate=2026-05-17
+##source=ClinVar (ISG15 subset for mutation-type test coverage)
+##reference=GRCh38
+##INFO=<ID=CLNSIG,Number=.,Type=String,Description="Aggregate germline classification">
+##INFO=<ID=MC,Number=.,Type=String,Description="Molecular consequence">
+##INFO=<ID=GENEINFO,Number=1,Type=String,Description="Gene(s) for the variant">
+##INFO=<ID=ALLELEID,Number=1,Type=Integer,Description="ClinVar Allele ID">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+1	1013541	1185394	T	C	.	.	ALLELEID=1175251;GENEINFO=ISG15:9636;CLNSIG=Benign;MC=SO:0001623|5_prime_UTR_variant
+1	1013997	1035971	C	A	.	.	ALLELEID=1022448;GENEINFO=ISG15:9636;CLNSIG=Uncertain_significance;MC=SO:0001583|missense_variant
+1	1014026	9000001	C	T	.	.	ALLELEID=9000001;GENEINFO=ISG15:9636;CLNSIG=Pathogenic;MC=SO:0001587|stop_gained
+1	1014223	915424	TCTGAGCATC	T	.	.	ALLELEID=903498;GENEINFO=ISG15:9636;CLNSIG=Uncertain_significance;MC=SO:0001822|inframe_deletion
+1	1014316	161455	C	CG	.	.	ALLELEID=171289;GENEINFO=ISG15:9636;CLNSIG=Pathogenic;MC=SO:0001589|frameshift_variant
+1	1014459	1038082	A	AGCCCGT	.	.	ALLELEID=1022454;GENEINFO=ISG15:9636;CLNSIG=Uncertain_significance;MC=SO:0001821|inframe_insertion

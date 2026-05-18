@@ -16,13 +16,13 @@ TESTDATA_DIR = Path(__file__).resolve().parent.parent.parent / "testdata" / "cli
 def clinvar_testdata(tmp_path):
     """Copy ClinVar test data to tmp_path so gffutils .db files are isolated.
 
-    gffutils creates a ``<name>.db`` file next to the GTF.  By copying the GTF
-    into *tmp_path* we avoid polluting the source tree and ensure each test run
-    starts from a clean state.
+    gffutils creates a ``<name>.db`` file next to the annotation file.  By
+    copying into *tmp_path* we avoid polluting the source tree and ensure each
+    test run starts from a clean state.
     """
     for name in (
         "mini_clinvar.vcf",
-        "mini_refseq.gtf",
+        "mini_refseq.gff",
         "mini_refseq_protein.faa",
         "mini_assembly_report.txt",
     ):
@@ -39,7 +39,7 @@ class TestClinVarCLIIntegration:
         result = runner.invoke(cli, [
             "clinvar-to-proteindb",
             "--vcf", str(clinvar_testdata / "mini_clinvar.vcf"),
-            "--gtf", str(clinvar_testdata / "mini_refseq.gtf"),
+            "--gff", str(clinvar_testdata / "mini_refseq.gff"),
             "--fasta", str(clinvar_testdata / "mini_refseq_protein.faa"),
             "--assembly-report", str(clinvar_testdata / "mini_assembly_report.txt"),
             "--output", str(output_file),
@@ -72,7 +72,7 @@ class TestClinVarCLIIntegration:
         result = runner.invoke(cli, [
             "clinvar-to-proteindb",
             "--vcf", str(clinvar_testdata / "mini_clinvar.vcf"),
-            "--gtf", str(clinvar_testdata / "mini_refseq.gtf"),
+            "--gff", str(clinvar_testdata / "mini_refseq.gff"),
             "--fasta", str(clinvar_testdata / "mini_refseq_protein.faa"),
             "--assembly-report", str(clinvar_testdata / "mini_assembly_report.txt"),
             "--output", str(output_file),
@@ -91,7 +91,7 @@ class TestClinVarCLIIntegration:
         result = runner.invoke(cli, [
             "clinvar-to-proteindb",
             "--vcf", str(clinvar_testdata / "mini_clinvar.vcf"),
-            "--gtf", str(clinvar_testdata / "mini_refseq.gtf"),
+            "--gff", str(clinvar_testdata / "mini_refseq.gff"),
             "--fasta", str(clinvar_testdata / "mini_refseq_protein.faa"),
             "--assembly-report", str(clinvar_testdata / "mini_assembly_report.txt"),
             "--output", str(output_file),

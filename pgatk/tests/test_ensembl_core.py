@@ -726,16 +726,17 @@ class TestBgzVcfReading:
     def test_vcf_from_file_bgz_chrom_column_parsed(self):
         """The CHROM column is correctly parsed from the compressed file."""
         _, df = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
-        assert list(df["CHROM"].unique()) == ["22"]
+        assert list(df["CHROM"].unique()) == ["chr22"]
 
 
 # ---------------------------------------------------------------------------
 # _vcf_to_proteindb_chunk — gnomAD bgz-style VCF with GENCODE transcript FASTA
 #
-# testdata/test_gnomad_gencode.fa uses GENCODE v44-style pipe-delimited headers
-# with versioned transcript IDs (e.g. ENST00000643195.1).  The gnomAD VCF
-# carries bare IDs (ENST00000643195); the pipeline version-strips FASTA keys
-# on the first cache miss so both forms resolve to the same sequence.
+# testdata/test_gnomad_gencode.fa uses gffread-generated format with CDS= headers
+# (ENST00000643195.1 CDS=1-948 gene_type=...).  get_key() strips at the first
+# space (or pipe), returning the versioned transcript ID.  The gnomAD VCF carries
+# bare IDs (ENST00000643195); the pipeline version-strips FASTA keys on the first
+# cache miss so both forms resolve to the same sequence.
 # ---------------------------------------------------------------------------
 
 _GNOMAD_CHUNK_ARGS = {
@@ -758,7 +759,7 @@ def gnomad_svc():
 
 
 def _run_gnomad_chunk(svc, tmp_path, suffix="out", **kwargs):
-    """Call _vcf_to_proteindb_chunk with the gnomAD bgz VCF and GENCODE v44 references."""
+    """Call _vcf_to_proteindb_chunk with the gnomAD bgz VCF and GENCODE v39 references."""
     return svc._vcf_to_proteindb_chunk(
         "testdata/test_gnomad_bgz.vcf.gz",
         "testdata/test_gnomad_gencode.fa",
@@ -771,22 +772,18 @@ def _run_gnomad_chunk(svc, tmp_path, suffix="out", **kwargs):
 class TestVcfToProteindbChunkGnomad:
     """End-to-end pipeline tests using a gnomAD-style gzip-compressed VCF.
 
-    Reference files are real GENCODE v44 records extracted from
-    gencode.v44.transcripts.fa and gencode.v44.annotation.gtf:
-      - test_gnomad_gencode.fa  -- pipe-delimited headers, versioned IDs
-                                   (ENST00000643195.1, ENST00000550946.5);
-                                   no CDS= token → pipeline uses exon features
-                                   and 3-frame translation for all transcripts
-      - test_gnomad_gencode.gtf -- GENCODE format with chr22 chromosome prefix
-                                   and transcript_type attribute (vs Ensembl's
-                                   transcript_biotype); chr prefix is stripped
-                                   on comparison so no mismatch with VCF chrom
+    Reference files are real GENCODE v39 records:
+      - test_gnomad_gencode.fa  -- gffread-generated, CDS=1-948 header
+                                   (ENST00000643195.1 CDS=1-948 ...);
+                                   CDS= triggers 1-frame CDS translation
+      - test_gnomad_gencode.gtf -- GENCODE v39, chr22 chromosome prefix,
+                                   transcript_type attribute
 
-    Test VCF contains four variants for ENST00000643195 (OR11H1, chr22):
-      - missense_variant  AF_afr=0.02  → passes AF + consequence filters → translated
-      - inframe_deletion  AF_afr=0.015 → passes AF + consequence filters → translated
-      - missense_variant  AF_afr=0.005 → below AF threshold (0.01)       → filtered
-      - stop_gained       AF_afr=0.03  → fails consequence filter         → skipped silently
+    Test VCF contains four real gnomAD v4.1.1 variants for OR11H1 (chr22):
+      - rs199856986   missense V78A   AF_afr=0.124  → passes all filters → translated
+      - rs1203023715  inframe_del     AF_afr=0.015  → passes all filters → translated
+      - rs1410655344  missense N2D    AF_afr=6e-05  → below AF threshold → filtered
+      - rs751806421   stop_gained Q19* AF_afr=0.02  → fails consequence filter
     """
 
     def test_gnomad_bgz_chunk_runs_without_error(self, gnomad_svc, tmp_path):
@@ -801,7 +798,7 @@ class TestVcfToProteindbChunkGnomad:
         assert set(stats.keys()) == _STATS_KEYS
 
     def test_gnomad_bgz_chunk_af_filter_applied(self, gnomad_svc, tmp_path):
-        """The variant with AF_afr=0.005 (below threshold 0.01) is counted as filtered."""
+        """rs1410655344 (AF_afr=6e-05, below threshold 0.01) is counted as AF-filtered."""
         _, stats = _run_gnomad_chunk(gnomad_svc, tmp_path)
         assert stats["# variants not passing AF threshold"] == 1
 
@@ -829,20 +826,17 @@ class TestVcfToProteindbChunkGnomad:
         assert EnsemblDataService.get_key(header) == "ENST00000643195.1"
 
     def test_gencode_versioned_id_resolves_to_sequence(self):
-        """Bare VCF transcript ID (no version) maps to the versioned GENCODE FASTA entry.
+        """Bare VCF transcript ID (no version) maps to the versioned FASTA entry.
 
         The pipeline builds {stripped_id: versioned_id} on the first cache miss.
         This test verifies that ENST00000643195 (VCF) → ENST00000643195.1 (FASTA).
+        get_key works on both pipe-delimited and gffread (space-delimited) headers.
         """
         from Bio import SeqIO
         td = SeqIO.to_dict(
             SeqIO.parse("testdata/test_gnomad_gencode.fa", "fasta"),
             key_function=lambda r: EnsemblDataService.get_key(r.description),
         )
-        # Keys in the dict are versioned
         assert "ENST00000643195.1" in td
-        assert "ENST00000550946.5" in td
-        # Version-strip mapping matches bare IDs from the VCF
         mapping = {k.split(".")[0]: k for k in td.keys()}
         assert mapping["ENST00000643195"] == "ENST00000643195.1"
-        assert mapping["ENST00000550946"] == "ENST00000550946.5"

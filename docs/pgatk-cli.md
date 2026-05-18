@@ -15,14 +15,16 @@ Options:
 Commands:
   cbioportal-downloader    Command to download the the cbioportal studies
   cbioportal-to-proteindb  Command to translate cbioportal mutation data into proteindb
-  clinvar-to-proteindb     Generate protein database from ClinVar VCF + RefSeq GTF
+  clinvar-to-proteindb     Generate protein database from ClinVar VCF + RefSeq GFF3
   cosmic-downloader        Command to download the cosmic mutation database
   cosmic-to-proteindb      Command to translate Cosmic mutation data into proteindb
   digest-mutant-protein    Digest mutant proteins and filter against canonical proteome
   dnaseq-to-proteindb      Generate peptides based on DNA sequences
   ensembl-check            Command to check ensembl database for stop codons, gaps
   ensembl-downloader       Command to download the ensembl information
+  gencode-downloader       Download GENCODE GTF and genome FASTA
   generate-decoy           Create decoy protein sequences using multiple methods
+  gnomad-vcf-downloader    Download gnomAD per-chromosome VCF files in parallel
   map-peptide2genome       Map peptides to genomic coordinates (GFF3 output)
   ncbi-downloader          Download NCBI RefSeq and ClinVar reference files
   threeframe-translation   Command to perform 3'frame translation
@@ -179,8 +181,8 @@ git lfs pull -I public --include "data_mutations_mskcc.txt"
 
 Downloading NCBI RefSeq annotations and ClinVar variants for human (GRCh38) is performed using the command `ncbi-downloader`. The tool downloads four files:
 
-- RefSeq gene annotations (GTF)
-- RefSeq transcript nucleotide sequences (FASTA)
+- RefSeq gene annotations (GFF3) — required for gffread transcript generation
+- RefSeq genomic sequence (FASTA)
 - Assembly report (chromosome name mapping)
 - ClinVar variant calls (VCF)
 
@@ -211,6 +213,93 @@ Usage: pgatk ncbi-downloader [OPTIONS]
 
     ```bash
     pgatk ncbi-downloader -o ncbi_data --force
+    ```
+
+### Downloading GENCODE Data
+
+Downloading GENCODE human annotation and genome FASTA for use with gnomAD VCFs is performed using the `gencode-downloader` command. It downloads two files and optionally runs `gffread` to produce a `CDS=`-annotated transcript FASTA required by `vcf-to-proteindb`.
+
+#### Command Options
+
+```bash
+$ pgatk gencode-downloader -h
+Usage: pgatk gencode-downloader [OPTIONS]
+
+  Required parameters:
+    -o, --output-dir TEXT     Output directory for downloaded files
+
+  Optional parameters:
+    --release INTEGER         GENCODE release number (e.g. 39, 44). Default: 44
+    --generate-transcripts    Run gffread to produce transcripts.fa with CDS= headers
+    --force                   Re-download files even if they exist
+    -h, --help                Show this message and exit.
+```
+
+The command downloads:
+
+- `gencode.v<RELEASE>.annotation.gtf` — gene annotation
+- `GRCh38.primary_assembly.genome.fa` — primary assembly genome FASTA
+
+With `--generate-transcripts`, it also runs `gffread -F` to produce `transcripts.fa` with `CDS=start-end` coordinate headers. This file is required by `vcf-to-proteindb` when processing gnomAD VCFs; without it the pipeline falls back to 3-frame exon translation, which is incorrect for transcripts with a 5′ UTR.
+
+!!! note "GENCODE version must match the gnomAD VCF"
+    gnomAD v4.1.x VCFs were annotated with GENCODE v39. Use `--release 39` when downloading
+    data for gnomAD v4.1.1 exomes. Check the VCF header with
+    `zcat file.vcf.bgz | grep gencode_version | head -1` to confirm the correct release.
+
+#### Examples
+
+- Download GENCODE v39 GTF and genome FASTA for use with gnomAD v4.1.1:
+
+    ```bash
+    pgatk gencode-downloader -o gencode_data --release 39
+    ```
+
+- Download and immediately generate `transcripts.fa` with CDS= headers:
+
+    ```bash
+    pgatk gencode-downloader -o gencode_data --release 39 --generate-transcripts
+    ```
+
+### Downloading gnomAD VCF Data
+
+Downloading gnomAD per-chromosome VCF files in parallel is performed using the `gnomad-vcf-downloader` command. It downloads one `.vcf.bgz` + `.vcf.bgz.tbi` pair per chromosome from the gnomAD Google Cloud Storage bucket.
+
+#### Command Options
+
+```bash
+$ pgatk gnomad-vcf-downloader -h
+Usage: pgatk gnomad-vcf-downloader [OPTIONS]
+
+  Required parameters:
+    -o, --output-dir TEXT     Output directory for downloaded files
+
+  Optional parameters:
+    --version TEXT            gnomAD release version (e.g. 3.1.2, 4.1.1). Default: 3.1.2
+    --dataset [genomes|exomes]  Dataset type. Use 'genomes' for v3.x, 'exomes' for v4.x. Default: genomes
+    --chromosomes TEXT        Comma-separated chromosome list (e.g. chr1,chr22,chrX). Default: all
+    --workers INTEGER         Number of parallel download threads. Default: 4
+    --force                   Re-download files even if they exist
+    -h, --help                Show this message and exit.
+```
+
+!!! note "Version and dataset selection"
+    - gnomAD v3.x: use `--dataset genomes`, annotated with GENCODE v35 (GRCh38)
+    - gnomAD v4.1.x: use `--dataset exomes`, annotated with GENCODE v39 (GRCh38)
+    - Download a single chromosome for testing before committing to the full genome.
+
+#### Examples
+
+- Download gnomAD v4.1.1 exomes, chr22 only (testing):
+
+    ```bash
+    pgatk gnomad-vcf-downloader -o gnomad_vcf --version 4.1.1 --dataset exomes --chromosomes chr22
+    ```
+
+- Download all chromosomes in parallel (8 threads):
+
+    ```bash
+    pgatk gnomad-vcf-downloader -o gnomad_vcf --version 4.1.1 --dataset exomes --workers 8
     ```
 
 ## Generate Protein Databases
@@ -318,20 +407,24 @@ Usage: pgatk vcf-to-proteindb [OPTIONS]
   Options:
     --translation_table INTEGER        Translation table (Default 1)
     --mito_translation_table INTEGER   Mito_trans_table (default 2)
-    --protein_prefix TEXT               String to add as prefix for the variant peptides
+    --protein_prefix TEXT              String to add as prefix for the variant peptides
     --report_ref_seq                   Also report the reference peptide from overlapping transcripts
     --annotation_field_name TEXT       Annotation field name in INFO column (default: CSQ)
     --af_field TEXT                    Field name for variant allele frequency (default: none)
     --af_threshold FLOAT               Minimum allele frequency threshold
-    --transcript_index INTEGER         Index of transcript ID in annotation columns (default: 3)
-    --consequence_index INTEGER        Index of consequence in annotation columns (default: 1)
-    --include_consequences TEXT         Consider variants with these consequences (default: all)
-    --exclude_consequences TEXT         Exclude these consequences (default: downstream_gene_variant,
-                                        upstream_gene_variant, intergenic_variant, intron_variant,
-                                        synonymous_variant)
+    --transcript_str TEXT              Field name for transcript ID in the annotation header (default: FEATURE)
+    --consequence_str TEXT             Field name for consequence in the annotation header (default: Consequence)
+    --biotype_str TEXT                 Field name for biotype in the annotation header (default: transcript_biotype)
+    --include_biotypes TEXT            Include only these biotypes (default: all)
+    --exclude_biotypes TEXT            Exclude these biotypes
+    --include_consequences TEXT        Consider variants with these consequences (default: all)
+    --exclude_consequences TEXT        Exclude these consequences (default: downstream_gene_variant,
+                                       upstream_gene_variant, intergenic_variant, intron_variant,
+                                       synonymous_variant)
     --skip_including_all_cds           Disable automatic translation of transcripts with defined CDS
     --ignore_filters                   Parse all variants regardless of FILTER field
     --accepted_filters TEXT            Accepted filters for variant parsing
+    -w, --workers INTEGER              Parallel worker processes (default: 1)
     -h, --help                         Show this message and exit.
 ```
 
@@ -364,24 +457,30 @@ The output of the tool is a protein fasta file written to the path specified by 
     - By default `vcf-to-proteindb` considers transcripts that have a coding sequence that includes all protein_coding genes.
     - By default all consequences are accepted except those given with `--exclude_consequences`. See the list of consequences generated by VEP: [https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html](https://www.ensembl.org/info/genome/variation/prediction/predicted_data.html)
 
-- Translate human *missense* variants or *inframe_insertion* from gnomAD VCFs that have a minimum 1% allele frequency in control samples:
+- Translate human missense and inframe variants from a gnomAD v4.1.1 exome VCF with minimum 1% allele frequency in the African population:
 
     ```bash
     pgatk vcf-to-proteindb \
-        --vcf gnomad_genome.vcf \
-        --input_fasta gencode.fa \
-        --gene_annotations_gtf gencode.gtf \
-        --include_consequences missense_variant,frameshift_insert \
+        --vcf gnomad.exomes.v4.1.1.sites.chr22.vcf.bgz \
+        --input_fasta gencode_data/transcripts.fa \
+        --gene_annotations_gtf gencode_data/gencode.v39.annotation.gtf \
         --annotation_field_name vep \
+        --transcript_str Feature \
+        --consequence_str Consequence \
+        --biotype_str BIOTYPE \
+        --include_biotypes protein_coding \
+        --af_field AF_afr \
         --af_threshold 0.01 \
-        --af_field control_af \
-        --transcript_index 6
+        --include_consequences missense_variant,inframe_insertion,inframe_deletion \
+        --output_proteindb gnomad_afr_proteins.fa
     ```
 
 !!! tip "Hint"
-    - `vcf-to-proteindb` considers transcripts that have a coding sequence which includes all *protein_coding* transcripts.
-    - The provided VCF file has some specific properties: the annotation field is specified with the string *vep* hence the `--annotation_field_name` parameter, the transcript is at the sixth position in the annotation field, and since gnomAD collects variants from many sources it provides allele frequencies across many sub-populations. In this case we use only variants common within control samples therefore the `--af_field` is set to `control_af`.
-    - Since gnomAD uses GENCODE gene annotations, you need to change the default `biotype_str` from *transcript_biotype* to *transcript_type* (as written in the GTF file).
+    - `vcf-to-proteindb` considers transcripts that have a coding sequence, which includes all *protein_coding* transcripts.
+    - gnomAD uses `vep` (not `CSQ`) as the annotation field name, so `--annotation_field_name vep` is required.
+    - gnomAD v4.x VEP headers name the columns `Feature` (transcript ID), `Consequence`, and `BIOTYPE`; pass these explicitly with `--transcript_str`, `--consequence_str`, and `--biotype_str`.
+    - gnomAD provides ancestry-stratified allele frequencies: `AF_afr` (African), `AF_eas` (East Asian), `AF_sas` (South Asian), `AF_nfe` (Non-Finnish European), `AF_amr` (Latino).
+    - The `transcripts.fa` input must be generated with `gffread -F` (using `gencode-downloader --generate-transcripts`) to embed `CDS=` headers; without them the pipeline falls back to slower 3-frame exon translation.
 
 !!! note
     When ENSEMBL data is used, the default options should work. However, for other data sources such as variants from gnomAD, GTF from GENCODE and others one or more of the following parameters need to be changed: `--af_field`, `--annotation_field_name`, `--transcript_index`, `--consequence_index`.
@@ -409,8 +508,8 @@ Usage: pgatk clinvar-to-proteindb [OPTIONS]
 
   Required parameters:
     -v, --vcf TEXT              ClinVar VCF file path
-    -g, --gtf TEXT              NCBI RefSeq GTF file path
-    -f, --fasta TEXT            RefSeq transcript nucleotide FASTA file path
+    -g, --gff TEXT              NCBI RefSeq GFF3 annotation file path
+    -f, --fasta TEXT            RefSeq transcript nucleotide FASTA file path (with CDS= headers)
     -a, --assembly-report TEXT  NCBI assembly report file path
     -o, --output TEXT           Output protein FASTA file path
 
@@ -419,17 +518,24 @@ Usage: pgatk clinvar-to-proteindb [OPTIONS]
     -h, --help                  Show this message and exit.
 ```
 
-The input files can be downloaded using the [ncbi-downloader](#downloading-ncbi--clinvar-data) command.
+The input files are produced by the [ncbi-downloader](#downloading-ncbi--clinvar-data) command. Use `--generate-transcripts` with `ncbi-downloader` to produce `transcripts.fa` (with `CDS=` headers) from the GFF3 annotation.
+
+> **Note:** The GFF3 file (`GRCh38_latest_genomic.gff`) is required — the NCBI RefSeq GTF leaves the `transcript_id` attribute empty for many records, which prevents gffread from linking CDS features to their parent transcripts. GFF3 uses explicit `ID=`/`Parent=` linkage that avoids this problem entirely.
 
 #### Examples
 
-- Generate a protein database from ClinVar variants:
+- Download reference files and generate transcripts, then build the protein database:
 
     ```bash
+    # Step 1: download GFF3, genome FASTA, assembly report, ClinVar VCF
+    #         and produce transcripts.fa with CDS= headers
+    pgatk ncbi-downloader -o ncbi_data --generate-transcripts
+
+    # Step 2: generate variant protein sequences
     pgatk clinvar-to-proteindb \
         --vcf ncbi_data/clinvar.vcf.gz \
-        --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-        --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
+        --gff ncbi_data/GRCh38_latest_genomic.gff \
+        --fasta ncbi_data/transcripts.fa \
         --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
         --output clinvar_proteins.fa
     ```

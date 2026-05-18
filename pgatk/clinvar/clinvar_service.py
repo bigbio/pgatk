@@ -38,10 +38,13 @@ class ClinVarService:
     ----------
     vcf_file : str
         Path to ClinVar VCF file (numeric chromosome names).
-    gtf_file : str
-        Path to NCBI RefSeq GTF file (NC_ chromosome names).
+    gff_file : str
+        Path to NCBI RefSeq GFF3 annotation file (NC_ chromosome names).
+        Previously accepted a GTF; GFF3 is now required because the NCBI GTF
+        lacks the parent hierarchy that gffread needs to generate CDS= headers.
     fasta_file : str
         Path to transcript nucleotide FASTA with ``CDS=start-end`` headers.
+        Generate with ``ncbi-downloader --generate-transcripts``.
     assembly_report : str
         Path to NCBI assembly report for chromosome name mapping.
     output_file : str, optional
@@ -53,14 +56,14 @@ class ClinVarService:
     def __init__(
         self,
         vcf_file: str,
-        gtf_file: str,
+        gff_file: str,
         fasta_file: str,
         assembly_report: str,
         output_file: Optional[str] = None,
         config_file: Optional[str] = None,
     ) -> None:
         self._vcf_file = vcf_file
-        self._gtf_file = gtf_file
+        self._gtf_file = gff_file
         self._fasta_file = fasta_file
         self._assembly_report = assembly_report
 
@@ -232,10 +235,14 @@ class ClinVarService:
             try:
                 feature = db[feature_id.split(".")[0]]
             except gffutils.exceptions.FeatureNotFoundError:
-                logger.warning(
-                    "Feature %s not found in GTF database.", feature_id
-                )
-                return None, None, None
+                try:
+                    # GFF3: NCBI prefixes transcript IDs with "rna-"
+                    feature = db[f"rna-{feature_id}"]
+                except gffutils.exceptions.FeatureNotFoundError:
+                    logger.warning(
+                        "Feature %s not found in annotation database.", feature_id
+                    )
+                    return None, None, None
 
         coding_features = []
         for f in db.children(feature, featuretype=feature_types, order_by="end"):
@@ -244,27 +251,42 @@ class ClinVarService:
 
     @staticmethod
     def _get_transcript_biotype(db: gffutils.FeatureDB, transcript_id: str) -> str:
-        """Extract gene_biotype from a gffutils transcript feature.
+        """Extract gene_biotype from a gffutils transcript/mRNA feature.
 
         Returns empty string if the transcript or attribute is not found.
+        In GFF3, gene_biotype lives on the parent gene feature; this method
+        traverses up when the transcript feature itself lacks the attribute.
         """
+        feature = None
         try:
             feature = db[transcript_id]
         except gffutils.exceptions.FeatureNotFoundError:
             try:
                 feature = db[transcript_id.split(".")[0]]
             except gffutils.exceptions.FeatureNotFoundError:
-                # Last resort: match by prefix (unversioned -> versioned)
-                base = transcript_id.split(".")[0]
-                feature = None
-                for f in db.all_features(featuretype="transcript"):
-                    if f.id.split(".")[0] == base:
-                        feature = f
-                        break
-                if feature is None:
-                    return ""
+                try:
+                    feature = db[f"rna-{transcript_id}"]  # GFF3 NCBI prefix
+                except gffutils.exceptions.FeatureNotFoundError:
+                    base = transcript_id.split(".")[0]
+                    for ftype in ("transcript", "mRNA"):
+                        for f in db.all_features(featuretype=ftype):
+                            # Strip GFF3 "rna-" prefix before version comparison
+                            if f.id.removeprefix("rna-").split(".")[0] == base:
+                                feature = f
+                                break
+                        if feature is not None:
+                            break
+                    if feature is None:
+                        return ""
         try:
-            return feature.attributes.get("gene_biotype", [""])[0]
+            biotype = feature.attributes.get("gene_biotype", [""])[0]
+            if not biotype:
+                # GFF3: gene_biotype is on the parent gene feature, not the mRNA
+                for parent in db.parents(feature, featuretype="gene"):
+                    biotype = parent.attributes.get("gene_biotype", [""])[0]
+                    if biotype:
+                        break
+            return biotype
         except (IndexError, AttributeError):
             return ""
 
@@ -379,7 +401,7 @@ class ClinVarService:
         transcripts_dict = SeqIO.index(
             self._fasta_file,
             "fasta",
-            key_function=lambda h: h.split("|")[0].split(" ")[0],
+            key_function=lambda h: h.split("|")[0].split(" ")[0].removeprefix("rna-"),
         )
         # Build mapping without version for fallback lookup
         transcript_id_mapping = {
@@ -431,7 +453,8 @@ class ClinVarService:
                 gene_symbol, _ = self.parse_geneinfo(
                     self._get_info_field(info, "GENEINFO")
                 )
-                desc_str = f"{clnsig}|{gene_symbol}" if gene_symbol else clnsig
+                sig_label = clnsig if clnsig else "not_provided"
+                desc_str = f"{sig_label}|{gene_symbol}" if gene_symbol else sig_label
 
                 chrom = str(record.CHROM)
                 pos = int(record.POS)
@@ -564,12 +587,28 @@ class ClinVarService:
 
 
 def _extract_transcript_id(attrs: str) -> str:
-    """Extract transcript_id value from a GTF attributes string."""
+    """Extract transcript_id from a GTF attribute string or GFF3 Parent field.
+
+    Handles three formats:
+    - GTF:   ``transcript_id "NM_000001.1"``   (space-quoted)
+    - GFF3:  ``transcript_id=NM_000001.1``      (key=value)
+    - GFF3 fallback: ``Parent=rna-NM_000001.1`` (strips ``rna-`` prefix)
+    """
+    parent_val = ""
     for part in attrs.split(";"):
         part = part.strip()
-        if part.startswith("transcript_id"):
-            # transcript_id "NM_000001.1"
-            value = part.split(" ", 1)
-            if len(value) > 1:
-                return value[1].strip().strip('"')
+        if not part:
+            continue
+        # GTF: transcript_id "NM_000001.1"
+        if part.startswith("transcript_id "):
+            return part.split(" ", 1)[1].strip().strip('"')
+        # GFF3: transcript_id=NM_000001.1
+        if part.startswith("transcript_id="):
+            return part[len("transcript_id="):].strip()
+        # Save GFF3 Parent for fallback
+        if part.startswith("Parent=") and not parent_val:
+            parent_val = part[len("Parent="):]
+    # GFF3 CDS features reference their transcript via Parent=rna-NM_000001.1
+    if parent_val:
+        return parent_val.split(",")[0].removeprefix("rna-").strip()
     return ""

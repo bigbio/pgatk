@@ -13,6 +13,7 @@ from Bio.Seq import Seq
 from pybedtools import BedTool
 import pandas as pd
 from pgatk.toolbox.general import ParameterConfiguration
+from pgatk.gnomad.data_downloader import check_gencode_version_compatibility
 from pgatk.toolbox.vcf_utils import (
     check_overlap as _check_overlap,
     get_altseq as _get_altseq,
@@ -895,6 +896,8 @@ class EnsemblDataService(ParameterConfiguration):
         """
         if workers is None:
             workers = self._workers if self._workers else 1
+
+        check_gencode_version_compatibility(vcf_file, gene_annotations_gtf)
 
         # Fast path: sequential — single call, identical behaviour to the original implementation.
         # For sequential runs we do NOT pre-annotate here; _vcf_to_proteindb_chunk handles that

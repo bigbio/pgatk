@@ -8,7 +8,10 @@ without pulling in Ensembl-specific dependencies.
 from __future__ import annotations
 
 import logging
+import warnings
 from typing import Any, Optional
+
+from Bio import BiopythonWarning
 
 logger = logging.getLogger(__name__)
 
@@ -174,9 +177,11 @@ def get_orfs_vcf(
     """
     ref_orfs = []
     alt_orfs = []
-    for n in range(0, num_orfs):
-        ref_orfs.append(ref_seq[n::].translate(translation_table))
-        alt_orfs.append(alt_seq[n::].translate(translation_table))
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message="Partial codon", category=BiopythonWarning)
+        for n in range(0, num_orfs):
+            ref_orfs.append(ref_seq[n::].translate(translation_table))
+            alt_orfs.append(alt_seq[n::].translate(translation_table))
 
     return ref_orfs, alt_orfs
 
