@@ -3,9 +3,11 @@
 Unit tests (TestGetAltseq*) exercise get_altseq() + get_orfs_vcf() directly
 with synthetic sequences of known structure — no file I/O required.
 
+Multi-exon tests (TestGetAltseqMultiExon) use the mini ISG15 CDS FASTA
+(clinvar_isg15_cds.fna, CDS=1-495) from pgatk/testdata/clinvar/.
+
 Integration tests (TestClinVarISG15Integration) run the full ClinVarService
-pipeline against real ISG15 (NM_005101.4) data from use-cases/ncbi_clinvar/.
-They are skipped automatically when that directory is absent.
+pipeline against the same mini ISG15 testdata.
 
 Real variant sources used (all ISG15, NM_005101.4):
   missense     chr1:1013997 C>A   ClinVar ID 1035971  (Uncertain_significance)
@@ -31,14 +33,6 @@ from pgatk.toolbox.vcf_utils import get_altseq, get_orfs_vcf
 # ---------------------------------------------------------------------------
 
 TESTDATA_DIR = Path(__file__).resolve().parent.parent.parent / "testdata" / "clinvar"
-USE_CASES_DIR = Path(__file__).resolve().parent.parent.parent.parent / "use-cases" / "ncbi_clinvar"
-
-_REAL_DATA = (
-    (USE_CASES_DIR / "clinvar.vcf").exists()
-    and (USE_CASES_DIR / "GRCh38_latest_genomic.gff").exists()
-    and (USE_CASES_DIR / "transcripts.fa").exists()
-    and (USE_CASES_DIR / "GRCh38_latest_assembly_report.txt").exists()
-)
 
 # ---------------------------------------------------------------------------
 # Unit-test shared fixture
@@ -67,7 +61,7 @@ SYNTH_MINUS_FEATURES = [[2000, 2017, "CDS"]]
 #   exon 1: NC_000001.11 1013574–1013576  (3 bp)
 #   exon 2: NC_000001.11 1013984–1014475  (492 bp)
 ISG15_CDS_EXONS = [[1013574, 1013576, "CDS"], [1013984, 1014475, "CDS"]]
-ISG15_CDS_INFO = [78, 572]  # CDS positions in NM_005101.4 mRNA (1-based)
+ISG15_CDS_INFO = [1, 495]  # CDS=1-495 matches clinvar_isg15_cds.fna (CDS-only FASTA)
 
 
 def _translate(seq: Seq) -> str:
@@ -296,11 +290,9 @@ class TestGetAltseqMultiExon:
 
     @pytest.fixture(autouse=True)
     def _load_isg15(self):
-        """Load ISG15 mRNA from the use-cases FASTA; skip if absent."""
+        """Load ISG15 CDS from the mini testdata FASTA."""
         from Bio import SeqIO
-        fasta = USE_CASES_DIR / "GRCh38_latest_rna.fna"
-        if not fasta.exists():
-            pytest.skip("use-cases/ncbi_clinvar/GRCh38_latest_rna.fna not found")
+        fasta = TESTDATA_DIR / "clinvar_isg15_cds.fna"
         idx = SeqIO.index(str(fasta), "fasta")
         self.isg15_seq = idx["NM_005101.4"].seq
 
