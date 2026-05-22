@@ -254,9 +254,10 @@ def download_file(file_url: str, file_name: str, log: logging, url_file: Optiona
     downloaded_file = None
     while remaining_download_tries > 0:
         try:
-            # urlretrieve is safe here because we've validated the scheme above
-            # Only http:// and https:// URLs can reach this point
-            downloaded_file, _ = request.urlretrieve(file_url, file_name, reporthook=_reporthook)
+            # Scheme restricted to http/https/ftp above; rejects file:// and custom schemes.
+            downloaded_file, _ = request.urlretrieve(  # nosec B310 - allowed_schemes enforced
+                file_url, file_name, reporthook=_reporthook
+            )
             log.debug("File downloaded -- " + downloaded_file)
             break
         except (HTTPError, URLError, OSError) as error:

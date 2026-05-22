@@ -3,6 +3,7 @@ from __future__ import annotations
 import gzip
 import logging
 import re
+import sqlite3
 from pathlib import Path
 from typing import Any, Optional
 
@@ -318,8 +319,10 @@ def _substitution_mismatch_detail(snp, seqs) -> str:
                 found_bases.add(str(seq[index]).upper())
         if found_bases:
             return f" [expected REF={expected_ref}, found={'/'.join(sorted(found_bases))} at pos {index + 1}]"
-    except Exception:  # noqa: BLE001
-        pass
+    except (AttributeError, IndexError, ValueError, TypeError) as exc:
+        logging.getLogger(__name__).debug(
+            "Could not build mismatch detail for %s: %s", getattr(snp, "dna_mut", None), exc
+        )
     return ""
 
 
@@ -909,8 +912,10 @@ class CancerGenomesService(ParameterConfiguration):
                 ).fetchall()
                 if rows:
                     feature = db[rows[0][0]]
-            except Exception:
-                pass
+            except (sqlite3.Error, gffutils.exceptions.FeatureNotFoundError) as exc:
+                logging.getLogger(__name__).debug(
+                    "Versioned-ID fallback lookup failed for %s: %s", transcript_id, exc
+                )
         if feature is None:
             logging.getLogger(__name__).warning(
                 "Transcript %s not found in GFF annotation database.", transcript_id
