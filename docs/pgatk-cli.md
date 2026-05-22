@@ -55,14 +55,14 @@ Usage: pgatk ensembl-downloader [OPTIONS]
 
   This tool enables to download from ENSEMBL ftp the FASTA, GTF and VCF files
 
-  Required parameters:
-    -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
-    -o, --output_directory TEXT     Output directory for the peptide databases
-
   Optional parameters:
-    -l, --list_taxonomies TEXT      List the available species from Ensembl
-    -fp, --folder_prefix_release TEXT  Output folder prefix to download the data
+    -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
+    -o, --output_directory TEXT     Output directory for the downloaded files
     -t, --taxonomy TEXT             Taxonomy identifiers (comma separated)
+    -fp, --folder_prefix_release TEXT  Output folder prefix to download the data
+    -en, --ensembl_name TEXT        Override the species/assembly directory name on the FTP
+    --grch37                        Download files from a previous GRCh37 release (flag)
+    --url_file TEXT                 Write the resolved download URLs to this file instead of downloading
     -sv, --skip_vcf                 Skip the vcf file during the download
     -sg, --skip_gtf                 Skip the gtf file during the download
     -sp, --skip_protein             Skip the protein fasta file during download
@@ -78,20 +78,20 @@ Usage: pgatk ensembl-downloader [OPTIONS]
 
 #### Examples
 
-- List all species without downloading any data:
-
-    ```bash
-    pgatk ensembl-downloader -l -sv -sg -sp -sc -sd -sn
-    ```
-
-- Download all files except cDNA for Turkey (species id=9103):
+- Download all files for Turkey (species id=9103), skipping the genome DNA:
 
     ```bash
     pgatk ensembl-downloader -t 9103 -sd -o ensembl_files
     ```
 
+- Resolve and write the file URLs without downloading them:
+
+    ```bash
+    pgatk ensembl-downloader -t 9103 --url_file ensembl_urls.tsv
+    ```
+
 !!! note
-    By default the command `ensembl-downloader` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the `-t` option. To list all available species run the command with `-l` (`--list_taxonomies`) option.
+    By default the command `ensembl-downloader` downloads all datasets for all species from the latest ENSEMBL release. To limit the download to a particular species specify the species identifier using the `-t` option.
 
 !!! note
     Any of the file types can be skipped using the corresponding option. For example, to avoid downloading the protein sequence fasta file, use the argument `--skip_protein`. Also, note that not all file types exist for all species so the downloaded files depend on availability of the dataset in ENSEMBL.
@@ -117,8 +117,10 @@ Usage: pgatk cosmic-downloader [OPTIONS]
     -p, --password TEXT          Password for cosmic database
 
   Optional parameters:
-    -c, --config_file TEXT       Configuration file for the ensembl data downloader pipeline
-    -o, --output_directory TEXT  Output directory for the peptide databases
+    -c, --config_file TEXT       Configuration file for the COSMIC data downloader pipeline
+    -o, --output_directory TEXT  Output directory for the downloaded files
+    -P, --products TEXT          Limit the download to specific COSMIC products (repeatable)
+    --url_file TEXT              Write the resolved download URLs to this file instead of downloading
     -h, --help                   Show this message and exit.
 ```
 
@@ -144,10 +146,12 @@ $ pgatk cbioportal-downloader -h
 Usage: pgatk cbioportal-downloader [OPTIONS]
 
   Parameters:
-    -c, --config_file TEXT          Configuration file for the ensembl data downloader pipeline
-    -o, --output_directory TEXT     Output directory for the peptide databases
+    -c, --config_file TEXT          Configuration file for the cBioPortal downloader pipeline
+    -o, --output_directory TEXT     Output directory for the downloaded files
     -l, --list_studies              Print the list of all the studies in cBioPortal
     -d, --download_study TEXT       Download a specific Study from cBioPortal (use "all" to download all)
+    -th, --multithreading           Enable multithreaded download of multiple files
+    --url_file TEXT                 Write the resolved download URLs to this file instead of downloading
     -h, --help                      Show this message and exit.
 ```
 
@@ -201,6 +205,13 @@ Usage: pgatk ncbi-downloader [OPTIONS]
   Optional parameters:
     -c, --config_file TEXT    Configuration YAML file
     --force                   Re-download files even if they exist
+    --grch37                  Download GRCh37 reference files instead of GRCh38 (flag)
+    --generate-transcripts    After download, run gffread to extract transcript sequences
+                              with CDS= coordinate headers (required for
+                              clinvar-to-proteindb; needs gffread in PATH)
+    --generate-cds            After download, run gffread to extract CDS-only sequences
+                              into refseq_cds.fa (required for cbioportal-to-proteindb
+                              when matching RefSeq transcript IDs)
     -h, --help                Show this message and exit.
 ```
 
@@ -347,7 +358,7 @@ The output of the tool is a protein fasta file and is written in the path specif
 - Generate cell-line specific protein databases:
 
     ```bash
-    pgatk cosmic-to-proteindb -in CosmicCLP_MutantExport.tsv -fa All_CellLines_Genes.fasta -out cosmicCLP_proteinDB.fa --split_by_filter_column --filter_column 'Sample name'
+    pgatk cosmic-to-proteindb -in CosmicCLP_MutantExport.tsv -fa All_CellLines_Genes.fasta -out cosmicCLP_proteinDB.fa --split_by_filter_column --filter_column SAMPLE_NAME
     ```
 
 ### cBioPortal Mutations to Protein Sequences
@@ -445,16 +456,17 @@ $ pgatk vcf-to-proteindb -h
 Usage: pgatk vcf-to-proteindb [OPTIONS]
 
   Required parameters:
-    -c, --config_file TEXT             Configuration for VCF conversion parameters
-    -v, --vcf                          VCF file containing the genomic variants
-    -g, --gene_annotations_gtf         Gene models in the GTF format
-    -f, --input_fasta                  Fasta sequences for the transcripts in the GTF file
-    -o, --output_proteindb             Output file to write the resulting variant protein sequences
+    -v, --vcf TEXT                     VCF file containing the genomic variants
+    -g, --gene_annotations_gtf TEXT    Gene models in GTF (or GFF) format
+    -f, --input_fasta TEXT             Fasta sequences for the transcripts referenced by the GTF
 
-  Options:
-    --translation_table INTEGER        Translation table (Default 1)
-    --mito_translation_table INTEGER   Mito_trans_table (default 2)
-    --protein_prefix TEXT              String to add as prefix for the variant peptides
+  Optional parameters:
+    -c, --config_file TEXT             Configuration for VCF conversion parameters
+                                       (defaults to the bundled ensembl_config.yaml)
+    -o, --output_proteindb TEXT        Output file to write the resulting variant protein sequences
+    -t, --translation_table INTEGER    Translation table (Default 1)
+    -m, --mito_translation_table INT   Mitochondrial translation table (default 2)
+    -p, --protein_prefix TEXT          String to add as prefix for the variant peptides (default: var)
     --report_ref_seq                   Also report the reference peptide from overlapping transcripts
     --annotation_field_name TEXT       Annotation field name in INFO column (default: CSQ)
     --af_field TEXT                    Field name for variant allele frequency (default: none)
@@ -467,11 +479,11 @@ Usage: pgatk vcf-to-proteindb [OPTIONS]
     --include_consequences TEXT        Consider variants with these consequences (default: all)
     --exclude_consequences TEXT        Exclude these consequences (default: downstream_gene_variant,
                                        upstream_gene_variant, intergenic_variant, intron_variant,
-                                       synonymous_variant)
-    --skip_including_all_cds           Disable automatic translation of transcripts with defined CDS
+                                       synonymous_variant, regulatory_region_variant)
+    -s, --skip_including_all_cds       Disable automatic translation of transcripts with defined CDS
     --ignore_filters                   Parse all variants regardless of FILTER field
     --accepted_filters TEXT            Accepted filters for variant parsing
-    -w, --workers INTEGER              Parallel worker processes (default: 1)
+    -w, --workers INTEGER              Parallel worker processes (default: cpu_count())
     -h, --help                         Show this message and exit.
 ```
 
@@ -526,7 +538,7 @@ The output of the tool is a protein fasta file written to the path specified by 
     - The `transcripts.fa` input must be generated with `gffread -F` (using `gencode-downloader --generate-transcripts`) to embed `CDS=` headers; without them the pipeline falls back to slower 3-frame exon translation.
 
 !!! note
-    When ENSEMBL data is used, the default options should work. However, for other data sources such as variants from gnomAD, GTF from GENCODE and others one or more of the following parameters need to be changed: `--af_field`, `--annotation_field_name`, `--transcript_index`, `--consequence_index`.
+    When ENSEMBL data is used, the default options should work. However, for other data sources such as variants from gnomAD, GTF from GENCODE and others one or more of the following parameters need to be changed: `--af_field`, `--annotation_field_name`, `--transcript_str`, `--consequence_str`, `--biotype_str`.
 
 - Translate human variants from a custom VCF obtained from sequencing of a sample:
 
@@ -561,7 +573,7 @@ Usage: pgatk clinvar-to-proteindb [OPTIONS]
     -h, --help                  Show this message and exit.
 ```
 
-The input files are produced by the [ncbi-downloader](#downloading-ncbi--clinvar-data) command. Use `--generate-transcripts` with `ncbi-downloader` to produce `transcripts.fa` (with `CDS=` headers) from the GFF3 annotation.
+The input files are produced by the [ncbi-downloader](#downloading-ncbi-clinvar-data) command. Use `--generate-transcripts` with `ncbi-downloader` to produce `transcripts.fa` (with `CDS=` headers) from the GFF3 annotation.
 
 > **Note:** The GFF3 file (`GRCh38_latest_genomic.gff`) is required — the NCBI RefSeq GTF leaves the `transcript_id` attribute empty for many records, which prevents gffread from linking CDS features to their parent transcripts. GFF3 uses explicit `ID=`/`Parent=` linkage that avoids this problem entirely.
 
@@ -598,13 +610,14 @@ $ pgatk dnaseq-to-proteindb -h
 Usage: pgatk dnaseq-to-proteindb [OPTIONS]
 
   Required parameters:
-    -c, --config_file TEXT             Configuration for VCF conversion parameters
-    --input_fasta                      Fasta sequences for the transcripts
-    --output_proteindb                 Output file to write the resulting protein sequences
+    --input_fasta TEXT                 Fasta sequences for the transcripts
+    --output_proteindb TEXT            Output file to write the resulting protein sequences
 
   Optional parameters:
+    -c, --config_file TEXT             Configuration for translation parameters
+                                       (defaults to the bundled ensembl_config.yaml)
     --translation_table INTEGER        Translation Table (default 1)
-    --num_orfs INTEGER                 Number of ORFs (default 0)
+    --num_orfs INTEGER                 Number of ORFs (default 3)
     --num_orfs_complement INTEGER      Number of ORFs from the reverse side (default 0)
     --skip_including_all_cds           Disable automatic translation of transcripts with defined CDS
     --include_biotypes TEXT            Translate sequences with specified biotypes (default: protein coding)
@@ -686,23 +699,24 @@ Usage: pgatk dnaseq-to-proteindb [OPTIONS]
 $ pgatk generate-decoy -h
 Usage: pgatk generate-decoy [OPTIONS]
 
-  Required parameters:
-    -c, --config_file TEXT          Configuration file for decoy generation
-    -o, --output TEXT               Output file for decoy database
-    -i, --input TEXT                FASTA file of target protein sequences (*.fasta|*.fa)
-
   Optional parameters:
-    -s, --cleavage_sites TEXT       Amino acids at which to cleave (Default: KR)
-    -a, --anti_cleavage_sites TEXT  Amino acids at which not to cleave if following cleavage site
-    -p, --cleavage_position TEXT    Cleavage position [c, n] (Default: c)
-    -l, --min_peptide_length INTEGER  Minimum peptide length to compare (Default: 5)
-    -n, --max_iterations INTEGER    Max shuffle iterations (Default: 100)
-    -x, --do_not_shuffle TEXT       Turn OFF shuffling of decoy peptides (Default: false)
-    -w, --do_not_switch TEXT        Turn OFF switching of cleavage site (Default: false)
+    -c, --config_file TEXT          Configuration file for decoy generation
+    -in, --input_database TEXT      FASTA file of target protein sequences (*.fasta|*.fa)
+    -out, --output_database TEXT    Output file for decoy database
+    -m, --method TEXT               Decoy generation method (default: protein-reverse)
     -d, --decoy_prefix TEXT         Accession prefix for decoy proteins (Default: DECOY_)
-    -t, --temp_file TEXT            Temporary file for decoys prior to shuffling
-    -b, --no_isobaric TEXT          Do not make decoy peptides isobaric (Default: false)
-    -m, --memory_save TEXT          Slower but uses less memory (Default: false)
+    -e, --enzyme TEXT               Cleavage enzyme name (Default: Trypsin)
+    --cleavage_position [c|n]       Cleavage position (Default: c)
+    -s, --max_missed_cleavages INT  Maximum allowed missed cleavages
+    --min_peptide_length INTEGER    Minimum peptide length (Default: 5)
+    --max_peptide_length INTEGER    Maximum peptide length (Default: 100)
+    --max_iterations INTEGER        Maximum shuffle iterations
+    --do_not_shuffle                Turn OFF shuffling of decoy peptides (flag)
+    --do_not_switch                 Turn OFF cleavage-site switching (flag)
+    --temp_file TEXT                Temporary file for decoys prior to shuffling
+    --no_isobaric                   Do not make decoy peptides isobaric (flag)
+    --keep_target_hits              Keep peptides duplicated in target and decoy (flag)
+    --memory_save                   Slower but uses less memory (flag)
     -h, --help                      Show this message and exit.
 ```
 
@@ -711,7 +725,7 @@ Usage: pgatk generate-decoy [OPTIONS]
 - Generate decoy sequences for a protein database:
 
     ```bash
-    pgatk generate-decoy -c config/protein_decoy.yaml --input proteindb.fa --output decoy_proteindb.fa
+    pgatk generate-decoy -c config/protein_decoy.yaml --input_database proteindb.fa --output_database decoy_proteindb.fa
     ```
 
 ## Post-Processing Utilities
