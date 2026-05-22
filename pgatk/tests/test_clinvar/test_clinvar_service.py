@@ -293,7 +293,7 @@ class TestClinVarPipeline:
 
 
 class TestBuildOverlapMap:
-    """Tests for _build_overlap_map (DataFrame-based BedTools annotation)."""
+    """Tests for _build_overlap_map."""
 
     @pytest.fixture(autouse=True)
     def _cleanup_db(self):
@@ -304,23 +304,21 @@ class TestBuildOverlapMap:
         if db_path.exists():
             db_path.unlink()
 
-    def test_build_overlap_map_from_dataframe(self):
-        """_build_overlap_map should accept a DataFrame and return overlap dict."""
+    def test_build_overlap_map_from_records(self):
+        """_build_overlap_map should accept a list of VCFRecords and return overlap dict."""
         from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
         chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
-        _meta, vcf_df = ClinVarService._read_vcf(MINI_VCF)
-        overlap_map = ClinVarService._build_overlap_map(vcf_df, MINI_GFF, chrom_mapper)
+        _meta, vcf_records = ClinVarService._read_vcf(MINI_VCF)
+        overlap_map = ClinVarService._build_overlap_map(vcf_records, MINI_GFF, chrom_mapper)
         assert isinstance(overlap_map, dict)
         # rs00001 at chr1:69500 should overlap NM_001005484.2 CDS (69037-70008)
         assert any("1:69500:" in k for k in overlap_map)
 
-    def test_build_overlap_map_empty_df(self):
-        """Empty DataFrame should return empty dict."""
-        import pandas as pd
+    def test_build_overlap_map_empty_list(self):
+        """Empty record list should return empty dict."""
         from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
         chrom_mapper = ChromosomeMapper.from_assembly_report(ASSEMBLY_REPORT)
-        empty_df = pd.DataFrame(columns=["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"])
-        overlap_map = ClinVarService._build_overlap_map(empty_df, MINI_GFF, chrom_mapper)
+        overlap_map = ClinVarService._build_overlap_map([], MINI_GFF, chrom_mapper)
         assert overlap_map == {}
 
 

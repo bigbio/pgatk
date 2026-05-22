@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import collections
 import gzip
 import logging
 import os
@@ -11,8 +12,7 @@ import gffutils
 from Bio import SeqIO
 from Bio.Seq import Seq
 from pybedtools import BedTool
-import pandas as pd
-from pgatk.toolbox.general import ParameterConfiguration
+from pgatk.toolbox.general import ParameterConfiguration, open_vcf as _open_vcf
 from pgatk.gnomad.data_downloader import check_gencode_version_compatibility
 from pgatk.toolbox.vcf_utils import (
     check_overlap as _check_overlap,
@@ -113,7 +113,7 @@ def _split_vcf_into_batches(vcf_file: str, output_dir: str,
     handle = None
     count = 0
     try:
-        with open(vcf_file, 'r', encoding='utf-8') as f:
+        with _open_vcf(vcf_file) as f:
             for line in f:
                 if line.startswith('#'):
                     header.append(line)
@@ -498,7 +498,7 @@ class EnsemblDataService(ParameterConfiguration):
                     continue
                 muts_dict.setdefault(key, []).append(transcript_id)
 
-        with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
+        with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, _open_vcf(vcf_file) as v:
             for line in v.readlines():
                 if line.startswith('#'):
                     ann.write(line)
@@ -518,40 +518,39 @@ class EnsemblDataService(ParameterConfiguration):
 
         return f"{vcf_stem}_annotated.vcf"
 
+    _VCFRecord = collections.namedtuple('VCFRecord',
+                                        ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO'])
+
     @staticmethod
-    def vcf_from_file(vcf_file: str) -> tuple[list, pd.DataFrame]:
+    def vcf_from_file(vcf_file: str):
+        """Return VCF header lines and a lazy record iterator (constant memory).
+
+        The iterator yields one VCFRecord namedtuple per data line so peak
+        memory is O(1) in the number of variants regardless of file size.
         """
-    Read a VCF file and return a dataframe for the records
-    as well as a list for the metadata
-    """
-
-        HEADERS = {
-            'CHROM': str,
-            'POS': int,
-            'ID': str,
-            'REF': str,
-            'ALT': str,
-            'QUAL': str,
-            'FILTER': str,
-            'INFO': str,
-        }
-
-        metadata = []
-        data = []
-        _compressed = vcf_file.endswith('.gz') or vcf_file.endswith('.bgz')
-        _opener = gzip.open(vcf_file, 'rt', encoding='utf-8') if _compressed else open(vcf_file, 'r', encoding='utf-8')
-        with _opener as vcf:
-            line = vcf.readline().strip()
-            while line:
+        metadata: list[str] = []
+        with _open_vcf(vcf_file) as fh:
+            for line in fh:
                 if line.startswith('#'):
                     metadata.append(line)
                 else:
-                    data.append(line.split('\t')[0:8])
-                line = vcf.readline().strip()
+                    break  # header fully consumed; data read lazily below
 
-        vcf_df = pd.DataFrame(data, columns=HEADERS)
+        def _iter_records():
+            with _open_vcf(vcf_file) as fh:
+                for line in fh:
+                    if line.startswith('#') or not line.strip():
+                        continue
+                    parts = line.split('\t', 7)
+                    if len(parts) < 8:
+                        continue
+                    yield EnsemblDataService._VCFRecord(
+                        CHROM=parts[0], POS=int(parts[1]), ID=parts[2],
+                        REF=parts[3], ALT=parts[4], QUAL=parts[5],
+                        FILTER=parts[6], INFO=parts[7].rstrip('\n'),
+                    )
 
-        return metadata, vcf_df
+        return metadata, _iter_records()
 
     def _parse_annotation_indices(self, metadata: list, vcf_file: str = "") -> tuple:
         """Resolve transcript/consequence/biotype column positions from VCF ##INFO metadata.
@@ -652,7 +651,7 @@ class EnsemblDataService(ParameterConfiguration):
         self._accepted_filters = [x.upper() for x in self._accepted_filters]
 
         with open(output_path, 'w', buffering=1 << 20, encoding='utf-8') as prots_fn:
-            for record in vcf_reader.itertuples(index=False, name='VCFRecord'):
+            for record in vcf_reader:
                 trans = False
                 if [x for x in str(record.REF) if x not in 'ACGT']:
                     invalid_records['# variants with invalid record'] += 1

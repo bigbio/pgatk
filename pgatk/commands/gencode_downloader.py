@@ -58,8 +58,8 @@ def gencode_downloader(ctx, output_dir, release, force, generate_transcripts):
         click.echo(f"  {path}")
 
     if generate_transcripts:
-        genome_fna = os.path.join(output_dir, "GRCh38.primary_assembly.genome.fa")
-        gtf_file = os.path.join(output_dir, f"gencode.v{release}.annotation.gtf")
+        genome_fna = os.path.join(output_dir, "GRCh38.primary_assembly.genome.fa.gz")
+        gtf_file = os.path.join(output_dir, f"gencode.v{release}.annotation.gtf.gz")
         output_fasta = os.path.join(output_dir, "transcripts.fa")
         try:
             click.echo("Running gffread to generate transcripts.fa with CDS= headers ...")

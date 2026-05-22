@@ -1,3 +1,6 @@
+import logging
+import sys
+
 import click
 
 from pgatk.clinvar.clinvar_service import ClinVarService
@@ -10,8 +13,14 @@ from pgatk.clinvar.clinvar_service import ClinVarService
 @click.option("-f", "--fasta", required=True, help="RefSeq transcript nucleotide FASTA file path")
 @click.option("-a", "--assembly-report", required=True, help="NCBI assembly report file path")
 @click.option("-o", "--output", required=True, help="Output protein FASTA file path")
+@click.option(
+    "-w", "--workers",
+    default=None,
+    type=int,
+    help="Number of parallel worker processes (default: value in config, usually 1).",
+)
 @click.pass_context
-def clinvar_to_proteindb(ctx, config_file, vcf, gff, fasta, assembly_report, output):
+def clinvar_to_proteindb(ctx, config_file, vcf, gff, fasta, assembly_report, output, workers):
     """Generate a variant protein database from ClinVar VCF and NCBI RefSeq GFF3.
 
     This command does NOT require VEP annotations. It uses BedTools interval
@@ -21,6 +30,12 @@ def clinvar_to_proteindb(ctx, config_file, vcf, gff, fasta, assembly_report, out
     Use ``ncbi-downloader --generate-transcripts`` to produce the GFF3 annotation
     and transcript FASTA required by this command.
     """
+    logging.basicConfig(
+        level=logging.INFO,
+        stream=sys.stderr,
+        format="%(asctime)s [%(levelname)s] %(message)s",
+        datefmt="%H:%M:%S",
+    )
     service = ClinVarService(
         vcf_file=vcf,
         gff_file=gff,
@@ -29,4 +44,4 @@ def clinvar_to_proteindb(ctx, config_file, vcf, gff, fasta, assembly_report, out
         output_file=output,
         config_file=config_file,
     )
-    service.run()
+    service.run(workers=workers)

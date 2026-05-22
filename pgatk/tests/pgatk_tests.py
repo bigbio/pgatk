@@ -151,20 +151,37 @@ class PgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes', 'altORFs', '--skip_including_all_cds'])
         self.assertEqual(result.exit_code, 0)
 
-    def test_cbioportal_to_proteindb(self):
+    def test_cbioportal_to_proteindb_grch37(self):
         """
-          Test generation proteinDB from cBioportal mutations using cbioportal-to-proteindb tool
-          :return:
-          """
+        Test cbioportal-to-proteindb with real GRCh37 TCGA BRCA data.
+        Uses coordinate-based translation (no HGVSc) via --gff.
+        """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['cbioportal-to-proteindb', '--config_file', 'config/cbioportal_config.yaml',
-                                '--input_mutation', 'testdata/test_cbioportal_data_mutations_mskcc.txt',
-                                '--input_cds', 'testdata/test_cbioportal_genes.fa',
-                                '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
-                                '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
+                               ['cbioportal-to-proteindb',
+                                '--config_file', 'config/cbioportal_config.yaml',
+                                '--input_mutation', 'testdata/test_cbioportal_grch37_mutations.txt',
+                                '--input_fasta', 'testdata/test_cbioportal_ncbi_grch37_transcripts.fa',
+                                '--gff', 'testdata/test_cbioportal_ncbi_grch37.gff',
+                                '--output_db', 'testdata/test_cbioportal_grch37_proteindb.fa',
+                                '--clinical_sample_file', 'testdata/test_cbioportal_grch37_clinical_sample.txt',
                                 '--filter_column', 'CANCER_TYPE',
                                 '--split_by_filter_column', '--accepted_values', 'all'])
+        self.assertEqual(result.exit_code, 0)
+
+    def test_cbioportal_to_proteindb_grch38(self):
+        """
+        Test cbioportal-to-proteindb with real GRCh38 TCGA BRCA data.
+        Uses coordinate-based translation (no HGVSc) via --gff, no clinical file.
+        """
+        runner = CliRunner()
+        result = runner.invoke(cli,
+                               ['cbioportal-to-proteindb',
+                                '--config_file', 'config/cbioportal_config.yaml',
+                                '--input_mutation', 'testdata/test_cbioportal_grch38_mutations.txt',
+                                '--input_fasta', 'testdata/test_cbioportal_ncbi_grch38_transcripts.fa',
+                                '--gff', 'testdata/test_cbioportal_ncbi_grch38.gff',
+                                '--output_db', 'testdata/test_cbioportal_grch38_proteindb.fa'])
         self.assertEqual(result.exit_code, 0)
 
     def test_cosmic_to_proteindb(self):

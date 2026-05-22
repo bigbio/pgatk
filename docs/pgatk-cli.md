@@ -70,6 +70,9 @@ Usage: pgatk ensembl-downloader [OPTIONS]
     -sn, --skip_ncrna               Skip the ncRNA file download
     -sdn, --skip_cdna               Skip the cDNA file download
     -sd, --skip_dna                 Skip the DNA file download
+    --generate-transcripts          Run gffread after download to produce transcripts.fa
+                                    with CDS= headers (requires gffread in PATH and
+                                    the genome assembly; no effect with --skip_gtf)
     -h, --help                      Show this message and exit.
 ```
 
@@ -349,7 +352,7 @@ The output of the tool is a protein fasta file and is written in the path specif
 
 ### cBioPortal Mutations to Protein Sequences
 
-The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed at [https://www.cbioportal.org/datasets](https://www.cbioportal.org/datasets). The command `cbioportal-to-proteindb` converts the cBioPortal mutations file into a protein sequence database file.
+The cBioPortal for Cancer Genomics provides visualization, analysis and download of large-scale cancer genomics data sets. The available datasets can be viewed at [https://www.cbioportal.org/datasets](https://www.cbioportal.org/datasets). The command `cbioportal-to-proteindb` converts the cBioPortal mutations MAF file into a protein sequence database.
 
 #### Command Options
 
@@ -358,34 +361,78 @@ $ pgatk cbioportal-to-proteindb -h
 Usage: pgatk cbioportal-to-proteindb [OPTIONS]
 
   Required parameters:
-    -c, --config_file TEXT           Configuration for cBioportal
-    -in, --input_mutation TEXT       Cbioportal mutation file
-    -fa, --input_cds TEXT            CDS genes from ENSEMBL database
-    -out, --output_db TEXT           Protein database including the mutations
+    -in, --input_mutation TEXT              cBioPortal MAF mutation file
+    -fa, --input_fasta TEXT                 Transcript FASTA with CDS= and gene_biotype= headers
+                                            (from ncbi-downloader --generate-transcripts)
+    -out, --output_db TEXT                  Output protein FASTA database
 
   Optional parameters:
-    -f, --filter_column TEXT         Column in the VCF file to be used for filtering or splitting mutations
-    -a, --accepted_values TEXT       Limit mutations to specific groups (tissue type, sample name, etc)
-    -s, --split_by_filter_column     Generate a proteinDB per group as specified in the filter_column
-    -cl, --clinical_sample_file TEXT Clinical sample file with cancer type per sample identifier
-    -h, --help                       Show this message and exit.
+    -c, --config_file TEXT                  Configuration YAML for cBioPortal tool
+    -f, --filter_column TEXT                Column used for filtering or splitting (default: CANCER_TYPE)
+    -a, --accepted_values TEXT              Limit to specific group values (tissue type, sample name, etc.)
+    -s, --split_by_filter_column            Generate one proteinDB per group defined by filter_column
+    -cl, --clinical_sample_file TEXT        Clinical sample file mapping sample IDs to groups
+                                            (required when -s or -a is used)
+    --include_biotypes TEXT                 Comma-separated biotypes to translate (default: protein_coding;
+                                            use "all" to include all biotypes)
+    --exclude_biotypes TEXT                 Comma-separated biotypes to exclude (default: none)
+    --skip_including_all_cds                Apply biotype filter to CDS-defined transcripts too
+                                            (default: CDS transcripts are always included)
+    --include_variant_classifications TEXT  Comma-separated Variant_Classification values to include
+                                            (default: all)
+    --exclude_variant_classifications TEXT  Comma-separated Variant_Classification values to exclude
+                                            (default: Nonsense_Mutation)
+    --gff TEXT                              GFF3 annotation file for coordinate-based fallback when
+                                            HGVSc is absent (from ncbi-downloader; indexed as <gff>.db
+                                            on first use)
+    -w, --workers INTEGER                   Number of parallel worker processes for translation
+                                            (default: 1 = sequential)
+    -h, --help                              Show this message and exit.
 ```
 
 !!! note
-    The clinical sample file for each mutation file can be found under the same directory as the mutation file downloaded from cBioportal (It should have at least two columns named: Cancer Type and Sample Identifier). The file is only needed when generating tissue type databases (when `-s` or `-a` is given).
-
-The file input of the tool `-in` (`--input_mutation`) is the cBioPortal mutation data file. An example is given in [cBioPortal downloader](#downloading-cbioportal-data) showing how to obtain the mutations file for a particular study. The CDS sequence for all genes input file `-fa` (`--input_genes`) can be obtained using the ENSEMBL CDS files, see [ENSEMBL downloader](#downloading-ensembl-data).
+    The clinical sample file ships alongside the mutation file in each cBioPortal study directory (typically `data_clinical_sample.txt`). It must contain at least `SAMPLE_ID` and `CANCER_TYPE` columns. It is only required when generating per-tissue databases (`-s`) or filtering by group (`-a`).
 
 !!! note
-    The cBioPortal mutations are aligned to the hg19 assembly, make sure that the correct genome assembly is selected for the download.
+    cBioPortal returns **RefSeq** transcript IDs (`NM_...`). The `-fa` FASTA must therefore be generated with `ncbi-downloader --generate-transcripts` (not the ENSEMBL downloader). Both GRCh37 and GRCh38 assemblies are supported.
 
 #### Examples
 
-- Translate mutations from `Bladder` samples in studyID `blca_mskcc_solit_2014`:
+- Translate all mutations from a TCGA study (sequential):
 
     ```bash
-    pgatk cbioportal-to-proteindb --config_file config/cbioportal_config.yaml --input_cds human_hg19_cds.fa --input_mutation data_mutations_mskcc.txt --clinical_sample_file data_clinical_sample.txt --output_db bladder_proteindb.fa
+    pgatk cbioportal-to-proteindb \
+        --input_mutation brca_tcga/data_mutations.txt \
+        --input_fasta ncbi_grch37/transcripts.fa \
+        --gff ncbi_grch37/GRCh37_latest_genomic.gff \
+        --output_db brca_proteins.fa
     ```
+
+- Same study, translated in parallel across 8 workers:
+
+    ```bash
+    pgatk cbioportal-to-proteindb \
+        --input_mutation brca_tcga/data_mutations.txt \
+        --input_fasta ncbi_grch37/transcripts.fa \
+        --gff ncbi_grch37/GRCh37_latest_genomic.gff \
+        --output_db brca_proteins.fa \
+        --workers 8
+    ```
+
+- Generate one proteinDB per cancer type (split by `CANCER_TYPE` column):
+
+    ```bash
+    pgatk cbioportal-to-proteindb \
+        --input_mutation brca_tcga/data_mutations.txt \
+        --input_fasta ncbi_grch37/transcripts.fa \
+        --gff ncbi_grch37/GRCh37_latest_genomic.gff \
+        --clinical_sample_file brca_tcga/data_clinical_sample.txt \
+        --split_by_filter_column \
+        --output_db brca_proteins.fa \
+        --workers 4
+    ```
+
+    This writes `brca_proteins.fa` (all mutations) plus one `brca_proteins_<CancerType>.fa` per group.
 
 ### Variants (VCF) to Protein Sequences
 
@@ -430,11 +477,7 @@ Usage: pgatk vcf-to-proteindb [OPTIONS]
 
 The file input `--vcf` is a VCF file that can be provided by the user or obtained from ENSEMBL using the [ensembl-downloader](#downloading-ensembl-data). The `--gene_annotations_gtf` file can also be obtained with the ensembl-downloader.
 
-The `--input_fasta` file contains the `CDS` and DNA sequences for all genes present in the GTF file. This file can be generated from the GTF file using the [gffread](http://ccb.jhu.edu/software/stringtie/gff.shtml#gffread) tool as follows:
-
-```bash
-gffread -F -w input_fasta.fa -g genome.fa gene_annotations_gtf
-```
+The `--input_fasta` file contains the `CDS` and DNA sequences for all genes present in the GTF file. Generate it with `ensembl-downloader --generate-transcripts` (or `gencode-downloader --generate-transcripts` for GENCODE annotation).
 
 The output of the tool is a protein fasta file written to the path specified by `--output_proteindb`.
 
@@ -544,11 +587,7 @@ The input files are produced by the [ncbi-downloader](#downloading-ncbi--clinvar
 
 DNA sequences given in a FASTA format can be translated using the `dnaseq-to-proteindb` tool. This tool allows for translation of all kinds of transcripts (coding and noncoding) by specifying the desired biotypes.
 
-The most suited `--input_fasta` file can be generated from a given GTF file using the `gffread` command as follows:
-
-```bash
-gffread -F -w transcript_sequences.fa -g genome.fa gene_annotations_gtf
-```
+The most suited `--input_fasta` file can be generated from the downloaded GTF and genome FASTA using `ensembl-downloader --generate-transcripts` (or `gencode-downloader --generate-transcripts` for GENCODE annotation).
 
 The FASTA file generated from the GTF file would contain DNA sequences for all transcripts regardless of their biotypes. It also specifies the CDS positions for the protein coding transcripts. The `dnaseq-to-proteindb` command recognizes features such as biotype and expression values in the FASTA header that are taken from the GTF INFO field (if available). However, it is not required to have those in the FASTA header but their presence enables the user to filter by biotype and expression values during the translation step.
 

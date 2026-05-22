@@ -1,5 +1,8 @@
 import errno
+import glob
 import logging
+import os
+import subprocess
 import sys
 
 import click
@@ -27,10 +30,19 @@ log = logging.getLogger(__name__)
               help='Ensembl name code to download, it can be use instead of taxonomy (e.g. homo_sapiens)')
 @click.option('--grch37', is_flag=True, help='Download a previous version GRCh37 of ensembl genomes')
 @click.option('--url_file', help='Add the url to a downloaded file')
+@click.option(
+    '--generate-transcripts', 'generate_transcripts',
+    is_flag=True, default=False,
+    help=(
+        'Run gffread after download to generate transcripts.fa with CDS= headers. '
+        'Requires the genome assembly (do not use --skip_dna) and gffread in PATH '
+        '(conda install -c bioconda gffread). Has no effect when --skip_gtf is set.'
+    ),
+)
 @click.pass_context
 def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_prefix_release, skip_gtf, skip_protein,
                        skip_cds, skip_cdna, skip_ncrna, skip_dna, skip_vcf,
-                       ensembl_name, grch37, url_file):
+                       ensembl_name, grch37, url_file, generate_transcripts):
     """ This tool enables to download from enseml ftp the FASTA and GTF files"""
 
     config_data = load_config("ensembl_downloader", config_file)
@@ -83,3 +95,47 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_pref
             sys.exit(errno.EFAULT)
 
     ensembl_download_service.download_database_by_species(url_file)
+
+    if generate_transcripts:
+        if skip_gtf:
+            click.echo(
+                "Warning: --generate-transcripts has no effect when --skip_gtf is set.",
+                err=True,
+            )
+        else:
+            out_dir = ensembl_download_service.get_local_path_root_ensembl_repo()
+            gtf_files = sorted(glob.glob(os.path.join(out_dir, "*.gtf.gz")))
+            genome_files = sorted(glob.glob(os.path.join(out_dir, "*.dna_sm.toplevel.fa.gz")))
+
+            if not genome_files:
+                click.echo(
+                    f"Error: no genome FASTA (*.dna_sm.toplevel.fa.gz) found in {out_dir}. "
+                    "Re-run without --skip_dna to download the genome assembly.",
+                    err=True,
+                )
+                raise SystemExit(1)
+
+            if not gtf_files:
+                click.echo(f"Error: no GTF file found in {out_dir}.", err=True)
+                raise SystemExit(1)
+
+            # Map species+assembly prefix (e.g. "Homo_sapiens.GRCh38") to genome path.
+            genome_map = {}
+            for gf in genome_files:
+                prefix = ".".join(os.path.basename(gf).split(".")[:2])
+                genome_map[prefix] = gf
+
+            for gtf_path in gtf_files:
+                prefix = ".".join(os.path.basename(gtf_path).split(".")[:2])
+                genome_fna = genome_map.get(prefix) or next(iter(genome_map.values()))
+                output_fasta = os.path.join(
+                    out_dir,
+                    "transcripts.fa" if len(gtf_files) == 1 else f"{prefix}_transcripts.fa",
+                )
+                try:
+                    click.echo(f"Running gffread to generate {os.path.basename(output_fasta)} ...")
+                    EnsemblDataDownloadService.generate_transcripts(genome_fna, gtf_path, output_fasta)
+                    click.echo(f"Transcripts written to {output_fasta}")
+                except (FileNotFoundError, subprocess.CalledProcessError) as exc:
+                    click.echo(f"Error: {exc}", err=True)
+                    raise SystemExit(1)

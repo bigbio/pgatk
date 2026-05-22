@@ -119,7 +119,7 @@ pgatk/config/private/
 # Test-generated output files (produced by pgatk tests)
 pgatk/testdata/proteindb_from_*.fa
 pgatk/testdata/output_decoy.fa
-pgatk/testdata/test_cbioportal_data_mutations_mskcc_proteindb*.fa
+pgatk/testdata/test_cbioportal_*_proteindb*.fa
 pgatk/testdata/test_cosmic_mutations_proteindb*.fa
 pgatk/testdata/test_blast_psms_out.tsv
 pgatk/testdata/test_blast_validate_psms_out.tsv

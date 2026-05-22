@@ -75,7 +75,6 @@ def digest_mutant_proteins(
                     peptidome[peptide.replace("I", "L")] = 1
 
     log.info("Known peptides number: %d", len(peptidome))
-    handle1.close()
 
     filelist = input_file.split(",")
     handle_list = []
@@ -96,8 +95,8 @@ def digest_mutant_proteins(
                         if peptide1 not in peptidome:
                             des_list = descrip.split(":")
                             des_list[0] = header_prefix
-                            mut_type = des_list[-1]
-                            snp = des_list[-2]
+                            mut_type = des_list[-1] if len(des_list) >= 1 else ""
+                            snp = des_list[-2] if len(des_list) >= 2 else ""
                             if "Missense" in mut_type:
                                 try:
                                     mut_pos = int(re.findall(r'\d+', snp)[0])
@@ -112,7 +111,6 @@ def digest_mutant_proteins(
                                 var_peptidome[peptide] = [new_description]
                             else:
                                 var_peptidome[peptide].append(new_description)
-        h.close()
         log.info("File processing done")
 
     log.info("Mutant peptide numbers: %d", len(var_peptidome))

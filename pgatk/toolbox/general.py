@@ -189,7 +189,15 @@ def clear_cache() -> None:
     request.urlcleanup()
 
 
-def download_file(file_url: str, file_name: str, log: logging, url_file: Optional[Any] = None) -> Optional[str]:
+def open_vcf(path: str):
+    """Return a text-mode file handle for *path*, decompressing on-the-fly for .gz/.bgz."""
+    if path.endswith('.gz') or path.endswith('.bgz'):
+        return gzip.open(path, 'rt', encoding='utf-8')
+    return open(path, 'r', encoding='utf-8')
+
+
+def download_file(file_url: str, file_name: str, log: logging, url_file: Optional[Any] = None,
+                  progress_prefix: str = "") -> Optional[str]:
     """
      Download file_url and move it to file_name, do nothing if file_name already exists.
 
@@ -197,6 +205,7 @@ def download_file(file_url: str, file_name: str, log: logging, url_file: Optiona
     :param file_url: file url to be download
     :param file_name: file name where the data will be downloaded
     :param url_file: the url file is used to write the urls to be downloaded, if None, the function will download the file
+    :param progress_prefix: optional label shown in progress log lines (e.g. file name)
     :return: name of the file if the file can be download.
     """
     if os.path.isfile(file_name):
@@ -220,22 +229,35 @@ def download_file(file_url: str, file_name: str, log: logging, url_file: Optiona
             f"Only {', '.join(allowed_schemes)}:// are allowed for security reasons."
         )
 
+    # Reporthook: logs progress at every 10% increment for files with known size,
+    # or every 100 MB for chunked/unknown-size transfers.
+    _last_pct: list = [-1]
+
+    def _reporthook(block_count: int, block_size: int, total_size: int) -> None:
+        downloaded = block_count * block_size
+        prefix = f"{progress_prefix} " if progress_prefix else ""
+        if total_size > 0:
+            pct = min(100, downloaded * 100 // total_size)
+            if pct >= _last_pct[0] + 10:
+                _last_pct[0] = pct - (pct % 10)
+                log.info("%s%d%% (%d / %d MB)",
+                         prefix, _last_pct[0],
+                         downloaded // (1024 * 1024),
+                         total_size // (1024 * 1024))
+        else:
+            mb = downloaded // (1024 * 1024)
+            if mb > 0 and mb % 100 == 0 and mb != _last_pct[0]:
+                _last_pct[0] = mb
+                log.info("%s%d MB downloaded ...", prefix, mb)
+
     remaining_download_tries = REMAINING_DOWNLOAD_TRIES
     downloaded_file = None
     while remaining_download_tries > 0:
         try:
             # urlretrieve is safe here because we've validated the scheme above
             # Only http:// and https:// URLs can reach this point
-            downloaded_file, _ = request.urlretrieve(file_url, file_name)
+            downloaded_file, _ = request.urlretrieve(file_url, file_name, reporthook=_reporthook)
             log.debug("File downloaded -- " + downloaded_file)
-            if downloaded_file.endswith('.gz'):
-                extracted_file = downloaded_file.replace('.gz', '')
-                with open(extracted_file, 'wb') as outfile:
-                    with gzip.open(downloaded_file, 'rb') as infile:
-                        shutil.copyfileobj(infile, outfile)
-                    os.remove(downloaded_file)
-                    downloaded_file = extracted_file
-                    log.debug("File extracted-- " + downloaded_file)
             break
         except (HTTPError, URLError, OSError) as error:
             logging.error("Error downloading -- Incorrect URL or file not found: " + file_url + " on trial no: " + str(

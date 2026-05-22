@@ -709,9 +709,9 @@ class TestBgzVcfReading:
 
     def test_vcf_from_file_reads_bgz_without_error(self):
         """Reading a gzip-compressed VCF must not raise UnicodeDecodeError."""
-        meta, df = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
+        meta, records = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
         assert isinstance(meta, list)
-        assert not df.empty
+        assert len(list(records)) > 0
 
     def test_vcf_from_file_bgz_metadata_contains_vep_header(self):
         """The vep ##INFO header line must be present in the parsed metadata."""
@@ -719,14 +719,14 @@ class TestBgzVcfReading:
         assert any("ID=vep" in line for line in meta)
 
     def test_vcf_from_file_bgz_data_has_expected_variant_count(self):
-        """All four data lines in the compressed VCF are loaded into the DataFrame."""
-        _, df = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
-        assert len(df) == 4
+        """All four data lines in the compressed VCF are returned by the iterator."""
+        _, records = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
+        assert len(list(records)) == 4
 
     def test_vcf_from_file_bgz_chrom_column_parsed(self):
-        """The CHROM column is correctly parsed from the compressed file."""
-        _, df = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
-        assert list(df["CHROM"].unique()) == ["chr22"]
+        """The CHROM field is correctly parsed from the compressed file."""
+        _, records = EnsemblDataService.vcf_from_file(self._BGZ_VCF)
+        assert all(r.CHROM == "chr22" for r in records)
 
 
 # ---------------------------------------------------------------------------

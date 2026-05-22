@@ -18,6 +18,26 @@ from typing import Optional
 
 from pgatk.toolbox.general import download_file, check_create_folders
 
+
+def _resolve_genome_fna(genome_fna: str) -> tuple[str, str | None]:
+    """Return (path_for_gffread, temp_path_to_clean_up).
+
+    gffread requires random-access into the genome FASTA.  Regular .gz (deflate)
+    does not support seeks, so if the caller passes a .gz path we either reuse
+    an already-decompressed sibling file or decompress to one on the fly.
+    Returns the second element as a path only when *we* created the file and
+    the caller must delete it afterward.
+    """
+    if not genome_fna.endswith(".gz"):
+        return genome_fna, None
+    plain = genome_fna[:-3]
+    if os.path.exists(plain):
+        return plain, None
+    logger.info("Decompressing genome FASTA for gffread (random-access required): %s", genome_fna)
+    with gzip.open(genome_fna, "rb") as fi, open(plain, "wb") as fo:
+        shutil.copyfileobj(fi, fo)
+    return plain, plain
+
 logger = logging.getLogger(__name__)
 
 
@@ -151,11 +171,11 @@ class GencodeDownloader:
         ]
 
     def expected_files(self) -> list[str]:
-        """Return expected local paths after download and decompression."""
+        """Return expected local paths after download (files remain compressed)."""
         v = self._release
         return [
-            os.path.join(self._output_dir, f"gencode.v{v}.annotation.gtf"),
-            os.path.join(self._output_dir, _GENOME_FASTA),
+            os.path.join(self._output_dir, f"gencode.v{v}.annotation.gtf.gz"),
+            os.path.join(self._output_dir, _GENOME_FASTA_GZ),
         ]
 
     def download_all(self, force: bool = False) -> list[str]:
@@ -169,11 +189,9 @@ class GencodeDownloader:
         downloaded = []
         for url, name in zip(self.get_urls(), filenames):
             local_gz = os.path.join(self._output_dir, name)
-            extracted = local_gz.removesuffix(".gz")
-            if not force and (os.path.exists(local_gz) or os.path.exists(extracted)):
-                existing = local_gz if os.path.exists(local_gz) else extracted
-                logger.info("Already exists, skipping: %s", existing)
-                downloaded.append(existing)
+            if not force and os.path.exists(local_gz):
+                logger.info("Already exists, skipping: %s", local_gz)
+                downloaded.append(local_gz)
                 continue
             logger.info("Downloading %s -> %s", url, local_gz)
             result = download_file(url, local_gz, logger)
@@ -215,9 +233,14 @@ class GencodeDownloader:
                 "gffread not found in PATH. "
                 "Install it with: conda install -c bioconda gffread"
             )
-        cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_fna, gtf_file]
-        logger.info("Running: %s", " ".join(cmd))
-        subprocess.run(cmd, check=True)
+        genome_for_gffread, _tmp = _resolve_genome_fna(genome_fna)
+        try:
+            cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_for_gffread, gtf_file]
+            logger.info("Running: %s", " ".join(cmd))
+            subprocess.run(cmd, check=True)
+        finally:
+            if _tmp and os.path.exists(_tmp):
+                os.remove(_tmp)
         logger.info("Transcripts written to %s", output_fasta)
         return output_fasta
 

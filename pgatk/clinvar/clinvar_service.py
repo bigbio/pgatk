@@ -7,20 +7,25 @@ a FASTA file of variant protein sequences.  Uses BedTools interval overlap
 from __future__ import annotations
 
 import logging
+import multiprocessing
+import os
 import re
+import shutil
 import sqlite3
+import time
 import tempfile
 from pathlib import Path
 from typing import Optional
 
 import gffutils
-import pandas as pd
+import collections
 from Bio import SeqIO
 from Bio.Seq import Seq
 from pybedtools import BedTool
 
 from pgatk.clinvar.chromosome_mapper import ChromosomeMapper
 from pgatk.config.registry import load_config
+from pgatk.toolbox.general import open_vcf
 from pgatk.toolbox.vcf_utils import (
     check_overlap,
     get_altseq,
@@ -29,6 +34,139 @@ from pgatk.toolbox.vcf_utils import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+class _FeatureCache:
+    """Per-run memoization of _get_features() results keyed by (tid, feature_types)."""
+
+    def __init__(self, maxsize: int = 50000) -> None:
+        self._cache: dict[tuple, tuple] = {}
+        self._maxsize = maxsize
+
+    def get(self, key: tuple) -> Optional[tuple]:
+        return self._cache.get(key)
+
+    def put(self, key: tuple, value: tuple) -> None:
+        if len(self._cache) >= self._maxsize:
+            for k in list(self._cache.keys())[: self._maxsize // 5]:
+                del self._cache[k]
+        self._cache[key] = value
+
+
+_CLINVAR_BATCH_SIZE = 50_000
+
+# Per-worker state populated once by _clinvar_worker_init and reused across all
+# tasks assigned to that worker process.
+_clinvar_worker_state: dict = {}
+
+
+def _fasta_key_fn(header: str) -> str:
+    """Key function for SeqIO FASTA indexing — strips rna- prefix and version."""
+    return header.split("|")[0].split(" ")[0].removeprefix("rna-")
+
+
+def _ensure_fasta_index(fasta_file: str) -> str:
+    """Return path to a SQLite SeqIO index for fasta_file, building it if absent or stale."""
+    idx_path = fasta_file + ".idx"
+    if os.path.exists(idx_path):
+        if os.path.getmtime(idx_path) >= os.path.getmtime(fasta_file):
+            return idx_path
+        try:
+            os.remove(idx_path)
+        except OSError:
+            pass
+    SeqIO.index_db(idx_path, [fasta_file], "fasta", key_function=_fasta_key_fn)
+    return idx_path
+
+
+def _split_vcf_into_batches(
+    vcf_file: str, output_dir: str, batch_size: int = _CLINVAR_BATCH_SIZE
+) -> list:
+    """Stream vcf_file once, writing fixed-size variant-count batches into output_dir.
+
+    Returns an ordered list of batch VCF paths.
+    """
+    header: list = []
+    batch_paths: list = []
+    handle = None
+    count = 0
+    try:
+        with open_vcf(vcf_file) as f:
+            for line in f:
+                if line.startswith("#"):
+                    header.append(line)
+                    continue
+                if not line.strip():
+                    continue
+                if handle is None or count >= batch_size:
+                    if handle is not None:
+                        handle.close()
+                    chunk_path = os.path.join(
+                        output_dir, f"batch_{len(batch_paths):04d}.vcf"
+                    )
+                    handle = open(chunk_path, "w", encoding="utf-8")
+                    handle.writelines(header)
+                    batch_paths.append(chunk_path)
+                    count = 0
+                handle.write(line)
+                count += 1
+    finally:
+        if handle is not None:
+            handle.close()
+    return batch_paths
+
+
+def _clinvar_worker_init(
+    vcf_file: str,
+    gff_file: str,
+    fasta_file: str,
+    assembly_report: str,
+    output_file: str,
+    config_file: Optional[str],
+    overlap_map: dict,
+) -> None:
+    """Pool initializer: reconstruct service and open DB + FASTA index once per worker.
+
+    The overlap_map (built in the main process) is pickled once per worker at
+    pool startup via initargs, not once per task.
+    """
+    svc = ClinVarService(
+        vcf_file=vcf_file,
+        gff_file=gff_file,
+        fasta_file=fasta_file,
+        assembly_report=assembly_report,
+        output_file=output_file,
+        config_file=config_file,
+    )
+    db = ClinVarService._parse_gtf(gff_file)
+    idx_path = _ensure_fasta_index(fasta_file)
+    transcripts_dict = SeqIO.index_db(
+        idx_path, [fasta_file], "fasta", key_function=_fasta_key_fn
+    )
+    transcript_id_mapping = {k.split(".")[0]: k for k in transcripts_dict.keys()}
+    _clinvar_worker_state.update(
+        {
+            "svc": svc,
+            "db": db,
+            "transcripts_dict": transcripts_dict,
+            "transcript_id_mapping": transcript_id_mapping,
+            "overlap_map": overlap_map,
+        }
+    )
+
+
+def _clinvar_worker(vcf_batch_path: str, output_path: str) -> dict:
+    """Process one VCF batch chunk using per-worker pre-initialized state."""
+    state = _clinvar_worker_state
+    _, vcf_records = ClinVarService._read_vcf(vcf_batch_path)
+    return state["svc"]._process_batch(
+        vcf_records=vcf_records,
+        overlap_map=state["overlap_map"],
+        db=state["db"],
+        transcripts_dict=state["transcripts_dict"],
+        transcript_id_mapping=state["transcript_id_mapping"],
+        output_file=output_path,
+    )
 
 
 class ClinVarService:
@@ -66,6 +204,7 @@ class ClinVarService:
         self._gtf_file = gff_file
         self._fasta_file = fasta_file
         self._assembly_report = assembly_report
+        self._config_file = config_file
 
         cfg = load_config("clinvar", config_file)
         self._cfg = cfg.get("clinvar_translation", {})
@@ -90,6 +229,10 @@ class ClinVarService:
             self._include_biotypes = [b.strip() for b in biotypes_raw.split(",")]
         else:
             self._include_biotypes = list(biotypes_raw)
+        try:
+            self._workers = max(1, int(self._cfg.get("workers", 1)))
+        except (TypeError, ValueError):
+            self._workers = 1
 
     # ------------------------------------------------------------------
     # Static helper methods — ClinVar INFO field parsers
@@ -199,6 +342,13 @@ class ClinVarService:
         The database is stored alongside the GTF as ``<name>.db``.
         """
         db_file = str(Path(gtf_file).with_suffix(".db"))
+        if not os.path.exists(db_file):
+            logger.warning(
+                "Building gffutils database from %s — this takes 10–30 minutes "
+                "on first run and is cached as %s for subsequent runs.",
+                gtf_file,
+                db_file,
+            )
         try:
             gffutils.create_db(
                 gtf_file,
@@ -294,14 +444,16 @@ class ClinVarService:
     # VCF reading (pandas, same pattern as EnsemblDataService)
     # ------------------------------------------------------------------
 
-    @staticmethod
-    def _read_vcf(vcf_file: str) -> tuple[list, pd.DataFrame]:
-        """Read a VCF file and return metadata lines and a DataFrame of records."""
-        COLUMNS = ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
+    _VCFRecord = collections.namedtuple(
+        "VCFRecord", ["CHROM", "POS", "ID", "REF", "ALT", "QUAL", "FILTER", "INFO"]
+    )
 
+    @staticmethod
+    def _read_vcf(vcf_file: str) -> tuple[list, list]:
+        """Read a VCF file and return metadata lines and a list of VCFRecord namedtuples."""
         metadata: list[str] = []
-        data: list[list[str]] = []
-        with open(vcf_file, "r", encoding="utf-8") as fh:
+        records: list = []
+        with open_vcf(vcf_file) as fh:
             for line in fh:
                 line = line.strip()
                 if not line:
@@ -309,10 +461,15 @@ class ClinVarService:
                 if line.startswith("#"):
                     metadata.append(line)
                 else:
-                    data.append(line.split("\t")[0:8])
-
-        vcf_df = pd.DataFrame(data, columns=COLUMNS)
-        return metadata, vcf_df
+                    parts = line.split("\t", 7)
+                    if len(parts) < 8:
+                        continue
+                    records.append(ClinVarService._VCFRecord(
+                        CHROM=parts[0], POS=int(parts[1]), ID=parts[2],
+                        REF=parts[3], ALT=parts[4], QUAL=parts[5],
+                        FILTER=parts[6], INFO=parts[7],
+                    ))
+        return metadata, records
 
     # ------------------------------------------------------------------
     # BedTools-based transcript overlap annotation
@@ -320,20 +477,17 @@ class ClinVarService:
 
     @staticmethod
     def _build_overlap_map(
-        vcf_df: pd.DataFrame,
+        vcf_records: list,
         gtf_file: str,
         chrom_mapper: ChromosomeMapper,
     ) -> dict[str, list[str]]:
         """Find transcripts overlapping each VCF variant via BedTools.
 
-        Builds a BED from an already-loaded DataFrame so the VCF file does not
-        need to be read a second time.
-
         Returns a dict mapping ``"CHROM:POS:REF:ALT"`` variant keys to lists
         of overlapping transcript IDs.
         """
         bed_lines: list[str] = []
-        for _, row in vcf_df.iterrows():
+        for row in vcf_records:
             ref = str(row.REF)
             if any(c not in "ACGT" for c in ref):
                 continue
@@ -384,35 +538,22 @@ class ClinVarService:
             Path(tmp_bed_path).unlink(missing_ok=True)
 
     # ------------------------------------------------------------------
-    # Main pipeline
+    # Batch processing (used by both sequential and parallel paths)
     # ------------------------------------------------------------------
 
-    def run(self) -> str:
-        """Execute the ClinVar VCF-to-protein pipeline.
+    def _process_batch(
+        self,
+        vcf_records: list,
+        overlap_map: dict,
+        db: gffutils.FeatureDB,
+        transcripts_dict,
+        transcript_id_mapping: dict,
+        output_file: str,
+    ) -> dict:
+        """Translate one DataFrame of VCF records, writing protein sequences to output_file.
 
-        Returns the path to the output FASTA file.
+        Returns a stats dict with per-category counts.
         """
-        logger.info("Starting ClinVar pipeline")
-
-        chrom_mapper = ChromosomeMapper.from_assembly_report(self._assembly_report)
-
-        db = self._parse_gtf(self._gtf_file)
-
-        transcripts_dict = SeqIO.index(
-            self._fasta_file,
-            "fasta",
-            key_function=lambda h: h.split("|")[0].split(" ")[0].removeprefix("rna-"),
-        )
-        # Build mapping without version for fallback lookup
-        transcript_id_mapping = {
-            k.split(".")[0]: k for k in transcripts_dict.keys()
-        }
-
-        _metadata, vcf_df = self._read_vcf(self._vcf_file)
-
-        overlap_map = self._build_overlap_map(vcf_df, self._gtf_file, chrom_mapper)
-        logger.info("Found %d variants with transcript overlaps", len(overlap_map))
-
         stats = {
             "variants_processed": 0,
             "variants_filtered_clnsig": 0,
@@ -422,11 +563,23 @@ class ClinVarService:
             "variants_translated": 0,
         }
 
-        processed_pairs: set[str] = set()
+        processed_pairs: set = set()
+        feature_cache = _FeatureCache()
+        biotype_cache: dict = {}
+        missing_transcripts: set = set()
 
-        with open(self._output_file, "w", encoding="utf-8") as prots_fn:
-            for _, record in vcf_df.iterrows():
+        with open(output_file, "w", encoding="utf-8") as prots_fn:
+            for record in vcf_records:
                 stats["variants_processed"] += 1
+                if stats["variants_processed"] % 1000 == 0:
+                    logger.info(
+                        "Progress: %d variants processed | %d filtered (CLNSIG) | "
+                        "%d filtered (MC) | %d translated",
+                        stats["variants_processed"],
+                        stats["variants_filtered_clnsig"],
+                        stats["variants_filtered_mc"],
+                        stats["variants_translated"],
+                    )
 
                 ref = str(record.REF)
                 if any(c not in "ACGT" for c in ref):
@@ -459,7 +612,6 @@ class ClinVarService:
                 chrom = str(record.CHROM)
                 pos = int(record.POS)
 
-                # Translation table (mito vs standard)
                 trans_table = self._translation_table
                 chrom_bare = chrom.lstrip("chr").upper()
                 if chrom_bare in ("M", "MT"):
@@ -483,16 +635,25 @@ class ClinVarService:
                             tid = transcript_id_mapping.get(
                                 transcript_id.split(".")[0], transcript_id
                             )
+
+                        if tid in missing_transcripts:
+                            continue
+
                         try:
                             fasta_record = transcripts_dict[tid]
                         except KeyError:
+                            missing_transcripts.add(tid)
                             logger.debug(
                                 "Transcript %s not found in FASTA", transcript_id
                             )
                             continue
 
                         if self._include_biotypes != ["all"]:
-                            biotype = self._get_transcript_biotype(db, tid)
+                            if tid not in biotype_cache:
+                                biotype_cache[tid] = self._get_transcript_biotype(
+                                    db, tid
+                                )
+                            biotype = biotype_cache[tid]
                             if biotype and biotype not in self._include_biotypes:
                                 stats["transcripts_filtered_biotype"] += 1
                                 continue
@@ -500,7 +661,7 @@ class ClinVarService:
                         ref_seq = fasta_record.seq
                         desc = str(fasta_record.description)
 
-                        cds_info: list[int] = []
+                        cds_info: list = []
                         feature_types = ["exon"]
                         num_orfs = 3
                         if "CDS=" in desc:
@@ -522,9 +683,12 @@ class ClinVarService:
                                     desc,
                                 )
 
-                        feat_chrom, strand, features_info = self._get_features(
-                            db, tid, feature_types
-                        )
+                        cache_key = (tid, tuple(feature_types))
+                        cached = feature_cache.get(cache_key)
+                        if cached is None:
+                            cached = self._get_features(db, tid, feature_types)
+                            feature_cache.put(cache_key, cached)
+                        feat_chrom, strand, features_info = cached
                         if feat_chrom is None:
                             continue
 
@@ -582,7 +746,139 @@ class ClinVarService:
                                 prots_fn=prots_fn,
                             )
 
-        logger.info("ClinVar pipeline complete. Stats: %s", stats)
+        return stats
+
+    # ------------------------------------------------------------------
+    # Main pipeline
+    # ------------------------------------------------------------------
+
+    def run(self, workers: Optional[int] = None) -> str:
+        """Execute the ClinVar VCF-to-protein pipeline.
+
+        Parameters
+        ----------
+        workers : int, optional
+            Number of parallel worker processes.  Defaults to the ``workers``
+            key in the config file (default 1).  Pass ``1`` to force
+            sequential execution regardless of config.
+
+        Returns the path to the output FASTA file.
+        """
+        if workers is None:
+            workers = self._workers
+
+        logger.info("Starting ClinVar pipeline (workers=%d)", workers)
+
+        chrom_mapper = ChromosomeMapper.from_assembly_report(self._assembly_report)
+
+        logger.info("Loading GFF annotation database from %s", self._gtf_file)
+        t0 = time.perf_counter()
+        db = self._parse_gtf(self._gtf_file)
+        logger.info("GFF annotation database ready (%.1f s)", time.perf_counter() - t0)
+
+        logger.info("Indexing transcript FASTA (%s)", self._fasta_file)
+        t0 = time.perf_counter()
+        if workers > 1:
+            # Build a persistent SQLite index so all worker processes can open
+            # the same file simultaneously without racing on an in-memory dict.
+            idx_path = _ensure_fasta_index(self._fasta_file)
+            transcripts_dict = SeqIO.index_db(
+                idx_path, [self._fasta_file], "fasta", key_function=_fasta_key_fn
+            )
+        else:
+            transcripts_dict = SeqIO.index(
+                self._fasta_file, "fasta", key_function=_fasta_key_fn
+            )
+        transcript_id_mapping = {k.split(".")[0]: k for k in transcripts_dict.keys()}
+        logger.info(
+            "FASTA indexed: %d transcripts (%.1f s)",
+            len(transcripts_dict),
+            time.perf_counter() - t0,
+        )
+
+        _metadata, vcf_records = self._read_vcf(self._vcf_file)
+
+        logger.info("Building BedTools transcript overlap map ...")
+        t0 = time.perf_counter()
+        overlap_map = self._build_overlap_map(vcf_records, self._gtf_file, chrom_mapper)
+        logger.info(
+            "Found %d variants with transcript overlaps (%.1f s)",
+            len(overlap_map),
+            time.perf_counter() - t0,
+        )
+
+        # ---- Sequential path ----
+        if workers <= 1:
+            stats = self._process_batch(
+                vcf_records, overlap_map, db, transcripts_dict,
+                transcript_id_mapping, self._output_file,
+            )
+            logger.info("ClinVar pipeline complete. Stats: %s", stats)
+            return self._output_file
+
+        # ---- Parallel path ----
+        with tempfile.TemporaryDirectory(prefix="pgatk_clinvar_") as tmpdir:
+            logger.info(
+                "Splitting VCF into batches (batch_size=%d) ...", _CLINVAR_BATCH_SIZE
+            )
+            batch_paths = _split_vcf_into_batches(self._vcf_file, tmpdir)
+            logger.info("Created %d batch(es)", len(batch_paths))
+
+            if len(batch_paths) <= 1:
+                # Entire VCF fits in one batch — skip pool overhead.
+                stats = self._process_batch(
+                    vcf_records, overlap_map, db, transcripts_dict,
+                    transcript_id_mapping, self._output_file,
+                )
+                logger.info("ClinVar pipeline complete. Stats: %s", stats)
+                return self._output_file
+
+            n_workers = min(workers, len(batch_paths))
+            tasks = [
+                (bp, os.path.join(tmpdir, f"out_{i:04d}.fa"))
+                for i, bp in enumerate(batch_paths)
+            ]
+
+            logger.info(
+                "Dispatching %d batch(es) across %d worker(s)",
+                len(batch_paths),
+                n_workers,
+            )
+
+            # overlap_map is passed as an initarg — pickled once per worker
+            # at pool startup, not once per task.
+            with multiprocessing.get_context("spawn").Pool(
+                n_workers,
+                initializer=_clinvar_worker_init,
+                initargs=(
+                    self._vcf_file,
+                    self._gtf_file,
+                    self._fasta_file,
+                    self._assembly_report,
+                    self._output_file,
+                    self._config_file,
+                    overlap_map,
+                ),
+            ) as pool:
+                all_stats = pool.starmap(_clinvar_worker, tasks)
+
+            # Concatenate per-batch output FASTAs into the final file.
+            with open(self._output_file, "wb") as out:
+                for _, batch_out in tasks:
+                    if os.path.exists(batch_out):
+                        with open(batch_out, "rb") as f:
+                            shutil.copyfileobj(f, out)
+
+        # Aggregate per-batch stats and emit a single summary.
+        combined: dict = {}
+        for s in all_stats:
+            for k, v in s.items():
+                combined[k] = combined.get(k, 0) + v
+        logger.info(
+            "ClinVar pipeline complete (%d batches). Stats: %s",
+            len(all_stats),
+            combined,
+        )
         return self._output_file
 
 
