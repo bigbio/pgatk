@@ -7,7 +7,12 @@ Some use cases for this module:
 """
 
 from json import loads
+import gzip
+import os
 import re
+import shutil
+import subprocess
+
 from pgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pgatk.toolbox.rest import call_api
 
@@ -483,6 +488,38 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             print("No valid info is available species: ", species)
 
         return files
+
+    @staticmethod
+    def generate_transcripts(genome_fna: str, gtf_file: str, output_fasta: str) -> str:
+        """Run gffread -F to produce a transcript FASTA with CDS= coordinate headers.
+
+        Raises FileNotFoundError if gffread is not in PATH.
+        Raises subprocess.CalledProcessError on gffread failure.
+        """
+        if not shutil.which("gffread"):
+            raise FileNotFoundError(
+                "gffread not found in PATH. "
+                "Install it with: conda install -c bioconda gffread"
+            )
+        # gffread requires random-access; decompress .gz to a sibling file when needed.
+        _tmp = None
+        genome_for_gffread = genome_fna
+        if genome_fna.endswith(".gz"):
+            plain = genome_fna[:-3]
+            if os.path.exists(plain):
+                genome_for_gffread = plain
+            else:
+                with gzip.open(genome_fna, "rb") as fi, open(plain, "wb") as fo:
+                    shutil.copyfileobj(fi, fo)
+                genome_for_gffread = plain
+                _tmp = plain
+        try:
+            cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_for_gffread, gtf_file]
+            subprocess.run(cmd, check=True)
+        finally:
+            if _tmp and os.path.exists(_tmp):
+                os.remove(_tmp)
+        return output_fasta
 
     def validate_taxonomies(self):
         if self._species_list is not None:
