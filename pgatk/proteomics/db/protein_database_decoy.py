@@ -221,21 +221,14 @@ class ProteinDBDecoyService(ParameterConfiguration):
     :return:
     """
 
-        # Create empty sets to add all target and decoy peptides
         upeps = set()
         dpeps = set()
 
-        # Counter for number of decoy sequences
         dcount = 0
 
-        # Open FASTA file using first cmd line argument
-        # fasta = SeqIO.parse(self._input_fasta, 'fasta')
-
         with open(self._input_fasta) as handle:
-            # open temporary decoy FASTA file
             with open(self._temp_file, 'w') as outfa:
 
-                # loop each seq in the file
                 for value in SimpleFastaParser(handle):
                     seq = value[1]
                     description = value[0]
@@ -244,53 +237,42 @@ class ProteinDBDecoyService(ParameterConfiguration):
                     if not self._isobaric:
                         seq = seq.replace('I', 'L')
 
-                    # digest sequence add peptides to set
                     upeps.update(
                         cleave(sequence=seq, rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                                missed_cleavages=0,
                                min_length=self._min_peptide_length))
 
-                    # reverse and switch protein sequence
                     decoyseq = self.revswitch(seq, self._no_switch,
                                               PGATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
 
                     # do not store decoy peptide set in reduced memory mode
                     if not self._memory_save:
-                        # update decoy peptide set
                         dpeps.update(
                             cleave(sequence=decoyseq, rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                                    missed_cleavages=0,
                                    min_length=self._min_peptide_length))
 
-                    # write decoy protein accession and sequence to file
                     outfa.write('>' + self._decoy_prefix + description + '\n')
                     outfa.write(decoyseq + '\n')
 
-        # Summarise the numbers of target and decoy peptides and their intersection
         nonDecoys = set()
         self.get_logger().info("proteins: %s", dcount)
         self.get_logger().info("target peptides: %s", len(upeps))
 
         # Reloop decoy file in reduced memory mode to store only intersecting decoys
         if self._memory_save:
-            # open temp decoys
             with open(self._temp_file, "rt") as fin:
                 for line in fin:
-                    # if line is not accession
                     if line[0] != '>':
-                        # digest protein
                         for p in cleave(sequence=line.rstrip(),
                                         rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                                         missed_cleavages=0, min_length=self._min_peptide_length):
-                            # check if in target peptides if true then add to nonDecoys
                             if p in upeps:
                                 nonDecoys.add(p)
             fin.close()
             self.get_logger().info("decoy peptides: !Memory Saving Made!")
         else:
-            # can only report total number in normal memory mode
             self.get_logger().info("decoy peptides: %s", len(dpeps))
-            # find intersecting peptides
             nonDecoys = upeps.intersection(dpeps)
 
         self.get_logger().info("#intersection: %s", len(nonDecoys))
@@ -298,37 +280,27 @@ class ProteinDBDecoyService(ParameterConfiguration):
         # if there are decoy peptides that are in the target peptide set
         if len(nonDecoys) > 0 and self._no_suffle == False:
 
-            # create empty dictionary with bad decoys as keys
             dAlternative = dict.fromkeys(nonDecoys, '')
             noAlternative = list()
 
-            # loop bad decoys / dictionary keys
             for dPep in dAlternative:
                 i = 0
                 aPep = dPep
 
-                # shuffle until aPep is not in target set (maximum of 10 iterations)
                 while aPep in upeps and i < self._max_iterations:
-
-                    # increment iteration counter
                     i += 1
-
-                    # shuffle peptide
                     aPep = self.shuffle(dPep)
 
                     # check if shuffling has an effect if not end iterations
                     if aPep == dPep:
                         i = self._max_iterations
 
-                # update dictionary with alternative shuffled peptide
                 dAlternative[dPep] = aPep
 
-                # warn if peptide has no suitable alternative, add to removal list
                 if i == self._max_iterations:
                     noAlternative.append(dPep)
 
             self.get_logger().info('%s have no alternative peptide', len(noAlternative))
-            # remove peptides with no alternative
             for p in noAlternative:
                 del dAlternative[p]
 
@@ -336,11 +308,8 @@ class ProteinDBDecoyService(ParameterConfiguration):
             upeps.clear()
             dpeps.clear()
 
-            # open second decoy file
             with open(self._output_file, "wt") as fout:
 
-                # Attach the target sequences to the database
-                # fasta = SeqIO.parse(self._input_fasta, 'fasta')
                 with open(self._input_fasta) as handle:
                     for value in SimpleFastaParser(handle):
                         description = value[0]
@@ -348,20 +317,15 @@ class ProteinDBDecoyService(ParameterConfiguration):
                         fout.write('>' + description + '\n')
                         fout.write(seq + '\n')
 
-                # open original decoy file
                 with open(self._temp_file, "rt") as fin:
-                    # loop each line of original decoy fasta
                     for line in fin:
                         # if line is not accession replace peptides in dictionary with alternatives
                         if line[0] != '>':
-                            # digest decoy sequence
                             for p in cleave(sequence=line.rstrip(),
                                             rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                                             missed_cleavages=0, min_length=self._min_peptide_length):
-                                # store decoy peptide for final count
                                 dpeps.add(p)
 
-                                # if decoy peptide is in dictionary replace with alternative
                                 if p in dAlternative:
                                     line = line.replace(p, dAlternative[p])
 
@@ -391,24 +355,19 @@ class ProteinDBDecoyService(ParameterConfiguration):
      :return:
     """
 
-        # Create empty sets to add all target and decoy peptides
         upeps = set()
         noAlternative = set()
-        # Open FASTA file using first cmd line argument
         fasta = SeqIO.parse(self._input_fasta, 'fasta')
-        # loop each seq in the file
         for record in fasta:
             seq = str(record.seq)
             if not self._isobaric:
                 seq = seq.replace('I', 'L')
 
-                # digest sequence add peptides to the target set
                 upeps.update(
                     cleave(sequence=seq, rule=PGATK_ENZYMES.enzymes[self._enzyme]['cleavage rule'],
                            missed_cleavages=self._max_missed_cleavages,
                            min_length=self._min_peptide_length))
 
-        # open orary decoy FASTA file
         with open(self._output_file, 'w') as outfa:
             fasta = SeqIO.parse(self._input_fasta, 'fasta')
             targets = []
@@ -418,7 +377,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
                 targets.append(protseq)
                 revprotseq = []
 
-                # output target protein
                 seq = str(record.seq)
                 id_protein = record.id
                 description = record.description
@@ -431,7 +389,6 @@ class ProteinDBDecoyService(ParameterConfiguration):
                     if not self._isobaric:
                         seq = seq.replace('I', 'L')
 
-                    # reverse and switch protein sequence
                     decoyseq = self.revswitch(seq, self._no_switch,
                                               PGATK_ENZYMES.enzymes[self._enzyme]['cleavage sites'])
 
@@ -455,29 +412,23 @@ class ProteinDBDecoyService(ParameterConfiguration):
 
                         if found_in_target and not self._no_suffle and decoy_pep not in noAlternative:
                             aPep = decoy_pep
-                            # shuffle until aPep is not in target set (maximum of 10 iterations)
                             i = 0
                             while aPep in upeps and i < self._max_iterations:
-                                # increment iteration counter
                                 i += 1
-                                # shuffle peptide
                                 aPep = self.shuffle(aPep)
 
                                 # check if shuffling has an effect if not end iterations
                                 if aPep == decoy_pep:
                                     i = self._max_iterations
 
-                                # warn if peptide has no suitable alternative, add to removal list
                                 if i == self._max_iterations:
                                     noAlternative.add(decoy_pep)
                                     aPep = ''
-                        # if decoy is generated then add to the list of peptides
                         if aPep:
                             checked_decoy_peps.append(aPep)
                         else:
                             if self._keep_target_hits:
                                 checked_decoy_peps.append(decoy_pep)
-                    # finally join the peptides to generate protein decoy
                     if checked_decoy_peps:
                         revprotseq.append(''.join(checked_decoy_peps))
 

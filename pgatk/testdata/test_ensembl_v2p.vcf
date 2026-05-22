@@ -1,0 +1,18 @@
+##fileformat=VCFv4.1
+##fileDate=20250624
+##source=ensembl;version=115;url=https://e115.ensembl.org/homo_sapiens
+##reference=https://ftp.ensembl.org/pub/release-115/fasta/homo_sapiens/dna/
+##INFO=<ID=TSA,Number=1,Type=String,Description="Type of sequence alteration. Child of term sequence_alteration as defined by the sequence ontology project.">
+##INFO=<ID=MAF,Number=1,Type=Float,Description="Minor Allele Frequency">
+##INFO=<ID=CSQ,Number=.,Type=String,Description="Consequence annotations from Ensembl's Variant Effect Pipeline. Format=Allele|Consequence|Feature_type|Feature|Amino_acids|SIFT">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO
+22	15528192	rs1211697244	A	G	.	.	TSA=SNV;MAF=0.002;CSQ=G|start_lost|mRNA|ENST00000643195|M/V|deleterious_-_low_confidence(0.01)
+22	15528195	rs1410655344	A	G	.	.	TSA=SNV;MAF=0.012;CSQ=G|missense_variant|mRNA|ENST00000643195|N/D|tolerated_-_low_confidence(0.05)
+22	15528197	rs1394965478	T	C	.	.	TSA=SNV;MAF=0.008;CSQ=C|synonymous_variant|mRNA|ENST00000643195|N/N|
+22	15528197	rs1402769459	TG	T	.	.	TSA=deletion;MAF=0.003;CSQ=-|frameshift_variant|mRNA|ENST00000643195|V/X|
+22	15528234	rs1420478920	G	T	.	.	TSA=SNV;MAF=0.004;CSQ=T|stop_gained|mRNA|ENST00000643195|E/*|
+22	15528914	rs1203023715	CTTC	C	.	.	TSA=indel;MAF=0.001;CSQ=CT|inframe_deletion|mRNA|ENST00000643195|AFS/AS|
+22	15528961	rs1986039639	G	GCTG	.	.	TSA=indel;MAF=0.002;CSQ=GCTGCT|protein_altering_variant|mRNA|ENST00000643195|SS/SCS|
+22	15529137	rs1986046473	T	A	.	.	TSA=SNV;MAF=0.001;CSQ=A|stop_lost|mRNA|ENST00000643195|*/K|
+22	15529138	rs1986046579	A	G	.	.	TSA=SNV;MAF=0.003;CSQ=G|stop_retained_variant|mRNA|ENST00000643195|*/*|
+22	17740102	rs147461488	GGCCACGCTCAACT	G	.	.	TSA=deletion;MAF=0.168;CSQ=-|non_coding_transcript_exon_variant|ncRNA|ENST00000550946||

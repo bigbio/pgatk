@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import collections
 import logging
+import os
 import sqlite3
 from pathlib import Path
 from typing import Any, Optional
@@ -9,14 +11,145 @@ import gffutils
 from Bio import SeqIO
 from Bio.Seq import Seq
 from pybedtools import BedTool
-import pandas as pd
-from pgatk.toolbox.general import ParameterConfiguration
+from pgatk.toolbox.general import ParameterConfiguration, open_vcf as _open_vcf
+from pgatk.gnomad.data_downloader import check_gencode_version_compatibility
 from pgatk.toolbox.vcf_utils import (
     check_overlap as _check_overlap,
     get_altseq as _get_altseq,
     get_orfs_vcf as _get_orfs_vcf,
     write_output as _write_output,
 )
+
+
+class _FeatureCache:
+
+    """Per-run memoization of get_features() results, keyed by transcript id.
+
+    Bounded by a soft maxsize to avoid unbounded growth on whole-genome runs.
+    Defaults to 50000, which comfortably covers human ENSEMBL (~250k transcripts
+    across all chromosomes; a single chr is ~10-20k).
+    """
+
+    def __init__(self, maxsize: int = 50000) -> None:
+        self._cache: dict[tuple, tuple] = {}
+        self._maxsize = maxsize
+
+    def get(self, key: tuple) -> Optional[tuple]:
+        return self._cache.get(key)
+
+    def put(self, key: tuple, value: tuple) -> None:
+        if len(self._cache) >= self._maxsize:
+            for k in list(self._cache.keys())[: self._maxsize // 5]:
+                del self._cache[k]
+        self._cache[key] = value
+
+
+_MISSING = object()
+
+# Number of VCF data lines per variant-batch chunk.  Tune up for very large
+# VCFs (whole-genome) or down when memory per worker is constrained.
+_VARIANT_BATCH_SIZE = 50_000
+
+# Per-worker state populated once by _worker_init and reused across all tasks
+# assigned to that worker process.
+_worker_state: dict = {}
+
+
+def _worker_init(default_params: dict, pipeline_args: dict,
+                 input_fasta: str, gtf_path: str,
+                 annotation_indices: Optional[tuple] = None) -> None:
+    """Pool initializer: open the GTF database and FASTA index once per worker
+    process rather than once per task, amortising startup cost across all
+    variant-batch chunks handled by that worker.
+    annotation_indices is pre-computed by the main process to avoid re-parsing
+    the VCF ##INFO header for every batch.
+    """
+    svc = EnsemblDataService(default_params, pipeline_args)
+    db_path = str(Path(gtf_path).with_suffix('.db'))
+    db = svc.parse_gtf(gtf_path, db_path)
+    idx_path = _ensure_fasta_index(input_fasta)
+    transcripts_dict = SeqIO.index_db(
+        idx_path, [input_fasta], "fasta", key_function=EnsemblDataService.get_key
+    )
+    _worker_state.update({'svc': svc, 'db': db, 'transcripts_dict': transcripts_dict,
+                          'annotation_indices': annotation_indices})
+
+
+def _ensure_fasta_index(input_fasta: str) -> str:
+    """Return the path to a `.idx` SQLite index for input_fasta, building it
+    if absent or stale. Stale means: the .idx exists but the FASTA's mtime
+    is newer than the .idx's. The index is keyed by `EnsemblDataService.get_key`.
+    """
+    idx_path = input_fasta + ".idx"
+    if os.path.exists(idx_path):
+        if os.path.getmtime(idx_path) >= os.path.getmtime(input_fasta):
+            return idx_path
+        try:
+            os.remove(idx_path)
+        except OSError:
+            pass
+    # Build the index. SeqIO.index_db materialises the SQLite file on disk
+    # as a side effect; we don't need to keep the returned handle here.
+    SeqIO.index_db(idx_path, [input_fasta], "fasta", key_function=EnsemblDataService.get_key)
+    return idx_path
+
+
+def _split_vcf_into_batches(vcf_file: str, output_dir: str,
+                             batch_size: int = _VARIANT_BATCH_SIZE) -> list[str]:
+    """Stream `vcf_file` once, writing fixed-size variant-count batches into
+    `output_dir`.
+
+    Each output file is `<output_dir>/batch_<NNNN>.vcf` and contains the full
+    VCF header followed by at most `batch_size` data lines.  Batches may span
+    chromosome boundaries — the per-variant chromosome check inside
+    `_vcf_to_proteindb_chunk` handles cross-chromosome records correctly.
+
+    Returns an ordered list of chunk paths.  Constant memory — holds exactly
+    one open file handle at a time.
+    """
+    header: list[str] = []
+    batch_paths: list[str] = []
+    handle = None
+    count = 0
+    try:
+        with _open_vcf(vcf_file) as f:
+            for line in f:
+                if line.startswith('#'):
+                    header.append(line)
+                    continue
+                if not line.strip():
+                    continue
+                if handle is None or count >= batch_size:
+                    if handle is not None:
+                        handle.close()
+                    chunk_path = os.path.join(output_dir, f"batch_{len(batch_paths):04d}.vcf")
+                    handle = open(chunk_path, 'w', encoding='utf-8')
+                    handle.writelines(header)
+                    batch_paths.append(chunk_path)
+                    count = 0
+                handle.write(line)
+                count += 1
+    finally:
+        if handle is not None:
+            handle.close()
+    return batch_paths
+
+
+def _vcf_to_proteindb_worker(vcf_file: str, output_path: str) -> None:
+    """Module-level worker for multiprocessing.Pool.starmap.
+
+    Uses the GTF DB, FASTA index, and EnsemblDataService instance opened once
+    per worker process by _worker_init rather than re-constructing them per task.
+    """
+    svc = _worker_state['svc']
+    _, stats = svc._vcf_to_proteindb_chunk(
+        vcf_file, None, None, output_path,
+        db=_worker_state['db'],
+        transcripts_dict=_worker_state['transcripts_dict'],
+        log_summary=False,
+        annotation_indices=_worker_state.get('annotation_indices'),
+    )
+    return stats
 
 
 class EnsemblDataService(ParameterConfiguration):
@@ -47,6 +180,7 @@ class EnsemblDataService(ParameterConfiguration):
     EXPRESSION_THRESH = "expression_thresh"
     IGNORE_FILTERS = "ignore_filters"
     ACCEPTED_FILTERS = "accepted_filters"
+    WORKERS = "workers"
 
     def __init__(self, config_file: dict, pipeline_arguments: dict) -> None:
         """
@@ -85,7 +219,7 @@ class EnsemblDataService(ParameterConfiguration):
                                                                        default_value=False)
         self._include_biotypes = self.get_multiple_options(
             self.get_translation_properties(variable=self.INCLUDE_BIOTYPES,
-                                            default_value='protein_coding,polymorphic_pseudogene,non_stop_decay,nonsense_mediated_decay,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC,mRNA'))
+                                            default_value='protein_coding,protein_coding_CDS_not_defined,protein_coding_LoF,nonsense_mediated_decay,non_stop_decay,translated_processed_pseudogene,IG_C_gene,IG_D_gene,IG_J_gene,IG_V_gene,TR_C_gene,TR_D_gene,TR_J_gene,TR_V_gene,TEC'))
 
         self._include_consequences = self.get_multiple_options(
             self.get_translation_properties(variable=self.INCLUDE_CONSEQUENCES, default_value='all'))
@@ -102,6 +236,12 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._accepted_filters = self.get_multiple_options(
             self.get_translation_properties(variable=self.ACCEPTED_FILTERS, default_value='PASS'))
+
+        raw_workers = self.get_translation_properties(variable=self.WORKERS, default_value=1)
+        try:
+            self._workers = max(1, int(raw_workers))
+        except (TypeError, ValueError):
+            self._workers = 1
 
     def get_translation_properties(self, variable: str, default_value: Any) -> Any:
         value_return = default_value
@@ -237,10 +377,10 @@ class EnsemblDataService(ParameterConfiguration):
         with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
             for record_id in seq_dict.keys():
 
-                ref_seq = seq_dict[record_id].seq  # get the seq and desc for the record from the fasta of the gtf
+                ref_seq = seq_dict[record_id].seq
                 desc = str(seq_dict[record_id].description)
 
-                key_values = {}  # extract key=value in the desc into a dict
+                key_values = {}
                 sep = self._transcript_description_sep
                 desc = desc.replace(' ', sep)
                 for value in desc.split(sep):
@@ -264,7 +404,6 @@ class EnsemblDataService(ParameterConfiguration):
                             record_id, desc)
                         self.get_logger().debug(msg)
 
-                # only include features that have the specified biotypes or they have CDSs info
                 if 'CDS' in key_values.keys() and (
                         not self._skip_including_all_cds or 'altORFs' in self._include_biotypes):
                     pass
@@ -273,7 +412,6 @@ class EnsemblDataService(ParameterConfiguration):
                                                                           'all']))):
                     continue
 
-                # check wether to filter on expression and if it passes
                 if self._expression_str:
                     try:
                         if float(key_values[self._expression_str]) < self._expression_thresh:
@@ -359,13 +497,11 @@ class EnsemblDataService(ParameterConfiguration):
                     continue
                 muts_dict.setdefault(key, []).append(transcript_id)
 
-        with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, open(vcf_file, 'r', encoding='utf-8') as v:
-            # write vcf headers to the output file
+        with open(f"{vcf_stem}_annotated.vcf", 'w', encoding='utf-8') as ann, _open_vcf(vcf_file) as v:
             for line in v.readlines():
                 if line.startswith('#'):
                     ann.write(line)
                 else:
-                    # write the mutations and their overlapping transcript to output file
                     sl = line.strip().split('\t')
                     if len(sl) < 8:
                         ann.write(line)
@@ -381,40 +517,82 @@ class EnsemblDataService(ParameterConfiguration):
 
         return f"{vcf_stem}_annotated.vcf"
 
+    _VCFRecord = collections.namedtuple('VCFRecord',
+                                        ['CHROM', 'POS', 'ID', 'REF', 'ALT', 'QUAL', 'FILTER', 'INFO'])
+
     @staticmethod
-    def vcf_from_file(vcf_file: str) -> tuple[list, pd.DataFrame]:
+    def vcf_from_file(vcf_file: str):
+        """Return VCF header lines and a lazy record iterator (constant memory).
+
+        The iterator yields one VCFRecord namedtuple per data line so peak
+        memory is O(1) in the number of variants regardless of file size.
         """
-    Read a VCF file and return a dataframe for the records
-    as well as a list for the metadata
-    """
-
-        HEADERS = {
-            'CHROM': str,
-            'POS': int,
-            'ID': str,
-            'REF': str,
-            'ALT': str,
-            'QUAL': str,
-            'FILTER': str,
-            'INFO': str,
-        }
-
-        metadata = []
-        data = []
-        with open(vcf_file, 'r', encoding='utf-8') as vcf:
-            line = vcf.readline().strip()
-            while line:
+        metadata: list[str] = []
+        with _open_vcf(vcf_file) as fh:
+            for line in fh:
                 if line.startswith('#'):
                     metadata.append(line)
                 else:
-                    data.append(line.split('\t')[0:8])
-                line = vcf.readline().strip()
+                    break  # header fully consumed; data read lazily below
 
-        vcf_df = pd.DataFrame(data, columns=HEADERS)
+        def _iter_records():
+            with _open_vcf(vcf_file) as fh:
+                for line in fh:
+                    if line.startswith('#') or not line.strip():
+                        continue
+                    parts = line.split('\t', 7)
+                    if len(parts) < 8:
+                        continue
+                    yield EnsemblDataService._VCFRecord(
+                        CHROM=parts[0], POS=int(parts[1]), ID=parts[2],
+                        REF=parts[3], ALT=parts[4], QUAL=parts[5],
+                        FILTER=parts[6], INFO=parts[7].rstrip('\n'),
+                    )
 
-        return metadata, vcf_df
+        return metadata, _iter_records()
 
-    def vcf_to_proteindb(self, vcf_file: str, input_fasta: str, gene_annotations_gtf: str) -> str:
+    def _parse_annotation_indices(self, metadata: list, vcf_file: str = "") -> tuple:
+        """Resolve transcript/consequence/biotype column positions from VCF ##INFO metadata.
+
+        Takes already-read metadata lines (from vcf_from_file) so the file is not
+        re-opened.  Returns (transcript_index, consequence_index, biotype_index); any
+        value may be None if the corresponding field is absent from the CSQ FORMAT.
+        transcript_index falls back to 0 when no structured FORMAT declaration exists.
+        """
+        annotation_cols: list[str] = []
+        try:
+            raw_cols = \
+                [x for x in metadata if x.startswith('##INFO=<ID={}'.format(self._annotation_field_name))][
+                    0].upper().split('FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
+            annotation_cols = [c.strip(' ">\n\r') for c in raw_cols]
+        except IndexError:
+            pass
+
+        ti = ci = bi = None
+        try:
+            ti = annotation_cols.index(self._transcript_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._transcript_str, annotation_cols, vcf_file)
+        try:
+            ci = annotation_cols.index(self._consequence_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._consequence_str, annotation_cols, vcf_file)
+        try:
+            bi = annotation_cols.index(self._biotype_str.upper())
+        except ValueError:
+            self.get_logger().debug("Unable to find %s in metadata header %s of VCF file: %s",
+                                    self._biotype_str, annotation_cols, vcf_file)
+        if ti is None:
+            ti = 0
+        return ti, ci, bi
+
+    def _vcf_to_proteindb_chunk(self, vcf_file: str, input_fasta: Optional[str],
+                                gene_annotations_gtf: Optional[str], output_path: str,
+                                *, db=None, transcripts_dict=None,
+                                log_summary: bool = True,
+                                annotation_indices: Optional[tuple] = None) -> tuple[str, dict]:
         """
     Generate proteins for variants by modifying sequences of affected transcripts.
     In case of already annotated variants it only considers variants within
@@ -423,47 +601,38 @@ class EnsemblDataService(ParameterConfiguration):
     In case of not annotated variants, it considers all variants overlapping
     transcripts from the selected biotypes.
     :param vcf_file:
-    :param input_fasta:
-    :param gene_annotations_gtf:
+    :param input_fasta: path to the FASTA file (required when db/transcripts_dict are None)
+    :param gene_annotations_gtf: path to the GTF file (required when db is None)
+    :param output_path: path for writing the output FASTA
+    :param db: pre-opened gffutils.FeatureDB (supplied by pool initializer in parallel runs)
+    :param transcripts_dict: pre-opened SeqIO index (supplied by pool initializer in parallel runs)
     :return:
     """
-        db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
-
-        transcripts_dict = SeqIO.index(input_fasta, "fasta", key_function=self.get_key)
+        if db is None:
+            db = self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
+        if transcripts_dict is None:
+            idx_path = _ensure_fasta_index(input_fasta)
+            transcripts_dict = SeqIO.index_db(idx_path, [input_fasta], "fasta",
+                                              key_function=self.get_key)
         # handle cases where the transcript has version in the GTF but not in the VCF
-        transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
+        # Built lazily on the first KeyError to avoid iterating 207k keys up-front.
+        transcript_id_mapping: Optional[dict[str, str]] = None
+        feature_cache = _FeatureCache()
+        # Value is (ref_seq, desc) for a known transcript, or None for a transcript
+        # we've already looked up and confirmed isn't in the FASTA index (avoids re-trying
+        # the disk seek). _MISSING sentinel below distinguishes "not yet looked up".
+        seq_cache: dict[str, Optional[tuple]] = {}
 
         transcript_index, consequence_index, biotype_index = None, None, None
         if self._annotation_field_name:
-            metadata, vcf_reader = self.vcf_from_file(vcf_file)
-            annotation_cols = []
-            try:
-                annotation_cols = \
-                    [x for x in metadata if x.startswith('##INFO=<ID={}'.format(self._annotation_field_name))][
-                        0].upper().split(
-                        'FORMAT')[1].strip(' ').split(':')[-1].split('=')[-1].strip(' ').split('|')
-            except IndexError:
-                pass
-
-            # try to extract index of transcript ID and consequence from the VCF metadata in the header
-            try:
-                transcript_index = annotation_cols.index(self._transcript_str.upper())
-            except ValueError:
-                msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(
-                    self._transcript_str,
-                    self._consequence_str,
-                    annotation_cols, vcf_file)
-                self.get_logger().debug(msg)
-
-            try:
-                consequence_index = annotation_cols.index(self._consequence_str.upper())
-                biotype_index = annotation_cols.index(self._biotype_str.upper())
-            except ValueError:
-                msg = "Error: Unable to find {} or {} in metadata header {} of VCF file: {} ".format(
-                    self._transcript_str,
-                    self._consequence_str,
-                    annotation_cols, vcf_file)
-                self.get_logger().debug(msg)
+            if annotation_indices is not None:
+                # Pre-computed by the parallel orchestrator — skip per-batch header re-parsing.
+                transcript_index, consequence_index, biotype_index = annotation_indices
+                _, vcf_reader = self.vcf_from_file(vcf_file)
+            else:
+                metadata, vcf_reader = self.vcf_from_file(vcf_file)
+                transcript_index, consequence_index, biotype_index = \
+                    self._parse_annotation_indices(metadata, vcf_file)
 
         else:
             # in case the given VCF is not annotated, annotate it by identifying the overlapping transcripts
@@ -480,13 +649,13 @@ class EnsemblDataService(ParameterConfiguration):
 
         self._accepted_filters = [x.upper() for x in self._accepted_filters]
 
-        with open(self._proteindb_output, 'w', encoding='utf-8') as prots_fn:
-            for _, record in vcf_reader.iterrows():
+        with open(output_path, 'w', buffering=1 << 20, encoding='utf-8') as prots_fn:
+            for record in vcf_reader:
                 trans = False
                 if [x for x in str(record.REF) if x not in 'ACGT']:
-                    msg = "Invalid VCF record, skipping: {}".format(record)
                     invalid_records['# variants with invalid record'] += 1
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug("Invalid VCF record, skipping: %s", record)
                     continue
 
                 alts = []
@@ -494,33 +663,35 @@ class EnsemblDataService(ParameterConfiguration):
                     if alt is None:
                         continue
                     elif [x for x in str(alt) if x not in 'ACGT']:
-                        # check if all alt alleles are nucleotides
                         continue
                     alts.append(alt)
                 if not alts:
-                    msg = "Invalid VCF record, skipping: {}".format(record)
                     invalid_records['# variants with invalid record'] += 1
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug("Invalid VCF record, skipping: %s", record)
                     continue
 
+                # Parse INFO once; avoids repeated split-and-search list-comprehensions per variant.
+                info_kv: dict[str, str] = {}
+                for entry in record.INFO.split(';'):
+                    k, _, v = entry.partition('=')
+                    info_kv[k] = v
+
                 if not self._ignore_filters and self._accepted_filters != ['ALL']:
-                    if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # if not PASS: None and empty means PASS
+                    if record.FILTER and record.FILTER != '.' and record.FILTER != 'NA' and record.FILTER != '':  # None and empty means PASS
                         filters = set(record.FILTER.upper().split(','))
                         if ';' in record.FILTER and len(filters) <= 1:
                             filters = set(record.FILTER.upper().split(';'))
                         if not filters <= set(self._accepted_filters):
                             invalid_records['# variants not passing Filter'] += 1
                             continue
-                # only process variants above a given allele frequency threshold if the AF string is not empty
                 if self._af_field:
-                    # get AF from the INFO field
                     try:
-                        af = float([x.split('=', 1)[1] for x in record.INFO.split(';') if x.split('=', 1)[0] == self._af_field][0])
-                    except (ValueError, IndexError):
+                        af = float(info_kv[self._af_field])
+                    except (ValueError, KeyError):
                         invalid_records['# variants with invalid record'] += 1
                         continue
 
-                    # check if the AF passed the threshold
                     if af < self._af_threshold:
                         invalid_records['# variants not passing AF threshold'] += 1
                         continue
@@ -530,15 +701,13 @@ class EnsemblDataService(ParameterConfiguration):
                     trans_table = self._mito_translation_table
 
                 processed_transcript_allele = set()
-                transcript_records = []
                 try:
-                    transcript_records = \
-                        [x.split('=', 1)[1] for x in record.INFO.split(';')
-                         if x.split('=', 1)[0] == self._annotation_field_name][0]
-                except IndexError:  # no overlapping feature was found
+                    transcript_records = info_kv[self._annotation_field_name]
+                except KeyError:
                     invalid_records['# variants with invalid record'] += 1
-                    msg = "skipped record {}, no annotation feature was found".format(record)
-                    self.get_logger().debug(msg)
+                    if self.get_logger().isEnabledFor(logging.DEBUG):
+                        self.get_logger().debug(
+                            "skipped record %s, no annotation feature was found", record)
                     continue
 
                 for transcript_record in transcript_records.split(','):
@@ -548,9 +717,10 @@ class EnsemblDataService(ParameterConfiguration):
                             consequence = transcript_info[consequence_index]
                         except IndexError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Give a valid index for the consequence in the INFO field for: {}".format(
-                                transcript_record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Give a valid index for the consequence in the INFO field for: %s",
+                                    transcript_record)
                             continue
                         except TypeError:
                             pass
@@ -559,9 +729,10 @@ class EnsemblDataService(ParameterConfiguration):
                             biotype = transcript_info[biotype_index]
                         except IndexError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Give a valid index for the biotype in the INFO field for: {}".format(
-                                transcript_record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Give a valid index for the biotype in the INFO field for: %s",
+                                    transcript_record)
                             continue
                         except TypeError:
                             pass
@@ -570,30 +741,63 @@ class EnsemblDataService(ParameterConfiguration):
                         transcript_id = transcript_info[transcript_index]
                     except IndexError:
                         invalid_records['# variants with invalid record'] += 1
-                        msg = "Give a valid index for the Transcript IDs in the INFO field for: {}".format(
-                            transcript_record)
-                        self.get_logger().debug(msg)
+                        if self.get_logger().isEnabledFor(logging.DEBUG):
+                            self.get_logger().debug(
+                                "Give a valid index for the Transcript IDs in the INFO field for: %s",
+                                transcript_record)
                         continue
                     if transcript_id == "":
                         continue
 
                     try:
-                        transcript_id_v = transcript_id_mapping[transcript_id]
-                    except KeyError:
-                        transcript_id_v = transcript_id
+                        transcript_id_v = transcript_id_mapping[transcript_id]  # type: ignore[index]
+                    except (KeyError, TypeError):
+                        if transcript_id_mapping is None:
+                            transcript_id_mapping = {k.split('.')[0]: k for k in transcripts_dict.keys()}
+                            try:
+                                transcript_id_v = transcript_id_mapping[transcript_id]
+                            except KeyError:
+                                transcript_id_v = transcript_id
+                        else:
+                            transcript_id_v = transcript_id
 
-                    try:
-                        row = transcripts_dict[transcript_id_v]
-                        ref_seq = row.seq  # get the seq and desc for the transcript from the fasta of the gtf
-                        desc = str(row.description)
-                    except KeyError:
-                        invalid_records['# feature IDs from VCF that are not found in the given FASTA file'] += 1
-                        msg = "Feature {} not found in fasta of the GTF file {}".format(transcript_id_v, record)
-                        self.get_logger().debug(msg)
+                    # Apply consequence/biotype filters before any I/O (FASTA lookup,
+                    # get_features DB query).  Both values come from transcript_info
+                    # which is already parsed above.
+                    if consequence_index is not None:
+                        if (consequence in self._exclude_consequences or
+                                (consequence not in self._include_consequences and
+                                 self._include_consequences != ['all'])):
+                            continue
+
+                    if biotype_index is not None:
+                        if (biotype in self._exclude_biotypes or
+                                (biotype not in self._include_biotypes and
+                                 self._include_biotypes != ['all'])):
+                            continue
+
+                    cached_row = seq_cache.get(transcript_id_v, _MISSING)
+                    if cached_row is _MISSING:
+                        try:
+                            row = transcripts_dict[transcript_id_v]
+                            ref_seq = row.seq
+                            desc = str(row.description)
+                            seq_cache[transcript_id_v] = (ref_seq, desc)
+                        except KeyError:
+                            invalid_records['# feature IDs from VCF that are not found in the given FASTA file'] += 1
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Feature %s not found in fasta of the GTF file %s",
+                                    transcript_id_v, record)
+                            seq_cache[transcript_id_v] = None
+                            continue
+                    elif cached_row is None:
+                        # already-known-missing; skip without re-counting in the stats
                         continue
+                    else:
+                        ref_seq, desc = cached_row
 
                     feature_types = ['exon']
-                    # check if cds info exists in the fasta header otherwise translate all exons
                     cds_info = []
                     num_orfs = 3
                     if 'CDS=' in desc:
@@ -608,27 +812,20 @@ class EnsemblDataService(ParameterConfiguration):
                                 feature_types = ['CDS', 'stop_codon']
                                 num_orfs = 1
                         except (ValueError, IndexError):
-                            msg = "Could not extract cds position from fasta header for: {}".format(desc)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug(
+                                    "Could not extract cds position from fasta header for: %s", desc)
 
-                    chrom, strand, features_info = self.get_features(db,
-                                                                     transcript_id_v,
-                                                                     feature_types)
-                    if chrom is None:  # the record info was not found
+                    cache_key = (transcript_id_v, tuple(feature_types))
+                    cached = feature_cache.get(cache_key)
+                    if cached is None:
+                        chrom, strand, features_info = self.get_features(
+                            db, transcript_id_v, feature_types)
+                        feature_cache.put(cache_key, (chrom, strand, features_info))
+                    else:
+                        chrom, strand, features_info = cached
+                    if chrom is None:
                         continue
-                    # skip transcripts with unwanted consequences
-                    if consequence_index is not None:
-                        if (consequence in self._exclude_consequences or
-                                (consequence not in self._include_consequences and
-                                 self._include_consequences != ['all'])):
-                            continue
-
-                    # skip transcripts with unwanted biotypes
-                    if biotype_index is not None:
-                        if (biotype in self._exclude_biotypes or
-                                (biotype not in self._include_biotypes and
-                                 self._include_biotypes != ['all'])):
-                            continue
 
                     for alt in alts:
                         dedup_key = transcript_id + str(record.REF) + str(alt)
@@ -643,8 +840,8 @@ class EnsemblDataService(ParameterConfiguration):
                                                               features_info)
                         except TypeError:
                             invalid_records['# variants with invalid record'] += 1
-                            msg = "Wrong VCF record in {}".format(record)
-                            self.get_logger().debug(msg)
+                            if self.get_logger().isEnabledFor(logging.DEBUG):
+                                self.get_logger().debug("Wrong VCF record in %s", record)
                             continue
 
                         if (chrom.lstrip("chr") == str(record.CHROM).lstrip("chr") and
@@ -676,9 +873,109 @@ class EnsemblDataService(ParameterConfiguration):
                 if trans:
                     invalid_records['# variants successfully translated'] += 1
 
-        msg = "Translation summary:\n {}".format(
-            '\n'.join([x + ":" + str(invalid_records[x]) for x in invalid_records.keys()]))
-        self.get_logger().info(msg)
+        if log_summary:
+            msg = "Translation summary:\n {}".format(
+                '\n'.join([x + ":" + str(invalid_records[x]) for x in invalid_records.keys()]))
+            self.get_logger().info(msg)
+
+        return output_path, invalid_records
+
+    def vcf_to_proteindb(self, vcf_file: str, input_fasta: str, gene_annotations_gtf: str, workers=None) -> str:
+        """Generate proteins for variants by modifying sequences of affected transcripts.
+
+        If workers is None, falls back to self._workers (config) which defaults
+        to 1 (sequential, backward-compatible). Pass workers > 1 to split the VCF
+        into fixed-size variant batches and fan out via multiprocessing.Pool.
+        :param vcf_file:
+        :param input_fasta:
+        :param gene_annotations_gtf:
+        :param workers: number of parallel worker processes (None => use config default)
+        :return: path to the output proteindb FASTA
+        """
+        if workers is None:
+            workers = self._workers if self._workers else 1
+
+        check_gencode_version_compatibility(vcf_file, gene_annotations_gtf)
+
+        # Fast path: sequential — single call, identical behaviour to the original implementation.
+        # For sequential runs we do NOT pre-annotate here; _vcf_to_proteindb_chunk handles that
+        # in its else-branch so that transcript_index=0 is set correctly for unannotated VCFs.
+        if workers <= 1:
+            output_path, _ = self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf, self._proteindb_output)
+            return output_path
+
+        # Parallel path: pre-annotate unannotated VCFs in the main process. This avoids each
+        # worker racing on the same bedtools-output bed file (which annoate_vcf writes to cwd)
+        # and amortises the bedtools intersect across workers.
+        if not self._annotation_field_name:
+            vcf_file = self.annoate_vcf(vcf_file, gene_annotations_gtf)
+            self._annotation_field_name = 'transcriptOverlaps'
+
+        # Build the FASTA index and GTF database ONCE in the main process so all
+        # workers find them ready.  Without this, N workers spawned simultaneously
+        # would race to create the same .db file via gffutils.create_db, with losers
+        # catching a sqlite3.OperationalError on a partially-written file.
+        _ensure_fasta_index(input_fasta)
+        self.parse_gtf(gene_annotations_gtf, str(Path(gene_annotations_gtf).with_suffix('.db')))
+
+        # Parallel — split into fixed-size variant-batch VCFs, fan out to a Pool.
+        import multiprocessing as mp
+        import shutil
+        import tempfile
+
+        # Pipeline args forwarded to the pool initializer (annotation field already set above).
+        pa = dict(self.get_pipeline_parameters())
+        pa[EnsemblDataService.ANNOTATION_FIELD_NAME] = self._annotation_field_name
+
+        # Parse annotation column indices ONCE from the (now-annotated) VCF so workers
+        # skip re-parsing the identical header for every batch.
+        _ann_meta, _ = self.vcf_from_file(vcf_file)
+        _annotation_indices = self._parse_annotation_indices(_ann_meta, vcf_file)
+
+        with tempfile.TemporaryDirectory(prefix='pgatk_v2p_') as tmpdir:
+            # Stream-split VCF into fixed-size variant-count batches (constant memory).
+            # Batches may span chromosome boundaries; _vcf_to_proteindb_chunk handles this.
+            batch_paths = _split_vcf_into_batches(vcf_file, tmpdir)
+
+            if len(batch_paths) <= 1:
+                # Entire VCF fits in one batch — run sequentially without pool overhead.
+                output_path, _ = self._vcf_to_proteindb_chunk(vcf_file, input_fasta, gene_annotations_gtf,
+                                                               self._proteindb_output)
+                return output_path
+
+            tasks = [(bp, os.path.join(tmpdir, f"out_{i:04d}.fa"))
+                     for i, bp in enumerate(batch_paths)]
+
+            self.get_logger().info(
+                "vcf-to-proteindb: dispatching %d variant-batch chunk(s) across %d worker(s)",
+                len(tasks), min(workers, len(tasks)))
+
+            # Pool initializer opens the GTF DB and FASTA index once per worker process,
+            # not once per task — all batches handled by the same worker reuse them.
+            with mp.get_context('spawn').Pool(
+                min(workers, len(tasks)),
+                initializer=_worker_init,
+                initargs=(self.get_default_parameters(), pa, input_fasta, gene_annotations_gtf,
+                          _annotation_indices),
+            ) as pool:
+                all_stats = pool.starmap(_vcf_to_proteindb_worker, tasks)
+
+            # Concatenate the per-batch FASTAs into the final output.
+            with open(self._proteindb_output, 'wb') as out:
+                for _, batch_out in tasks:
+                    if os.path.exists(batch_out):
+                        with open(batch_out, 'rb') as f:
+                            shutil.copyfileobj(f, out)
+
+            # Aggregate per-batch counters and emit a single combined summary.
+            combined: dict[str, int] = {}
+            for stats in all_stats:
+                for k, v in stats.items():
+                    combined[k] = combined.get(k, 0) + v
+            msg = "Translation summary ({} batch(es)):\n {}".format(
+                len(all_stats),
+                '\n'.join([x + ":" + str(combined[x]) for x in combined]))
+            self.get_logger().info(msg)
 
         return self._proteindb_output
 

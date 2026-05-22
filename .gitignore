@@ -119,7 +119,7 @@ pgatk/config/private/
 # Test-generated output files (produced by pgatk tests)
 pgatk/testdata/proteindb_from_*.fa
 pgatk/testdata/output_decoy.fa
-pgatk/testdata/test_cbioportal_data_mutations_mskcc_proteindb*.fa
+pgatk/testdata/test_cbioportal_*_proteindb*.fa
 pgatk/testdata/test_cosmic_mutations_proteindb*.fa
 pgatk/testdata/test_blast_psms_out.tsv
 pgatk/testdata/test_blast_validate_psms_out.tsv
@@ -135,3 +135,14 @@ pgatk/testdata/Meleagris_gallopavo*
 .DS_Store
 .codacy/
 .cursor/
+
+# Internal working docs (implementation plans, scratch notes)
+docs/plans/
+use-cases/
+# BioPython SeqIO.index_db SQLite indexes — built lazily on first use,
+# rebuilt automatically when the source FASTA changes (mtime check).
+*.fa.idx
+*.fasta.idx
+
+# gffutils / SeqIO SQLite databases — auto-generated, never committed
+pgatk/testdata/*.db

@@ -238,7 +238,7 @@ class TestGetMutProSeqEdgeCases:
         assert result == ""
 
     def test_dna_substitution_ref_mismatch(self):
-        """When DNA ref allele doesn't match the sequence, return empty."""
+        """When DNA ref allele doesn't match the sequence, return None (REF mismatch sentinel)."""
         seq = Seq("ATGAAATTT")  # pos 4 = 'A'
         snp = SNP(
             gene="TEST",
@@ -248,5 +248,22 @@ class TestGetMutProSeqEdgeCases:
             mutation_type="Substitution"
         )
         result = CancerGenomesService.get_mut_pro_seq(snp, seq)
-        # ref_dna = 'C', seq[3] = 'A' -> mismatch -> mut_pro_seq stays ""
-        assert result == ""
+        # ref_dna = 'C', seq[3] = 'A' -> mismatch -> returns None to distinguish from unsupported HGVS
+        assert result is None
+
+    def test_leading_n_stripped_before_position_lookup(self):
+        """FASTA entries with a leading N (masked base) are stripped so HGVS c. positions align correctly."""
+        # NATGAAATTT: real CDS starts at index 1 (ATG).
+        # c.4C>T should match index 3 of the real CDS = 'A' of 'ATGAAATTT'[3] = 'A'.
+        # Without the strip, seq[3] = 'G' (the G of ATG) and the lookup would be wrong.
+        seq = Seq("NATGAAATTT")  # leading N before ATG
+        snp = SNP(
+            gene="TEST",
+            mrna="ENST0001",
+            dna_mut="c.4A>T",  # pos 4 of real CDS = 'A' (after stripping N) -> valid substitution
+            aa_mut="p.K2*",
+            mutation_type="Substitution"
+        )
+        result = CancerGenomesService.get_mut_pro_seq(snp, seq)
+        # Should succeed (not None, not "") because REF=A matches the stripped sequence at pos 4
+        assert result is not None and result != ""

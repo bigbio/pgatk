@@ -16,9 +16,19 @@ log = logging.getLogger(__name__)
               help="Username for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
 @click.option('-p', '--password',
               help="Password for cosmic database -- please if you don't have one register here (https://cancer.sanger.ac.uk/cosmic/register)")
-@click.option("--url_file", help='Add the url to a downloaded file')
+@click.option('-P', '--products', multiple=True,
+              help='COSMIC scripted-download `path=` value to fetch (e.g. '
+                   'grch38/cosmic/v103/Cosmic_GenomeScreensMutant_Tsv_v103_GRCh38.tar). '
+                   'May be repeated. Overrides the products list in the config file when provided. '
+                   'Find available paths at https://cancer.sanger.ac.uk/cosmic/download/cosmic '
+                   '(open the "Scripted Download" panel for any product).')
+@click.option("--url_file",
+              help='If set, do not download anything. Instead, write a TSV with one row per '
+                   'product (`<api_url>\\t<local_output_path>`) so the downloads can be driven '
+                   'externally (e.g. wget/curl loop). The api_url is the COSMIC scripted-download '
+                   'endpoint URL — fetching it returns JSON containing the actual signed S3 URL.')
 @click.pass_context
-def cosmic_downloader(ctx, config_file, output_directory, username, password, url_file):
+def cosmic_downloader(ctx, config_file, output_directory, username, password, products, url_file):
 
     config_data = load_config("cosmic", config_file)
 
@@ -30,6 +40,9 @@ def cosmic_downloader(ctx, config_file, output_directory, username, password, ur
 
     if password is not None:
         pipeline_arguments[CosmicDownloadService.CONFIG_COSMIC_FTP_PASSWORD] = password
+
+    if products:
+        pipeline_arguments[CosmicDownloadService.CONFIG_PRODUCTS] = list(products)
 
     cosmic_downloader_service = CosmicDownloadService(config_data, pipeline_arguments)
     cosmic_downloader_service.download_mutation_file(url_file_name=url_file)

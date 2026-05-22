@@ -1,0 +1,28 @@
+##gff-version 3
+NC_000001.11	BestRefSeq	gene	65419	71585	.	+	.	ID=gene-OR4F5;Dbxref=GeneID:79501,HGNC:HGNC:14825;Name=OR4F5;description=olfactory receptor family 4 subfamily F member 5;gbkey=Gene;gene=OR4F5;gene_biotype=protein_coding
+NC_000001.11	BestRefSeq	mRNA	65419	71585	.	+	.	ID=rna-NM_001005484.2;Parent=gene-OR4F5;Dbxref=Ensembl:ENST00000641515.2,GeneID:79501,GenBank:NM_001005484.2,HGNC:HGNC:14825;Name=NM_001005484.2;gbkey=mRNA;gene=OR4F5;product=olfactory receptor family 4 subfamily F member 5;tag=MANE Select;transcript_id=NM_001005484.2
+NC_000001.11	BestRefSeq	exon	65419	65433	.	+	.	ID=exon-NM_001005484.2-1;Parent=rna-NM_001005484.2;gbkey=mRNA;gene=OR4F5;transcript_id=NM_001005484.2
+NC_000001.11	BestRefSeq	exon	65520	65573	.	+	.	ID=exon-NM_001005484.2-2;Parent=rna-NM_001005484.2;gbkey=mRNA;gene=OR4F5;transcript_id=NM_001005484.2
+NC_000001.11	BestRefSeq	exon	69037	71585	.	+	.	ID=exon-NM_001005484.2-3;Parent=rna-NM_001005484.2;gbkey=mRNA;gene=OR4F5;transcript_id=NM_001005484.2
+NC_000001.11	BestRefSeq	CDS	65565	65573	.	+	0	ID=cds-NP_001005484.2;Parent=rna-NM_001005484.2;Dbxref=CCDS:CCDS30547.2,GenBank:NP_001005484.2;Name=NP_001005484.2;gbkey=CDS;gene=OR4F5;product=olfactory receptor 4F5;protein_id=NP_001005484.2
+NC_000001.11	BestRefSeq	CDS	69037	70008	.	+	0	ID=cds-NP_001005484.2;Parent=rna-NM_001005484.2;Dbxref=CCDS:CCDS30547.2,GenBank:NP_001005484.2;Name=NP_001005484.2;gbkey=CDS;gene=OR4F5;product=olfactory receptor 4F5;protein_id=NP_001005484.2
+NC_000002.12	BestRefSeq	gene	47369311	47387020	.	+	.	ID=gene-EPCAM;Dbxref=GeneID:4072,HGNC:HGNC:11529,MIM:185535;Name=EPCAM;description=epithelial cell adhesion molecule;gbkey=Gene;gene=EPCAM;gene_biotype=protein_coding;gene_synonym=TACSTD1
+NC_000002.12	BestRefSeq	mRNA	47369311	47387020	.	+	.	ID=rna-NM_002354.3;Parent=gene-EPCAM;Dbxref=Ensembl:ENST00000263735.9,GeneID:4072,GenBank:NM_002354.3,HGNC:HGNC:11529,MIM:185535;Name=NM_002354.3;gbkey=mRNA;gene=EPCAM;product=epithelial cell adhesion molecule;tag=MANE Select;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47369311	47369581	.	+	.	ID=exon-NM_002354.3-1;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47373463	47373570	.	+	.	ID=exon-NM_002354.3-2;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47373808	47374048	.	+	.	ID=exon-NM_002354.3-3;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47375234	47375299	.	+	.	ID=exon-NM_002354.3-4;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47377014	47377077	.	+	.	ID=exon-NM_002354.3-5;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47378953	47379054	.	+	.	ID=exon-NM_002354.3-6;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47379769	47379969	.	+	.	ID=exon-NM_002354.3-7;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47385166	47385210	.	+	.	ID=exon-NM_002354.3-8;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	exon	47386572	47387020	.	+	.	ID=exon-NM_002354.3-9;Parent=rna-NM_002354.3;gbkey=mRNA;gene=EPCAM;transcript_id=NM_002354.3
+NC_000002.12	BestRefSeq	CDS	47369506	47369581	.	+	0	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47373463	47373570	.	+	2	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47373808	47374048	.	+	2	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47375234	47375299	.	+	1	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47377014	47377077	.	+	1	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47378953	47379054	.	+	0	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47379769	47379969	.	+	0	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47385166	47385210	.	+	0	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2
+NC_000002.12	BestRefSeq	CDS	47386572	47386613	.	+	0	ID=cds-NP_002345.2;Parent=rna-NM_002354.3;Dbxref=CCDS:CCDS1833.1,GenBank:NP_002345.2;Name=NP_002345.2;gbkey=CDS;gene=EPCAM;product=epithelial cell adhesion molecule precursor;protein_id=NP_002345.2

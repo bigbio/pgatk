@@ -151,20 +151,37 @@ class PgatkRunnerTests(unittest.TestCase):
                                 '--include_biotypes', 'altORFs', '--skip_including_all_cds'])
         self.assertEqual(result.exit_code, 0)
 
-    def test_cbioportal_to_proteindb(self):
+    def test_cbioportal_to_proteindb_grch37(self):
         """
-          Test generation proteinDB from cBioportal mutations using cbioportal-to-proteindb tool
-          :return:
-          """
+        Test cbioportal-to-proteindb with real GRCh37 TCGA BRCA data.
+        Uses coordinate-based translation (no HGVSc) via --gff.
+        """
         runner = CliRunner()
         result = runner.invoke(cli,
-                               ['cbioportal-to-proteindb', '--config_file', 'config/cbioportal_config.yaml',
-                                '--input_mutation', 'testdata/test_cbioportal_data_mutations_mskcc.txt',
-                                '--input_cds', 'testdata/test_cbioportal_genes.fa',
-                                '--output_db', 'testdata/test_cbioportal_data_mutations_mskcc_proteindb.fa',
-                                '--clinical_sample_file', 'testdata/test_cbioportal_data_clinical_sample.txt',
+                               ['cbioportal-to-proteindb',
+                                '--config_file', 'config/cbioportal_config.yaml',
+                                '--input_mutation', 'testdata/test_cbioportal_grch37_mutations.txt',
+                                '--input_fasta', 'testdata/test_cbioportal_ncbi_grch37_transcripts.fa',
+                                '--gff', 'testdata/test_cbioportal_ncbi_grch37.gff',
+                                '--output_db', 'testdata/test_cbioportal_grch37_proteindb.fa',
+                                '--clinical_sample_file', 'testdata/test_cbioportal_grch37_clinical_sample.txt',
                                 '--filter_column', 'CANCER_TYPE',
                                 '--split_by_filter_column', '--accepted_values', 'all'])
+        self.assertEqual(result.exit_code, 0)
+
+    def test_cbioportal_to_proteindb_grch38(self):
+        """
+        Test cbioportal-to-proteindb with real GRCh38 TCGA BRCA data.
+        Uses coordinate-based translation (no HGVSc) via --gff, no clinical file.
+        """
+        runner = CliRunner()
+        result = runner.invoke(cli,
+                               ['cbioportal-to-proteindb',
+                                '--config_file', 'config/cbioportal_config.yaml',
+                                '--input_mutation', 'testdata/test_cbioportal_grch38_mutations.txt',
+                                '--input_fasta', 'testdata/test_cbioportal_ncbi_grch38_transcripts.fa',
+                                '--gff', 'testdata/test_cbioportal_ncbi_grch38.gff',
+                                '--output_db', 'testdata/test_cbioportal_grch38_proteindb.fa'])
         self.assertEqual(result.exit_code, 0)
 
     def test_cosmic_to_proteindb(self):
@@ -178,7 +195,8 @@ class PgatkRunnerTests(unittest.TestCase):
                                 '--input_mutation', 'testdata/test_cosmic_mutations.tsv',
                                 '--input_genes', 'testdata/test_cosmic_genes.fa',
                                 '--output_db', 'testdata/test_cosmic_mutations_proteindb.fa',
-                                '--filter_column', 'Primary site',
+                                '--clinical_sample_file', 'testdata/test_cosmic_classification.tsv',
+                                '--filter_column', 'PRIMARY_SITE',
                                 '--split_by_filter_column', '--accepted_values', 'all'])
         if result.exit_code != 0:
             print(result.exception)
@@ -267,6 +285,22 @@ class PgatkRunnerTests(unittest.TestCase):
 
     def test_check_ensembl_database(self):
         runner = CliRunner()
+        # ensembl-check operates on a protein DB produced by vcf-to-proteindb;
+        # generate it here so the test does not rely on alphabetical test ordering.
+        if not os.path.exists('testdata/proteindb_from_ENSEMBL_VCF.fa'):
+            prep = runner.invoke(cli,
+                                 ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                                  '--vcf', 'testdata/test.vcf',
+                                  '--input_fasta', 'testdata/test.fa',
+                                  '--gene_annotations_gtf', 'testdata/test.gtf',
+                                  '--protein_prefix', 'ensvar',
+                                  '--af_field', 'MAF',
+                                  '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
+                                  '--annotation_field_name', 'CSQ',
+                                  '--biotype_str', 'feature_type',
+                                  '--include_biotypes', 'mRNA,ncRNA'])
+            self.assertEqual(prep.exit_code, 0,
+                             f"Failed to prepare ENSEMBL proteindb fixture: {prep.output}")
         result = runner.invoke(cli,
                                ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output',

@@ -22,9 +22,12 @@ log = logging.getLogger(__name__)
 @click.option('-s', '--split_by_filter_column',
               help='Use this flag to generate a proteinDB per group as specified in the filter_column, default is False',
               is_flag=True)
+@click.option('-cl', '--clinical_sample_file',
+              help='COSMIC sample annotation file used to map '
+                   'COSMIC_SAMPLE_ID to the filter column value (e.g. PRIMARY_SITE)')
 @click.pass_context
 def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db,
-                        filter_column, accepted_values, split_by_filter_column):
+                        filter_column, accepted_values, split_by_filter_column, clinical_sample_file):
 
     config_data = load_config("cosmic", config_file)
 
@@ -39,10 +42,13 @@ def cosmic_to_proteindb(ctx, config_file, input_mutation, input_genes, output_db
     if output_db is not None:
         pipeline_arguments[CancerGenomesService.CONFIG_OUTPUT_FILE] = output_db
 
+    if clinical_sample_file is not None:
+        pipeline_arguments[CancerGenomesService.CLINICAL_SAMPLE_FILE] = clinical_sample_file
+
     if filter_column is not None:
         pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = filter_column
     elif config_data is None:
-        pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = 'Primary site'
+        pipeline_arguments[CancerGenomesService.FILTER_COLUMN] = 'PRIMARY_SITE'
 
     if accepted_values is not None:
         pipeline_arguments[CancerGenomesService.ACCEPTED_VALUES] = accepted_values
