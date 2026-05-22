@@ -127,7 +127,16 @@ def ensembl_downloader(ctx, config_file, output_directory, taxonomy, folder_pref
 
             for gtf_path in gtf_files:
                 prefix = ".".join(os.path.basename(gtf_path).split(".")[:2])
-                genome_fna = genome_map.get(prefix) or next(iter(genome_map.values()))
+                genome_fna = genome_map.get(prefix)
+                if genome_fna is None:
+                    fallback = next(iter(genome_map.values()))
+                    click.echo(
+                        f"Warning: no genome with prefix '{prefix}' found "
+                        f"(available: {sorted(genome_map)}); "
+                        f"falling back to {os.path.basename(fallback)}.",
+                        err=True,
+                    )
+                    genome_fna = fallback
                 output_fasta = os.path.join(
                     out_dir,
                     "transcripts.fa" if len(gtf_files) == 1 else f"{prefix}_transcripts.fa",

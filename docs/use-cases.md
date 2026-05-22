@@ -259,7 +259,8 @@ else
             ensembl_human/homo_sapiens_incl_consequences-chr*.vcf \
             ensembl_human/homo_sapiens_incl_consequences-chr*.vcf.gz; do
         [[ -f "${VCF_CHR}" ]] || continue
-        CHROM=$(basename "${VCF_CHR}" | grep -oP '(?<=consequences-)chr\w+(?=\.vcf)')
+        # Strip leading "...consequences-" and trailing ".vcf[.gz]"; portable (no grep -P).
+        CHROM=$(basename "${VCF_CHR}" | sed -E 's/.*consequences-//; s/\.vcf(\.gz)?$//')
         pgatk vcf-to-proteindb \
             --vcf "${VCF_CHR}" \
             --input_fasta ensembl_human/transcripts.fa \
