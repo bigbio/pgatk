@@ -285,6 +285,22 @@ class PgatkRunnerTests(unittest.TestCase):
 
     def test_check_ensembl_database(self):
         runner = CliRunner()
+        # ensembl-check operates on a protein DB produced by vcf-to-proteindb;
+        # generate it here so the test does not rely on alphabetical test ordering.
+        if not os.path.exists('testdata/proteindb_from_ENSEMBL_VCF.fa'):
+            prep = runner.invoke(cli,
+                                 ['vcf-to-proteindb', '--config_file', 'config/ensembl_config.yaml',
+                                  '--vcf', 'testdata/test.vcf',
+                                  '--input_fasta', 'testdata/test.fa',
+                                  '--gene_annotations_gtf', 'testdata/test.gtf',
+                                  '--protein_prefix', 'ensvar',
+                                  '--af_field', 'MAF',
+                                  '--output_proteindb', 'testdata/proteindb_from_ENSEMBL_VCF.fa',
+                                  '--annotation_field_name', 'CSQ',
+                                  '--biotype_str', 'feature_type',
+                                  '--include_biotypes', 'mRNA,ncRNA'])
+            self.assertEqual(prep.exit_code, 0,
+                             f"Failed to prepare ENSEMBL proteindb fixture: {prep.output}")
         result = runner.invoke(cli,
                                ['ensembl-check', '--config_file', 'config/ensembl_config.yaml',
                                 '--input_fasta', 'testdata/proteindb_from_ENSEMBL_VCF.fa', '--output',
