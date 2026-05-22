@@ -2,7 +2,7 @@ import errno
 import glob
 import logging
 import os
-import subprocess
+import subprocess  # nosec B404 - referenced only to catch CalledProcessError from gffread
 import sys
 
 import click

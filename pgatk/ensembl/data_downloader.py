@@ -11,7 +11,7 @@ import gzip
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec B404 - used only with hardcoded gffread argv lists, never shell=True
 
 from pgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pgatk.toolbox.rest import call_api
@@ -515,7 +515,7 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 _tmp = plain
         try:
             cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_for_gffread, gtf_file]
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True)  # nosec B603 - argv list with hardcoded "gffread"
         finally:
             if _tmp and os.path.exists(_tmp):
                 os.remove(_tmp)

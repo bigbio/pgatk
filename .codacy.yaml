@@ -13,3 +13,8 @@ engines:
     enabled: true
     settings:
       add_ignore: ["D211", "D213"]
+
+exclude_paths:
+  - "docs/stylesheets/**"
+  - "docs/plans/**"
+  - "pgatk/tests/**"

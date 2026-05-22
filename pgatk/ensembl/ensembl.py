@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import collections
-import gzip
 import logging
 import os
 import sqlite3

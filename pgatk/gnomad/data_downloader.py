@@ -12,7 +12,7 @@ import logging
 import os
 import re
 import shutil
-import subprocess
+import subprocess  # nosec B404 - used only with hardcoded gffread argv lists, never shell=True
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Optional
 
@@ -237,7 +237,7 @@ class GencodeDownloader:
         try:
             cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_for_gffread, gtf_file]
             logger.info("Running: %s", " ".join(cmd))
-            subprocess.run(cmd, check=True)
+            subprocess.run(cmd, check=True)  # nosec B603 - argv list with hardcoded "gffread"
         finally:
             if _tmp and os.path.exists(_tmp):
                 os.remove(_tmp)
