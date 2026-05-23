@@ -135,11 +135,13 @@ def _split_vcf_into_batches(vcf_file: str, output_dir: str,
     return batch_paths
 
 
-def _vcf_to_proteindb_worker(vcf_file: str, output_path: str) -> None:
+def _vcf_to_proteindb_worker(vcf_file: str, output_path: str) -> dict:
     """Module-level worker for multiprocessing.Pool.starmap.
 
     Uses the GTF DB, FASTA index, and EnsemblDataService instance opened once
     per worker process by _worker_init rather than re-constructing them per task.
+    Returns the per-chunk stats dict that ``vcf_to_proteindb`` aggregates across
+    all workers.
     """
     svc = _worker_state['svc']
     _, stats = svc._vcf_to_proteindb_chunk(

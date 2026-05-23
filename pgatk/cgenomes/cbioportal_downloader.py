@@ -342,13 +342,19 @@ class CbioPortalDownloadService(ParameterConfiguration):
                     line_count = 0
                     if self._multithreading:
                         processes = []
+                        # Pass url_file=None to workers — concurrent writes to the
+                        # shared handle would interleave/corrupt lines. The main
+                        # thread serializes the writes below.
                         with ThreadPoolExecutor(max_workers=10, thread_name_prefix='Thread-Download') as executor:
                             for row in csv_reader:
                                 if line_count != 0:
-                                    processes.append(executor.submit(self.download_one_study, row[0], url_file=url_file))
+                                    processes.append(executor.submit(self.download_one_study, row[0]))
                                 line_count = line_count + 1
                         for task in as_completed(processes):
-                            print(task.result())
+                            result = task.result()
+                            print(result)
+                            if result is not None:
+                                url_file.write(result + "\n")
                     else:
                         for row in csv_reader:
                             if line_count != 0:
@@ -407,6 +413,9 @@ class CbioPortalDownloadService(ParameterConfiguration):
 
         _fetch_clinical_data(self._cbioportal_base_url, download_study, study_dir, log)
 
+        # Note: url_file writes intentionally happen in download_study() (single-threaded
+        # main thread) after futures complete; the parameter is retained for the
+        # single-study code path and to keep the legacy serial call sites unchanged.
         if url_file is not None:
             url_file.write(out_path + "\n")
         return out_path
