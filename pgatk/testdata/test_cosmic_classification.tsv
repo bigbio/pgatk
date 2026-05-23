@@ -1,0 +1,9 @@
+COSMIC_PHENOTYPE_ID	PRIMARY_SITE	PRIMARY_HISTOLOGY	SITE_SUBTYPE_1	HISTOLOGY_SUBTYPE_1
+COSO1001	upper_aerodigestive_tract	carcinoma	mouth	squamous_cell_carcinoma
+COSO1002	skin	carcinoma	upper_leg	squamous_cell_carcinoma
+COSO1003	bone	other	femur	giant_cell_tumour
+COSO1004	thyroid	adenoma-nodule-goitre	NS	NS
+COSO1005	liver	other	NS	neoplasm
+COSO1006	haematopoietic_and_lymphoid_tissue	haematopoietic_neoplasm	NS	acute_myeloid_leukaemia
+COSO1007	bone	carcinoma	NS	NS
+COSO1008	skin	carcinoma	NS	NS

@@ -18,7 +18,7 @@ def trypsin_cleavage(proseq: str, miss_cleavage: int):
         except IndexError:
             pass
 
-        if aa in ['K', 'R'] and next_aa != 'P':  # for trypsin peptides
+        if aa in ['K', 'R'] and next_aa != 'P':
             if len(peptide) > 0:
                 peptides.append(peptide)
             peptide = ''
@@ -63,7 +63,6 @@ def digest_mutant_proteins(
     :param max_length: Maximum peptide length to retain (default: 40).
     :param missed_cleavages: Number of missed cleavages for trypsin digestion (default: 0).
     """
-    # Build canonical peptidome from reference FASTA
     handle1 = SeqIO.parse(fasta_file, 'fasta')
     peptidome = {}
 
@@ -76,9 +75,7 @@ def digest_mutant_proteins(
                     peptidome[peptide.replace("I", "L")] = 1
 
     log.info("Known peptides number: %d", len(peptidome))
-    handle1.close()
 
-    # Parse mutant protein input files
     filelist = input_file.split(",")
     handle_list = []
     for f in filelist:
@@ -98,8 +95,8 @@ def digest_mutant_proteins(
                         if peptide1 not in peptidome:
                             des_list = descrip.split(":")
                             des_list[0] = header_prefix
-                            mut_type = des_list[-1]
-                            snp = des_list[-2]
+                            mut_type = des_list[-1] if len(des_list) >= 1 else ""
+                            snp = des_list[-2] if len(des_list) >= 2 else ""
                             if "Missense" in mut_type:
                                 try:
                                     mut_pos = int(re.findall(r'\d+', snp)[0])
@@ -114,7 +111,6 @@ def digest_mutant_proteins(
                                 var_peptidome[peptide] = [new_description]
                             else:
                                 var_peptidome[peptide].append(new_description)
-        h.close()
         log.info("File processing done")
 
     log.info("Mutant peptide numbers: %d", len(var_peptidome))

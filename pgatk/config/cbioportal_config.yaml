@@ -17,3 +17,10 @@ proteindb:
       accepted_values: "all"
       split_by_filter_column: False
       clinical_sample_file: ''
+      biotype_str: "gene_biotype"
+      include_biotypes: "protein_coding"
+      exclude_biotypes: ""
+      skip_including_all_cds: false
+      include_variant_classifications: "all"
+      exclude_variant_classifications: "Nonsense_Mutation"
+      translation_table: 1

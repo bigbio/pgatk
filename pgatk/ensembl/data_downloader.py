@@ -6,9 +6,13 @@ Some use cases for this module:
     2. Given a species ID, collect its GTF data, with the option of decompressing it or not.
 """
 
-# App imports
 from json import loads
+import gzip
+import os
 import re
+import shutil
+import subprocess  # nosec B404 - used only with hardcoded gffread argv lists, never shell=True
+
 from pgatk.toolbox.general import ParameterConfiguration, check_create_folders, download_file
 from pgatk.toolbox.rest import call_api
 
@@ -432,7 +436,6 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                                                 file_name=self.get_local_path_root_ensembl_repo() + '/' + file_name,
                                                 log=self.get_logger(), url_file=url_file)
                 if downloaded_file is not None:
-                    # if chr1 is downloaded then try all others
                     files.append(downloaded_file)
                     for chrN in range(2, 23):  # chr2-22
                         file_name = '{}_incl_consequences-chr{}.vcf.gz'.format(species['name'], chrN)
@@ -485,6 +488,51 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             print("No valid info is available species: ", species)
 
         return files
+
+    @staticmethod
+    def generate_transcripts(genome_fna: str, gtf_file: str, output_fasta: str) -> str:
+        """Run gffread -F to produce a transcript FASTA with CDS= coordinate headers.
+
+        Raises FileNotFoundError if gffread is not in PATH.
+        Raises subprocess.CalledProcessError on gffread failure.
+        """
+        if not shutil.which("gffread"):
+            raise FileNotFoundError(
+                "gffread not found in PATH. "
+                "Install it with: conda install -c bioconda gffread"
+            )
+        # gffread requires random-access; decompress .gz to a sibling file when needed.
+        # The decompression is staged through a ``.tmp`` file and atomically
+        # renamed so an interrupted run cannot leave a partial sibling that a
+        # later invocation would silently reuse.
+        _tmp = None
+        genome_for_gffread = genome_fna
+        if genome_fna.endswith(".gz"):
+            plain = genome_fna[:-3]
+            if os.path.exists(plain):
+                genome_for_gffread = plain
+            else:
+                tmp_path = plain + ".tmp"
+                try:
+                    with gzip.open(genome_fna, "rb") as fi, open(tmp_path, "wb") as fo:
+                        shutil.copyfileobj(fi, fo)
+                    os.replace(tmp_path, plain)
+                except BaseException:
+                    if os.path.exists(tmp_path):
+                        try:
+                            os.remove(tmp_path)
+                        except OSError:
+                            pass
+                    raise
+                genome_for_gffread = plain
+                _tmp = plain
+        try:
+            cmd = ["gffread", "-F", "-w", output_fasta, "-g", genome_for_gffread, gtf_file]
+            subprocess.run(cmd, check=True)  # nosec B603 - argv list with hardcoded "gffread"
+        finally:
+            if _tmp and os.path.exists(_tmp):
+                os.remove(_tmp)
+        return output_fasta
 
     def validate_taxonomies(self):
         if self._species_list is not None:

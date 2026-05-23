@@ -1,0 +1,20 @@
+---
+# Codacy configuration. https://docs.codacy.com/repositories-configure/codacy-configuration-file/
+#
+# pydocstyle has two pairs of mutually-exclusive rules:
+#   D203 vs D211 (blank line before class docstring; codebase follows D203)
+#   D212 vs D213 (multi-line summary line; codebase follows D212)
+# Both rules in each pair are enabled in Codacy's default profile, which produces
+# unavoidable noise — pick one and silence the other. Settings here also apply to
+# any local pydocstyle invocation that reads `.pydocstyle`.
+
+engines:
+  pydocstyle:
+    enabled: true
+    settings:
+      add_ignore: ["D211", "D213"]
+
+exclude_paths:
+  - "docs/stylesheets/**"
+  - "docs/plans/**"
+  - "pgatk/tests/**"

@@ -6,7 +6,7 @@ a search-ready protein database.
 
 ---
 
-## Cell-Type Specific Non-Canonical Peptide Discovery
+## USE CASE 1: Cell-Type Specific Non-Canonical Peptide Discovery
 
 !!! abstract "Featured workflow"
     This workflow reproduces the analysis from [Umer et al., *Bioinformatics* 2022](https://doi.org/10.1093/bioinformatics/btab838),
@@ -20,23 +20,51 @@ lncRNAs, alternative ORFs) and variant sequences from multiple genomic sources.
 Searching with a database tailored to the cell type of interest maximizes
 discovery while keeping the search space focused.
 
-### Step 1 -- Download ENSEMBL data
+### Step 1 -- Download ENSEMBL data and generate transcript sequences
 
 ```bash
 pgatk ensembl-downloader \
     -t 9606 \
+    --skip_vcf --skip_protein --skip_cds --skip_cdna --skip_ncrna \
+    --generate-transcripts \
     -o ensembl_human
 ```
 
-### Step 2 -- Generate transcript sequences from GTF
+`--generate-transcripts` runs `gffread -F` after the download to produce `ensembl_human/transcripts.fa` with `CDS=` coordinate headers required for the translation steps below. It requires `gffread` in PATH (`conda install -c bioconda gffread`).
 
-```bash
-gffread -F -w ensembl_human/transcripts.fa \
-    -g ensembl_human/genome.fa \
-    ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz
-```
+!!! note "Primary assembly vs. alternate haplotypes"
+    `ensembl-downloader` fetches the **primary-assembly GTF**
+    (`Homo_sapiens.GRCh38.<release>.gtf`), which covers chromosomes 1–22, X, Y,
+    and MT only.  Approximately 11,500 additional protein-coding transcripts
+    annotated on alternate haplotypes and patch sequences — including multiple
+    HLA alleles in the MHC region (chr6) and immunoglobulin loci — are absent
+    from this GTF and therefore absent from `transcripts.fa` and every downstream
+    database.
 
-### Step 3 -- Canonical protein-coding sequences
+    For **HLA peptide detection and immunopeptidomics** workflows where
+    haplotype-level coverage of the MHC is essential, replace the standard GTF
+    with the alternate-haplotype annotation after downloading:
+
+    ```bash
+    # Download the patch/haplotype GTF manually (same FTP release)
+    wget -P ensembl_human \
+        "https://ftp.ensembl.org/pub/release-<N>/gtf/homo_sapiens/\
+    Homo_sapiens.GRCh38.<N>.chr_patch_hapl_scaff.gtf.gz"
+    gunzip ensembl_human/Homo_sapiens.GRCh38.<N>.chr_patch_hapl_scaff.gtf.gz
+
+    # Re-run gffread with the full annotation
+    gffread -F -w ensembl_human/transcripts_with_haplotypes.fa \
+        -g ensembl_human/Homo_sapiens.GRCh38.dna_sm.toplevel.fa \
+        ensembl_human/Homo_sapiens.GRCh38.<N>.chr_patch_hapl_scaff.gtf
+    ```
+
+    Replacing `<N>` with the release number (e.g. `115`).  The
+    `dna_sm.toplevel.fa` genome already contains the alternate sequences, so no
+    additional genome download is required.  Be aware that the expanded database
+    will be roughly 5% larger and may include redundant peptides from duplicated
+    gene copies.
+
+### Step 2 -- Canonical protein-coding sequences
 
 Translate all protein-coding transcripts using their annotated CDS:
 
@@ -46,7 +74,7 @@ pgatk dnaseq-to-proteindb \
     --output_proteindb canonical.fa
 ```
 
-### Step 4 -- Non-canonical translations
+### Step 3 -- Non-canonical translations
 
 #### Pseudogenes (three-frame)
 
@@ -57,8 +85,8 @@ detectable peptides. Translate them in three reading frames:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb pseudogene.fa \
-    --var_prefix pseudo_ \
-    --include_biotypes processed_pseudogene,unprocessed_pseudogene,transcribed_processed_pseudogene,transcribed_unprocessed_pseudogene,translated_processed_pseudogene \
+    --protein_prefix pseudo_ \
+    --include_biotypes pseudogene,processed_pseudogene,unprocessed_pseudogene,transcribed_processed_pseudogene,transcribed_unprocessed_pseudogene,translated_processed_pseudogene,unitary_pseudogene,transcribed_unitary_pseudogene,rRNA_pseudogene,IG_V_pseudogene,TR_V_pseudogene,IG_C_pseudogene,TR_J_pseudogene,IG_J_pseudogene,IG_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -72,8 +100,22 @@ micropeptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb lncrna.fa \
-    --var_prefix lncrna_ \
-    --include_biotypes lincRNA,antisense,sense_intronic,sense_overlapping \
+    --protein_prefix lncrna_ \
+    --include_biotypes lncRNA \
+    --num_orfs 3 \
+    --skip_including_all_cds
+```
+
+#### Putative proteins (three-frame)
+
+Protein coding genes without CDs that are not validated but annotated:
+
+```bash
+pgatk dnaseq-to-proteindb \
+    --input_fasta ensembl_human/transcripts.fa \
+    --output_proteindb putative.fa \
+    --protein_prefix putative_ \
+    --include_biotypes protein_coding_CDS_not_defined,TEC,translated_processed_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -87,24 +129,12 @@ peptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_human/transcripts.fa \
     --output_proteindb altorf.fa \
-    --var_prefix altorf_ \
+    --protein_prefix altorf_ \
     --include_biotypes altORFs \
     --skip_including_all_cds
 ```
 
-### Step 5 -- Population variant proteins
-
-Include common human variants from ENSEMBL:
-
-```bash
-pgatk vcf-to-proteindb \
-    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf.gz \
-    --input_fasta ensembl_human/transcripts.fa \
-    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz \
-    --output_proteindb ensembl_variants.fa
-```
-
-### Step 6 -- COSMIC somatic mutations (optional, for cancer cell lines)
+### Step 4 -- COSMIC somatic mutations (optional, for cancer cell lines)
 
 For cancer cell-line studies, add cell-line-specific somatic mutations:
 
@@ -115,14 +145,15 @@ pgatk cosmic-downloader \
     -o cosmic_data
 
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicCLP_MutantExport.tsv.gz \
-    --input_genes cosmic_data/All_CellLines_Genes.fasta.gz \
+    --input_mutation cosmic_data/CellLinesProject_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_cellline.fa \
-    --filter_column "Sample name" \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
-### Step 7 -- Combine and generate target-decoy database
+### Step 5 -- Combine and generate target-decoy database
 
 ```bash
 # Combine all components
@@ -130,26 +161,26 @@ pgatk cosmic-to-proteindb \
 cat canonical.fa \
     pseudogene.fa \
     lncrna.fa \
+    putative.fa \
     altorf.fa \
-    ensembl_variants.fa \
     > cell_type_target.fa
 
 # Generate decoy sequences
 pgatk generate-decoy \
-    --input cell_type_target.fa \
-    --output cell_type_target_decoy.fa \
+    --input_database cell_type_target.fa \
+    --output_database cell_type_target_decoy.fa \
     --method decoypyrat \
     --decoy_prefix DECOY_
 ```
 
-### Step 8 -- Extract non-canonical unique peptides
+### Step 6 -- Extract non-canonical unique peptides
 
 After database searching with your search engine, you can also pre-compute the
 set of non-canonical peptides unique to these novel sources:
 
 ```bash
 pgatk digest-mutant-protein \
-    --input pseudogene.fa,lncrna.fa,altorf.fa,ensembl_variants.fa \
+    --input pseudogene.fa,lncrna.fa,putative.fa,altorf.fa,ensembl_variants.fa \
     --fasta canonical.fa \
     --output non_canonical_peptides.fa \
     --min-len 7 \
@@ -166,16 +197,16 @@ pgatk digest-mutant-protein \
 
 ---
 
-## 1. Human Variant Protein Database from ENSEMBL
+## USE CASE 2: Human Variant Protein Database from ENSEMBL
 
 Build a variant protein database using ENSEMBL population variants (common SNPs
 and indels) for human proteogenomics searches. This is the most common starting
 point for proteogenomics experiments -- augmenting the canonical proteome with
 known variant peptides that would otherwise be missed.
 
-### Step 1 -- Download ENSEMBL data
+### Step 1 -- Download ENSEMBL data and generate transcript sequences
 
-Download the GTF, CDS, and VCF files for *Homo sapiens* (taxonomy 9606):
+Download the GTF, genome FASTA, VCF files, and transcript sequences for *Homo sapiens* (taxonomy 9606):
 
 ```bash
 pgatk ensembl-downloader \
@@ -183,36 +214,73 @@ pgatk ensembl-downloader \
     -o ensembl_human \
     --skip_protein \
     --skip_ncrna \
-    --skip_cdna
+    --skip_cdna \
+    --generate-transcripts
 ```
 
-This downloads the gene annotation GTF, VCF file with known variants, and the
-genome FASTA (needed by gffread to extract transcript sequences).
+This downloads the gene annotation GTF, genome FASTA, and variant VCF(s), then runs `gffread -F` to produce `ensembl_human/transcripts.fa` with `CDS=` coordinate headers.
 
-### Step 2 -- Generate transcript sequences
+!!! note "ENSEMBL ≥113: expected non-zero exit from the downloader"
+    Starting with ENSEMBL release 113, the single combined
+    `homo_sapiens_incl_consequences.vcf.gz` was replaced by per-chromosome files
+    (`homo_sapiens_incl_consequences-chr1.vcf.gz`, `...-chr2.vcf.gz`, …).
+    When `ensembl-downloader` cannot find the combined file it falls back to
+    downloading all per-chromosome VCFs and then exits with a non-zero code.
+    **This exit code is expected** — all required files are present.  The
+    commands in Step 2 detect the layout automatically.
 
-Use [gffread](http://ccb.jhu.edu/software/stringtie/gff.shtml#gffread) to
-extract transcript sequences from the GTF and genome FASTA:
+!!! note "HLA / immunopeptidomics workflows"
+    The standard GTF excludes ~11,500 transcripts on alternate MHC haplotypes
+    and IG loci.  See the note in USE CASE 1 Step 1 for instructions on using
+    `chr_patch_hapl_scaff.gtf` to include them.
+
+### Step 2 -- Generate the variant protein database
+
+ENSEMBL releases differ in how variants are distributed: older releases provide
+a single combined VCF; releases ≥113 provide one VCF per chromosome. The
+snippet below handles both layouts:
 
 ```bash
-gffread -F -w ensembl_human/transcripts.fa \
-    -g ensembl_human/genome.fa \
-    ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz
+# Detect layout: single combined VCF (older releases) vs. per-chromosome (≥113)
+COMBINED_VCF=$(ls ensembl_human/homo_sapiens_incl_consequences.vcf* 2>/dev/null \
+    | grep -v '\-chr' | head -1 || true)
+
+if [[ -n "${COMBINED_VCF}" ]]; then
+    # ---------- older ENSEMBL release: single VCF ----------
+    pgatk vcf-to-proteindb \
+        --vcf "${COMBINED_VCF}" \
+        --input_fasta ensembl_human/transcripts.fa \
+        --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf \
+        --output_proteindb ensembl_human/variant_proteins.fa
+
+else
+    # ---------- ENSEMBL ≥113: one VCF per chromosome ----------
+    for VCF_CHR in \
+            ensembl_human/homo_sapiens_incl_consequences-chr*.vcf \
+            ensembl_human/homo_sapiens_incl_consequences-chr*.vcf.gz; do
+        [[ -f "${VCF_CHR}" ]] || continue
+        # Strip leading "...consequences-" and trailing ".vcf[.gz]"; portable (no grep -P).
+        CHROM=$(basename "${VCF_CHR}" | sed -E 's/.*consequences-//; s/\.vcf(\.gz)?$//')
+        pgatk vcf-to-proteindb \
+            --vcf "${VCF_CHR}" \
+            --input_fasta ensembl_human/transcripts.fa \
+            --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf \
+            --output_proteindb "ensembl_human/variant_proteins_${CHROM}.fa"
+    done
+
+    # Merge all per-chromosome outputs into a single database
+    cat ensembl_human/variant_proteins_chr*.fa > ensembl_human/variant_proteins.fa
+fi
 ```
 
-### Step 3 -- Generate the variant protein database
+!!! tip "Per-chromosome processing and memory"
+    Processing chromosomes individually keeps peak memory low — each
+    `vcf-to-proteindb` run loads only the VCF records for one chromosome.
+    The per-chromosome output files (`variant_proteins_chr1.fa`, …) are kept
+    alongside the merged `variant_proteins.fa` so you can inspect or
+    troubleshoot individual chromosomes without re-running the full pipeline.
 
-Translate all ENSEMBL variants that affect protein-coding transcripts:
-
-```bash
-pgatk vcf-to-proteindb \
-    --vcf ensembl_human/homo_sapiens_incl_consequences.vcf.gz \
-    --input_fasta ensembl_human/transcripts.fa \
-    --gene_annotations_gtf ensembl_human/Homo_sapiens.GRCh38.*.gtf.gz \
-    --output_proteindb ensembl_human/variant_proteins.fa
-```
-
-### Step 4 -- Generate the canonical protein database
+### Step 3 -- Generate the canonical protein database
 
 Translate canonical protein-coding transcripts:
 
@@ -222,7 +290,7 @@ pgatk dnaseq-to-proteindb \
     --output_proteindb ensembl_human/canonical_proteins.fa
 ```
 
-### Step 5 -- Combine and add decoy sequences
+### Step 4 -- Combine and add decoy sequences
 
 Merge canonical and variant databases, then generate decoys:
 
@@ -232,8 +300,8 @@ cat ensembl_human/canonical_proteins.fa \
     > ensembl_human/target.fa
 
 pgatk generate-decoy \
-    --input ensembl_human/target.fa \
-    --output ensembl_human/target_decoy.fa \
+    --input_database ensembl_human/target.fa \
+    --output_database ensembl_human/target_decoy.fa \
     --method decoypyrat \
     --decoy_prefix DECOY_
 ```
@@ -242,7 +310,7 @@ The file `target_decoy.fa` is ready for database searching.
 
 ---
 
-## 2. Population-Specific Variant Database
+## USE CASE 3: Population-Specific Variant Database
 
 Population-level genetic variants cause amino acid changes that are invisible
 to standard reference database searches. Studies have shown that incorporating
@@ -255,7 +323,7 @@ Include only variants present in at least 1% of the population:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf homo_sapiens_incl_consequences.vcf.gz \
+    --vcf homo_sapiens_incl_consequences.vcf \
     --input_fasta transcripts.fa \
     --gene_annotations_gtf genes.gtf \
     --af_field MAF \
@@ -270,7 +338,7 @@ detectable by mass spectrometry:
 
 ```bash
 pgatk vcf-to-proteindb \
-    --vcf homo_sapiens_incl_consequences.vcf.gz \
+    --vcf homo_sapiens_incl_consequences.vcf \
     --input_fasta transcripts.fa \
     --gene_annotations_gtf genes.gtf \
     --af_field MAF \
@@ -283,19 +351,68 @@ pgatk vcf-to-proteindb \
 
 gnomAD provides allele frequencies stratified by ancestry (African, East Asian,
 South Asian, European, Latino, etc.). Build a database using variants common in
-a specific population:
+a specific population.
+
+gnomAD v4.1.1 provides **exome** VCFs annotated with **GENCODE v39**
+(GRCh38). All three steps below use pgatk commands.
+
+#### Step 1 — Download GENCODE v39 and generate CDS-annotated transcripts
 
 ```bash
-pgatk vcf-to-proteindb \
-    --vcf gnomad.exomes.v4.1.sites.vcf.bgz \
-    --input_fasta gencode_transcripts.fa \
-    --gene_annotations_gtf gencode.v44.annotation.gtf.gz \
-    --annotation_field_name vep \
-    --af_field AF_afr \
-    --af_threshold 0.01 \
-    --include_consequences missense_variant,inframe_insertion,inframe_deletion \
-    --biotype_str transcript_type \
-    --output_proteindb gnomad_afr_proteins.fa
+pgatk gencode-downloader \
+    -o gencode_data \
+    --release 39 \
+    --generate-transcripts
+```
+
+This downloads `gencode.v39.annotation.gtf` and `GRCh38.primary_assembly.genome.fa`,
+then runs `gffread -F` to produce `gencode_data/transcripts.fa` with `CDS=` coordinate
+headers.  The `CDS=` headers are required for 1-frame CDS translation; the pre-built
+GENCODE transcript FASTA does **not** include them.
+
+!!! note "GENCODE transcript ID versioning"
+    GENCODE FASTA headers include a version suffix (e.g. `ENST00000456328.2`).
+    pgatk automatically strips the suffix when matching against VCF transcript IDs,
+    so gnomAD VEP entries (which use bare IDs like `ENST00000456328`) resolve correctly.
+
+#### Step 2 — Download gnomAD v4.1.1 exome VCFs (all chromosomes in parallel)
+
+```bash
+pgatk gnomad-vcf-downloader \
+    -o gnomad_vcf \
+    --version 4.1.1 \
+    --dataset exomes \
+    --workers 8
+```
+
+This fetches one `.vcf.bgz` + `.vcf.bgz.tbi` pair per chromosome (48 files total)
+from the gnomAD Google Cloud Storage bucket in parallel.  Use `--chromosomes chr22`
+to download a single chromosome for testing.
+
+#### Step 3 — Translate variants for all chromosomes and merge
+
+Process each chromosome independently, then concatenate the per-chromosome outputs
+into a single protein database:
+
+```bash
+for chrom in chr{1..22} chrX chrY; do
+    pgatk vcf-to-proteindb \
+        --vcf gnomad_vcf/gnomad.exomes.v4.1.1.sites.${chrom}.vcf.bgz \
+        --input_fasta gencode_data/transcripts.fa \
+        --gene_annotations_gtf gencode_data/gencode.v39.annotation.gtf \
+        --annotation_field_name vep \
+        --transcript_str Feature \
+        --consequence_str Consequence \
+        --biotype_str BIOTYPE \
+        --include_biotypes protein_coding \
+        --af_field AF_afr \
+        --af_threshold 0.01 \
+        --include_consequences missense_variant,inframe_insertion,inframe_deletion,stop_gained \
+        --output_proteindb gnomad_vcf/gnomad_afr_proteins_${chrom}.fa
+done
+
+# Merge all chromosomes into one database
+cat gnomad_vcf/gnomad_afr_proteins_chr*.fa > gnomad_afr_proteins_all.fa
 ```
 
 !!! tip "gnomAD-specific parameters"
@@ -303,12 +420,25 @@ pgatk vcf-to-proteindb \
     - `--af_field` -- Use population-specific AF fields: `AF_afr` (African),
       `AF_eas` (East Asian), `AF_sas` (South Asian), `AF_nfe` (Non-Finnish European),
       `AF_amr` (Latino), or `controls_AF` (all controls)
-    - `--biotype_str transcript_type` -- GENCODE uses `transcript_type` instead
-      of ENSEMBL's `transcript_biotype`
+    - `--biotype_str BIOTYPE` -- gnomAD's VEP INFO field names the biotype column
+      `BIOTYPE`; this is distinct from GENCODE/Ensembl GTF attribute names
+      (`transcript_type` / `transcript_biotype`) which only apply to the
+      `dnaseq-to-proteindb` command
+    - `--include_biotypes protein_coding` -- restrict translation to
+      protein-coding transcripts only; without this, retained introns,
+      pseudogenes, and other non-coding biotypes annotated in the VEP field
+      would also be processed
+
+!!! warning "GENCODE version must match the gnomAD VCF"
+    pgatk automatically checks that the GENCODE version in the VCF header
+    (`##gencode_version=`) matches the release number embedded in the GTF
+    (`##description: ... version N ...`) and emits a warning on mismatch.
+    Check your VCF header with `zcat file.vcf.bgz | grep gencode_version | head -1`
+    to confirm the correct release before running `gencode-downloader`.
 
 ---
 
-## 3. ClinVar Clinical Variant Database
+## USE CASE 4: ClinVar Clinical Variant Database
 
 [ClinVar](https://www.ncbi.nlm.nih.gov/clinvar/) catalogs the relationship
 between human variants and clinical phenotypes. Building a ClinVar-derived
@@ -319,33 +449,50 @@ validating pathogenic variants at the protein level.
 ### Step 1 -- Download NCBI / ClinVar files
 
 ```bash
-pgatk ncbi-downloader -o ncbi_data
+pgatk ncbi-downloader -o ncbi_clinvar
 ```
 
-This downloads four files to `ncbi_data/`:
+This downloads three RefSeq files and the ClinVar VCF to `ncbi_clinvar/`:
 
-- `GRCh38_latest_genomic.gtf.gz` -- RefSeq gene annotations
-- `GRCh38_latest_rna.fna.gz` -- RefSeq transcript nucleotide sequences
+- `GRCh38_latest_genomic.fna` -- Human genomic DNA (needed by gffread)
+- `GRCh38_latest_genomic.gff` -- RefSeq gene annotations in GFF3 format
 - `GRCh38_latest_assembly_report.txt` -- Chromosome name mapping
-- `clinvar.vcf.gz` -- ClinVar variant calls
+- `clinvar.vcf` -- ClinVar variant calls
 
-### Step 2 -- Generate the ClinVar protein database
+### Step 2 -- Extract transcript sequences with CDS annotations
+
+Use `--generate-transcripts` with `ncbi-downloader` to run gffread automatically
+and produce `transcripts.fa` with `CDS=` coordinate headers in a single step:
+
+```bash
+pgatk ncbi-downloader -o ncbi_clinvar --generate-transcripts
+```
+
+!!! note
+    GFF3 format is required. The NCBI RefSeq GTF leaves `transcript_id` empty
+    for many records, so gffread cannot link CDS features to their parent
+    transcripts and produces no valid output. GFF3 uses explicit `ID=`/`Parent=`
+    linkage that gffread handles correctly.
+    The `-F` flag embeds `CDS=start-end` coordinates in each FASTA header,
+    enabling 1-frame CDS translation in `clinvar-to-proteindb`.
+
+### Step 3 -- Generate the ClinVar protein database
 
 ```bash
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 ```
 
-### Step 3 -- Add decoy sequences
+### Step 4 -- Add decoy sequences
 
 ```bash
 pgatk generate-decoy \
-    --input clinvar_proteins.fa \
-    --output clinvar_target_decoy.fa \
+    --input_database clinvar_proteins.fa \
+    --output_database clinvar_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -356,7 +503,7 @@ pgatk generate-decoy \
 
 ---
 
-## 4. Tumor-Specific Databases for Cancer Proteogenomics
+## USE CASE 5: Condition-Specific Databases for Proteogenomics
 
 Cancer proteogenomics studies (such as those from CPTAC) build
 tumor-specific protein databases to detect somatic mutant peptides, understand
@@ -364,7 +511,7 @@ therapy resistance, and prioritize neoantigen candidates. The databases combine
 somatic mutations from cancer-specific sources (COSMIC, cBioPortal) and/or
 patient-matched whole-exome sequencing.
 
-### 4a. COSMIC somatic mutations by cancer type
+### 4a. Cancer-specific database using COSMIC somatic mutations
 
 Generate one protein database per primary tissue site. This is the standard
 approach for large-scale cancer proteogenomics when patient-level WES is not
@@ -379,88 +526,155 @@ pgatk cosmic-downloader \
 
 # Generate per-tissue databases
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_proteins.fa \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
 This produces files like `cosmic_proteins_lung.fa`, `cosmic_proteins_breast.fa`,
 etc. Use the tissue-matched database for your cancer type of interest.
 
-### 4b. Single cancer type
+!!! note "COSMIC v103 tissue annotation"
+    In COSMIC v103, `PRIMARY_SITE` is not a column in the mutation file. It lives
+    in the separate Classification file (`Cosmic_Classification_v103_GRCh38.tsv.gz`)
+    and is joined via `COSMIC_PHENOTYPE_ID`. Pass the Classification file via
+    `--clinical_sample_file` whenever tissue-type filtering or splitting is needed.
+
+### 4b. Cancer-type specific database using COSMIC somatic mutations
 
 Build a focused database for one cancer type (e.g. lung):
 
 ```bash
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_lung_proteins.fa \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --accepted_values "lung"
 ```
 
-### 4c. Cell-line proteogenomics
+### 4c. Cell-type specific databases
 
 When analyzing cell-line proteomes, use cell-line-specific mutations. COSMIC
 provides a dedicated cell-line export with mutations annotated per sample:
 
 ```bash
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicCLP_MutantExport.tsv.gz \
-    --input_genes cosmic_data/All_CellLines_Genes.fasta.gz \
+    --input_mutation cosmic_data/CellLinesProject_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_cellline_proteins.fa \
-    --filter_column "Sample name" \
+    --clinical_sample_file cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz \
+    --filter_column PRIMARY_SITE \
     --split_by_filter_column
 ```
 
 ### 4d. cBioPortal study-specific database
 
 cBioPortal hosts mutation data from thousands of cancer genomics studies.
-Generate a protein database from a specific study:
+The cBioPortal API returns **RefSeq** transcript IDs (`NM_...`), so the
+`--input_fasta` file must also use RefSeq IDs. Use `ncbi-downloader --generate-transcripts`
+to produce the transcript FASTA with `CDS=` coordinate and `gene_biotype=` headers required
+for biotype filtering. Both GRCh37 and GRCh38 studies are supported.
+
+By default, only `protein_coding` transcripts are translated. Pass
+`--include_biotypes all` to include all biotypes (enables 3-frame translation for
+transcripts without a `CDS=` header). `Nonsense_Mutation` variants are excluded by default;
+pass `--exclude_variant_classifications ""` to override.
+
+Use `--workers N` to parallelise the translation phase across N CPU cores, beneficial
+for large pan-cancer studies with large number of mutations.
+
+#### GRCh37 study (e.g. TCGA PanCancer Atlas 2018)
 
 ```bash
-# List available studies
-pgatk cbioportal-downloader --list_studies
-
-# Download a study
+# Download a GRCh37 study
 pgatk cbioportal-downloader \
     -d brca_tcga_pan_can_atlas_2018 \
     -o cbioportal_data
 
-# Download ENSEMBL CDS (hg19 -- cBioPortal uses GRCh37)
-pgatk ensembl-downloader \
-    -t 9606 --grch37 -o ensembl_hg19 \
-    --skip_vcf --skip_gtf --skip_protein \
-    --skip_ncrna --skip_cdna --skip_dna
+# Download RefSeq GRCh37 reference and generate transcript FASTA (run once)
+pgatk ncbi-downloader \
+    --grch37 \
+    --generate-transcripts \
+    -o ncbi_grch37
+
+# Translate mutations (--gff provides coordinate fallback when HGVSc is absent)
+pgatk cbioportal-to-proteindb \
+    --input_mutation cbioportal_data/brca_tcga_pan_can_atlas_2018/data_mutations.txt \
+    --input_fasta ncbi_grch37/transcripts.fa \
+    --gff ncbi_grch37/GRCh37_latest_genomic.gff \
+    --output_db brca_tcga_proteins.fa \
+    --workers 8
+```
+
+#### GRCh38 study (e.g. TCGA GDC reprocessed)
+
+```bash
+# Download a GRCh38 study
+pgatk cbioportal-downloader \
+    -d brca_tcga_gdc \
+    -o cbioportal_data
+
+# Download RefSeq GRCh38 reference and generate transcript FASTA (run once)
+pgatk ncbi-downloader \
+    --generate-transcripts \
+    -o ncbi_grch38
 
 # Translate mutations
 pgatk cbioportal-to-proteindb \
-    --input_mutation cbioportal_data/data_mutations_mskcc.txt \
-    --input_cds ensembl_hg19/Homo_sapiens.GRCh37.cds.all.fa.gz \
-    --output_db brca_tcga_proteins.fa
+    --input_mutation cbioportal_data/brca_tcga_gdc/data_mutations.txt \
+    --input_fasta ncbi_grch38/transcripts.fa \
+    --gff ncbi_grch38/GRCh38_latest_genomic.gff \
+    --output_db brca_tcga_gdc_proteins.fa \
+    --workers 8
 ```
+
+#### Per-cancer-type split (tissue-specific databases)
+
+Pass `--split_by_filter_column` together with `--clinical_sample_file` to generate
+one FASTA per cancer type alongside the combined output. The clinical sample file
+(`data_clinical_sample.txt`) ships with every cBioPortal study and maps each
+`SAMPLE_ID` to its `CANCER_TYPE`.
+
+```bash
+pgatk cbioportal-to-proteindb \
+    --input_mutation cbioportal_data/brca_tcga_pan_can_atlas_2018/data_mutations.txt \
+    --input_fasta ncbi_grch37/transcripts.fa \
+    --gff ncbi_grch37/GRCh37_latest_genomic.gff \
+    --clinical_sample_file cbioportal_data/brca_tcga_pan_can_atlas_2018/data_clinical_sample.txt \
+    --split_by_filter_column \
+    --output_db brca_tcga_proteins.fa \
+    --workers 8
+```
+
+This writes `brca_tcga_proteins.fa` (all mutations) plus one `brca_tcga_proteins_<CancerType>.fa`
+per group, e.g. `brca_tcga_proteins_BreastCancer.fa`.
 
 ### 4e. Combined cancer database for immunopeptidomics
 
 For HLA immunopeptidomics / neoantigen discovery, a broad mutation database
-maximizes the chance of detecting mutant HLA-presented peptides. Studies have
-shown that COSMIC-derived databases can identify 5x more mutant immunopeptides
-than patient WES alone. Combine COSMIC with ClinVar:
+maximizes the chance of detecting mutant HLA-presented peptides. COSMIC-derived
+databases have been shown to identify 5x more mutant HLA-I immunopeptides than
+patient WES alone ([Wang et al., *J Transl Med* 2024](https://doi.org/10.1186/s12967-023-04821-0)).
+Combine COSMIC with ClinVar:
 
 ```bash
 # Generate COSMIC mutations
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_proteins.fa
 
-# Generate ClinVar mutations
+# Generate ClinVar mutations (transcripts.fa generated via gffread -F; see USE CASE 4)
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf.gz \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_proteins.fa
 
 # Extract variant-unique peptides (undigested -- HLA peptides are not tryptic)
@@ -468,14 +682,14 @@ pgatk clinvar-to-proteindb \
 cat cosmic_proteins.fa clinvar_proteins.fa > neoantigen_candidates.fa
 
 pgatk generate-decoy \
-    --input neoantigen_candidates.fa \
-    --output neoantigen_target_decoy.fa \
+    --input_database neoantigen_candidates.fa \
+    --output_database neoantigen_target_decoy.fa \
     --method decoypyrat
 ```
 
 ---
 
-## 5. Patient-Specific Database from WGS/WES
+## USE CASE 6: Patient-Specific Database from WGS/WES
 
 When matched whole-genome or whole-exome sequencing data is available for
 a sample, build a personalized protein database from the patient's own
@@ -530,24 +744,24 @@ pgatk vcf-to-proteindb \
 
 ---
 
-## 6. Novel ORF and Micropeptide Discovery
+## USE CASE 7: Novel ORF and Micropeptide Discovery
 
 Proteogenomics is a key approach for discovering novel coding regions: small
 open reading frames (smORFs), micropeptides from lncRNAs, pseudogene-encoded
 proteins, and alternative reading frames. Studies have found that non-canonical
 peptides can account for over 5% of total identifications.
 
-### lincRNA-derived proteins
+### lncRNA-derived proteins
 
-Long intergenic non-coding RNAs (lincRNAs) can encode small proteins. Translate
+Long intergenic non-coding RNAs (lncRNAs) can encode small proteins. Translate
 them in three reading frames:
 
 ```bash
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
-    --output_proteindb lincRNA_proteins.fa \
-    --var_prefix lincRNA_ \
-    --include_biotypes lincRNA \
+    --output_proteindb lncRNA_proteins.fa \
+    --protein_prefix lncRNA_ \
+    --include_biotypes lncRNA \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
@@ -560,7 +774,7 @@ Some pseudogenes are transcribed and may produce functional peptides:
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb pseudogene_proteins.fa \
-    --var_prefix pseudogene_ \
+    --protein_prefix pseudogene_ \
     --include_biotypes processed_pseudogene,transcribed_processed_pseudogene,translated_processed_pseudogene \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -575,7 +789,7 @@ discover upstream ORFs (uORFs), overlapping ORFs, and downstream ORFs:
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb altorf_proteins.fa \
-    --var_prefix altorf_ \
+    --protein_prefix altorf_ \
     --include_biotypes altORFs \
     --skip_including_all_cds
 ```
@@ -586,7 +800,7 @@ pgatk dnaseq-to-proteindb \
 pgatk dnaseq-to-proteindb \
     --input_fasta transcripts.fa \
     --output_proteindb antisense_proteins.fa \
-    --var_prefix antisense_ \
+    --protein_prefix antisense_ \
     --include_biotypes antisense,antisense_RNA \
     --num_orfs 3 \
     --skip_including_all_cds
@@ -598,15 +812,15 @@ Combine all non-canonical sources with the canonical proteome:
 
 ```bash
 cat canonical_proteins.fa \
-    lincRNA_proteins.fa \
+    lncRNA_proteins.fa \
     pseudogene_proteins.fa \
     altorf_proteins.fa \
     antisense_proteins.fa \
     > novel_orf_target.fa
 
 pgatk generate-decoy \
-    --input novel_orf_target.fa \
-    --output novel_orf_target_decoy.fa \
+    --input_database novel_orf_target.fa \
+    --output_database novel_orf_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -616,7 +830,7 @@ pgatk generate-decoy \
 
     ```bash
     pgatk digest-mutant-protein \
-        --input lincRNA_proteins.fa,pseudogene_proteins.fa,altorf_proteins.fa \
+        --input lncRNA_proteins.fa,pseudogene_proteins.fa,altorf_proteins.fa \
         --fasta canonical_proteins.fa \
         --output novel_unique_peptides.fa
     ```
@@ -720,8 +934,8 @@ pgatk dnaseq-to-proteindb \
 
 ```bash
 pgatk generate-decoy \
-    --input metagenome_proteins.fa \
-    --output metagenome_target_decoy.fa \
+    --input_database metagenome_proteins.fa \
+    --output_database metagenome_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -759,8 +973,8 @@ pgatk dnaseq-to-proteindb \
 cat canonical_proteins.fa long_read_proteins.fa > lr_target.fa
 
 pgatk generate-decoy \
-    --input lr_target.fa \
-    --output lr_target_decoy.fa \
+    --input_database lr_target.fa \
+    --output_database lr_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -797,16 +1011,13 @@ pgatk supports any species available in ENSEMBL. For example, rice
 ```bash
 pgatk ensembl-downloader \
     -t 39947 \
+    --generate-transcripts \
     -o ensembl_rice
 ```
 
-### Step 2 -- Generate transcript sequences and canonical proteome
+### Step 2 -- Generate canonical proteome
 
 ```bash
-gffread -F -w ensembl_rice/transcripts.fa \
-    -g ensembl_rice/genome.fa \
-    ensembl_rice/Oryza_sativa.IRGSP-1.0.*.gtf.gz
-
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_rice/transcripts.fa \
     --output_proteindb rice_canonical.fa
@@ -837,8 +1048,8 @@ pgatk dnaseq-to-proteindb \
 cat rice_canonical.fa rice_3frame.fa > rice_target.fa
 
 pgatk generate-decoy \
-    --input rice_target.fa \
-    --output rice_target_decoy.fa \
+    --input_database rice_target.fa \
+    --output_database rice_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -858,13 +1069,8 @@ pgatk map-peptide2genome \
 For model organisms like mouse (*Mus musculus*, taxonomy 10090):
 
 ```bash
-# Download
-pgatk ensembl-downloader -t 10090 -o ensembl_mouse
-
-# Generate transcript sequences
-gffread -F -w ensembl_mouse/transcripts.fa \
-    -g ensembl_mouse/genome.fa \
-    ensembl_mouse/Mus_musculus.GRCm39.*.gtf.gz
+# Download and generate transcript sequences
+pgatk ensembl-downloader -t 10090 --generate-transcripts -o ensembl_mouse
 
 # Canonical + variant proteins
 pgatk dnaseq-to-proteindb \
@@ -880,8 +1086,8 @@ pgatk vcf-to-proteindb \
 # Combine and generate decoy
 cat mouse_canonical.fa mouse_variants.fa > mouse_target.fa
 pgatk generate-decoy \
-    --input mouse_target.fa \
-    --output mouse_target_decoy.fa \
+    --input_database mouse_target.fa \
+    --output_database mouse_target_decoy.fa \
     --method decoypyrat
 ```
 
@@ -928,25 +1134,17 @@ to maximize the discovery of non-canonical peptides.
 ### Step 1 -- Download all data sources
 
 ```bash
-# ENSEMBL (canonical + population variants)
-pgatk ensembl-downloader -t 9606 -o ensembl_data
+# ENSEMBL (canonical + population variants) + transcript sequences
+pgatk ensembl-downloader -t 9606 --generate-transcripts -o ensembl_data
 
-# NCBI / ClinVar
-pgatk ncbi-downloader -o ncbi_data
+# NCBI / ClinVar + transcript sequences with CDS= headers
+pgatk ncbi-downloader --generate-transcripts -o ncbi_clinvar
 
 # COSMIC (requires account)
 pgatk cosmic-downloader -u user@example.com -p password -o cosmic_data
 ```
 
-### Step 2 -- Prepare transcript sequences
-
-```bash
-gffread -F -w ensembl_data/transcripts.fa \
-    -g ensembl_data/genome.fa \
-    ensembl_data/Homo_sapiens.GRCh38.*.gtf.gz
-```
-
-### Step 3 -- Generate all protein databases
+### Step 2 -- Generate all protein databases
 
 ```bash
 # Canonical proteins
@@ -963,24 +1161,24 @@ pgatk vcf-to-proteindb \
 
 # ClinVar clinical variants
 pgatk clinvar-to-proteindb \
-    --vcf ncbi_data/clinvar.vcf.gz \
-    --gtf ncbi_data/GRCh38_latest_genomic.gtf.gz \
-    --fasta ncbi_data/GRCh38_latest_rna.fna.gz \
-    --assembly-report ncbi_data/GRCh38_latest_assembly_report.txt \
+    --vcf ncbi_clinvar/clinvar.vcf.gz \
+    --gff ncbi_clinvar/GRCh38_latest_genomic.gff \
+    --fasta ncbi_clinvar/transcripts.fa \
+    --assembly-report ncbi_clinvar/GRCh38_latest_assembly_report.txt \
     --output clinvar_variants.fa
 
 # COSMIC somatic mutations
 pgatk cosmic-to-proteindb \
-    --input_mutation cosmic_data/CosmicMutantExport.tsv.gz \
-    --input_genes cosmic_data/All_COSMIC_Genes.fasta.gz \
+    --input_mutation cosmic_data/Cosmic_GenomeScreensMutant_v103_GRCh38.tsv.gz \
+    --input_genes cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz \
     --output_db cosmic_variants.fa
 
-# Non-coding RNA (lincRNA)
+# Non-coding RNA (lncRNA)
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_data/transcripts.fa \
-    --output_proteindb lincRNA.fa \
-    --var_prefix lincRNA_ \
-    --include_biotypes lincRNA \
+    --output_proteindb lncRNA.fa \
+    --protein_prefix lncRNA_ \
+    --include_biotypes lncRNA \
     --num_orfs 3 \
     --skip_including_all_cds
 
@@ -988,25 +1186,35 @@ pgatk dnaseq-to-proteindb \
 pgatk dnaseq-to-proteindb \
     --input_fasta ensembl_data/transcripts.fa \
     --output_proteindb pseudogene.fa \
-    --var_prefix pseudogene_ \
+    --protein_prefix pseudogene_ \
     --include_biotypes processed_pseudogene,transcribed_processed_pseudogene \
+    --num_orfs 3 \
+    --skip_including_all_cds
+
+# Putative proteins (three-frame translation of all protein-coding transcripts)
+pgatk dnaseq-to-proteindb \
+    --input_fasta ensembl_data/transcripts.fa \
+    --output_proteindb putative.fa \
+    --protein_prefix putative_ \
+    --include_biotypes protein_coding \
     --num_orfs 3 \
     --skip_including_all_cds
 ```
 
-### Step 4 -- Combine all databases
+### Step 3 -- Combine all databases
 
 ```bash
 cat canonical.fa \
     ensembl_variants.fa \
     clinvar_variants.fa \
     cosmic_variants.fa \
-    lincRNA.fa \
+    lncRNA.fa \
+    putative.fa \
     pseudogene.fa \
     > combined_target.fa
 ```
 
-### Step 5 -- Quality check and decoy generation
+### Step 4 -- Quality check and decoy generation
 
 ```bash
 # Filter short sequences and validate
@@ -1017,17 +1225,17 @@ pgatk ensembl-check \
 
 # Add decoy sequences
 pgatk generate-decoy \
-    --input validated_target.fa \
-    --output proteogenomics_target_decoy.fa \
+    --input_database validated_target.fa \
+    --output_database proteogenomics_target_decoy.fa \
     --method decoypyrat \
     --decoy_prefix DECOY_
 ```
 
-### Step 6 (optional) -- Extract unique variant peptides
+### Step 5 (optional) -- Extract unique variant peptides
 
 ```bash
 pgatk digest-mutant-protein \
-    --input ensembl_variants.fa,clinvar_variants.fa,cosmic_variants.fa,lincRNA.fa,pseudogene.fa \
+    --input ensembl_variants.fa,clinvar_variants.fa,cosmic_variants.fa,lncRNA.fa,pseudogene.fa \
     --fasta canonical.fa \
     --output unique_variant_peptides.fa \
     --min-len 7 \

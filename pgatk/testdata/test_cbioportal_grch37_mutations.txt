@@ -1,0 +1,12 @@
+Hugo_Symbol	Entrez_Gene_Id	Center	NCBI_Build	Chromosome	Start_Position	End_Position	Strand	Consequence	Variant_Classification	Variant_Type	Reference_Allele	Tumor_Seq_Allele1	Tumor_Seq_Allele2	dbSNP_RS	dbSNP_Val_Status	Tumor_Sample_Barcode	Matched_Norm_Sample_Barcode	Match_Norm_Seq_Allele1	Match_Norm_Seq_Allele2	Tumor_Validation_Allele1	Tumor_Validation_Allele2	Match_Norm_Validation_Allele1	Match_Norm_Validation_Allele2	Verification_Status	Validation_Status	Mutation_Status	Sequencing_Phase	Sequence_Source	Validation_Method	Score	BAM_File	Sequencer	t_ref_count	t_alt_count	n_ref_count	n_alt_count	HGVSc	HGVSp	HGVSp_Short	Transcript_ID	RefSeq	Protein_position	Codons	Hotspot
+CCT6A	908	.	GRCh37	7	56130450	56130450	+		Splice_Site	SNP	T	T	C			TCGA-3C-AAAU-01									.	.							85	22	122	0			p.X508_splice	NM_001762	NM_001762.3	508		
+CDC20	991	.	GRCh37	1	43827890	43827890	+		Missense_Mutation	SNP	C	C	T			TCGA-3C-AAAU-01									.	.							28	17	53	0			p.H410Y	NM_001255	NM_001255.2	410		
+EP300	2033	.	GRCh37	22	41564592	41564593	+		Frame_Shift_Ins	INS	-	-	AT			TCGA-3C-AAAU-01									.	.							60	20	90	0			p.M1339Ifs*2	NM_001429	NM_001429.3	1338		
+GOLGA2	2801	.	GRCh37	9	131029534	131029534	+		Missense_Mutation	SNP	G	G	A			TCGA-3C-AAAU-01									.	.							108	5	179	0			p.A167V	NM_004486	NM_004486.4	167		
+DDAH1	23576	.	GRCh37	1	85790568	85790568	+		Splice_Site	SNP	T	T	A			TCGA-3C-AAAU-01									.	.							37	8	55	0			p.X200_splice	NM_012137	NM_012137.3	200		
+GARIN3	153745	.	GRCh37	5	156593092	156593092	+		Nonsense_Mutation	SNP	G	G	A			TCGA-3C-AAAU-01									.	.							70	23	98	0			p.R30*	NM_130899	NM_130899.2	30		
+TBX3	6926	.	GRCh37	12	115117378	115117380	+		Frame_Shift_Del	DEL	TAT	TAT	A			TCGA-3C-AALJ-01									.	.							172	72	85	0			p.Y265Lfs*12	NM_016569	NM_016569.3	265		
+PLK2	10769	.	GRCh37	5	57752411	57752412	+		Frame_Shift_Del	DEL	CT	CT	-			TCGA-3C-AALJ-01									.	.							123	61	95	0			p.R387Sfs*3	NM_006622	NM_006622.3	387		
+KHDRBS1	10657	.	GRCh37	1	32495940	32495942	+		In_Frame_Del	DEL	GAG	GAG	-			TCGA-3C-AAAU-01									.	.													p.E143del	NM_006559	NM_006559.3	143		
+FLNB	2317	.	GRCh37	3	58135903	58135904	+		In_Frame_Ins	INS	-	-	CGT			TCGA-3C-AAAU-01									.	.													p.S2107dup	NM_001457	NM_001457.4	2107		
+HNRNPH3	3189	.	GRCh37	10	70101810	70101810	+		Nonstop_Mutation	SNP	G	G	C			TCGA-3C-AAAU-01									.	.													p.*347Sext*32	NM_012207	NM_012207.3	347		

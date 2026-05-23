@@ -87,20 +87,22 @@ def parse_gtf(infile):
     dic = {}
     with open(infile, "r", encoding='utf-8') as infile_object:
         for line in infile_object:
-            if line[0] != "#":  # skip lines commented out
-                row = line.strip().split("\t")
-                if row[2] == "CDS":
-                    attri_list = row[8].split(";")
-                    transID = ""
-                    exon = EXON(start=int(row[3]), end=int(row[4]), chromosome=row[0], strand=row[6])
-                    for attri in attri_list:
-                        if "transcript_id" in attri:
-                            transID = attri.strip().replace("transcript_id ", "").replace('\"', "")
+            # Skip blank lines first — `line[0]` on an empty line raises IndexError.
+            if not line.strip() or line[0] == "#":
+                continue
+            row = line.strip().split("\t")
+            if len(row) > 2 and row[2] == "CDS":
+                attri_list = row[8].split(";")
+                transID = ""
+                exon = EXON(start=int(row[3]), end=int(row[4]), chromosome=row[0], strand=row[6])
+                for attri in attri_list:
+                    if "transcript_id" in attri:
+                        transID = attri.strip().replace("transcript_id ", "").replace('\"', "")
 
-                    if transID not in dic:
-                        dic[transID] = [exon]
-                    else:
-                        dic[transID].append(exon)
+                if transID not in dic:
+                    dic[transID] = [exon]
+                else:
+                    dic[transID].append(exon)
     return dic
 
 
@@ -153,7 +155,6 @@ def map_peptides_to_genome(
 
     pep_dic = {}
     with open(input_file, 'r', encoding='utf-8') as input_stream:
-        # peptide table with two columns, peptide sequence in first column, protein ID in second column
         input_stream.readline()
         for line in input_stream:
             row = line.strip().split("\t")
@@ -188,7 +189,6 @@ def map_peptides_to_genome(
                 exons, pep_trans_start, pep_trans_end
             )
 
-            # handle exceptions
             if pep_chr_start > pep_chr_end:
                 non_mapped_pep += 1
                 continue

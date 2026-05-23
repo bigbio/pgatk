@@ -5,6 +5,7 @@ clinvar_translation:
   proteindb_output_file: "clinvar-peptide-database.fa"
   report_ref_seq: false
   num_orfs: 1
+  workers: 1
 
   # ClinVar-specific filtering
   clinical_significance_exclude:

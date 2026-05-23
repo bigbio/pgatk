@@ -38,6 +38,11 @@ log = logging.getLogger(__name__)
               help="enabling this option causes or variants to be parsed. By default only variants that have not failed any filters will be processed (FILTER column is PASS, None, .) or if the filters are subset of the accepted filters. (default is False)",
               is_flag=True)
 @click.option('--accepted_filters', help="Accepted filters for variant parsing")
+@click.option('-w', '--workers', type=int, default=None,
+              help="Number of worker processes to fan out across. When omitted the "
+                   "value from the config is used (default 1, sequential). The VCF is split "
+                   "into fixed-size variant batches (~50k records each) that may span "
+                   "chromosome boundaries, not per chromosome.")
 @click.pass_context
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,
@@ -45,7 +50,7 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
                      af_field, af_threshold, transcript_str, biotype_str, exclude_biotypes,
                      include_biotypes, consequence_str, exclude_consequences,
                      skip_including_all_cds, include_consequences,
-                     ignore_filters, accepted_filters):
+                     ignore_filters, accepted_filters, workers):
 
     config_data = load_config("ensembl_config", config_file)
 
@@ -105,5 +110,8 @@ def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, t
     if accepted_filters is not None:
         pipeline_arguments[EnsemblDataService.ACCEPTED_FILTERS] = accepted_filters
 
+    if workers is not None:
+        pipeline_arguments[EnsemblDataService.WORKERS] = workers
+
     ensembl_data_service = EnsemblDataService(config_data, pipeline_arguments)
-    ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf)
+    ensembl_data_service.vcf_to_proteindb(vcf, input_fasta, gene_annotations_gtf, workers=workers)

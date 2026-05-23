@@ -30,6 +30,8 @@ from pgatk.commands import digest_mutant_protein as digest_mutant_protein_cmd
 from pgatk.commands import map_peptide2genome as map_peptide2genome_cmd
 from pgatk.commands import clinvar_to_proteindb as clinvar_to_proteindb_cmd
 from pgatk.commands import ncbi_downloader as ncbi_downloader_cmd
+from pgatk.commands import gencode_downloader as gencode_downloader_cmd
+from pgatk.commands import gnomad_vcf_downloader as gnomad_vcf_downloader_cmd
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
@@ -58,6 +60,8 @@ cli.add_command(digest_mutant_protein_cmd.digest_mutant_protein)
 cli.add_command(map_peptide2genome_cmd.map_peptide2genome)
 cli.add_command(clinvar_to_proteindb_cmd.clinvar_to_proteindb)
 cli.add_command(ncbi_downloader_cmd.ncbi_downloader)
+cli.add_command(gencode_downloader_cmd.gencode_downloader)
+cli.add_command(gnomad_vcf_downloader_cmd.gnomad_vcf_downloader)
 
 
 def main():

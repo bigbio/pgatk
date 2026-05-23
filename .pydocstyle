@@ -1,0 +1,6 @@
+[pydocstyle]
+# D211 conflicts with D203 (codebase follows D203: one blank line before class docstring).
+# D213 conflicts with D212 (codebase follows D212: multi-line summary on the first line).
+# Disabling the rules we don't follow stops the mutually-exclusive-pair noise from
+# static analysers (pydocstyle, Codacy).
+add-ignore = D211,D213
