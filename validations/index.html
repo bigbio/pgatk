@@ -1,0 +1,1517 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Python tools for proteogenomics data analysis">
+      
+      
+        <meta name="author" content="BigBio Team">
+      
+      
+        <link rel="canonical" href="https://pgatk.quantms.org/validations/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+    
+    
+      
+        <title>Test Validations - PGATK - ProteoGenomics Analysis ToolKit</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+  
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+  
+  <style>:root{--md-admonition-icon--note:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M1%207.775V2.75C1%201.784%201.784%201%202.75%201h5.025c.464%200%20.91.184%201.238.513l6.25%206.25a1.75%201.75%200%200%201%200%202.474l-5.026%205.026a1.75%201.75%200%200%201-2.474%200l-6.25-6.25A1.75%201.75%200%200%201%201%207.775m1.5%200c0%20.066.026.13.073.177l6.25%206.25a.25.25%200%200%200%20.354%200l5.025-5.025a.25.25%200%200%200%200-.354l-6.25-6.25a.25.25%200%200%200-.177-.073H2.75a.25.25%200%200%200-.25.25ZM6%205a1%201%200%201%201%200%202%201%201%200%200%201%200-2%22/%3E%3C/svg%3E');--md-admonition-icon--abstract:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2.5%201.75v11.5c0%20.138.112.25.25.25h3.17a.75.75%200%200%201%200%201.5H2.75A1.75%201.75%200%200%201%201%2013.25V1.75C1%20.784%201.784%200%202.75%200h8.5C12.216%200%2013%20.784%2013%201.75v7.736a.75.75%200%200%201-1.5%200V1.75a.25.25%200%200%200-.25-.25h-8.5a.25.25%200%200%200-.25.25m13.274%209.537zl-4.557%204.45a.75.75%200%200%201-1.055-.008l-1.943-1.95a.75.75%200%200%201%201.062-1.058l1.419%201.425%204.026-3.932a.75.75%200%201%201%201.048%201.074M4.75%204h4.5a.75.75%200%200%201%200%201.5h-4.5a.75.75%200%200%201%200-1.5M4%207.75A.75.75%200%200%201%204.75%207h2a.75.75%200%200%201%200%201.5h-2A.75.75%200%200%201%204%207.75%22/%3E%3C/svg%3E');--md-admonition-icon--info:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M0%208a8%208%200%201%201%2016%200A8%208%200%200%201%200%208m8-6.5a6.5%206.5%200%201%200%200%2013%206.5%206.5%200%200%200%200-13M6.5%207.75A.75.75%200%200%201%207.25%207h1a.75.75%200%200%201%20.75.75v2.75h.25a.75.75%200%200%201%200%201.5h-2a.75.75%200%200%201%200-1.5h.25v-2h-.25a.75.75%200%200%201-.75-.75M8%206a1%201%200%201%201%200-2%201%201%200%200%201%200%202%22/%3E%3C/svg%3E');--md-admonition-icon--tip:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M3.499.75a.75.75%200%200%201%201.5%200v.996C5.9%202.903%206.793%203.65%207.662%204.376l.24.202c-.036-.694.055-1.422.426-2.163C9.1.873%2010.794-.045%2012.622.26%2014.408.558%2016%201.94%2016%204.25c0%201.278-.954%202.575-2.44%202.734l.146.508.065.22c.203.701.412%201.455.476%202.226.142%201.707-.4%203.03-1.487%203.898C11.714%2014.671%2010.27%2015%208.75%2015h-6a.75.75%200%200%201%200-1.5h1.376a4.5%204.5%200%200%201-.563-1.191%203.84%203.84%200%200%201-.05-2.063%204.65%204.65%200%200%201-2.025-.293.75.75%200%200%201%20.525-1.406c1.357.507%202.376-.006%202.698-.318l.009-.01a.747.747%200%200%201%201.06%200%20.75.75%200%200%201-.012%201.074c-.912.92-.992%201.835-.768%202.586.221.74.745%201.337%201.196%201.621H8.75c1.343%200%202.398-.296%203.074-.836.635-.507%201.036-1.31.928-2.602-.05-.603-.216-1.224-.422-1.93l-.064-.221c-.12-.407-.246-.84-.353-1.29a2.4%202.4%200%200%201-.507-.441%203.1%203.1%200%200%201-.633-1.248.75.75%200%200%201%201.455-.364c.046.185.144.436.31.627.146.168.353.305.712.305.738%200%201.25-.615%201.25-1.25%200-1.47-.95-2.315-2.123-2.51-1.172-.196-2.227.387-2.706%201.345-.46.92-.27%201.774.019%203.062l.042.19.01.05c.348.443.666.949.94%201.553a.75.75%200%201%201-1.365.62c-.553-1.217-1.32-1.94-2.3-2.768L6.7%205.527c-.814-.68-1.75-1.462-2.692-2.619a3.7%203.7%200%200%200-1.023.88c-.406.495-.663%201.036-.722%201.508.116.122.306.21.591.239.388.038.797-.06%201.032-.19a.75.75%200%200%201%20.728%201.31c-.515.287-1.23.439-1.906.373-.682-.067-1.473-.38-1.879-1.193L.75%205.677V5.5c0-.984.48-1.94%201.077-2.664.46-.559%201.05-1.055%201.673-1.353z%22/%3E%3C/svg%3E');--md-admonition-icon--success:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M13.78%204.22a.75.75%200%200%201%200%201.06l-7.25%207.25a.75.75%200%200%201-1.06%200L2.22%209.28a.75.75%200%200%201%20.018-1.042.75.75%200%200%201%201.042-.018L6%2010.94l6.72-6.72a.75.75%200%200%201%201.06%200%22/%3E%3C/svg%3E');--md-admonition-icon--question:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M0%208a8%208%200%201%201%2016%200A8%208%200%200%201%200%208m8-6.5a6.5%206.5%200%201%200%200%2013%206.5%206.5%200%200%200%200-13M6.92%206.085h.001a.749.749%200%201%201-1.342-.67c.169-.339.436-.701.849-.977C6.845%204.16%207.369%204%208%204a2.76%202.76%200%200%201%201.637.525c.503.377.863.965.863%201.725%200%20.448-.115.83-.329%201.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6%206%200%200%200-.26.16%201%201%200%200%200-.276.245.75.75%200%200%201-1.248-.832c.184-.264.42-.489.692-.661q.154-.1.313-.195l.007-.004c.1-.061.182-.11.258-.161a1%201%200%200%200%20.277-.245C8.96%206.514%209%206.427%209%206.25a.61.61%200%200%200-.262-.525A1.27%201.27%200%200%200%208%205.5c-.369%200-.595.09-.74.187a1%201%200%200%200-.34.398M9%2011a1%201%200%201%201-2%200%201%201%200%200%201%202%200%22/%3E%3C/svg%3E');--md-admonition-icon--warning:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M6.457%201.047c.659-1.234%202.427-1.234%203.086%200l6.082%2011.378A1.75%201.75%200%200%201%2014.082%2015H1.918a1.75%201.75%200%200%201-1.543-2.575Zm1.763.707a.25.25%200%200%200-.44%200L1.698%2013.132a.25.25%200%200%200%20.22.368h12.164a.25.25%200%200%200%20.22-.368Zm.53%203.996v2.5a.75.75%200%200%201-1.5%200v-2.5a.75.75%200%200%201%201.5%200M9%2011a1%201%200%201%201-2%200%201%201%200%200%201%202%200%22/%3E%3C/svg%3E');--md-admonition-icon--failure:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M2.344%202.343za8%208%200%200%201%2011.314%2011.314A8.002%208.002%200%200%201%20.234%2010.089a8%208%200%200%201%202.11-7.746m1.06%2010.253a6.5%206.5%200%201%200%209.108-9.275%206.5%206.5%200%200%200-9.108%209.275M6.03%204.97%208%206.94l1.97-1.97a.749.749%200%200%201%201.275.326.75.75%200%200%201-.215.734L9.06%208l1.97%201.97a.749.749%200%200%201-.326%201.275.75.75%200%200%201-.734-.215L8%209.06l-1.97%201.97a.749.749%200%200%201-1.275-.326.75.75%200%200%201%20.215-.734L6.94%208%204.97%206.03a.75.75%200%200%201%20.018-1.042.75.75%200%200%201%201.042-.018%22/%3E%3C/svg%3E');--md-admonition-icon--danger:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M9.504.43a1.516%201.516%200%200%201%202.437%201.713L10.415%205.5h2.123c1.57%200%202.346%201.909%201.22%203.004l-7.34%207.142a1.25%201.25%200%200%201-.871.354h-.302a1.25%201.25%200%200%201-1.157-1.723L5.633%2010.5H3.462c-1.57%200-2.346-1.909-1.22-3.004zm1.047%201.074L3.286%208.571A.25.25%200%200%200%203.462%209H6.75a.75.75%200%200%201%20.694%201.034l-1.713%204.188%206.982-6.793A.25.25%200%200%200%2012.538%207H9.25a.75.75%200%200%201-.683-1.06l2.008-4.418.003-.006-.004-.009-.006-.006-.008-.001q-.005%200-.009.004%22/%3E%3C/svg%3E');--md-admonition-icon--bug:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M4.72.22a.75.75%200%200%201%201.06%200l1%20.999a3.5%203.5%200%200%201%202.441%200l.999-1a.748.748%200%200%201%201.265.332.75.75%200%200%201-.205.729l-.775.776c.616.63.995%201.493.995%202.444v.327q0%20.15-.025.292c.408.14.764.392%201.029.722l1.968-.787a.75.75%200%200%201%20.556%201.392L13%207.258V9h2.25a.75.75%200%200%201%200%201.5H13v.5q-.002.615-.141%201.186l2.17.868a.75.75%200%200%201-.557%201.392l-2.184-.873A5%205%200%200%201%208%2016a5%205%200%200%201-4.288-2.427l-2.183.873a.75.75%200%200%201-.558-1.392l2.17-.868A5%205%200%200%201%203%2011v-.5H.75a.75.75%200%200%201%200-1.5H3V7.258L.971%206.446a.75.75%200%200%201%20.558-1.392l1.967.787c.265-.33.62-.583%201.03-.722a1.7%201.7%200%200%201-.026-.292V4.5c0-.951.38-1.814.995-2.444L4.72%201.28a.75.75%200%200%201%200-1.06m.53%206.28a.75.75%200%200%200-.75.75V11a3.5%203.5%200%201%200%207%200V7.25a.75.75%200%200%200-.75-.75ZM6.173%205h3.654A.17.17%200%200%200%2010%204.827V4.5a2%202%200%201%200-4%200v.327c0%20.096.077.173.173.173%22/%3E%3C/svg%3E');--md-admonition-icon--example:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M5%205.782V2.5h-.25a.75.75%200%200%201%200-1.5h6.5a.75.75%200%200%201%200%201.5H11v3.282l3.666%205.76C15.619%2013.04%2014.543%2015%2012.767%2015H3.233c-1.776%200-2.852-1.96-1.899-3.458Zm-2.4%206.565a.75.75%200%200%200%20.633%201.153h9.534a.75.75%200%200%200%20.633-1.153L12.225%2010.5h-8.45ZM9.5%202.5h-3V6c0%20.143-.04.283-.117.403L4.73%209h6.54L9.617%206.403A.75.75%200%200%201%209.5%206Z%22/%3E%3C/svg%3E');--md-admonition-icon--quote:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M1.75%202.5h10.5a.75.75%200%200%201%200%201.5H1.75a.75.75%200%200%201%200-1.5m4%205h8.5a.75.75%200%200%201%200%201.5h-8.5a.75.75%200%200%201%200-1.5m0%205h8.5a.75.75%200%200%201%200%201.5h-8.5a.75.75%200%200%201%200-1.5M2.5%207.75v6a.75.75%200%200%201-1.5%200v-6a.75.75%200%200%201%201.5%200%22/%3E%3C/svg%3E');}</style>
+
+
+
+    
+    
+      
+    
+    
+      
+    
+    
+      <link rel="stylesheet" href="../stylesheets/pgatk-theme.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#test-validations" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="PGATK - ProteoGenomics Analysis ToolKit" class="md-header__button md-logo" aria-label="PGATK - ProteoGenomics Analysis ToolKit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            PGATK - ProteoGenomics Analysis ToolKit
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Test Validations
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="blue" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/bigbio/pgatk" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bigbio/pgatk
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../introduction/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Introduction
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../installation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Installation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../pgatk-cli/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  pgatk CLI
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../use-cases/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Use Cases
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../formats/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  File Formats
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../changelog/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Changelog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../support/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Support
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="PGATK - ProteoGenomics Analysis ToolKit" class="md-nav__button md-logo" aria-label="PGATK - ProteoGenomics Analysis ToolKit" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    PGATK - ProteoGenomics Analysis ToolKit
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/bigbio/pgatk" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    bigbio/pgatk
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../introduction/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Introduction
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pgatk-cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    pgatk CLI
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../use-cases/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use Cases
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File Formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="test-validations">Test Validations<a class="headerlink" href="#test-validations" title="Anchor link to this section">&para;</a></h1>
+<p>This page documents the validation strategy for PGATK, describing what the automated tests verify and how to independently confirm their correctness.</p>
+<h1 id="1-variant-translation-tests-cosmic">1. Variant Translation Tests - COSMIC<a class="headerlink" href="#1-variant-translation-tests-cosmic" title="Anchor link to this section">&para;</a></h1>
+<h2 id="11-validation-per-variant-type-test_variant_types_hgvspy">1.1 Validation per variant type (<code>test_variant_types_hgvs.py</code>)<a class="headerlink" href="#11-validation-per-variant-type-test_variant_types_hgvspy" title="Anchor link to this section">&para;</a></h2>
+<p>These tests verify that <code>CancerGenomesService.get_mut_pro_seq()</code> correctly processes all 18 Sequence Ontology (SO) variant types present in COSMIC v103 mutation files, following <a href="https://hgvs-nomenclature.org/stable/">HGVS nomenclature rules</a>.</p>
+<p>Each test uses a real mutation from <code>Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv</code> paired with the matching CDS from <code>Cosmic_Genes_v103_GRCh38.fasta</code>.</p>
+<hr />
+<h3 id="actionable-variant-types">Actionable Variant Types<a class="headerlink" href="#actionable-variant-types" title="Anchor link to this section">&para;</a></h3>
+<p>These types are expected to produce a non-empty mutant protein sequence. Tests assert biologically specific properties, not just that the result is non-empty.</p>
+<table>
+<thead>
+<tr>
+<th>Variant Type</th>
+<th>Gene</th>
+<th>Mutation</th>
+<th>HGVS Rule Verified</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>missense_variant</code></td>
+<td>EZH2</td>
+<td>c.656C&gt;T p.S219F</td>
+<td>Protein length unchanged; position 218 (0-indexed) is <code>F</code>; all other residues identical to WT</td>
+</tr>
+<tr>
+<td><code>stop_gained</code></td>
+<td>FCGR3B</td>
+<td>c.394A&gt;T p.K132*</td>
+<td>Position 131 (0-indexed) is <code>*</code> (stop codon) in the translated output</td>
+</tr>
+<tr>
+<td><code>inframe_deletion</code></td>
+<td>CTNNB1</td>
+<td>c.104_124del p.T35_G41del</td>
+<td>Protein shortened by exactly 7 AA (21 nt deleted ÷ 3); residues before position 35 unchanged</td>
+</tr>
+<tr>
+<td><code>inframe_insertion</code> (dup)</td>
+<td>SMAP1</td>
+<td>c.1226_1228dup p.I409dup</td>
+<td>Protein lengthened by exactly 1 AA (3 nt duplicated ÷ 3); residues before the dup site unchanged</td>
+</tr>
+<tr>
+<td><code>protein_altering_variant</code></td>
+<td>NF2</td>
+<td>c.252_262delinsCT p.L85_K88delins*</td>
+<td>Result is non-empty and differs from the wild-type sequence</td>
+</tr>
+<tr>
+<td><code>frameshift_variant</code></td>
+<td>MEN1</td>
+<td>c.292del p.R98Efs*21</td>
+<td>Non-empty translated sequence produced from the frame-shifted CDS</td>
+</tr>
+<tr>
+<td><code>start_lost</code></td>
+<td>INPP4B</td>
+<td>c.3G&gt;T p.M1?</td>
+<td>First AA is not Met; it is Ile (<code>ATG→ATT</code> via the DNA substitution path)</td>
+</tr>
+<tr>
+<td><code>stop_lost</code></td>
+<td>MYD88</td>
+<td>c.611_613delinsGCGGCCCCC p.D204_*205delinsGGPR</td>
+<td>Mutant protein is longer than WT (stop codon removed; read-through occurs)</td>
+</tr>
+<tr>
+<td><code>stop_retained_variant</code></td>
+<td>EPHA3</td>
+<td>c.2756G&gt;A p.*919=</td>
+<td>Length unchanged; last residue is still <code>*</code> (<code>TGA→TAA</code>, both stop codons)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="filtered-skipped-variant-types">Filtered / Skipped Variant Types<a class="headerlink" href="#filtered-skipped-variant-types" title="Anchor link to this section">&para;</a></h3>
+<p>These types must produce an empty string <code>""</code>. There are two mechanisms:</p>
+<ul>
+<li><strong>Pre-filter</strong> (<code>cosmic_to_proteindb</code>): <code>synonymous_variant</code> rows are discarded before <code>get_mut_pro_seq</code> is called.</li>
+<li><strong><code>p.?</code> guard</strong> (<code>get_mut_pro_seq</code>): When <code>aa_mut == "p.?"</code>, the function immediately returns <code>""</code>. All intronic, UTR, and splice variants in COSMIC v103 carry <code>p.?</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Variant Type</th>
+<th>Mechanism</th>
+<th>Source Mutation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>synonymous_variant</code></td>
+<td>Pre-filter in <code>cosmic_to_proteindb</code></td>
+<td>Filter logic validated directly on the SO term strings</td>
+</tr>
+<tr>
+<td><code>intron_variant</code></td>
+<td><code>p.?</code> guard</td>
+<td>RAD51C c.145+706C&gt;T p.?</td>
+</tr>
+<tr>
+<td><code>3_prime_UTR_variant</code></td>
+<td><code>p.?</code> guard</td>
+<td>SUFU c.*2816G&gt;A p.?</td>
+</tr>
+<tr>
+<td><code>5_prime_UTR_variant</code></td>
+<td><code>p.?</code> guard</td>
+<td>PSMD13 c.-20C&gt;T p.?</td>
+</tr>
+<tr>
+<td><code>coding_sequence_variant</code></td>
+<td><code>p.?</code> guard (also has intronic offset <code>+</code>)</td>
+<td>OAS2 c.2157+2A&gt;G p.?</td>
+</tr>
+<tr>
+<td><code>splice_acceptor_variant</code></td>
+<td><code>p.?</code> guard</td>
+<td>TSHR c.171-1G&gt;A p.?</td>
+</tr>
+<tr>
+<td><code>splice_donor_variant</code></td>
+<td><code>p.?</code> guard</td>
+<td>PTCH1 c.3306+2T&gt;G p.?</td>
+</tr>
+<tr>
+<td><code>splice_region_variant</code> (composite)</td>
+<td>Fires missense branch when combined with <code>missense_variant</code></td>
+<td>EZH2 c.656C&gt;T p.S219F with type <code>missense_variant,splice_region_variant</code></td>
+</tr>
+<tr>
+<td><code>incomplete_terminal_codon_variant</code></td>
+<td><code>p.?</code> guard (absent from v103 targeted-screen data; tested by convention)</td>
+<td>c.2213_2214insA p.?</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>splice_region_variant</code> only appears in COSMIC v103 as part of a composite type string (e.g. <code>missense_variant,splice_region_variant</code>). When combined with an actionable type, the actionable type's branch fires first and the mutation is processed normally.</p>
+</div>
+<hr />
+<h2 id="12-independent-validation-of-the-tests">1.2 Independent Validation of the Tests<a class="headerlink" href="#12-independent-validation-of-the-tests" title="Anchor link to this section">&para;</a></h2>
+<h3 id="1-re-derive-cds-sequences-from-the-fasta">1. Re-derive CDS sequences from the FASTA<a class="headerlink" href="#1-re-derive-cds-sequences-from-the-fasta" title="Anchor link to this section">&para;</a></h3>
+<p>The CDS strings embedded in the test file came from <code>Cosmic_Genes_v103_GRCh38.fasta</code>. To verify a gene (e.g. EZH2):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>python3<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;EOF&#39;</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="s">from Bio import SeqIO</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="s">fasta = &quot;use-cases/cosmic_data/Cosmic_Genes_v103_GRCh38.fasta&quot;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="s">for rec in SeqIO.parse(fasta, &quot;fasta&quot;):</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="s">    if &quot;EZH2&quot; in rec.id and &quot;ENST00000483967&quot; in rec.id:</span>
+</span><span id="__span-0-6"><a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="s">        print(f&quot;len={len(rec.seq)}&quot;)</span>
+</span><span id="__span-0-7"><a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="s">        print(f&quot;prot[218]={rec.seq.translate(to_stop=False)[218]}&quot;)</span>
+</span><span id="__span-0-8"><a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="s">        print(rec.seq[:50])</span>
+</span><span id="__span-0-9"><a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="s">EOF</span>
+</span></code></pre></div>
+<p>Expected: <code>len=2211</code>, <code>prot[218]=S</code> (which becomes <code>F</code> after the c.656C&gt;T substitution).</p>
+<h3 id="2-confirm-mutations-exist-in-the-cosmic-tsv">2. Confirm mutations exist in the COSMIC TSV<a class="headerlink" href="#2-confirm-mutations-exist-in-the-cosmic-tsv" title="Anchor link to this section">&para;</a></h3>
+<p>Every test documents its source mutation. To verify a mutation is real and not fabricated:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>grep<span class="w"> </span><span class="s2">&quot;EZH2&quot;</span><span class="w"> </span>use-cases/cosmic_data/Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv<span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="w">  </span>grep<span class="w"> </span><span class="s2">&quot;c.656C&gt;T&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="w">  </span>cut<span class="w"> </span>-f1-10
+</span></code></pre></div>
+<h3 id="3-manually-compute-expected-protein-output">3. Manually compute expected protein output<a class="headerlink" href="#3-manually-compute-expected-protein-output" title="Anchor link to this section">&para;</a></h3>
+<p>For the missense test, manually apply the substitution and translate:</p>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Bio.Seq</span><span class="w"> </span><span class="kn">import</span> <span class="n">Seq</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">cds</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;ATGGGCCAGACTGGGAAGAAATCTGAGAAGGGACCAGTTTGTTGGCGGAAGCGTGTAAAATCAGAGTACATGCGACTGAGACAGCTCAAGAGGTTCAGACGAGCTGATGAAGTAAAGAGTATGTTTAGTTCCAATCGTCAGAAAATT</span>
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="s1">TTGGAAAGAACGGAAATCTTAAACCAAGAATGGAAACAGCGAAGGATACAGCCTGTGCACATCCTGACTTCTTGTTCGGTGACCAGTGACTTGGATTTTCCAACACAAGTCATCCCATTAAAGACTCTGAATGCAGTTGCTTCAGTACCCATAATG</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s1">TATTCTTGGTCTCCCCTACAGCAGAATTTTATGGTGGAAGATGAAACTGTTTTACATAACATTCCTTATATGGGAGATGAAGTTTTAGATCAGGATGGTACTTTCATTGAAGAACTAATAAAAAATTATGATGGGAAAGTACACGGGGATAGAGAA</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s1">TGTGGGTTTATAAATGATGAAATTTTTGTGGAGTTGGTGAATGCCCTTGGTCAATATAATGATGATGACGATGATGATGATGGAGACGATCCTGAAGAAAGAGAAGAAAAGCAGAAAGATCTGGAGGATCACCGAGATGATAAAGAAAGCCGCCCA</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s1">CCTCGGAAATTTCCTTCTGATAAAATTTTTGAAGCCATTTCCTCAATGTTTCCAGATAAGGGCACAGCAGAAGAACTAAAGGAAAAATATAAAGAACTCACCGAACAGCAGCTCCCAGGCGCACTTCCTCCTGAATGTACCCCCAACATAGATGGA</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s1">CCAAATGCTAAATCTGTTCAGAGAGAGCAAAGCTTACACTCCTTTCATACGCTTTTCTGTAGGCGATGTTTTAAATATGACTGCTTCCTACATCCTTTTCATGCAACACCCAACACTTATAAGCGGAAGAACACAGAAACAGCTCTAGACAACAAA</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="s1">CCTTGTGGACCACAGTGTTACCAGCATTTGGAGGGAGCAAAGGAGTTTGCTGCTGCTCTCACCGCTGAGCGGATAAAGACCCCACCAAAACGTCCAGGAGGCCGCAGAAGAGGACGGCTTCCCAATAACAGTAGCAGGCCCAGCACCCCCACCATT</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="s1">AATGTGCTGGAATCAAAGGATACAGACAGTGATAGGGAAGCAGGGACTGAAACGGGGGGAGAGAACAATGATAAAGAAGAAGAAGAGAAGAAAGATGAAACTTCGAGCTCCTCTGAAGCAAATTCTCGGTGTCAAACACCAATAAAGATGAAGCCA</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="s1">AATATTGAACCTCCTGAGAATGTGGAGTGGAGTGGTGCTGAAGCCTCAATGTTTAGAGTCCTCATTGGCACTTACTATGACAATTTCTGTGCCATTGCTAGGTTAATTGGGACCAAAACATGTAGACAGGTGTATGAGTTTAGAGTCAAAGAATCT</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="s1">AGCATCATAGCTCCAGCTCCCGCTGAGGATGTGGATACTCCTCCAAGGAAAAAGAAGAGGAAACACCGGTTGTGGGCTGCACACTGCAGAAAGATACAGCTGAAAAAGGACGGCTCCTCTAACCATGTTTACAACTATCAACCCTGTGATCATCCA</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="s1">CGGCAGCCTTGTGACAGTTCGTGCCCTTGTGTGATAGCACAAAATTTTTGTGAAAAGTTTTGTCAATGTAGTTCAGAGTGTCAAAACCGCTTTCCGGGATGCCGCTGCAAAGCACAGTGCAACACCAAGCAGTGCCCGTGCTACCTGGCTGTCCGA</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="s1">GAGTGTGACCCTGACCTCTGTCTTACTTGTGGAGCCGCTGACCATTGGGACAGTAAAAATGTGTCCTGCAAGAACTGCAGTATTCAGCGGGGCTCCAAAAAGCATCTATTGCTGGCACCATCTGACGTGGCAGGCTGGGGGATTTTTATCAAAGAT</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="s1">CCTGTGCAGAAAAATGAATTCATCTCAGAATACTGTGGAGAGATTATTTCTCAAGATGAAGCTGACAGAAGAGGGAAAGTGTATGATAAATACATGTGCAGCTTTCTGTTCAACTTGAACAATGATTTTGTGGTGGATGCAACCCGCAAGGGTAAC</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="s1">AAAATTCGTTTTGCAAATCATTCGGTAAATCCAAACTGCTATGCAAAAGTTATGATGGTTAACGGTGATCACAGGATAGGTATTTTTGCCAAGAGAGCCATCCAGACTGGCGAAGAGCTGTTTTTTGATTACAGATACAGCCAGGCTGATGCCCTG</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="s1">AAGTATGTCGGCATCGAAAGAGAAATGGAAATCCCTTGA&#39;&#39;&#39;</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span><span class="s1">&#39;&#39;</span><span class="p">)</span>  <span class="c1"># EZH2 CDS string</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a>
+</span><span id="__span-2-19"><a id="__codelineno-2-19" name="__codelineno-2-19" href="#__codelineno-2-19"></a><span class="n">seq</span> <span class="o">=</span> <span class="n">Seq</span><span class="p">(</span><span class="n">cds</span><span class="p">)</span>
+</span><span id="__span-2-20"><a id="__codelineno-2-20" name="__codelineno-2-20" href="#__codelineno-2-20"></a><span class="n">wt_prot</span> <span class="o">=</span> <span class="n">seq</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">to_stop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-2-21"><a id="__codelineno-2-21" name="__codelineno-2-21" href="#__codelineno-2-21"></a><span class="nb">print</span><span class="p">(</span><span class="n">wt_prot</span><span class="p">[</span><span class="mi">218</span><span class="p">])</span>   <span class="c1"># &#39;S&#39; — wild-type Serine at position 219</span>
+</span><span id="__span-2-22"><a id="__codelineno-2-22" name="__codelineno-2-22" href="#__codelineno-2-22"></a>
+</span><span id="__span-2-23"><a id="__codelineno-2-23" name="__codelineno-2-23" href="#__codelineno-2-23"></a><span class="c1"># Apply c.656C&gt;T: position 656 is 0-indexed 655</span>
+</span><span id="__span-2-24"><a id="__codelineno-2-24" name="__codelineno-2-24" href="#__codelineno-2-24"></a><span class="n">mut_seq</span> <span class="o">=</span> <span class="n">seq</span><span class="p">[:</span><span class="mi">655</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;T&quot;</span> <span class="o">+</span> <span class="n">seq</span><span class="p">[</span><span class="mi">656</span><span class="p">:]</span>
+</span><span id="__span-2-25"><a id="__codelineno-2-25" name="__codelineno-2-25" href="#__codelineno-2-25"></a><span class="n">mut_prot</span> <span class="o">=</span> <span class="n">mut_seq</span><span class="o">.</span><span class="n">translate</span><span class="p">(</span><span class="n">to_stop</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+</span><span id="__span-2-26"><a id="__codelineno-2-26" name="__codelineno-2-26" href="#__codelineno-2-26"></a><span class="nb">print</span><span class="p">(</span><span class="n">mut_prot</span><span class="p">[</span><span class="mi">218</span><span class="p">])</span>  <span class="c1"># &#39;F&#39; — mutant Phenylalanine</span>
+</span></code></pre></div>
+<hr />
+<h2 id="13-core-unit-tests-test_cosmic_corepy">1.3 Core Unit Tests (<code>test_cosmic_core.py</code>)<a class="headerlink" href="#13-core-unit-tests-test_cosmic_corepy" title="Anchor link to this section">&para;</a></h2>
+<p>14 Unit tests are implemented to verify the internal logic of <code>get_mut_pro_seq()</code> using minimal synthetic sequences (<code>Seq("ATGAAATTT")</code> etc.).</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Coverage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>TestGetMutProSeqDnaBranch</code></td>
+<td>DNA substitution, insertion, single-base deletion, two-position deletion, ambiguous <code>c.?</code> routing to protein branch</td>
+</tr>
+<tr>
+<td><code>TestGetMutProSeqProteinBranch</code></td>
+<td>Missense, nonsense truncation, in-frame insertion, two-position in-frame deletion, single-position in-frame deletion</td>
+</tr>
+<tr>
+<td><code>TestGetMutProSeqEdgeCases</code></td>
+<td>Mutation beyond sequence length, ambiguous <code>p.?</code> returns <code>""</code>, non-alpha last char in aa_mut returns <code>""</code>, DNA ref-allele mismatch returns <code>""</code></td>
+</tr>
+</tbody>
+</table>
+<p>These tests are fast to run and isolate individual code paths without requiring reference files.</p>
+<hr />
+<h1 id="2-cosmic-integration-pipeline-tests">2. COSMIC Integration Pipeline Tests<a class="headerlink" href="#2-cosmic-integration-pipeline-tests" title="Anchor link to this section">&para;</a></h1>
+<h2 id="21-cosmic-v103-schema-and-data-model">2.1 COSMIC v103 Schema and Data Model<a class="headerlink" href="#21-cosmic-v103-schema-and-data-model" title="Anchor link to this section">&para;</a></h2>
+<p>COSMIC v103 introduced two breaking changes from earlier releases:</p>
+<p><strong>Column name changes</strong> — all columns are now <code>UPPERCASE_UNDERSCORE</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Old (v2/v98)</th>
+<th>New (v103)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Gene name</code></td>
+<td><code>GENE_SYMBOL</code></td>
+</tr>
+<tr>
+<td><code>Accession Number</code></td>
+<td><code>TRANSCRIPT_ACCESSION</code></td>
+</tr>
+<tr>
+<td><code>CDS mutation</code></td>
+<td><code>MUTATION_CDS</code></td>
+</tr>
+<tr>
+<td><code>AA Mutation</code></td>
+<td><code>MUTATION_AA</code></td>
+</tr>
+<tr>
+<td><code>Type</code></td>
+<td><code>MUTATION_DESCRIPTION</code></td>
+</tr>
+<tr>
+<td><code>Primary site</code></td>
+<td><em>(moved to Classification file)</em></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tissue-type data architecture</strong> — <code>PRIMARY_SITE</code> (tissue of origin) is no longer a column in the mutation export. It lives in a separate <strong>Classification file</strong> (<code>Cosmic_Classification_Tsv_v103_GRCh38.tar</code>) and is joined via <code>COSMIC_PHENOTYPE_ID</code>:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>mutation_file.COSMIC_PHENOTYPE_ID (e.g. COSO1001)
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a>    → Cosmic_Classification_v103_GRCh38.tsv.COSMIC_PHENOTYPE_ID
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a>    → PRIMARY_SITE (e.g. upper_aerodigestive_tract)
+</span></code></pre></div>
+<p><code>COSMIC_PHENOTYPE_ID</code> is present at column 6 in both <code>Cosmic_CompleteTargetedScreensMutant</code> and <code>Cosmic_GenomeScreensMutant</code> files. No hop through the Sample file is needed.</p>
+<blockquote>
+<p><strong>Note</strong>: The Sample file (<code>Cosmic_Sample_Tsv_v103_GRCh38.tsv</code>) contains 34 columns covering sequencing metadata (<code>SAMPLE_NAME</code>, <code>COSMIC_SAMPLE_ID</code>, <code>TUMOUR_ID</code>, etc.) but does <strong>not</strong> contain <code>PRIMARY_SITE</code>. The Classification file is the authoritative source for tissue and histology.</p>
+</blockquote>
+<hr />
+<h2 id="22-integration-test-test_cosmic_to_proteindb">2.2 Integration Test (<code>test_cosmic_to_proteindb</code>)<a class="headerlink" href="#22-integration-test-test_cosmic_to_proteindb" title="Anchor link to this section">&para;</a></h2>
+<p><strong>Test file</strong>: <code>pgatk/tests/pgatk_tests.py::PgatkRunnerTests::test_cosmic_to_proteindb</code></p>
+<p>The test runs the full <code>cosmic-to-proteindb</code> pipeline end-to-end using small testdata files that mirror the real v103 schema:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>testdata/test_cosmic_mutations.tsv</code></td>
+<td>12 HRAS mutation rows in v103 27-column format; covers <code>missense_variant</code>, <code>stop_gained</code>, <code>inframe_deletion</code>, <code>synonymous_variant</code> (filtered), <code>frameshift_variant</code> (<code>p.?</code>, skipped)</td>
+</tr>
+<tr>
+<td><code>testdata/test_cosmic_genes.fa</code></td>
+<td>HRAS CDS FASTA from <code>Cosmic_Genes_v103_GRCh38.fasta</code></td>
+</tr>
+<tr>
+<td><code>testdata/test_cosmic_classification.tsv</code></td>
+<td>8 rows mapping <code>COSMIC_PHENOTYPE_ID</code> (COSO1001–COSO1008) to <code>PRIMARY_SITE</code>; covers <code>upper_aerodigestive_tract</code>, <code>skin</code>, <code>bone</code>, <code>thyroid</code>, <code>liver</code>, <code>haematopoietic_and_lymphoid_tissue</code></td>
+</tr>
+</tbody>
+</table>
+<p>CLI invocation used in the test:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>cosmic-to-proteindb
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a>  --config_file config/cosmic_config.yaml
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a>  --input_mutation testdata/test_cosmic_mutations.tsv
+</span><span id="__span-4-4"><a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a>  --input_genes testdata/test_cosmic_genes.fa
+</span><span id="__span-4-5"><a id="__codelineno-4-5" name="__codelineno-4-5" href="#__codelineno-4-5"></a>  --output_db testdata/test_cosmic_mutations_proteindb.fa
+</span><span id="__span-4-6"><a id="__codelineno-4-6" name="__codelineno-4-6" href="#__codelineno-4-6"></a>  --clinical_sample_file testdata/test_cosmic_classification.tsv
+</span><span id="__span-4-7"><a id="__codelineno-4-7" name="__codelineno-4-7" href="#__codelineno-4-7"></a>  --filter_column PRIMARY_SITE
+</span><span id="__span-4-8"><a id="__codelineno-4-8" name="__codelineno-4-8" href="#__codelineno-4-8"></a>  --split_by_filter_column
+</span><span id="__span-4-9"><a id="__codelineno-4-9" name="__codelineno-4-9" href="#__codelineno-4-9"></a>  --accepted_values all
+</span></code></pre></div>
+<p>Expected output files (split per <code>PRIMARY_SITE</code>):</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>testdata/test_cosmic_mutations_proteindb_bone.fa
+</span><span id="__span-5-2"><a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>testdata/test_cosmic_mutations_proteindb_liver.fa
+</span><span id="__span-5-3"><a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>testdata/test_cosmic_mutations_proteindb_skin.fa
+</span><span id="__span-5-4"><a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>testdata/test_cosmic_mutations_proteindb_thyroid.fa
+</span><span id="__span-5-5"><a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a>testdata/test_cosmic_mutations_proteindb_upperaerodigestivetract.fa
+</span></code></pre></div>
+<p>The <code>synonymous_variant</code> row (COSO1006) is pre-filtered and produces no output. The <code>frameshift_variant</code> row carrying <code>p.?</code> (COSO1008) is skipped by the <code>p.?</code> guard. The consolidated <code>testdata/test_cosmic_mutations_proteindb.fa</code> contains all non-filtered mutations regardless of tissue type.</p>
+<hr />
+<h2 id="23-clinical_sample_file-cli-option">2.3 <code>--clinical_sample_file</code> CLI Option<a class="headerlink" href="#23-clinical_sample_file-cli-option" title="Anchor link to this section">&para;</a></h2>
+<p>The <code>--clinical_sample_file</code> / <code>-cl</code> option accepts any TSV file that maps a sample/phenotype ID column to the <code>--filter_column</code> value. For COSMIC, this is the Classification file:</p>
+<table>
+<thead>
+<tr>
+<th>Argument</th>
+<th>COSMIC v103 value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--clinical_sample_file</code></td>
+<td><code>Cosmic_Classification_v103_GRCh38.tsv</code> (or <code>.gz</code>)</td>
+</tr>
+<tr>
+<td><code>--filter_column</code></td>
+<td><code>PRIMARY_SITE</code></td>
+</tr>
+<tr>
+<td>Join key used internally</td>
+<td><code>COSMIC_PHENOTYPE_ID</code> (auto-detected for COSMIC)</td>
+</tr>
+</tbody>
+</table>
+<p>For <strong>cBioportal</strong>, the equivalent is the clinical sample file with <code>SAMPLE_ID</code> as the join key — the <code>--clinical_sample_file</code> option uses <code>SAMPLE_ID</code> by default and switches to <code>COSMIC_PHENOTYPE_ID</code> only when invoked via <code>cosmic-to-proteindb</code>.</p>
+<hr />
+<h2 id="24-independent-validation-with-real-cosmic-files">2.4 Independent Validation with Real COSMIC Files<a class="headerlink" href="#24-independent-validation-with-real-cosmic-files" title="Anchor link to this section">&para;</a></h2>
+<p>After downloading COSMIC v103 files into <code>use-cases/use-case2/cosmic_data/</code>, run the pipeline against a subset of real mutations:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="c1"># Extract 500 actionable mutations (skip intronic/UTR/synonymous)</span>
+</span><span id="__span-6-2"><a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a>zcat<span class="w"> </span>use-cases/use-case2/cosmic_data/Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv.gz<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-3"><a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-1<span class="w"> </span>&gt;<span class="w"> </span>/tmp/cosmic_test.tsv
+</span><span id="__span-6-4"><a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>zcat<span class="w"> </span>use-cases/use-case2/cosmic_data/Cosmic_CompleteTargetedScreensMutant_v103_GRCh38.tsv.gz<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-5"><a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-E<span class="w"> </span><span class="s2">&quot;missense_variant|stop_gained|inframe_deletion|inframe_insertion|frameshift&quot;</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-6"><a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="w">  </span><span class="p">|</span><span class="w"> </span>head<span class="w"> </span>-500<span class="w"> </span>&gt;&gt;<span class="w"> </span>/tmp/cosmic_test.tsv
+</span><span id="__span-6-7"><a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>
+</span><span id="__span-6-8"><a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>pgatk<span class="w"> </span>cosmic-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-9"><a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a><span class="w">  </span>--config_file<span class="w"> </span>pgatk/config/cosmic_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-10"><a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a><span class="w">  </span>--input_mutation<span class="w"> </span>/tmp/cosmic_test.tsv<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-11"><a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a><span class="w">  </span>--input_genes<span class="w"> </span>&lt;<span class="o">(</span>zcat<span class="w"> </span>use-cases/use-case2/cosmic_data/Cosmic_Genes_v103_GRCh38.fasta.gz<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-12"><a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a><span class="w">  </span>--output_db<span class="w"> </span>/tmp/cosmic_out.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-13"><a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a><span class="w">  </span>--clinical_sample_file<span class="w"> </span>&lt;<span class="o">(</span>zcat<span class="w"> </span>use-cases/use-case2/cosmic_data/Cosmic_Classification_v103_GRCh38.tsv.gz<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-14"><a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a><span class="w">  </span>--filter_column<span class="w"> </span>PRIMARY_SITE<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-15"><a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="w">  </span>--split_by_filter_column<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-6-16"><a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="w">  </span>--accepted_values<span class="w"> </span>all
+</span></code></pre></div>
+<p>Expected: ~27 per-tissue output files, including canonical COSMIC tissue types (<code>lung</code>, <code>breast</code>, <code>large_intestine</code>, <code>skin</code>, <code>haematopoietic_and_lymphoid_tissue</code>, etc.). FASTA headers follow the format:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a>&gt;COSMIC:GENE_SYMBOL:p.MutAA:SO_term
+</span></code></pre></div>
+<p>To verify the join is working (i.e. phenotype IDs are resolving to tissue names):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># Count sequences per tissue file</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="k">for</span><span class="w"> </span>f<span class="w"> </span><span class="k">in</span><span class="w"> </span>/tmp/cosmic_out_*.fa<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-8-3"><a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$f</span><span class="s2">: </span><span class="k">$(</span>grep<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;^&gt;&#39;</span><span class="w"> </span><span class="nv">$f</span><span class="k">)</span><span class="s2"> sequences&quot;</span>
+</span><span id="__span-8-4"><a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="k">done</span>
+</span></code></pre></div>
+<p>A file named <code>cosmic_out_NS.fa</code> is expected for phenotypes where tissue is not specified in the Classification file — these are retained rather than silently dropped.</p>
+<hr />
+<h1 id="3-variant-translation-tests-ensembl-vcf-to-proteindb">3. Variant Translation Tests - Ensembl vcf-to-proteindb<a class="headerlink" href="#3-variant-translation-tests-ensembl-vcf-to-proteindb" title="Anchor link to this section">&para;</a></h1>
+<h2 id="31-testdata-files">3.1 Testdata Files<a class="headerlink" href="#31-testdata-files" title="Anchor link to this section">&para;</a></h2>
+<p>Small, self-contained testdata covering 10 representative variants across all consequence types. All variants are real (sourced from Ensembl GRCh38.115 release 115, chr22) and involve two genes:</p>
+<ul>
+<li><strong>OR11H1</strong> (<code>ENST00000643195</code>, mRNA, single-exon olfactory receptor gene, CDS 948 nt / 315 AA + stop) — used for all coding consequence types</li>
+<li><strong>BID</strong> (<code>ENST00000550946</code>, ncRNA/retained_intron on chr22) — used for the non-coding transcript example</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>pgatk/testdata/test_ensembl_v2p.vcf</code></td>
+<td>10 variants covering 9 consequence types (Ensembl v115 VCF format)</td>
+</tr>
+<tr>
+<td><code>pgatk/testdata/test_ensembl_v2p.fa</code></td>
+<td>Transcript sequences for ENST00000643195 and ENST00000550946</td>
+</tr>
+<tr>
+<td><code>pgatk/testdata/test_ensembl_v2p.gtf</code></td>
+<td>Gene models for both transcripts (GRCh38.p14)</td>
+</tr>
+<tr>
+<td><code>pgatk/testdata/test_ensembl_v2p_proteindb.fa</code></td>
+<td>Expected output — 10 sequences (7 mRNA + 3 ncRNA frames)</td>
+</tr>
+</tbody>
+</table>
+<p>The wild-type OR11H1 protein (ENST00000643195) used as comparison baseline:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a>MNVSEPNSSFAFVNEFILQGFSCEWTIQIFLFSLFTTTYALTITGNGAIAFVLW...KVLGSSNII*   (316 chars incl. stop)
+</span></code></pre></div>
+<hr />
+<h2 id="32-csq-annotation-field-format">3.2 CSQ Annotation Field Format<a class="headerlink" href="#32-csq-annotation-field-format" title="Anchor link to this section">&para;</a></h2>
+<p>The VCF <code>##INFO</code> header declares the consequence annotation format:</p>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>##INFO=&lt;ID=CSQ,...,Description=&quot;...Format=Allele|Consequence|Feature_type|Feature|Amino_acids|SIFT&quot;&gt;
+</span></code></pre></div>
+<p>Each variant can carry multiple comma-separated CSQ entries (one per overlapping transcript). The pipeline selects entries where <code>Feature_type</code> matches <code>--include_biotypes</code> and <code>Consequence</code> is not in <code>--exclude_consequences</code>.</p>
+<hr />
+<h2 id="33-filtering-logic">3.3 Filtering Logic<a class="headerlink" href="#33-filtering-logic" title="Anchor link to this section">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default value</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--include_biotypes</code></td>
+<td><code>protein_coding,...</code></td>
+<td>Only transcripts whose <code>Feature_type</code> matches are processed</td>
+</tr>
+<tr>
+<td><code>--exclude_consequences</code></td>
+<td><code>downstream_gene_variant, upstream_gene_variant, intergenic_variant, intron_variant, synonymous_variant, regulatory_region_variant</code></td>
+<td>Variants with these consequences produce no output</td>
+</tr>
+<tr>
+<td><code>--af_field</code></td>
+<td><em>(empty)</em></td>
+<td>If set, variants with MAF below <code>--af_threshold</code> (default 0.01) are skipped</td>
+</tr>
+<tr>
+<td><code>--num_orfs</code></td>
+<td><code>3</code></td>
+<td>For ncRNA transcripts, all 3 reading frames are translated and emitted separately</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="34-validated-variant-examples">3.4 Validated Variant Examples<a class="headerlink" href="#34-validated-variant-examples" title="Anchor link to this section">&para;</a></h2>
+<p>All mRNA examples use <code>ENST00000643195</code> (OR11H1 gene, chr22). The ncRNA example uses <code>ENST00000550946</code> (BID gene, chr22).</p>
+<h3 id="actionable-types-produce-output-sequences">Actionable Types (produce output sequences)<a class="headerlink" href="#actionable-types-produce-output-sequences" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Consequence</th>
+<th>rsID</th>
+<th>Position</th>
+<th>REF→ALT</th>
+<th>VCF <code>Amino_acids</code></th>
+<th>Expected assertion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>start_lost</code></td>
+<td>rs1211697244</td>
+<td>22:15528192</td>
+<td>A→G</td>
+<td><code>M/V</code></td>
+<td>First AA is <code>V</code> (not <code>M</code>); length unchanged</td>
+</tr>
+<tr>
+<td><code>missense_variant</code></td>
+<td>rs1410655344</td>
+<td>22:15528195</td>
+<td>A→G</td>
+<td><code>N/D</code></td>
+<td>Position 1 (0-based) is <code>D</code>; length unchanged (316 chars)</td>
+</tr>
+<tr>
+<td><code>frameshift_variant</code></td>
+<td>rs1402769459</td>
+<td>22:15528197</td>
+<td>TG→T</td>
+<td><code>V/X</code></td>
+<td>Frame shifts after position 1; entire downstream sequence differs from WT</td>
+</tr>
+<tr>
+<td><code>stop_gained</code></td>
+<td>rs1420478920</td>
+<td>22:15528234</td>
+<td>G→T</td>
+<td><code>E/*</code></td>
+<td>Position 14 (0-based) is <code>*</code>; protein truncated there</td>
+</tr>
+<tr>
+<td><code>inframe_deletion</code></td>
+<td>rs1203023715</td>
+<td>22:15528914</td>
+<td>CTTC→C</td>
+<td><code>AFS/AS</code></td>
+<td><code>AFS</code> → <code>AS</code>; length is 315 chars (1 AA shorter than WT)</td>
+</tr>
+<tr>
+<td><code>protein_altering_variant</code></td>
+<td>rs1986039639</td>
+<td>22:15528961</td>
+<td>G→GCTG</td>
+<td><code>SS/SCS</code></td>
+<td><code>SS</code> → <code>SCS</code>; length is 317 chars (1 AA longer than WT)</td>
+</tr>
+<tr>
+<td><code>stop_lost</code></td>
+<td>rs1986046473</td>
+<td>22:15529137</td>
+<td>T→A</td>
+<td><code>*/K</code></td>
+<td>Ends with <code>K</code> (not <code>*</code>); length is 316 chars (stop replaced by K)</td>
+</tr>
+<tr>
+<td><code>non_coding_transcript_exon_variant</code></td>
+<td>rs147461488</td>
+<td>22:17740102</td>
+<td>GGCCACGCTCAACT→G</td>
+<td>—</td>
+<td>3 output sequences (<code>_1</code>, <code>_2</code>, <code>_3</code>) for all reading frames</td>
+</tr>
+</tbody>
+</table>
+<h3 id="no-output-types">No-Output Types<a class="headerlink" href="#no-output-types" title="Anchor link to this section">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Consequence</th>
+<th>rsID</th>
+<th>Position</th>
+<th>REF→ALT</th>
+<th>VCF <code>Amino_acids</code></th>
+<th>Reason no output sequence</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>synonymous_variant</code></td>
+<td>rs1394965478</td>
+<td>22:15528197</td>
+<td>T→C</td>
+<td><code>N/N</code></td>
+<td>In <code>--exclude_consequences</code> by default</td>
+</tr>
+<tr>
+<td><code>stop_retained_variant</code></td>
+<td>rs1986046579</td>
+<td>22:15529138</td>
+<td>A→G</td>
+<td><code>*/*</code></td>
+<td>Stop codon TAA→TGA: protein unchanged, no distinct variant sequence written</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="35-output-fasta-header-format">3.5 Output FASTA Header Format<a class="headerlink" href="#35-output-fasta-header-format" title="Anchor link to this section">&para;</a></h2>
+<div class="language-text highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>&gt;var_&lt;rsid&gt;_&lt;chrom&gt;.&lt;pos&gt;.&lt;REF&gt;.&lt;ALT&gt;_&lt;transcript_id&gt;[_&lt;frame&gt;]
+</span></code></pre></div>
+<ul>
+<li><strong>mRNA transcripts</strong> — no frame suffix; the annotated CDS frame is used:
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>&gt;var_rs1410655344_22.15528195.A.G_ENST00000643195
+</span></code></pre></div></li>
+<li><strong>ncRNA transcripts</strong> — three entries per variant with suffixes <code>_1</code>, <code>_2</code>, <code>_3</code> (one per reading frame, controlled by <code>--num_orfs 3</code>):
+  <div class="language-text highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>&gt;var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_1
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a>&gt;var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_2
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a>&gt;var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_3
+</span></code></pre></div></li>
+</ul>
+<hr />
+<h2 id="36-independent-validation">3.6 Independent Validation<a class="headerlink" href="#36-independent-validation" title="Anchor link to this section">&para;</a></h2>
+<h3 id="1-run-the-pipeline-on-testdata">1. Run the pipeline on testdata<a class="headerlink" href="#1-run-the-pipeline-on-testdata" title="Anchor link to this section">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a><span class="nb">cd</span><span class="w"> </span>pgatk/<span class="w">  </span><span class="c1"># package root</span>
+</span><span id="__span-14-2"><a id="__codelineno-14-2" name="__codelineno-14-2" href="#__codelineno-14-2"></a>
+</span><span id="__span-14-3"><a id="__codelineno-14-3" name="__codelineno-14-3" href="#__codelineno-14-3"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-4"><a id="__codelineno-14-4" name="__codelineno-14-4" href="#__codelineno-14-4"></a><span class="w">  </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-5"><a id="__codelineno-14-5" name="__codelineno-14-5" href="#__codelineno-14-5"></a><span class="w">  </span>--vcf<span class="w"> </span>testdata/test_ensembl_v2p.vcf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-6"><a id="__codelineno-14-6" name="__codelineno-14-6" href="#__codelineno-14-6"></a><span class="w">  </span>--input_fasta<span class="w"> </span>testdata/test_ensembl_v2p.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-7"><a id="__codelineno-14-7" name="__codelineno-14-7" href="#__codelineno-14-7"></a><span class="w">  </span>--gene_annotations_gtf<span class="w"> </span>testdata/test_ensembl_v2p.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-8"><a id="__codelineno-14-8" name="__codelineno-14-8" href="#__codelineno-14-8"></a><span class="w">  </span>--output_proteindb<span class="w"> </span>/tmp/v2p_out.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-9"><a id="__codelineno-14-9" name="__codelineno-14-9" href="#__codelineno-14-9"></a><span class="w">  </span>--protein_prefix<span class="w"> </span>var<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-10"><a id="__codelineno-14-10" name="__codelineno-14-10" href="#__codelineno-14-10"></a><span class="w">  </span>--annotation_field_name<span class="w"> </span>CSQ<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-11"><a id="__codelineno-14-11" name="__codelineno-14-11" href="#__codelineno-14-11"></a><span class="w">  </span>--biotype_str<span class="w"> </span>feature_type<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-14-12"><a id="__codelineno-14-12" name="__codelineno-14-12" href="#__codelineno-14-12"></a><span class="w">  </span>--include_biotypes<span class="w"> </span>mRNA,ncRNA
+</span></code></pre></div>
+<p>Expected <code>Translation summary</code> log:
+<div class="language-text highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a># variants with invalid record:0
+</span><span id="__span-15-2"><a id="__codelineno-15-2" name="__codelineno-15-2" href="#__codelineno-15-2"></a># variants not passing Filter:0
+</span><span id="__span-15-3"><a id="__codelineno-15-3" name="__codelineno-15-3" href="#__codelineno-15-3"></a># variants not passing AF threshold:0
+</span><span id="__span-15-4"><a id="__codelineno-15-4" name="__codelineno-15-4" href="#__codelineno-15-4"></a># feature IDs from VCF that are not found in the given FASTA file:0
+</span><span id="__span-15-5"><a id="__codelineno-15-5" name="__codelineno-15-5" href="#__codelineno-15-5"></a># variants successfully translated:9
+</span></code></pre></div></p>
+<p>Expected output: <strong>10 sequences</strong> (7 mRNA + 3 ncRNA frames). The <code>synonymous_variant</code> and <code>stop_retained_variant</code> produce no output sequence.</p>
+<h3 id="2-verify-headers-in-output">2. Verify headers in output<a class="headerlink" href="#2-verify-headers-in-output" title="Anchor link to this section">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a><span class="nv">OUTPUT</span><span class="o">=</span>/tmp/v2p_out.fa
+</span><span id="__span-16-2"><a id="__codelineno-16-2" name="__codelineno-16-2" href="#__codelineno-16-2"></a>
+</span><span id="__span-16-3"><a id="__codelineno-16-3" name="__codelineno-16-3" href="#__codelineno-16-3"></a><span class="c1"># All 8 actionable mRNA variants should appear</span>
+</span><span id="__span-16-4"><a id="__codelineno-16-4" name="__codelineno-16-4" href="#__codelineno-16-4"></a><span class="k">for</span><span class="w"> </span>rsid<span class="w"> </span><span class="k">in</span><span class="w"> </span>rs1211697244<span class="w"> </span>rs1410655344<span class="w"> </span>rs1402769459<span class="w"> </span>rs1420478920<span class="w"> </span>rs1203023715<span class="w"> </span>rs1986039639<span class="w"> </span>rs1986046473<span class="p">;</span><span class="w"> </span><span class="k">do</span>
+</span><span id="__span-16-5"><a id="__codelineno-16-5" name="__codelineno-16-5" href="#__codelineno-16-5"></a><span class="w">  </span><span class="nv">count</span><span class="o">=</span><span class="k">$(</span>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;^&gt;var_</span><span class="si">${</span><span class="nv">rsid</span><span class="si">}</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">$OUTPUT</span><span class="k">)</span>
+</span><span id="__span-16-6"><a id="__codelineno-16-6" name="__codelineno-16-6" href="#__codelineno-16-6"></a><span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$rsid</span><span class="s2">: </span><span class="nv">$count</span><span class="s2">  (expected 1)&quot;</span>
+</span><span id="__span-16-7"><a id="__codelineno-16-7" name="__codelineno-16-7" href="#__codelineno-16-7"></a><span class="k">done</span>
+</span><span id="__span-16-8"><a id="__codelineno-16-8" name="__codelineno-16-8" href="#__codelineno-16-8"></a>
+</span><span id="__span-16-9"><a id="__codelineno-16-9" name="__codelineno-16-9" href="#__codelineno-16-9"></a><span class="c1"># ncRNA variant: 3 frame sequences</span>
+</span><span id="__span-16-10"><a id="__codelineno-16-10" name="__codelineno-16-10" href="#__codelineno-16-10"></a>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;^&gt;var_rs147461488&quot;</span><span class="w"> </span><span class="nv">$OUTPUT</span>
+</span><span id="__span-16-11"><a id="__codelineno-16-11" name="__codelineno-16-11" href="#__codelineno-16-11"></a><span class="c1"># Expected: 3</span>
+</span><span id="__span-16-12"><a id="__codelineno-16-12" name="__codelineno-16-12" href="#__codelineno-16-12"></a>
+</span><span id="__span-16-13"><a id="__codelineno-16-13" name="__codelineno-16-13" href="#__codelineno-16-13"></a><span class="c1"># Synonymous must NOT appear</span>
+</span><span id="__span-16-14"><a id="__codelineno-16-14" name="__codelineno-16-14" href="#__codelineno-16-14"></a>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;^&gt;var_rs1394965478&quot;</span><span class="w"> </span><span class="nv">$OUTPUT</span>
+</span><span id="__span-16-15"><a id="__codelineno-16-15" name="__codelineno-16-15" href="#__codelineno-16-15"></a><span class="c1"># Expected: 0</span>
+</span><span id="__span-16-16"><a id="__codelineno-16-16" name="__codelineno-16-16" href="#__codelineno-16-16"></a>
+</span><span id="__span-16-17"><a id="__codelineno-16-17" name="__codelineno-16-17" href="#__codelineno-16-17"></a><span class="c1"># Stop-retained must NOT appear (stop codon unchanged → protein identical to reference)</span>
+</span><span id="__span-16-18"><a id="__codelineno-16-18" name="__codelineno-16-18" href="#__codelineno-16-18"></a>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;^&gt;var_rs1986046579&quot;</span><span class="w"> </span><span class="nv">$OUTPUT</span>
+</span><span id="__span-16-19"><a id="__codelineno-16-19" name="__codelineno-16-19" href="#__codelineno-16-19"></a><span class="c1"># Expected: 0</span>
+</span></code></pre></div>
+<h3 id="3-confirm-amino-acid-changes">3. Confirm amino acid changes<a class="headerlink" href="#3-confirm-amino-acid-changes" title="Anchor link to this section">&para;</a></h3>
+<div class="language-python highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a><span class="kn">from</span><span class="w"> </span><span class="nn">Bio</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeqIO</span>
+</span><span id="__span-17-2"><a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>
+</span><span id="__span-17-3"><a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a><span class="n">records</span> <span class="o">=</span> <span class="n">SeqIO</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">SeqIO</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="s2">&quot;/tmp/v2p_out.fa&quot;</span><span class="p">,</span> <span class="s2">&quot;fasta&quot;</span><span class="p">))</span>
+</span><span id="__span-17-4"><a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>
+</span><span id="__span-17-5"><a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a><span class="c1"># start_lost (M/V): position 0 is V, not M</span>
+</span><span id="__span-17-6"><a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a><span class="n">sl</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1211697244_22.15528192.A.G_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-7"><a id="__codelineno-17-7" name="__codelineno-17-7" href="#__codelineno-17-7"></a><span class="k">assert</span> <span class="n">sl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;V&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected V at pos 0, got </span><span class="si">{</span><span class="n">sl</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-8"><a id="__codelineno-17-8" name="__codelineno-17-8" href="#__codelineno-17-8"></a>
+</span><span id="__span-17-9"><a id="__codelineno-17-9" name="__codelineno-17-9" href="#__codelineno-17-9"></a><span class="c1"># missense (N/D): position 1 is D; length = 316 (WT reference)</span>
+</span><span id="__span-17-10"><a id="__codelineno-17-10" name="__codelineno-17-10" href="#__codelineno-17-10"></a><span class="n">mut</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1410655344_22.15528195.A.G_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-11"><a id="__codelineno-17-11" name="__codelineno-17-11" href="#__codelineno-17-11"></a><span class="k">assert</span> <span class="n">mut</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected D at pos 1, got </span><span class="si">{</span><span class="n">mut</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-12"><a id="__codelineno-17-12" name="__codelineno-17-12" href="#__codelineno-17-12"></a><span class="n">wt_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">mut</span><span class="p">)</span>  <span class="c1"># 316 — used as reference length below</span>
+</span><span id="__span-17-13"><a id="__codelineno-17-13" name="__codelineno-17-13" href="#__codelineno-17-13"></a>
+</span><span id="__span-17-14"><a id="__codelineno-17-14" name="__codelineno-17-14" href="#__codelineno-17-14"></a><span class="c1"># stop_gained (E/*): stop at position 14</span>
+</span><span id="__span-17-15"><a id="__codelineno-17-15" name="__codelineno-17-15" href="#__codelineno-17-15"></a><span class="n">trunc</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1420478920_22.15528234.G.T_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-16"><a id="__codelineno-17-16" name="__codelineno-17-16" href="#__codelineno-17-16"></a><span class="k">assert</span> <span class="n">trunc</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected * at pos 14, got </span><span class="si">{</span><span class="n">trunc</span><span class="p">[</span><span class="mi">14</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-17"><a id="__codelineno-17-17" name="__codelineno-17-17" href="#__codelineno-17-17"></a>
+</span><span id="__span-17-18"><a id="__codelineno-17-18" name="__codelineno-17-18" href="#__codelineno-17-18"></a><span class="c1"># inframe_deletion (AFS/AS): 1 AA shorter</span>
+</span><span id="__span-17-19"><a id="__codelineno-17-19" name="__codelineno-17-19" href="#__codelineno-17-19"></a><span class="n">del_seq</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1203023715_22.15528914.CTTC.C_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-20"><a id="__codelineno-17-20" name="__codelineno-17-20" href="#__codelineno-17-20"></a><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">del_seq</span><span class="p">)</span> <span class="o">==</span> <span class="n">wt_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">wt_len</span><span class="o">-</span><span class="mi">1</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">del_seq</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-21"><a id="__codelineno-17-21" name="__codelineno-17-21" href="#__codelineno-17-21"></a>
+</span><span id="__span-17-22"><a id="__codelineno-17-22" name="__codelineno-17-22" href="#__codelineno-17-22"></a><span class="c1"># protein_altering (SS/SCS): 1 AA longer</span>
+</span><span id="__span-17-23"><a id="__codelineno-17-23" name="__codelineno-17-23" href="#__codelineno-17-23"></a><span class="n">ins_seq</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1986039639_22.15528961.G.GCTG_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-24"><a id="__codelineno-17-24" name="__codelineno-17-24" href="#__codelineno-17-24"></a><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ins_seq</span><span class="p">)</span> <span class="o">==</span> <span class="n">wt_len</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">wt_len</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ins_seq</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-25"><a id="__codelineno-17-25" name="__codelineno-17-25" href="#__codelineno-17-25"></a>
+</span><span id="__span-17-26"><a id="__codelineno-17-26" name="__codelineno-17-26" href="#__codelineno-17-26"></a><span class="c1"># stop_lost (*/K): ends with K, not *; same length as WT (stop replaced by K)</span>
+</span><span id="__span-17-27"><a id="__codelineno-17-27" name="__codelineno-17-27" href="#__codelineno-17-27"></a><span class="n">ext</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">records</span><span class="p">[</span><span class="s2">&quot;var_rs1986046473_22.15529137.T.A_ENST00000643195&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">seq</span><span class="p">)</span>
+</span><span id="__span-17-28"><a id="__codelineno-17-28" name="__codelineno-17-28" href="#__codelineno-17-28"></a><span class="k">assert</span> <span class="n">ext</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;K&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected K at end, got </span><span class="si">{</span><span class="n">ext</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-29"><a id="__codelineno-17-29" name="__codelineno-17-29" href="#__codelineno-17-29"></a><span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span> <span class="o">==</span> <span class="n">wt_len</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Expected </span><span class="si">{</span><span class="n">wt_len</span><span class="si">}</span><span class="s2">, got </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">ext</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-30"><a id="__codelineno-17-30" name="__codelineno-17-30" href="#__codelineno-17-30"></a>
+</span><span id="__span-17-31"><a id="__codelineno-17-31" name="__codelineno-17-31" href="#__codelineno-17-31"></a><span class="c1"># ncRNA: 3 frames present</span>
+</span><span id="__span-17-32"><a id="__codelineno-17-32" name="__codelineno-17-32" href="#__codelineno-17-32"></a><span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="s2">&quot;2&quot;</span><span class="p">,</span> <span class="s2">&quot;3&quot;</span><span class="p">]:</span>
+</span><span id="__span-17-33"><a id="__codelineno-17-33" name="__codelineno-17-33" href="#__codelineno-17-33"></a>    <span class="n">key</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;var_rs147461488_22.17740102.GGCCACGCTCAACT.G_ENST00000550946_</span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-34"><a id="__codelineno-17-34" name="__codelineno-17-34" href="#__codelineno-17-34"></a>    <span class="k">assert</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">records</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;Missing ncRNA frame </span><span class="si">{</span><span class="n">frame</span><span class="si">}</span><span class="s2">&quot;</span>
+</span><span id="__span-17-35"><a id="__codelineno-17-35" name="__codelineno-17-35" href="#__codelineno-17-35"></a>
+</span><span id="__span-17-36"><a id="__codelineno-17-36" name="__codelineno-17-36" href="#__codelineno-17-36"></a><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All assertions passed.&quot;</span><span class="p">)</span>
+</span></code></pre></div>
+<h3 id="4-compare-output-against-committed-reference">4. Compare output against committed reference<a class="headerlink" href="#4-compare-output-against-committed-reference" title="Anchor link to this section">&para;</a></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="c1"># The committed expected output can be diff&#39;d against a fresh pipeline run</span>
+</span><span id="__span-18-2"><a id="__codelineno-18-2" name="__codelineno-18-2" href="#__codelineno-18-2"></a>diff<span class="w"> </span>&lt;<span class="o">(</span>grep<span class="w"> </span><span class="s2">&quot;^&gt;&quot;</span><span class="w"> </span>testdata/test_ensembl_v2p_proteindb.fa<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span><span class="w"> </span><span class="se">\</span>
+</span><span id="__span-18-3"><a id="__codelineno-18-3" name="__codelineno-18-3" href="#__codelineno-18-3"></a><span class="w">     </span>&lt;<span class="o">(</span>grep<span class="w"> </span><span class="s2">&quot;^&gt;&quot;</span><span class="w"> </span>/tmp/v2p_out.fa<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="o">)</span>
+</span><span id="__span-18-4"><a id="__codelineno-18-4" name="__codelineno-18-4" href="#__codelineno-18-4"></a><span class="c1"># Expected: no output (headers match exactly)</span>
+</span><span id="__span-18-5"><a id="__codelineno-18-5" name="__codelineno-18-5" href="#__codelineno-18-5"></a>
+</span><span id="__span-18-6"><a id="__codelineno-18-6" name="__codelineno-18-6" href="#__codelineno-18-6"></a>diff<span class="w"> </span>testdata/test_ensembl_v2p_proteindb.fa<span class="w"> </span>/tmp/v2p_out.fa
+</span><span id="__span-18-7"><a id="__codelineno-18-7" name="__codelineno-18-7" href="#__codelineno-18-7"></a><span class="c1"># Expected: no output (files identical)</span>
+</span></code></pre></div>
+<h3 id="5-extended-validation-with-af-filtering">5. Extended validation with AF filtering<a class="headerlink" href="#5-extended-validation-with-af-filtering" title="Anchor link to this section">&para;</a></h3>
+<p>To test the <code>--af_field MAF</code> filter (the testdata VCF includes a <code>MAF</code> field):</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># With AF threshold: only variants with MAF ≥ 0.01 are translated</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="c1"># rs1410655344 MAF=0.012 → passes; rs1394965478 MAF=0.008 → filtered (also excluded by consequence)</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a>pgatk<span class="w"> </span>vcf-to-proteindb<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">  </span>--config_file<span class="w"> </span>config/ensembl_config.yaml<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">  </span>--vcf<span class="w"> </span>testdata/test_ensembl_v2p.vcf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">  </span>--input_fasta<span class="w"> </span>testdata/test_ensembl_v2p.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">  </span>--gene_annotations_gtf<span class="w"> </span>testdata/test_ensembl_v2p.gtf<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">  </span>--output_proteindb<span class="w"> </span>/tmp/v2p_af.fa<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">  </span>--protein_prefix<span class="w"> </span>var<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">  </span>--annotation_field_name<span class="w"> </span>CSQ<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-11"><a id="__codelineno-19-11" name="__codelineno-19-11" href="#__codelineno-19-11"></a><span class="w">  </span>--biotype_str<span class="w"> </span>feature_type<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-12"><a id="__codelineno-19-12" name="__codelineno-19-12" href="#__codelineno-19-12"></a><span class="w">  </span>--include_biotypes<span class="w"> </span>mRNA,ncRNA<span class="w"> </span><span class="se">\</span>
+</span><span id="__span-19-13"><a id="__codelineno-19-13" name="__codelineno-19-13" href="#__codelineno-19-13"></a><span class="w">  </span>--af_field<span class="w"> </span>MAF
+</span><span id="__span-19-14"><a id="__codelineno-19-14" name="__codelineno-19-14" href="#__codelineno-19-14"></a>
+</span><span id="__span-19-15"><a id="__codelineno-19-15" name="__codelineno-19-15" href="#__codelineno-19-15"></a>grep<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;^&gt;&quot;</span><span class="w"> </span>/tmp/v2p_af.fa
+</span><span id="__span-19-16"><a id="__codelineno-19-16" name="__codelineno-19-16" href="#__codelineno-19-16"></a><span class="c1"># Expected: 4  (missense MAF=0.012, ncRNA MAF=0.168 → 1 mRNA + 3 ncRNA frames)</span>
+</span></code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2020-2026 BigBio Team
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/bigbio/pgatk" target="_blank" rel="noopener" title="GitHub Repository" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://pypi.org/project/pgatk/" target="_blank" rel="noopener" title="PyPI Package" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.8 200.5c-7.7-30.9-22.3-54.2-53.4-54.2h-40.1v47.4c0 36.8-31.2 67.8-66.8 67.8H172.7c-29.2 0-53.4 25-53.4 54.3v101.8c0 29 25.2 46 53.4 54.3 33.8 9.9 66.3 11.7 106.8 0 26.9-7.8 53.4-23.5 53.4-54.3v-40.7H226.2v-13.6h160.2c31.1 0 42.6-21.7 53.4-54.2 11.2-33.5 10.7-65.7 0-108.6M286.2 444.7a20.4 20.4 0 1 1 0-40.7 20.4 20.4 0 1 1 0 40.7M167.8 248.1h106.8c29.7 0 53.4-24.5 53.4-54.3V91.9c0-29-24.4-50.7-53.4-55.6-35.8-5.9-74.7-5.6-106.8.1-45.2 8-53.4 24.7-53.4 55.6v40.7h106.9v13.6h-147c-31.1 0-58.3 18.7-66.8 54.2-9.8 40.7-10.2 66.1 0 108.6 7.6 31.6 25.7 54.2 56.8 54.2H101v-48.8c0-35.3 30.5-66.4 66.8-66.4m-6.6-183.4a20.4 20.4 0 1 1 0 40.8 20.4 20.4 0 1 1 0-40.8"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.expand", "navigation.path", "navigation.top", "navigation.footer", "navigation.instant", "navigation.tracking", "search.suggest", "search.highlight", "search.share", "toc.follow", "content.code.copy", "content.code.annotate"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
