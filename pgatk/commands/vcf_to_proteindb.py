@@ -39,7 +39,10 @@ log = logging.getLogger(__name__)
               is_flag=True)
 @click.option('--accepted_filters', help="Accepted filters for variant parsing")
 @click.option('-w', '--workers', type=int, default=None,
-              help="Number of worker processes to fan out across (default: 1, sequential). Per-chromosome split.")
+              help="Number of worker processes to fan out across. When omitted the "
+                   "value from the config is used (default 1, sequential). The VCF is split "
+                   "into fixed-size variant batches (~50k records each) that may span "
+                   "chromosome boundaries, not per chromosome.")
 @click.pass_context
 def vcf_to_proteindb(ctx, config_file, input_fasta, vcf, gene_annotations_gtf, translation_table,
                      mito_translation_table,

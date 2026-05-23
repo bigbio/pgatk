@@ -19,6 +19,9 @@ def _resolve_genome_fna(genome_fna: str) -> tuple[str, str | None]:
     gffread requires random-access into the genome FASTA.  Regular .gz does not
     support seeks, so if the caller passes a .gz path we reuse an already-
     decompressed sibling file or decompress to one on the fly.
+    Decompression is written to a sibling ``.tmp`` file and atomically renamed
+    so an interrupted run cannot leave behind a partial / corrupt FASTA that
+    later invocations would silently reuse.
     Returns the second element only when *we* created the file (caller must remove it).
     """
     if not genome_fna.endswith(".gz"):
@@ -27,8 +30,20 @@ def _resolve_genome_fna(genome_fna: str) -> tuple[str, str | None]:
     if os.path.exists(plain):
         return plain, None
     logger.info("Decompressing genome FASTA for gffread (random-access required): %s", genome_fna)
-    with gzip.open(genome_fna, "rb") as fi, open(plain, "wb") as fo:
-        shutil.copyfileobj(fi, fo)
+    tmp = plain + ".tmp"
+    try:
+        with gzip.open(genome_fna, "rb") as fi, open(tmp, "wb") as fo:
+            shutil.copyfileobj(fi, fo)
+        os.replace(tmp, plain)
+    except BaseException:
+        # On any failure (including KeyboardInterrupt) remove the partial temp
+        # file so the next run re-decompresses from scratch.
+        if os.path.exists(tmp):
+            try:
+                os.remove(tmp)
+            except OSError:
+                pass
+        raise
     return plain, plain
 
 logger = logging.getLogger(__name__)

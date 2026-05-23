@@ -161,10 +161,29 @@ def _cbio_translate_batch(rows: list, batch_idx: int) -> list:
                     log.warning("incorrect del format or record %s %s", idx, pos)
                     continue
                 del_dna = pos.split("del")[1]
-                if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
-                    seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + len(del_dna):]
+                if del_dna:
+                    # Explicit deleted bases: verify they match the reference.
+                    if del_dna == seq[enst_pos - 1:enst_pos - 1 + len(del_dna)]:
+                        seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + len(del_dna):]
+                    else:
+                        log.warning("incorrect deletion, unmatched nucleotide %s", pos)
                 else:
-                    log.warning("incorrect deletion, unmatched nucleotide %s", pos)
+                    # Range deletion without explicit bases (e.g. ``c.104_124del``):
+                    # derive the deletion length from the positions in cdna_pos.
+                    parts = cdna_pos.split("_")
+                    if len(parts) >= 2:
+                        try:
+                            end_pos = int(re.findall(r'\d+', parts[1])[0])
+                        except IndexError:
+                            log.warning("incorrect del range format %s", pos)
+                            continue
+                        del_len = end_pos - enst_pos + 1
+                    else:
+                        del_len = 1
+                    if del_len <= 0 or enst_pos - 1 + del_len > len(seq):
+                        log.warning("deletion out of range for %s (len=%d)", pos, del_len)
+                        continue
+                    seq_mut = seq[:enst_pos - 1] + seq[enst_pos - 1 + del_len:]
             elif vartype == "INS":
                 try:
                     enst_pos = int(re.findall(r'\d+', cdna_pos.split("_")[0])[0])

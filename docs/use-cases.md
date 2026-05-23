@@ -108,7 +108,7 @@ pgatk dnaseq-to-proteindb \
 
 #### Putative proteins (three-frame)
 
-Protein coding genes without CDs that are not validated but annoated:
+Protein coding genes without CDs that are not validated but annotated:
 
 ```bash
 pgatk dnaseq-to-proteindb \
@@ -511,7 +511,7 @@ therapy resistance, and prioritize neoantigen candidates. The databases combine
 somatic mutations from cancer-specific sources (COSMIC, cBioPortal) and/or
 patient-matched whole-exome sequencing.
 
-### 4a. Cancer-speific database using COSMIC somatic mutations
+### 4a. Cancer-specific database using COSMIC somatic mutations
 
 Generate one protein database per primary tissue site. This is the standard
 approach for large-scale cancer proteogenomics when patient-level WES is not
@@ -543,7 +543,7 @@ etc. Use the tissue-matched database for your cancer type of interest.
     and is joined via `COSMIC_PHENOTYPE_ID`. Pass the Classification file via
     `--clinical_sample_file` whenever tissue-type filtering or splitting is needed.
 
-### 4b. Cancer-type speific database using COSMIC somatic mutations
+### 4b. Cancer-type specific database using COSMIC somatic mutations
 
 Build a focused database for one cancer type (e.g. lung):
 
@@ -586,7 +586,7 @@ transcripts without a `CDS=` header). `Nonsense_Mutation` variants are excluded 
 pass `--exclude_variant_classifications ""` to override.
 
 Use `--workers N` to parallelise the translation phase across N CPU cores, beneficial
-for large pan-cancer studies with large numbre of mutations.
+for large pan-cancer studies with large number of mutations.
 
 #### GRCh37 study (e.g. TCGA PanCancer Atlas 2018)
 
@@ -1188,6 +1188,15 @@ pgatk dnaseq-to-proteindb \
     --output_proteindb pseudogene.fa \
     --protein_prefix pseudogene_ \
     --include_biotypes processed_pseudogene,transcribed_processed_pseudogene \
+    --num_orfs 3 \
+    --skip_including_all_cds
+
+# Putative proteins (three-frame translation of all protein-coding transcripts)
+pgatk dnaseq-to-proteindb \
+    --input_fasta ensembl_data/transcripts.fa \
+    --output_proteindb putative.fa \
+    --protein_prefix putative_ \
+    --include_biotypes protein_coding \
     --num_orfs 3 \
     --skip_including_all_cds
 ```

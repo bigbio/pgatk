@@ -502,6 +502,9 @@ class EnsemblDataDownloadService(ParameterConfiguration):
                 "Install it with: conda install -c bioconda gffread"
             )
         # gffread requires random-access; decompress .gz to a sibling file when needed.
+        # The decompression is staged through a ``.tmp`` file and atomically
+        # renamed so an interrupted run cannot leave a partial sibling that a
+        # later invocation would silently reuse.
         _tmp = None
         genome_for_gffread = genome_fna
         if genome_fna.endswith(".gz"):
@@ -509,8 +512,18 @@ class EnsemblDataDownloadService(ParameterConfiguration):
             if os.path.exists(plain):
                 genome_for_gffread = plain
             else:
-                with gzip.open(genome_fna, "rb") as fi, open(plain, "wb") as fo:
-                    shutil.copyfileobj(fi, fo)
+                tmp_path = plain + ".tmp"
+                try:
+                    with gzip.open(genome_fna, "rb") as fi, open(tmp_path, "wb") as fo:
+                        shutil.copyfileobj(fi, fo)
+                    os.replace(tmp_path, plain)
+                except BaseException:
+                    if os.path.exists(tmp_path):
+                        try:
+                            os.remove(tmp_path)
+                        except OSError:
+                            pass
+                    raise
                 genome_for_gffread = plain
                 _tmp = plain
         try:

@@ -156,8 +156,11 @@ class CosmicDownloadService(ParameterConfiguration):
         self.get_logger().debug("Downloading file from signed URL (path %s)", download_url.split('?', 1)[0])
         data_response = requests.get(download_url, stream=True, timeout=30)
         if data_response.status_code != 200:
+            # Strip the query string so the short-lived AWS credentials don't end
+            # up in logs / log aggregators on failure.
+            redacted_url = download_url.split('?', 1)[0]
             msg = ("COSMIC S3 download failed: HTTP {} for {}"
-                   .format(data_response.status_code, download_url))
+                   .format(data_response.status_code, redacted_url))
             self.get_logger().error(msg)
             raise AppConfigException(msg)
 
