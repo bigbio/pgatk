@@ -1,4 +1,5 @@
 import os
+import subprocess  # nosec B404 - imported only to catch CalledProcessError from gffread
 
 import click
 
@@ -65,6 +66,6 @@ def gencode_downloader(ctx, output_dir, release, force, generate_transcripts):
             click.echo("Running gffread to generate transcripts.fa with CDS= headers ...")
             GencodeDownloader.generate_transcripts(genome_fna, gtf_file, output_fasta)
             click.echo(f"Transcripts written to {output_fasta}")
-        except FileNotFoundError as exc:
+        except (FileNotFoundError, subprocess.CalledProcessError) as exc:
             click.echo(f"Error: {exc}", err=True)
             raise SystemExit(1)
